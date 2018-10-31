@@ -9,15 +9,15 @@ cache:
         - "~/.platformio"
 
 env:
-    - PLATFORMIO_CI_SRC=src/esp PLATFORMIO_CI_EXTRA_ARGS="--board=esp01_1m"
-    - PLATFORMIO_CI_SRC=src/esp PLATFORMIO_CI_EXTRA_ARGS="--board=esp12e"
-    - PLATFORMIO_CI_SRC=src/esp PLATFORMIO_CI_EXTRA_ARGS="--board=esp32dev"
-    - PLATFORMIO_CI_SRC=src/esp PLATFORMIO_CI_EXTRA_ARGS="--board=esp32doit-devkit-v1"
+    - PLATFORMIO_CI_SRC=src PLATFORMIO_CI_EXTRA_ARGS="--board=esp01_1m"
+    - PLATFORMIO_CI_SRC=src PLATFORMIO_CI_EXTRA_ARGS="--board=esp12e"
+    - PLATFORMIO_CI_SRC=src PLATFORMIO_CI_EXTRA_ARGS="--board=esp32dev"
+    - PLATFORMIO_CI_SRC=src PLATFORMIO_CI_EXTRA_ARGS="--board=esp32doit-devkit-v1"
 
 install:
     - pip install -U platformio
     - platformio update
-    - platformio lib -g install 62 64 136 222 415 423 1106 1194 1266 1954
+    - platformio lib -g install 62 64 136 222 415 423 1106 1194 1266 1954 2978
                                 https://github.com/dxinteractive/ResponsiveAnalogRead.git
 
 script:
