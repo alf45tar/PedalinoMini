@@ -69,13 +69,11 @@ void BLEMidiReceive(uint8_t *, uint8_t);
 class MyBLEServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       bleMidiConnected = true;
-      serialize_ble_status(true);
       DPRINT("BLE client connected");
     };
 
     void onDisconnect(BLEServer* pServer) {
       bleMidiConnected = false;
-      serialize_ble_status(false);
       DPRINT("BLE client disconnected");
     }
 };

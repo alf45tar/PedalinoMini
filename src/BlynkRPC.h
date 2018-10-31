@@ -19,7 +19,8 @@
 #define BLYNK_NO_FLOAT                  // Disable float operations
 
 #ifdef SERIALDEBUG
-#define BLYNK_PRINT SERIALDEBUG
+#define BLYNK_PRINT SERIALDEBUG         // Defines the object that is used for printing
+//#define BLYNK_DEBUG                     // Optional, this enables more detailed prints
 #endif
 
 #ifdef ARDUINO_ARCH_ESP8266
