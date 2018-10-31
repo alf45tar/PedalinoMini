@@ -55,7 +55,6 @@
 
 #include "Pedalino.h"
 #include "Controller.h"
-#include "BlynkRPC.h"
 #include "Config.h"
 #include "Display.h"
 #include "OTAUpdate.h"
@@ -65,7 +64,7 @@
 #include "UdpMidiIn.h"
 #include "WebConfig.h"
 #include "WifiConnect.h"
-
+#include "BlynkRPC.h"
 
 #ifndef LED_BUILTIN
 #define LED_BUILTIN    2

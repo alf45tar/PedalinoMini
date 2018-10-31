@@ -76,10 +76,11 @@
 #define BLYNK_WIFICONNECT           V94
 #define BLYNK_SMARTCONFIG   		V95
 
-#define PRINT_VIRTUAL_PIN(vPin)     { DPRINT("WRITE VirtualPIN "); DPRINT(vPin); }
+#define PRINT_VIRTUAL_PIN(vPin)     { DPRINT("WRITE VirtualPIN %d", vPin); }
 
-const char blynkAuthToken[] = "31795677450a4ac088805d6d914bc747";
+const char blynkAuthToken[] = "5975cdd412a04e538531e78e4c15f165";
 WidgetLCD  blynkLCD(V0);
+String     ssid, password;
 
 #ifdef NOLCD
 #define screen_update(...)
@@ -257,8 +258,7 @@ BLYNK_APP_DISCONNECTED() {
 BLYNK_WRITE(BLYNK_PROFILE) {
   int profile = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Profile ");
-  DPRINTLN(profile);
+  DPRINT(" - Profile %d\n", profile);
   currentProfile = constrain(profile - 1, 0, PROFILES - 1);
   update_current_profile_eeprom();
   DPRINTLN("Switching profile");
@@ -268,8 +268,7 @@ BLYNK_WRITE(BLYNK_PROFILE) {
 BLYNK_WRITE(BLYNK_MIDI_TIME_CODE) {
   int mtc = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MTC ");
-  DPRINTLN(mtc);
+  DPRINT(" - MTC %d\n", mtc);
   switch (currentMidiTimeCode) {
 
     case PED_MTC_NONE:
@@ -323,8 +322,7 @@ BLYNK_WRITE(BLYNK_MIDI_TIME_CODE) {
 BLYNK_WRITE(BLYNK_CLOCK_MASTER_SLAVE) {
   int master_slave = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - CLOCK ");
-  DPRINTLN(master_slave);
+  DPRINT(" - CLOCK %d\n", master_slave);
   switch (currentMidiTimeCode) {
 
     case PED_MTC_SLAVE:
@@ -363,8 +361,7 @@ BLYNK_WRITE(BLYNK_CLOCK_MASTER_SLAVE) {
 BLYNK_WRITE(BLYNK_BPM) {
   int beatperminute = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - BPM ");
-  DPRINTLN(beatperminute);
+  DPRINT(" - BPM %d\n", beatperminute);
   switch (currentMidiTimeCode) {
     case PED_MIDI_CLOCK_MASTER:
       bpm = constrain(beatperminute, 40, 300);
@@ -376,8 +373,7 @@ BLYNK_WRITE(BLYNK_BPM) {
 BLYNK_WRITE(BLYNK_CLOCK_START) {
   int pressed = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Clock Start ");
-  DPRINTLN(pressed);
+  DPRINT(" - Clock Start %d\n", pressed);
   if (pressed) {
     MTC.sendPosition(0, 0, 0, 0);
     MTC.sendPlay();
@@ -387,24 +383,21 @@ BLYNK_WRITE(BLYNK_CLOCK_START) {
 BLYNK_WRITE(BLYNK_CLOCK_STOP) {
   int pressed = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Clock Stop ");
-  DPRINTLN(pressed);
+  DPRINT(" - Clock Stop %d\n", pressed);
   if (pressed) MTC.sendStop();
 }
 
 BLYNK_WRITE(BLYNK_CLOCK_CONTINUE) {
   int pressed = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Clock Continue ");
-  DPRINTLN(pressed);
+  DPRINT(" - Clock Continue %d\n", pressed);
   if (pressed) MTC.sendContinue();
 }
 
 BLYNK_WRITE(BLYNK_TAP_TEMPO) {
   int pressed = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Tap Tempo ");
-  DPRINTLN(pressed);
+  DPRINT(" - Tap Tempo %d\n", pressed);
   if (pressed) {
     bpm = MTC.tapTempo();
     if (bpm > 0) {
@@ -417,8 +410,7 @@ BLYNK_WRITE(BLYNK_TAP_TEMPO) {
 BLYNK_WRITE(BLYNK_BANK) {
   int bank = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Bank ");
-  DPRINTLN(bank);
+  DPRINT(" - Bank %d\n", bank);
   currentBank = constrain(bank - 1, 0, BANKS - 1);
   blynk_refresh_bank();
 }
@@ -447,40 +439,35 @@ BLYNK_WRITE(BLYNK_MIDIMESSAGE) {
 BLYNK_WRITE(BLYNK_MIDICHANNEL) {
   int channel = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI Channel ");
-  DPRINTLN(channel);
+  DPRINT(" - MIDI Channel %d\n", channel);
   banks[currentBank][currentPedal].midiChannel = constrain(channel, 1, 16);
 }
 
 BLYNK_WRITE(BLYNK_MIDICODE) {
   int code = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI Code ");
-  DPRINTLN(code);
+  DPRINT(" - MIDI Code %d\n", code);
   banks[currentBank][currentPedal].midiCode = constrain(code, 0, 127);
 }
 
 BLYNK_WRITE(BLYNK_MIDIVALUE1) {
   int code = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI Single Press ");
-  DPRINTLN(code);
+  DPRINT(" - MIDI Single Press %d\n", code);
   banks[currentBank][currentPedal].midiValue1 = constrain(code, 0, 127);
 }
 
 BLYNK_WRITE(BLYNK_MIDIVALUE2) {
   int code = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI Double Press ");
-  DPRINTLN(code);
+  DPRINT(" - MIDI Double Press %d\n", code);
   banks[currentBank][currentPedal].midiValue2 = constrain(code, 0, 127);
 }
 
 BLYNK_WRITE(BLYNK_MIDIVALUE3) {
   int code = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI Long Press ");
-  DPRINTLN(code);
+  DPRINT(" - MIDI Long Press %d\n", code);
   banks[currentBank][currentPedal].midiValue3 = constrain(code, 0, 127);
 }
 
@@ -488,8 +475,7 @@ BLYNK_WRITE(BLYNK_MIDIVALUE3) {
 BLYNK_WRITE(BLYNK_PEDAL) {
   int pedal = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Pedal ");
-  DPRINTLN(pedal);
+  DPRINT(" - Pedal %d\n", pedal);
   currentPedal = constrain(pedal - 1, 0, PEDALS - 1);
   blynk_refresh_bank();
   blynk_refresh_pedal();
@@ -498,8 +484,7 @@ BLYNK_WRITE(BLYNK_PEDAL) {
 BLYNK_WRITE(BLYNK_PEDAL_MODE1) {
   int mode = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Mode ");
-  DPRINTLN(mode);
+  DPRINT(" - Mode %d\n", mode);
   switch (mode) {
     case 1:
       pedals[currentPedal].mode = PED_MOMENTARY1;
@@ -519,8 +504,7 @@ BLYNK_WRITE(BLYNK_PEDAL_MODE1) {
 BLYNK_WRITE(BLYNK_PEDAL_MODE2) {
   int mode = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Mode ");
-  DPRINTLN(mode);
+  DPRINT(" - Mode %d\n", mode);
   switch (mode) {
     case 1:
       pedals[currentPedal].mode = PED_MOMENTARY1;
@@ -540,32 +524,28 @@ BLYNK_WRITE(BLYNK_PEDAL_MODE2) {
 BLYNK_WRITE(BLYNK_PEDAL_FUNCTION) {
   int function = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Function ");
-  DPRINTLN(function);
+  DPRINT(" - Function %d\n", function);
   pedals[currentPedal].function = function - 1;
 }
 
 BLYNK_WRITE(BLYNK_PEDAL_AUTOSENSING) {
   int autosensing = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Autosensing ");
-  DPRINTLN(autosensing);
+  DPRINT(" - Autosensing %d\n", autosensing);
   pedals[currentPedal].autoSensing = autosensing;
 }
 
 BLYNK_WRITE(BLYNK_PEDAL_POLARITY) {
   int polarity = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Polarity ");
-  DPRINTLN(polarity);
+  DPRINT(" - Polarity %d\n", polarity);
   pedals[currentPedal].invertPolarity = polarity;
 }
 
 BLYNK_WRITE(BLYNK_PEDAL_CALIBRATE) {
   int calibration = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Calibrate ");
-  DPRINTLN(calibration);
+  DPRINT(" - Calibrate %d\n", calibration);
   if (calibration && pedals[currentPedal].mode == PED_ANALOG) calibrate();
   blynk_refresh_pedal();
 }
@@ -573,8 +553,7 @@ BLYNK_WRITE(BLYNK_PEDAL_CALIBRATE) {
 BLYNK_WRITE(BLYNK_PEDAL_ANALOGZERO) {
   int analogzero = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Analog Zero ");
-  DPRINTLN(analogzero);
+  DPRINT(" - Analog Zero %d\n", analogzero);
   pedals[currentPedal].expZero = analogzero;
   pedals[currentPedal].expMax = _max(pedals[currentPedal].expMax, analogzero);
   Blynk.virtualWrite(BLYNK_PEDAL_ANALOGMAX, pedals[currentPedal].expMax);
@@ -583,8 +562,7 @@ BLYNK_WRITE(BLYNK_PEDAL_ANALOGZERO) {
 BLYNK_WRITE(BLYNK_PEDAL_ANALOGMAX) {
   int analogmax = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Analog Max ");
-  DPRINTLN(analogmax);
+  DPRINT(" - Analog Max %d\n", analogmax);
   pedals[currentPedal].expZero = _min(pedals[currentPedal].expZero, analogmax);
   pedals[currentPedal].expMax = analogmax;
   Blynk.virtualWrite(BLYNK_PEDAL_ANALOGZERO, pedals[currentPedal].expZero);
@@ -617,59 +595,39 @@ BLYNK_WRITE(BLYNK_INTERFACE) {
 BLYNK_WRITE(BLYNK_INTERFACE_MIDIIN) {
   int onoff = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI IN ");
-  DPRINTLN(onoff);
+  DPRINT(" - MIDI IN %d\n", onoff);
   interfaces[currentInterface].midiIn = onoff;
 }
 
 BLYNK_WRITE(BLYNK_INTERFACE_MIDIOUT) {
   int onoff = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI OUT ");
-  DPRINTLN(onoff);
+  DPRINT(" - MIDI OUT %d\n", onoff);
   interfaces[currentInterface].midiOut = onoff;
 }
 
 BLYNK_WRITE(BLYNK_INTERFACE_MIDITHRU) {
   int onoff = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI THRU ");
-  DPRINTLN(onoff);
+  DPRINT(" - MIDI THRU %d\n", onoff);
   interfaces[currentInterface].midiThru = onoff;
 }
 
 BLYNK_WRITE(BLYNK_INTERFACE_MIDIROUTING) {
   int onoff = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI Routing ");
-  DPRINTLN(onoff);
+  DPRINT(" - MIDI Routing %d\n", onoff);
   interfaces[currentInterface].midiRouting = onoff;
 }
 
 BLYNK_WRITE(BLYNK_INTERFACE_MIDICLOCK) {
   int onoff = param.asInt();
   PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI Clock ");
-  DPRINTLN(onoff);
+  DPRINT(" - MIDI Clock %d\n", onoff);
   interfaces[currentInterface].midiClock = onoff;
 }
 
-BLYNK_WRITE(BLYNK_SSID) {
-  ssid = param.asStr();
-  PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - SSID     : ");
-  DPRINTLN(ssid.c_str());
-}
-
-BLYNK_WRITE(BLYNK_PASSWORD) {
-  password = param.asStr();
-  PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - Password : ");
-  DPRINTLN(password.c_str());
-}
-
 BLYNK_WRITE(BLYNK_WIFICONNECT) {
-  //serialize_wifi_credentials(ssid.c_str(), password.c_str());
   WiFi.scanDelete();
   if (ap_connect(ssid, password))
     Blynk.connect();

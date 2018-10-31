@@ -14,6 +14,8 @@
 #define EEPROM_VERSION  1                 // Increment each time you change the eeprom structure
 #define EEPROM_SIZE     4096
 
+void blynk_refresh();
+
 //
 //  Initialize EEPROM
 //
