@@ -658,7 +658,7 @@ void http_handle_update_file_upload() {
       display.drawProgressBar(4, 32, 120, 8, Update.progress() / (Update.size() / 100) );
       display.display();
     });
-    if (!Update.begin()) { //start with max available size
+    if (!Update.begin()) {  //start with max available size
 #endif
 #ifdef ARDUINO_ARCH_ESP8266
     //size of max sketch rounded to a sector
