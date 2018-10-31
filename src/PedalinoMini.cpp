@@ -19,6 +19,7 @@
       - WiFi OSC
 */
 
+#define NOLCD
 
 #ifdef NOWIFI
 #undef WIFI
