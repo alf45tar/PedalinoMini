@@ -653,11 +653,18 @@ void http_handle_update_file_upload() {
     display.drawString(display.getWidth() / 2, display.getHeight() / 2 - 11, "HTTP Update");
     display.display();
     DPRINT("Update: %s\n", upload.filename.c_str());
+#ifdef ARDUINO_ARCH_ESP32
     Update.onProgress([](size_t progress, size_t total) {
       display.drawProgressBar(4, 32, 120, 8, Update.progress() / (Update.size() / 100) );
       display.display();
     });
     if (!Update.begin()) { //start with max available size
+#endif
+#ifdef ARDUINO_ARCH_ESP8266
+    //size of max sketch rounded to a sector
+    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+    if (!Update.begin(maxSketchSpace)) { //start with max available size
+#endif
       Update.printError(str);
       DPRINT("Update fail: %s", str.c_str());
     }

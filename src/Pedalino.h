@@ -273,4 +273,13 @@ RemoteDebug Debug;
 #define DPRINTLN(...)     rdebugIln(__VA_ARGS__)
 #endif
 
+#ifndef DPRINT
+#define DPRINT(...)
+#endif
+
+#ifndef DPRINTLN
+#define DPRINTLN(...)
+#define DPRINTMIDI(...)
+#endif
+
 #endif // _PEDALINO_H

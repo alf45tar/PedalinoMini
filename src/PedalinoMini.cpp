@@ -20,6 +20,7 @@
 */
 
 #define NOLCD
+#define DEBUG_UPDATER Serial
 
 #ifdef NOWIFI
 #undef WIFI
@@ -40,6 +41,11 @@
 #endif
 
 #include <Arduino.h>
+
+#ifdef ARDUINO_ARCH_ESP8266
+#undef BLE
+#define NOBLE
+#endif
 
 #ifdef ARDUINO_ARCH_ESP32
 #include <esp_log.h>
@@ -71,15 +77,6 @@
 
 #ifndef BLE_LED
 #define BLE_LED         LED_BUILTIN  // onboard LED, used as status indicator
-#endif
-
-#ifndef DPRINT
-#define DPRINT(...)
-#endif
-
-#ifndef DPRINTLN
-#define DPRINTLN(...)
-#define DPRINTMIDI(...)
 #endif
 
 
