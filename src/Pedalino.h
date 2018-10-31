@@ -8,7 +8,6 @@
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
-
 #include <Arduino.h>
 
 #ifndef _PEDALINO_H
