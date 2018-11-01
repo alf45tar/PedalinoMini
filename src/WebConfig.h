@@ -650,6 +650,7 @@ void http_handle_update_file_upload() {
   switch (upload.status) {
 
     case UPLOAD_FILE_START:
+      {
       display.clear();
       display.setFont(ArialMT_Plain_10);
       display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
@@ -673,7 +674,7 @@ void http_handle_update_file_upload() {
         DPRINT("Update start fail: %s", str.c_str());
       }
       break;
-
+      }
     case UPLOAD_FILE_WRITE:
       if (Update.write(upload.buf, upload.currentSize) == upload.currentSize) {
         if (Update.size()) {
