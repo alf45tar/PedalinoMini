@@ -118,7 +118,7 @@ typedef uint8_t   byte;
 #define PED_TIMESIGNATURE_12_8  6
 
 #define MIDI_RESOLUTION         128       // MIDI 7-bit CC resolution
-#define ADC_RESOLUTION         1024       // 10-bit ADC converter resolution
+#define ADC_RESOLUTION         4096       // 12-bit ADC converter resolution
 #define CALIBRATION_DURATION   8000       // milliseconds
 
 struct bank {

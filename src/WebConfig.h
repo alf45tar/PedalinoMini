@@ -626,7 +626,8 @@ String get_update_page() {
  // handler for the /update form page
 
 void http_handle_update () {
-if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
+  if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
+  httpServer.sendHeader("Connection", "close");
   httpServer.send(200, "text/html", get_update_page());
 }
 
@@ -645,35 +646,49 @@ void http_handle_update_file_upload() {
   
   StreamString  str;
   HTTPUpload&   upload = httpServer.upload();
-  
-  if (upload.status == UPLOAD_FILE_START) {
-    display.clear();
-    display.setFont(ArialMT_Plain_10);
-    display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-    display.drawString(display.getWidth() / 2, display.getHeight() / 2 - 11, "HTTP Update");
-    display.display();
-    DPRINT("Update: %s\n", upload.filename.c_str());
-#ifdef ARDUINO_ARCH_ESP32
-    Update.onProgress([](size_t progress, size_t total) {
-      display.drawProgressBar(4, 32, 120, 8, Update.progress() / (Update.size() / 100) );
+
+  switch (upload.status) {
+
+    case UPLOAD_FILE_START:
+      display.clear();
+      display.setFont(ArialMT_Plain_10);
+      display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+      display.drawString(display.getWidth() / 2, display.getHeight() / 2 - 11, "HTTP Update");
       display.display();
-    });
-    if (!Update.begin()) {  //start with max available size
-#endif
+      DPRINT("Filename: %s\n", upload.filename.c_str());
 #ifdef ARDUINO_ARCH_ESP8266
-    //size of max sketch rounded to a sector
-    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-    if (!Update.begin(maxSketchSpace)) { //start with max available size
+      //size of max sketch rounded to a sector
+      uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+      if (Update.begin(maxSketchSpace)) { //start with max available size
 #endif
-      Update.printError(str);
-      DPRINT("Update fail: %s", str.c_str());
-    }
-  } else if (upload.status == UPLOAD_FILE_WRITE) {
-      if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+#ifdef ARDUINO_ARCH_ESP32
+      if (Update.begin()) {  //start with max available size
+#endif
+        display.drawProgressBar(4, 32, 120, 8, 0);
+        display.display();
+        DPRINT("Update start\n");
+      }
+      else {
+        Update.printError(str);
+        DPRINT("Update start fail: %s", str.c_str());
+      }
+      break;
+
+    case UPLOAD_FILE_WRITE:
+      if (Update.write(upload.buf, upload.currentSize) == upload.currentSize) {
+        if (Update.size()) {
+          display.drawProgressBar(4, 32, 120, 8, 100 * Update.progress() / Update.size());
+          display.display();
+          DPRINT("Progress: %5.1f%%\n", 100.0 * Update.progress() / Update.size());
+        }
+      }
+      else {
         Update.printError(str);
         DPRINT("Update fail: %s", str.c_str());
       }
-  } else if (upload.status == UPLOAD_FILE_END) {
+      break;
+
+    case UPLOAD_FILE_END:
       display.clear();
       display.setFont(ArialMT_Plain_10);
       display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
@@ -681,10 +696,20 @@ void http_handle_update_file_upload() {
       display.display();
       if (Update.end(true)) { //true to set the size to the current progress
         DPRINT("Update Success: %u\nRebooting...\n", upload.totalSize);
-        } else {
-          Update.printError(str);
-          DPRINT("Update fail: %s", str.c_str());
-        }
+      } else {
+        Update.printError(str);
+        DPRINT("Update fail: %s", str.c_str());
+      }
+      break;
+
+    case UPLOAD_FILE_ABORTED:
+      display.clear();
+      display.setFont(ArialMT_Plain_10);
+      display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+      display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Update aborted");
+      display.display();
+      ESP.restart();
+      break;
   }
 }
 

@@ -11,6 +11,7 @@
 
 #ifdef NOBLYNK
 #define blynk_config(...)
+#define blynk_connect()
 #define blynk_run(...)
 #define blynk_refresh(...)
 #else
@@ -95,6 +96,14 @@ void blynk_config()
 {
   Blynk.config(blynkAuthToken);
   Blynk.disconnect();
+}
+
+
+void blynk_connect()
+{
+  // Connect to Blynk Cloud
+  if (WiFi.getMode() != WIFI_AP)
+    Blynk.connect();
 }
 
 inline void blynk_run()

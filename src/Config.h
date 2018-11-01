@@ -103,8 +103,8 @@ void load_factory_default()
                  PED_PRESS_1,    // press mode
                  0,              // invert polarity disabled
                  0,              // map function
-                 50,             // expression pedal zero
-                 930,            // expression pedal max
+                 ADC_RESOLUTION * 10 / 100,  // expression pedal zero
+                 ADC_RESOLUTION * 90 / 100,  // expression pedal max
                  0,              // last state of switch 1
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed

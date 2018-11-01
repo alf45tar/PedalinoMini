@@ -40,6 +40,12 @@
 #define WEBCONFIG
 #endif
 
+#ifdef NOBLYNK
+#undef BLYNK
+#else
+#define BLYNK
+#endif
+
 #include <Arduino.h>
 
 #ifdef ARDUINO_ARCH_ESP8266
@@ -160,23 +166,22 @@ void setup()
   pinMode(BLE_LED, OUTPUT);
 #endif
 
-#ifndef NOBLE
+#ifdef BLE
   // BLE MIDI service advertising
   ble_midi_start_service();
   DPRINT("BLE MIDI service advertising started");
 #endif
 
-#ifndef NOWIFI
+#ifdef WIFI
   // Write SSID/password to flash only if currently used values do not match what is already stored in flash
   WiFi.persistent(false);
   WiFi.onEvent(WiFiEvent);
   wifi_connect();
 #endif
 
-#ifndef NOBLYNK
+#ifdef BLYNK
   // Connect to Blynk
   Blynk.config(blynkAuthToken);
-  Blynk.connect();
 #endif
 
 #ifdef PEDALINO_TELNET_DEBUG
@@ -203,7 +208,7 @@ void loop()
       WIFI_LED_OFF();
     }
   }
-#ifndef NOWIFI
+#ifdef WIFI
   else
     // led always on if connected to an AP or one or more client connected the the internal AP
     switch (WiFi.getMode()) {

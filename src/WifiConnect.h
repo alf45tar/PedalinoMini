@@ -35,7 +35,7 @@
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32
-#define WIFI_LED        GPIO_NUM_15
+#define WIFI_LED        2
 #define WIFI_LED_OFF()  digitalWrite(WIFI_LED, LOW)
 #define WIFI_LED_ON()   digitalWrite(WIFI_LED, HIGH)
 #endif
@@ -43,6 +43,7 @@
 #ifdef WIFI
 
 void wifi_connect();
+void blynk_connect();
 
 void save_wifi_credentials(String ssid, String password)
 {
@@ -175,6 +176,9 @@ void WiFiEvent(WiFiEvent_t event) {
       // Set incoming OSC messages port
       oscUDP.begin(oscLocalPort);
       DPRINTLN("OSC server started");
+
+      // Connect to Blynk Cloud
+      blynk_connect();
       break;
 
     case WIFI_EVENT_STAMODE_DHCP_TIMEOUT:
@@ -314,6 +318,9 @@ void WiFiEvent(WiFiEvent_t event) {
       // Set incoming OSC messages port
       oscUDP.begin(oscLocalPort);
       DPRINT("OSC server started\n");
+
+      // Connect to Blynk Cloud
+      blynk_connect();
       break;
 
     case SYSTEM_EVENT_STA_LOST_IP:
