@@ -16,8 +16,8 @@
 #define blynk_refresh(...)
 #else
 
-#define BLYNK_NO_BUILTIN                // Disable built-in analog & digital pin operations
-#define BLYNK_NO_FLOAT                  // Disable float operations
+//#define BLYNK_NO_BUILTIN                // Disable built-in analog & digital pin operations
+//#define BLYNK_NO_FLOAT                  // Disable float operations
 
 #ifdef SERIALDEBUG
 #define BLYNK_PRINT SERIALDEBUG         // Defines the object that is used for printing
@@ -76,34 +76,24 @@
 #define BLYNK_SSID                  V92
 #define BLYNK_PASSWORD              V93
 #define BLYNK_WIFICONNECT           V94
-#define BLYNK_SMARTCONFIG   		V95
+#define BLYNK_SMARTCONFIG   		    V95
 
 #define PRINT_VIRTUAL_PIN(vPin)     { DPRINT("WRITE VirtualPIN %d", vPin); }
 
-const char blynkAuthToken[] = "5975cdd412a04e538531e78e4c15f165";
+const char blynkAuthToken[] = "1790c808239341938eca06280cc9e776";
 WidgetLCD  blynkLCD(V0);
 String     ssid, password;
 
-#ifdef NOLCD
-#define screen_update(...)
-#else
-void screen_update(boolean);
-#endif
-
+void screen_update(bool);
 void update_current_profile_eeprom();
-
-void blynk_config()
-{
-  Blynk.config(blynkAuthToken);
-  Blynk.disconnect();
-}
-
 
 void blynk_connect()
 {
   // Connect to Blynk Cloud
-  if (WiFi.getMode() != WIFI_AP)
+  if (WiFi.getMode() != WIFI_AP) {
+    Blynk.config(blynkAuthToken);
     Blynk.connect();
+  }
 }
 
 inline void blynk_run()
@@ -114,7 +104,7 @@ inline void blynk_run()
 
 void blynk_refresh_bank()
 {
-  //if (Blynk.connected())
+  if (Blynk.connected())
   {
     Blynk.virtualWrite(BLYNK_PROFILE,               currentProfile + 1);
     Blynk.virtualWrite(BLYNK_BANK,                  currentBank + 1);
@@ -130,7 +120,7 @@ void blynk_refresh_bank()
 
 void blynk_refresh_pedal()
 {
-  //if (Blynk.connected())
+  if (Blynk.connected())
   {
     Blynk.virtualWrite(BLYNK_PEDAL_FUNCTION,        pedals[currentPedal].function + 1);
     switch (pedals[currentPedal].mode) {
@@ -178,7 +168,7 @@ void blynk_refresh_pedal()
 
 void blynk_refresh_interface()
 {
-  //if (Blynk.connected())
+  if (Blynk.connected())
   {
     Blynk.virtualWrite(BLYNK_INTERFACE,             currentInterface + 1);
     Blynk.virtualWrite(BLYNK_INTERFACE_MIDIIN,      interfaces[currentInterface].midiIn);
@@ -191,7 +181,7 @@ void blynk_refresh_interface()
 
 void blynk_refresh_tempo()
 {
-  //if (Blynk.connected())
+  if (Blynk.connected())
   {
     switch (currentMidiTimeCode) {
 
@@ -229,7 +219,7 @@ void blynk_refresh_tempo()
 
 void blynk_refresh()
 {
-  //if (Blynk.connected())
+  if (Blynk.connected())
   {
     blynk_refresh_bank();
     blynk_refresh_pedal();
@@ -240,10 +230,8 @@ void blynk_refresh()
 
 BLYNK_CONNECTED() {
   // This function is called when hardware connects to Blynk Cloud or private server.
-  DPRINTLN("Connected to Blynk");
-  blynk_refresh();
-   // This function is called when hardware connects to Blynk Cloud or private server.
   DPRINTLN("Connected to Blynk Cloud");
+  blynk_refresh();
   blynkLCD.clear();
   Blynk.virtualWrite(BLYNK_WIFICONNECT, 0);
   Blynk.virtualWrite(BLYNK_SCANWIFI, 0);

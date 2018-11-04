@@ -8,12 +8,7 @@
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
-
-#ifdef NOLCD
-#define screen_info(...)
-#else
 void screen_info(byte, byte, byte, byte);
-#endif
 
 //
 //  Autosensing setup
@@ -132,29 +127,23 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     case PED_NOTE_ON_OFF:
 
       if (on_off && value > 0) {
-#ifdef DEBUG_PEDALINO
-        DPRINT("     NOTE ON     Note %d     Velocity %d     Channel %d", code, value, channel);
-#else
-        if (interfaces[PED_USBMIDI].midiOut)    USB_MIDI.sendNoteOn(code, value, channel);
-#endif
-        if (interfaces[PED_DINMIDI].midiOut)    DIN_MIDI.sendNoteOn(code, value, channel);
-        if (interfaces[PED_RTPMIDI].midiOut ||
-            interfaces[PED_IPMIDI].midiOut  ||
-            interfaces[PED_BLEMIDI].midiOut ||
-            interfaces[PED_OSC].midiOut)        ESP_MIDI.sendNoteOn(code, value, channel);
+        DPRINT("     NOTE ON     Note %d     Velocity %d     Channel %d\n", code, value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendNoteOn(code, value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendNoteOn(code, value, channel);
+        AppleMidiSendNoteOn(code, value, channel);
+        ipMIDISendNoteOn(code, value, channel);
+        BLESendNoteOn(code, value, channel);
+        OSCSendNoteOn(code, value, channel);
         screen_info(midi::NoteOn, code, value, channel);
       }
       else {
-#ifdef DEBUG_PEDALINO
-        DPRINT("     NOTE OFF    Note %d     Velocity %d     Channel %d", code, value, channel);
-#else
-        if (interfaces[PED_USBMIDI].midiOut)    USB_MIDI.sendNoteOff(code, value, channel);
-#endif
-        if (interfaces[PED_DINMIDI].midiOut)    DIN_MIDI.sendNoteOff(code, value, channel);
-        if (interfaces[PED_RTPMIDI].midiOut ||
-            interfaces[PED_IPMIDI].midiOut  ||
-            interfaces[PED_BLEMIDI].midiOut ||
-            interfaces[PED_OSC].midiOut)        ESP_MIDI.sendNoteOff(code, value, channel);
+        DPRINT("     NOTE OFF    Note %d     Velocity %d     Channel %d\n", code, value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendNoteOff(code, value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendNoteOff(code, value, channel);
+        AppleMidiSendNoteOff(code, value, channel);
+        ipMIDISendNoteOff(code, value, channel);
+        BLESendNoteOff(code, value, channel);
+        OSCSendNoteOff(code, value, channel);
         screen_info(midi::NoteOff, code, value, channel);
       }
       break;
@@ -162,16 +151,13 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     case PED_CONTROL_CHANGE:
 
       if (on_off) {
-#ifdef DEBUG_PEDALINO
-        DPRINT("     CONTROL CHANGE     Code %d     Value %d     Channel %d", code, value, channel);
-#else
-        if (interfaces[PED_USBMIDI].midiOut)    USB_MIDI.sendControlChange(code, value, channel);
-#endif
-        if (interfaces[PED_DINMIDI].midiOut)    DIN_MIDI.sendControlChange(code, value, channel);
-        if (interfaces[PED_RTPMIDI].midiOut ||
-            interfaces[PED_IPMIDI].midiOut  ||
-            interfaces[PED_BLEMIDI].midiOut ||
-            interfaces[PED_OSC].midiOut)        ESP_MIDI.sendControlChange(code, value, channel);
+        DPRINT("     CONTROL CHANGE     Code %d     Value %d     Channel %d\n", code, value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(code, value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(code, value, channel);
+        AppleMidiSendControlChange(code, value, channel);
+        ipMIDISendControlChange(code, value, channel);
+        BLESendControlChange(code, value, channel);
+        OSCSendControlChange(code, value, channel);
         screen_info(midi::ControlChange, code, value, channel);
       }
       break;
@@ -179,16 +165,13 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     case PED_PROGRAM_CHANGE:
 
       if (on_off) {
-#ifdef DEBUG_PEDALINO
         DPRINT("     PROGRAM CHANGE     Program %d     Channel %d", code, channel);
-#else
-        if (interfaces[PED_USBMIDI].midiOut)    USB_MIDI.sendProgramChange(code, channel);
-#endif
-        if (interfaces[PED_DINMIDI].midiOut)    DIN_MIDI.sendProgramChange(code, channel);
-        if (interfaces[PED_RTPMIDI].midiOut ||
-            interfaces[PED_IPMIDI].midiOut  ||
-            interfaces[PED_BLEMIDI].midiOut ||
-            interfaces[PED_OSC].midiOut)        ESP_MIDI.sendProgramChange(code, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendProgramChange(code, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendProgramChange(code, channel);
+        AppleMidiSendProgramChange(code, channel);
+        ipMIDISendProgramChange(code, channel);
+        BLESendProgramChange(code, channel);
+        OSCSendProgramChange(code, channel);
         screen_info(midi::ProgramChange, code, 0, channel);
       }
       break;
@@ -197,16 +180,13 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
 
       if (on_off) {
         int bend = map(value, 0, 127, - 8192, 8191);
-#ifdef DEBUG_PEDALINO
         DPRINT("     PITCH BEND     Value %d     Channel %d", bend, channel);
-#else
-        if (interfaces[PED_USBMIDI].midiOut)    USB_MIDI.sendPitchBend(bend, channel);
-#endif
-        if (interfaces[PED_DINMIDI].midiOut)    DIN_MIDI.sendPitchBend(bend, channel);
-        if (interfaces[PED_RTPMIDI].midiOut ||
-            interfaces[PED_IPMIDI].midiOut  ||
-            interfaces[PED_BLEMIDI].midiOut ||
-            interfaces[PED_OSC].midiOut)        ESP_MIDI.sendPitchBend(bend, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendPitchBend(bend, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendPitchBend(bend, channel);
+        AppleMidiSendPitchBend(bend, channel);
+        ipMIDISendPitchBend(bend, channel);
+        BLESendPitchBend(bend, channel);
+        OSCSendPitchBend(bend, channel);
         screen_info(midi::PitchBend, bend, 0, channel);
       }
       break;
@@ -246,8 +226,7 @@ void midi_refresh(bool send = true)
                 if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;        // invert the value
                 value = map_digital(i, input);                                            // apply the digital map function to the value
 
-                DPRINTLN("");
-                DPRINT("Pedal %2d   input %d output %d", i + 1, input, value);
+                DPRINT("\nPedal %2d   input %d output %d", i + 1, input, value);
 
                 b = (currentBank + 2) % BANKS;
                 if (value == LOW)                                                         // LOW = pressed, HIGH = released
@@ -273,8 +252,7 @@ void midi_refresh(bool send = true)
                   if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;      // invert the value
                   value = map_digital(i, input);                                          // apply the digital map function to the value
 
-                  DPRINTLN("");
-                  DPRINT("Pedal %2d   input %d output %d", i + 1, input, value);
+                  DPRINT("\nPedal %2d   input %d output %d", i + 1, input, value);
 
                   b = currentBank;
                   if (value == LOW) {                                                     // LOW = pressed, HIGH = released
@@ -297,8 +275,7 @@ void midi_refresh(bool send = true)
                   if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;      // invert the value
                   value = map_digital(i, input);                                          // apply the digital map function to the value
 
-                  DPRINTLN("");
-                  DPRINT("Pedal %2d   input %d output %d", i + 1, input, value);
+                  DPRINT("\nPedal %2d   input %d output %d", i + 1, input, value);
 
                   b = (currentBank + 1) % BANKS;
                   if (value == LOW) {                                                      // LOW = pressed, HIGH = released
@@ -350,8 +327,7 @@ void midi_refresh(bool send = true)
 
                   case MD_UISwitch::KEY_PRESS:
 
-                    DPRINTLN("");
-                    DPRINT("Pedal %2d   SINGLE PRESS ", i + 1);
+                    DPRINT("\nPedal %2d   SINGLE PRESS ", i + 1);
 
                     if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel);
                     if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel, false);
@@ -360,8 +336,7 @@ void midi_refresh(bool send = true)
 
                   case MD_UISwitch::KEY_DPRESS:
 
-                    DPRINTLN("");
-                    DPRINT("Pedal %2d   DOUBLE PRESS ", i + 1);
+                    DPRINT("\nPedal %2d   DOUBLE PRESS ", i + 1);
 
                     if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
                     if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, false);
@@ -370,8 +345,7 @@ void midi_refresh(bool send = true)
 
                   case MD_UISwitch::KEY_LONGPRESS:
 
-                    DPRINTLN("");
-                    DPRINT("Pedal %2d   LONG   PRESS ", i + 1);
+                    DPRINT("\nPedal %2d   LONG   PRESS ", i + 1);
 
                     if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel);
                     if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel, false);
@@ -397,10 +371,10 @@ void midi_refresh(bool send = true)
           if (pedals[i].autoSensing) {                              // continuos calibration
 
             if (pedals[i].expZero > round(1.1 * input)) {
-              DPRINTLN("Pedal %2d calibration min %d", i + 1, round(1.1 * input));
+              DPRINT("Pedal %2d calibration min %d\n", i + 1, round(1.1 * input));
             }
             if (pedals[i].expMax < round(0.9 * input)) {
-              DPRINTLN("Pedal %2d calibration max %d", i + 1, round(0.9 * input));
+              DPRINT("Pedal %2d calibration max %d\n", i + 1, round(0.9 * input));
             }
 
             pedals[i].expZero = _min(pedals[i].expZero, round(1.1 * input));
@@ -413,15 +387,12 @@ void midi_refresh(bool send = true)
           if (pedals[i].analogPedal->hasChanged())                  // if the value changed since last time
           {
             value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
-            double velocity = ((double)value - pedals[i].pedalValue[0]) / (millis() - pedals[i].lastUpdate[0]);
-
-            DPRINTLN("");
-            DPRINT("Pedal %2d   input %d output %d velocity %d", i + 1, input, value, velocity);
-
+            double velocity = (1.0 * (value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
+            DPRINT("\nPedal %2d   input %d output %d velocity %.2f", i + 1, input, value, velocity);
             if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel);
             if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false);
             pedals[i].pedalValue[0] = value;
-            pedals[i].lastUpdate[0] = millis();
+            pedals[i].lastUpdate[0] = micros();
             lastUsedPedal = i;
           }
           break;
@@ -557,7 +528,7 @@ void controller_setup()
 
               // After setting up the button, setup the Bounce instance
               pedals[i].debouncer[1]->attach(PIN_A(i));
-              DPRINT(" A%d", i);
+              DPRINT(" A%d", PIN_A(i));
               break;
           }
           pedals[i].debouncer[p]->interval(DEBOUNCE_INTERVAL);
@@ -632,7 +603,7 @@ void controller_setup()
 
       case PED_LADDER:
         pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt, ARRAY_SIZE(kt));
-        DPRINT("   Pin A%d", i);
+        DPRINT("   Pin A%d", PIN_A(i));
         pedals[i].footSwitch[0]->begin();
         pedals[i].footSwitch[0]->setDebounceTime(DEBOUNCE_INTERVAL);
         if (pedals[i].function == PED_MIDI) {

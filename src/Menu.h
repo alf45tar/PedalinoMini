@@ -1138,3 +1138,243 @@ void menu_run()
 
 
 #endif  // NOLCD
+
+void menu_navigation()
+{
+  MD_UISwitch::keyResult_t k1;    // Close status between T and S
+  MD_UISwitch::keyResult_t k2;    // Close status between R and S
+  byte                     k;     /*       k1      k2
+                                     0 =  Open    Open
+                                     1 = Closed   Open
+                                     2 =  Open   Closed
+                                     3 = Closed  Closed */
+
+  for (byte i = 0; i < PEDALS; i++) {
+    if (pedals[i].function == PED_MIDI) continue;
+
+    k = 0;
+    k1 = MD_UISwitch::KEY_NULL;
+    k2 = MD_UISwitch::KEY_NULL;
+    if (pedals[i].footSwitch[0] != nullptr) k1 = pedals[i].footSwitch[0]->read();
+    if (pedals[i].footSwitch[1] != nullptr) k2 = pedals[i].footSwitch[1]->read();
+    if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) && k2 == MD_UISwitch::KEY_NULL) k = 1;
+    if ((k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS) && k1 == MD_UISwitch::KEY_NULL) k = 2;
+    if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
+        (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
+    if (k > 0 && (k1 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_PRESS)) {
+      DPRINTLN("Press %d %d %d\n", k, k1, k2)
+      // Single press
+      if (pedals[i].mode == PED_LADDER) {
+        if (k1 != MD_UISwitch::KEY_NULL) {
+          switch (pedals[i].footSwitch[0]->getKey()) {
+/*
+            case 'S':
+              return MD_Menu::NAV_SEL;
+              break;
+
+            case 'L':
+              if (M.isInMenu())
+                return MD_Menu::NAV_ESC;
+              else if (MTC.isPlaying()) 
+                MTC.sendStop();
+              else
+                MTC.sendPosition(0, 0, 0, 0);
+              return MD_Menu::NAV_NULL;
+              break;
+
+            case 'U':
+              if (M.isInMenu())
+                return MD_Menu::NAV_INC;
+              else if (currentBank < BANKS - 1) currentBank++;
+              return MD_Menu::NAV_NULL;
+              break;
+
+            case 'D':
+              if (M.isInMenu())
+                return MD_Menu::NAV_DEC;
+              else if (currentBank > 0) currentBank--;
+              return MD_Menu::NAV_NULL;
+              break;
+
+            case 'R':
+              if (M.isInMenu())
+                return MD_Menu::NAV_NULL;
+              else if (MTC.isPlaying())
+                MTC.sendStop();
+              else if (MTC.getFrames() == 0 && MTC.getSeconds() == 0 && MTC.getMinutes() == 0 && MTC.getHours() == 0)
+                MTC.sendPlay();
+              else
+                MTC.sendContinue();
+              return MD_Menu::NAV_NULL;
+              break;
+*/
+          }
+        }
+      }
+      else {
+        switch (pedals[i].function) {
+        case PED_BANK_PLUS:
+          switch (k) {
+            case 1:
+              if (currentBank < BANKS - 1) currentBank++;
+              break;
+            case 2:
+              if (currentBank > 0) currentBank--;
+              break;
+            case 3:
+              break;
+          }
+          break;
+
+        case PED_BANK_MINUS:
+          switch (k) {
+            case 1:
+              if (currentBank > 0) currentBank--;
+              break;
+            case 2:
+              if (currentBank < BANKS - 1) currentBank++;
+              break;
+            case 3:
+              break;
+          }
+          break;
+
+        case PED_START:
+          switch (k) {
+            case 1:
+              MTC.sendPosition(0, 0, 0, 0);
+              MTC.sendPlay();
+              break;
+            case 2:
+              bpm = MTC.tapTempo();
+              break;
+            case 3:
+              break;
+          }
+          break;
+
+
+        case PED_STOP:
+          switch (k) {
+            case 1:
+              MTC.sendStop();
+              break;
+            case 2:
+              bpm = MTC.tapTempo();
+              if (bpm > 0) MTC.setBpm(bpm);
+              break;
+            case 3:
+              break;
+          }
+          break;
+
+        case PED_CONTINUE:
+          switch (k) {
+            case 1:
+              MTC.sendContinue();
+              break;
+            case 2:
+              bpm = MTC.tapTempo();
+              break;
+            case 3:
+              break;
+          }
+          break;
+
+        case PED_TAP:
+          switch (k) {
+            case 1:
+              bpm = MTC.tapTempo();
+              if (bpm > 0) MTC.setBpm(bpm);
+              break;
+            case 2:
+              MTC.sendPlay();
+              break;
+            case 3:
+              MTC.sendStop();
+              break;
+          }
+          break;
+/*
+        case PED_MENU:
+          switch (k) {
+            case 1:
+              return MD_Menu::NAV_INC;
+            case 2:
+              return MD_Menu::NAV_DEC;
+            case 3:
+              return MD_Menu::NAV_ESC;
+          }
+          break;
+
+        case PED_CONFIRM:
+          return MD_Menu::NAV_SEL;
+          break;
+        case PED_ESCAPE:
+          return MD_Menu::NAV_ESC;
+          break;
+        case PED_NEXT:
+          return MD_Menu::NAV_INC;
+          break;
+        case PED_PREVIOUS:
+          return MD_Menu::NAV_DEC;
+          break;
+*/
+        }
+      }
+    }
+
+    // Double press, long press and repeat
+    if (pedals[i].footSwitch[0] != nullptr)
+      switch (k1) {
+        case MD_UISwitch::KEY_NULL:
+          pedals[i].footSwitch[0]->setDoublePressTime(300);
+          pedals[i].footSwitch[0]->setLongPressTime(500);
+          pedals[i].footSwitch[0]->setRepeatTime(500);
+          pedals[i].footSwitch[0]->enableDoublePress(true);
+          pedals[i].footSwitch[0]->enableLongPress(true);
+          break;
+        case MD_UISwitch::KEY_RPTPRESS:
+          pedals[i].footSwitch[0]->setDoublePressTime(0);
+          pedals[i].footSwitch[0]->setLongPressTime(0);
+          pedals[i].footSwitch[0]->setRepeatTime(10);
+          pedals[i].footSwitch[0]->enableDoublePress(false);
+          pedals[i].footSwitch[0]->enableLongPress(false);
+          break;
+        case MD_UISwitch::KEY_DPRESS:
+          //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_SEL;
+          break;
+        case MD_UISwitch::KEY_LONGPRESS:
+          //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_ESC;
+          break;
+        case MD_UISwitch::KEY_PRESS:
+          break;
+      }
+
+    if (pedals[i].footSwitch[1] != nullptr)
+      switch (k2) {
+        case MD_UISwitch::KEY_NULL:
+          pedals[i].footSwitch[1]->setDoublePressTime(300);
+          pedals[i].footSwitch[1]->setLongPressTime(500);
+          pedals[i].footSwitch[1]->setRepeatTime(500);
+          pedals[i].footSwitch[1]->enableDoublePress(true);
+          pedals[i].footSwitch[1]->enableLongPress(true);
+          break;
+        case MD_UISwitch::KEY_RPTPRESS:
+          pedals[i].footSwitch[1]->setDoublePressTime(0);
+          pedals[i].footSwitch[1]->setLongPressTime(0);
+          pedals[i].footSwitch[1]->setRepeatTime(10);
+          pedals[i].footSwitch[1]->enableDoublePress(false);
+          pedals[i].footSwitch[1]->enableLongPress(false);
+          break;
+        case MD_UISwitch::KEY_DPRESS:
+          //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_SEL;
+          break;
+        case MD_UISwitch::KEY_LONGPRESS:
+          //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_ESC;
+          break;
+        case MD_UISwitch::KEY_PRESS:
+          break;
+      }
+  }
+}

@@ -60,17 +60,19 @@
 #endif
 
 #include "Pedalino.h"
-#include "Controller.h"
 #include "Config.h"
-#include "Display.h"
+#include "DisplayOLED.h"
 #include "OTAUpdate.h"
 #include "BLEMidi.h"
 #include "UdpMidiOut.h"
 #include "SerialMidi.h"
 #include "UdpMidiIn.h"
+#include "Controller.h"
 #include "WebConfig.h"
 #include "WifiConnect.h"
 #include "BlynkRPC.h"
+#include "DisplayLCD.h"
+#include "Menu.h"
 
 #ifndef LED_BUILTIN
 #define LED_BUILTIN    2
@@ -158,7 +160,6 @@ void setup()
   autosensing_setup();
   controller_setup();
   mtc_setup();
-  blynk_config();
 
   pinMode(WIFI_LED, OUTPUT);
 
@@ -177,11 +178,6 @@ void setup()
   WiFi.persistent(false);
   WiFi.onEvent(WiFiEvent);
   wifi_connect();
-#endif
-
-#ifdef BLYNK
-  // Connect to Blynk
-  Blynk.config(blynkAuthToken);
 #endif
 
 #ifdef PEDALINO_TELNET_DEBUG
@@ -223,6 +219,8 @@ void loop()
         break;
     }
 #endif
+
+  menu_navigation();
 
   // Check whether the input has changed since last time, if so, send the new value over MIDI
   midi_refresh();

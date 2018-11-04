@@ -130,17 +130,19 @@ void load_factory_default()
     pedals[11].mode = PED_MOMENTARY2;
     pedals[12].mode = PED_MOMENTARY3;
   */
+  pedals[0].function = PED_BANK_PLUS;
+  pedals[0].mode     = PED_MOMENTARY3;
   pedals[5].function = PED_MIDI;
   pedals[5].mode = PED_ANALOG;
 
-  for (byte i = 0; i < INTERFACES; i++)
-    interfaces[i] = {
-    PED_ENABLE,  // MIDI IN
-    PED_ENABLE,  // MIDI OUT
-    PED_DISABLE, // MIDI THRU
-    PED_ENABLE,  // MIDI routing
-    PED_DISABLE  // MIDI clock
-  };
+  for (byte i = 0; i < INTERFACES; i++) 
+    {
+      interfaces[i].midiIn      = PED_ENABLE;
+      interfaces[i].midiOut     = PED_ENABLE;
+      interfaces[i].midiThru    = PED_DISABLE;
+      interfaces[i].midiRouting = PED_ENABLE;
+      interfaces[i].midiClock   = PED_DISABLE;
+    };
 
 #ifndef NOLCD
   for (byte c = 0; c < IR_CUSTOM_CODES; c++)
