@@ -142,15 +142,7 @@ void WiFiEvent(WiFiEvent_t event) {
       // Start firmawre update via HTTP (connect to http://pedalino.local/update)
       httpUpdater.setup(&httpServer);
 
-#ifdef WEBCONFIG
-      httpServer.on("/", http_handle_root);
-      httpServer.on("/live", http_handle_live);
-      httpServer.on("/banks", http_handle_banks);
-      httpServer.on("/pedals", http_handle_pedals);
-      httpServer.on("/interfaces", http_handle_interfaces);
-      httpServer.on("/options", http_handle_options);
-      httpServer.onNotFound(http_handle_not_found);
-#endif
+      http_setup();
       httpServer.begin();
       MDNS.addService("http", "tcp", 80);
       DPRINTLN("HTTP server started");
@@ -283,17 +275,7 @@ void WiFiEvent(WiFiEvent_t event) {
       ota_begin(host);
       DPRINT("OTA update started\n");
 
-#ifdef WEBCONFIG
-      httpServer.on("/", http_handle_root);
-      httpServer.on("/live", http_handle_live);
-      httpServer.on("/banks", http_handle_banks);
-      httpServer.on("/pedals", http_handle_pedals);
-      httpServer.on("/interfaces", http_handle_interfaces);
-      httpServer.on("/options", http_handle_options);
-#endif
-      httpServer.on("/update", HTTP_GET, http_handle_update);
-      httpServer.on("/update", HTTP_POST, http_handle_update_file_upload_finish, http_handle_update_file_upload);
-      httpServer.onNotFound(http_handle_not_found);
+      http_setup();
       httpServer.begin();
       MDNS.addService("http", "tcp", 80);
       DPRINTLN("HTTP server started");

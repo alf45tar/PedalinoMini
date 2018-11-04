@@ -31,6 +31,7 @@ WebServer               httpServer(80);
 #ifdef WEBCONFIG
 
 String  theme = "bootstrap";
+String  alert = "";
 String  bank  = "1";
 
 String get_top_page(byte p = 0) {
@@ -84,11 +85,21 @@ String get_top_page(byte p = 0) {
   page += F("<a class='nav-link' href='/options'>Options</a>");
   page += F("</li>");
   page += F("</ul>");
-  page += F("<form class='form-inline my-2 my-lg-0'>");
-  page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
-  page += F("</form>");
+  //page += F("<form class='form-inline my-2 my-lg-0'>");
+  //page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
+  //page += F("</form>");
   page += F("</div>");
   page += F("</nav>");
+
+  if (alert != "") {
+    page += F("<div class='alert alert-success alert-dismissible fade show' role='alert'>");
+    page += alert;
+    page += F("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>");
+    page += F("<span aria-hidden='true'>&times;</span>");
+    page += F("</button>");
+    page += F("</div>");
+    alert = "";
+  }
 
   return page;
 }
@@ -266,7 +277,7 @@ String get_banks_page() {
 
   page += F("<table class='table-responsive-sm table-borderless'>");
   page += F("<tbody><tr><td>Pedal</td><td>Message</td><td>Channel</td><td>Code</td><td>Value 1</td><td>Value 2</td><td>Value 3</td></tr>");
-  for (unsigned int i = 1; i <= 16; i++) {
+  for (unsigned int i = 1; i <= PEDALS; i++) {
     page += F("<tr align='center' valign='center'>");
 
     page += F("<td>");
@@ -340,6 +351,7 @@ String get_pedals_page() {
   page += get_top_page(3);
 
   page += F("<p></p>");
+  page += F("<form method='post'>");
   page += F("<div class='row'>");
   page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>Pedal</span>");
@@ -365,7 +377,7 @@ String get_pedals_page() {
   page += F("</div>");
   page += F("<p></p>");
 
-  for (unsigned int i = 1; i <= 16; i++) {
+  for (unsigned int i = 1; i <= PEDALS; i++) {
     page += F("<div class='row'>");
 
     page += F("<div class='col-1'>");
@@ -375,7 +387,9 @@ String get_pedals_page() {
     page += F("<div class='col-1'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='autoCheck");
-    page += String(i) + F("' name='autosensing") + String(i) + F("'>");
+    page += String(i) + F("' name='autosensing") + String(i) + F("'");
+    if (pedals[i-1].autoSensing) page += F(" checked");
+    page += F(">");
     page += F("<label class='custom-control-label' for='autoCheck");
     page += String(i) + F("'></label>");
     page += F("</div>");
@@ -387,14 +401,30 @@ String get_pedals_page() {
     page += String(i);
     page += F("'>");
     page += F("<option>None</option>");
-    page += F("<option>Momentary</option>");
-    page += F("<option>Latch</option>");
-    page += F("<option>Analog</option>");
-    page += F("<option>Jog Wheel</option>");
-    page += F("<option>Momentary 3</option>");
-    page += F("<option>Momentary 2</option>");
-    page += F("<option>Latch 2</option>");
-    page += F("<option>Ladder</option>");
+    page += F("<option");
+    if (pedals[i-1].mode == PED_MOMENTARY1) page += F(" selected");
+    page += F(">Momentary</option>");
+    page += F("<option");
+    if (pedals[i-1].mode == PED_LATCH1) page += F(" selected");
+    page += F(">Latch</option>");
+    page += F("<option");
+    if (pedals[i-1].mode == PED_ANALOG) page += F(" selected");
+    page += F(">Analog</option>");
+    page += F("<option");
+    if (pedals[i-1].mode == PED_JOG_WHEEL) page += F(" selected");
+    page += F(">Jog Wheel</option>");
+    page += F("<option");
+    if (pedals[i-1].mode == PED_MOMENTARY2) page += F(" selected");
+    page += F(">Momentary 2</option>");
+    page += F("<option");
+    if (pedals[i-1].mode == PED_MOMENTARY3) page += F(" selected");
+    page += F(">Momentary 3</option>");
+    page += F("<option");
+    if (pedals[i-1].mode == PED_LATCH2) page += F(" selected");
+    page += F(">Latch 2</option>");
+    page += F("<option");
+    if (pedals[i-1].mode == PED_LADDER) page += F(" selected");
+    page += F(">Ladder</option>");
     page += F("</select>");
     page += F("</div>");
     page += F("</div>");
@@ -423,7 +453,12 @@ String get_pedals_page() {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='singleCheck");
-    page += String(i) + F("' name='singlepress") + String(i) + F("'>");
+    page += String(i) + F("' name='singlepress") + String(i) + F("'");
+    if (pedals[i-1].pressMode == PED_PRESS_1   ||
+        pedals[i-1].pressMode == PED_PRESS_1_2 ||
+        pedals[i-1].pressMode == PED_PRESS_1_L ||
+        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
+    page += F(">");
     page += F("<label class='custom-control-label' for='singleCheck");
     page += String(i) + F("'></label>");
     page += F("</div>");
@@ -432,7 +467,12 @@ String get_pedals_page() {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='doubleCheck");
-    page += String(i) + F("' name='doublepress") + String(i) + F("'>");
+    page += String(i) + F("' name='doublepress") + String(i) + F("'");
+    if (pedals[i-1].pressMode == PED_PRESS_2   ||
+        pedals[i-1].pressMode == PED_PRESS_1_2 ||
+        pedals[i-1].pressMode == PED_PRESS_2_L || 
+        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
+    page += F(">");
     page += F("<label class='custom-control-label' for='doubleCheck");
     page += String(i) + F("'></label>");
     page += F("</div>");
@@ -441,7 +481,12 @@ String get_pedals_page() {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='longCheck");
-    page += String(i) + F("' name='longpress") + String(i) + F("'>");
+    page += String(i) + F("' name='longpress") + String(i) + F("'");
+    if (pedals[i-1].pressMode == PED_PRESS_L   ||
+        pedals[i-1].pressMode == PED_PRESS_1_L ||
+        pedals[i-1].pressMode == PED_PRESS_2_L ||
+        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
+    page += F(">");
     page += F("<label class='custom-control-label' for='longCheck");
     page += String(i) + F("'></label>");
     page += F("</div>");
@@ -449,6 +494,13 @@ String get_pedals_page() {
 
     page += F("</div>");
   }
+
+  page += F("<div class='form-group row'>");
+  page += F("<div class='col-2'>");
+  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
 
   page += get_footer_page();
 
@@ -462,6 +514,7 @@ String get_interfaces_page() {
   page += get_top_page(4);
 
   page += F("<p></p>");
+  page += F("<form method='post'>");
   page += F("<div class='row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
@@ -473,7 +526,7 @@ String get_interfaces_page() {
   page += F("</div>");
   page += F("<p></p>");
 
-  page += F("<div class='row'>");
+  page += F("<div class='form-group row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -487,7 +540,7 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
-  page += F("<div class='row'>");
+  page += F("<div class='form-group row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -501,7 +554,7 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
-  page += F("<div class='row'>");
+  page += F("<div class='form-group row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -515,7 +568,7 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
-  page += F("<div class='row'>");
+  page += F("<div class='form-group row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -529,7 +582,7 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
-  page += F("<div class='row'>");
+  page += F("<div class='form-group row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -543,6 +596,13 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
+
+  page += F("<div class='form-group row'>");
+  page += F("<div class='col-2'>");
+  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
 
   page += get_footer_page();
 
@@ -594,6 +654,7 @@ void http_handle_pedals() {
 
 void http_handle_interfaces() {
   if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
+  httpServer.sendHeader("Connection", "close");
   httpServer.send(200, "text/html", get_interfaces_page());
 }
 
@@ -602,8 +663,48 @@ void http_handle_options() {
   httpServer.send(200, "text/html", get_options_page());
 }
 
-void http_handle_interfaces_post() {
+void http_handle_post_pedals() {
   
+  String a;
+  String checked("on");
+  
+  httpServer.sendHeader("Connection", "close");
+  for (unsigned int i = 0; i < PEDALS; i++) {
+    a = httpServer.arg(String("autosensing") + String(i+1));
+    pedals[i].autoSensing = (a == checked) ? PED_ENABLE : PED_DISABLE;
+
+    
+  }
+  blynk_refresh();
+  alert = "Saved";
+  httpServer.send(200, "text/html", get_pedals_page());
+}
+
+void http_handle_post_interfaces() {
+  
+  String a;
+  String checked("on");
+  
+  httpServer.sendHeader("Connection", "close");
+  for (unsigned int i = 0; i < INTERFACES; i++) {
+    a = httpServer.arg(String("in") + String(i+1));
+    interfaces[i].midiIn = (a == checked) ? PED_ENABLE : PED_DISABLE;
+
+    a = httpServer.arg(String("out") + String(i+1));
+    interfaces[i].midiOut = (a == checked) ? PED_ENABLE : PED_DISABLE;
+
+    a = httpServer.arg(String("thru") + String(i+1));
+    interfaces[i].midiThru = (a == checked) ? PED_ENABLE : PED_DISABLE;
+
+    a = httpServer.arg(String("routing") + String(i+1));
+    interfaces[i].midiRouting = (a == checked) ? PED_ENABLE : PED_DISABLE;
+
+    a = httpServer.arg(String("clock") + String(i+1));
+    interfaces[i].midiClock = (a == checked) ? PED_ENABLE : PED_DISABLE;
+  }
+  blynk_refresh();
+  alert = "Saved";
+  httpServer.send(200, "text/html", get_interfaces_page());
 }
 
 #endif  // WEBCONFIG
@@ -714,7 +815,6 @@ void http_handle_update_file_upload() {
   }
 }
 
-
 void http_handle_not_found() {
 
   String message = "File Not Found\n\n";
@@ -732,4 +832,21 @@ void http_handle_not_found() {
   }
 
   httpServer.send(404, "text/plain", message);
+}
+
+void http_setup() {
+
+#ifdef WEBCONFIG
+  httpServer.on("/", http_handle_root);
+  httpServer.on("/live", http_handle_live);
+  httpServer.on("/banks", http_handle_banks);
+  httpServer.on("/pedals", HTTP_GET, http_handle_pedals);
+  httpServer.on("/pedals", HTTP_POST, http_handle_post_pedals);
+  httpServer.on("/interfaces", HTTP_GET, http_handle_interfaces);
+  httpServer.on("/interfaces", HTTP_POST, http_handle_post_interfaces);
+  httpServer.on("/options", http_handle_options);
+#endif
+  httpServer.on("/update", HTTP_GET, http_handle_update);
+  httpServer.on("/update", HTTP_POST, http_handle_update_file_upload_finish, http_handle_update_file_upload);
+  httpServer.onNotFound(http_handle_not_found);
 }

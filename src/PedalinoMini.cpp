@@ -222,6 +222,8 @@ void loop()
 
   menu_navigation();
 
+  screen_update();
+
   // Check whether the input has changed since last time, if so, send the new value over MIDI
   midi_refresh();
 

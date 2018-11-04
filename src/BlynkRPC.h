@@ -100,6 +100,8 @@ inline void blynk_run()
 {
   if (Blynk.connected())
     Blynk.run();
+  else if (WiFi.isConnected())
+    blynk_connect();
 }
 
 void blynk_refresh_bank()

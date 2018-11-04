@@ -175,8 +175,9 @@ byte wifi_icon[] = {
   B10101
 };
 
-const char bar1[]  = {49, 50, 51, 52, 53, 54, 55, 56, 57, 48};
-const char bar2[]  = { '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'};
+const char bar1[]  = {49, 50, 51, 52, 53, 54, 55, 56, 57, 58};
+const char bar2[]  = {'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o'};
+//const char bar2[]  = {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#'};
 
 byte m1, m2, m3, m4;
 unsigned long endMillis2;
@@ -309,8 +310,10 @@ void screen_update(bool force = false) {
       lcdSetCursor(0, 1);
       lcdPrint(buf);
       if (p > 0) lcdWrite((byte)(p - 1));
-      for (byte i = 0; i < 10 - f ; i++)
+      for (byte i = 0; i < 10 - f ; i++) {
         lcdPrint(" ");
+        buf[strlen(buf)] = ' ';
+      } 
       // replace unprintable chars
       for (byte i = 0; i < LCD_COLS; i++)
         buf[i] = (buf[i] == -1) ? '#' : buf[i];

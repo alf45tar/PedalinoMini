@@ -252,7 +252,7 @@ bool powersaver = false;
 #if defined(ARDUINO_ARCH_ESP8266) && defined(DEBUG_ESP_PORT)
 #define SERIALDEBUG       DEBUG_ESP_PORT
 #define DPRINT(...)       DEBUG_ESP_PORT.printf( __VA_ARGS__ )
-#define DPRINTLN(...)     DEBUG_ESP_PORT.printf( __VA_ARGS__ ); DEBUG_ESP_PORT.println();
+#define DPRINTLN(...)     { DEBUG_ESP_PORT.printf( __VA_ARGS__ ); DEBUG_ESP_PORT.println(); }
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32
@@ -262,7 +262,7 @@ bool powersaver = false;
 //#define DPRINT(...)       ESP_LOGI(LOG_TAG, __VA_ARGS__)
 //#define DPRINTLN(...)     ESP_LOGI(LOG_TAG, __VA_ARGS__)
 #define DPRINT(...)       SERIALDEBUG.printf(__VA_ARGS__)
-#define DPRINTLN(...)     SERIALDEBUG.printf( __VA_ARGS__ ); SERIALDEBUG.println();
+#define DPRINTLN(...)     { SERIALDEBUG.printf( __VA_ARGS__ ); SERIALDEBUG.println(); }
 #endif
 
 #ifdef PEDALINO_TELNET_DEBUG
