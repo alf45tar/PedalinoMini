@@ -96,6 +96,12 @@ void blynk_connect()
   }
 }
 
+void blynk_disconnect()
+{
+  // Disconnect to Blynk Cloud
+  Blynk.disconnect();
+}
+
 inline void blynk_run()
 {
   if (Blynk.connected())

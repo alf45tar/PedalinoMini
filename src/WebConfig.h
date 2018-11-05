@@ -28,6 +28,8 @@ ESP8266HTTPUpdateServer httpUpdater;
 WebServer               httpServer(80);
 #endif
 
+void blynk_disconnect();
+
 #ifdef WEBCONFIG
 
 String  theme = "bootstrap";
@@ -352,33 +354,45 @@ String get_pedals_page() {
 
   page += F("<p></p>");
   page += F("<form method='post'>");
-  page += F("<div class='row'>");
+  page += F("<div class='form-row align-items-center'>");
   page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>Pedal</span>");
+  page += F("<span class='badge badge-primary'>Pedal<br>#</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>Autosensing</span>");
+  page += F("<span class='badge badge-primary'>Auto<br>Sensing</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>Mode</span>");
+  page += F("<span class='badge badge-primary'>Pedal<br>Mode</span>");
   page += F("</div>");
-  page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>Function</span>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>Pedal<br>Function</span>");
   page += F("</div>");
-  page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>Single Press</span>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>Single<br>Press</span>");
   page += F("</div>");
-  page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>Double Press</span>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>Double<br>Press</span>");
   page += F("</div>");
-  page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>Long Press</span>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>Long<br>Press</span>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>Invert<br>Polarity</span>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>Analog<br>Map</span>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>Analog<br>Zero</span>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>Analog<br>Max</span>");
   page += F("</div>");
   page += F("</div>");
   page += F("<p></p>");
 
   for (unsigned int i = 1; i <= PEDALS; i++) {
-    page += F("<div class='row'>");
+    page += F("<div class='form-row align-items-center'>");
 
     page += F("<div class='col-1'>");
     page += String(i);
@@ -391,66 +405,101 @@ String get_pedals_page() {
     if (pedals[i-1].autoSensing) page += F(" checked");
     page += F(">");
     page += F("<label class='custom-control-label' for='autoCheck");
-    page += String(i) + F("'></label>");
+    page += String(i) + F("'></p></label>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='col-2'>");
-    page += F("<div class='form-group'>");
-    page += F("<select class='custom-select-sm' id='mode");
+    //page += F("<div class='form-group'>");
+    page += F("<select class='custom-select custom-select-sm' id='mode");
     page += String(i);
     page += F("'>");
-    page += F("<option>None</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_NONE) + F("'");
+    if (pedals[i-1].mode == PED_NONE) page += F(" selected");
+    page += F(">None</option>");
+    page += F("<option value='");
+    page += String(PED_MOMENTARY1) + F("'");
     if (pedals[i-1].mode == PED_MOMENTARY1) page += F(" selected");
     page += F(">Momentary</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_LATCH1) + F("'");
     if (pedals[i-1].mode == PED_LATCH1) page += F(" selected");
     page += F(">Latch</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_ANALOG) + F("'");
     if (pedals[i-1].mode == PED_ANALOG) page += F(" selected");
     page += F(">Analog</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_JOG_WHEEL) + F("'");
     if (pedals[i-1].mode == PED_JOG_WHEEL) page += F(" selected");
     page += F(">Jog Wheel</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_MOMENTARY2) + F("'");
     if (pedals[i-1].mode == PED_MOMENTARY2) page += F(" selected");
     page += F(">Momentary 2</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_MOMENTARY3) + F("'");
     if (pedals[i-1].mode == PED_MOMENTARY3) page += F(" selected");
     page += F(">Momentary 3</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_LATCH2) + F("'");
     if (pedals[i-1].mode == PED_LATCH2) page += F(" selected");
     page += F(">Latch 2</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_LADDER) + F("'");
     if (pedals[i-1].mode == PED_LADDER) page += F(" selected");
     page += F(">Ladder</option>");
     page += F("</select>");
-    page += F("</div>");
+    //page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-2'>");
-    page += F("<div class='form-group'>");
-    page += F("<select class='custom-select-sm' id='function");
+    page += F("<div class='col-1'>");
+    //page += F("<div class='form-group'>");
+    page += F("<select class='custom-select custom-select-sm' id='function");
     page += String(i);
     page += F("'>");
-    page += F("<option>MIDI</option>");
-    page += F("<option>Bank+</option>");
-    page += F("<option>Bank-</option>");
-    page += F("<option>Start</option>");
-    page += F("<option>Stop</option>");
-    page += F("<option>Continue</option>");
-    page += F("<option>Tap</option>");
-    page += F("<option>Menu</option>");
-    page += F("<option>Confirm</option>");
-    page += F("<option>Excape</option>");
-    page += F("<option>Next</option>");
-    page += F("<option>Previous</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_MIDI) page += F(" selected");
+    page += F(">MIDI</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_BANK_PLUS) page += F(" selected");
+    page += F(">Bank+</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_BANK_MINUS) page += F(" selected");
+    page += F(">Bank-</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_START) page += F(" selected");
+    page += F(">Start</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_STOP) page += F(" selected");
+    page += F(">Stop</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_CONTINUE) page += F(" selected");
+    page += F(">Continue</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_CONTINUE) page += F(" selected");
+    page += F(">Tap</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_MENU) page += F(" selected");
+    page += F(">Menu</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_CONFIRM) page += F(" selected");
+    page += F(">Confirm</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_ESCAPE) page += F(" selected");
+    page += F(">Excape</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_NEXT) page += F(" selected");
+    page += F(">Next</option>");
+    page += F("<option");
+    if (pedals[i-1].function == PED_PREVIOUS) page += F(" selected");
+    page += F(">Previous</option>");
     page += F("</select>");
-    page += F("</div>");
+    //page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-2'>");
+    page += F("<div class='col-1'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='singleCheck");
     page += String(i) + F("' name='singlepress") + String(i) + F("'");
@@ -460,11 +509,11 @@ String get_pedals_page() {
         pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
     page += F(">");
     page += F("<label class='custom-control-label' for='singleCheck");
-    page += String(i) + F("'></label>");
+    page += String(i) + F("'></p></label>");
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-2'>");
+    page += F("<div class='col-1'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='doubleCheck");
     page += String(i) + F("' name='doublepress") + String(i) + F("'");
@@ -474,11 +523,11 @@ String get_pedals_page() {
         pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
     page += F(">");
     page += F("<label class='custom-control-label' for='doubleCheck");
-    page += String(i) + F("'></label>");
+    page += String(i) + F("'></p></label>");
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-2'>");
+    page += F("<div class='col-1'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='longCheck");
     page += String(i) + F("' name='longpress") + String(i) + F("'");
@@ -488,7 +537,57 @@ String get_pedals_page() {
         pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
     page += F(">");
     page += F("<label class='custom-control-label' for='longCheck");
+    page += String(i) + F("'></p></label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<input type='checkbox' class='custom-control-input' id='polarityCheck");
+    page += String(i) + F("' name='polarity") + String(i) + F("'");
+    if (pedals[i-1].invertPolarity) page += F(" checked");
+    page += F(">");
+    page += F("<label class='custom-control-label' for='polarityCheck");
+    page += String(i) + F("'></p></label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='col-1'>");
+    //page += F("<div class='form-group'>");
+    page += F("<select class='custom-select custom-select-sm' id='map");
+    page += String(i);
+    page += F("'>");
+    page += F("<option value='");
+    page += String(PED_LINEAR) + F("'");
+    if (pedals[i-1].mapFunction == PED_LINEAR) page += F(" selected");
+    page += F(">Linear</option>");
+    page += F("<option value='");
+    page += String(PED_LOG) + F("'");
+    if (pedals[i-1].mapFunction == PED_LOG) page += F(" selected");
+    page += F(">Log</option>");
+    page += F("<option value='");
+    page += String(PED_ANTILOG) + F("'");
+    if (pedals[i-1].mapFunction == PED_ANTILOG) page += F(" selected");
+    page += F(">Antilog</option>");  
+    page += F("</select>");
+    //page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<div class='form-group'>");
+    page += F("<label for='minControlRange");
     page += String(i) + F("'></label>");
+    page += F("<input type='range' class='form-control-range' id='minControlRange");
+    page += String(i) + F("' value='0'>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<div class='form-group'>");
+    page += F("<label for='maxControlRange");
+    page += String(i) + F("'></label>");
+    page += F("<input type='range' class='form-control-range' id='maxControlRange");
+    page += String(i) + F("' value='100'>");
     page += F("</div>");
     page += F("</div>");
 
@@ -496,7 +595,7 @@ String get_pedals_page() {
   }
 
   page += F("<div class='form-group row'>");
-  page += F("<div class='col-2'>");
+  page += F("<div class='col-1'>");
   page += F("<button type='submit' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
@@ -673,7 +772,21 @@ void http_handle_post_pedals() {
     a = httpServer.arg(String("autosensing") + String(i+1));
     pedals[i].autoSensing = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
+    a = httpServer.arg(String("mode") + String(i+1));
+    DPRINT("[%s]\n", a.c_str());
+    //pedals[i].mode = (a == "1") ? PED_ENABLE : PED_DISABLE;
     
+    a = httpServer.arg(String("singlepress") + String(i+1));
+    pedals[i].pressMode = (a == checked) ? PED_PRESS_1 : 0;
+
+    a = httpServer.arg(String("doublepress") + String(i+1));
+    pedals[i].pressMode += (a == checked) ? PED_PRESS_2 : 0;
+
+    a = httpServer.arg(String("longpress") + String(i+1));
+    pedals[i].pressMode += (a == checked) ? PED_PRESS_L : 0;
+
+    a = httpServer.arg(String("polarity") + String(i+1));
+    pedals[i].invertPolarity += (a == checked) ? PED_ENABLE : PED_DISABLE;
   }
   blynk_refresh();
   alert = "Saved";
@@ -752,6 +865,9 @@ void http_handle_update_file_upload() {
 
     case UPLOAD_FILE_START:
       {
+      // Disconnect, not to interfere with OTA process
+      blynk_disconnect();
+
       display.clear();
       display.setFont(ArialMT_Plain_10);
       display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);

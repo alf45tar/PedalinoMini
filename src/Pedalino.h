@@ -52,22 +52,23 @@ typedef uint8_t   byte;
 #define PED_NOTE_ON_OFF     2
 #define PED_PITCH_BEND      3
 
-#define PED_MOMENTARY1      0
-#define PED_LATCH1          1
-#define PED_ANALOG          2
-#define PED_JOG_WHEEL       3
-#define PED_MOMENTARY2      4
-#define PED_MOMENTARY3      5
-#define PED_LATCH2          6
-#define PED_LADDER          7
+#define PED_NONE            0
+#define PED_MOMENTARY1      1
+#define PED_LATCH1          2
+#define PED_ANALOG          3
+#define PED_JOG_WHEEL       4
+#define PED_MOMENTARY2      5
+#define PED_MOMENTARY3      6
+#define PED_LATCH2          7
+#define PED_LADDER          8
 
-#define PED_PRESS_1         0
-#define PED_PRESS_2         1
-#define PED_PRESS_L         2
+#define PED_PRESS_1         1
+#define PED_PRESS_2         2
+#define PED_PRESS_L         4
 #define PED_PRESS_1_2       3
-#define PED_PRESS_1_L       4
-#define PED_PRESS_1_2_L     5
+#define PED_PRESS_1_L       5
 #define PED_PRESS_2_L       6
+#define PED_PRESS_1_2_L     7
 
 #define PED_MIDI            0
 #define PED_BANK_PLUS       1
