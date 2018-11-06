@@ -21,7 +21,7 @@ install:
                                 https://github.com/dxinteractive/ResponsiveAnalogRead.git
 
 script:
-    -  platformio ci $PLATFORMIO_CI_EXTRA_ARGS --project-option="lib_deps=Wire" --project-option="board_build.partitions=minimal.csv"
+    -  platformio ci $PLATFORMIO_CI_EXTRA_ARGS --project-option="lib_deps=Wire" --project-option="board_build.partitions=min_spiffs.csv"
     
 deploy-no:
   provider: pages
