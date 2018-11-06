@@ -10,10 +10,11 @@
 
 
 #ifdef NOBLYNK
-#define blynk_config(...)
-#define blynk_connect()
-#define blynk_run(...)
-#define blynk_refresh(...)
+inline void blynk_config() {}
+inline void blynk_connect() {}
+inline void blynk_disconnect() {}
+inline void blynk_run() {}
+inline void blynk_refresh() {}
 #else
 
 //#define BLYNK_NO_BUILTIN                // Disable built-in analog & digital pin operations
@@ -671,6 +672,9 @@ BLYNK_WRITE(BLYNK_SCANWIFI) {
       DPRINTLN("%d network(s) found", networksFound);
       BlynkParamAllocated items(512); // list length, in bytes
       for (int i = 0; i < networksFound; i++) {
+#ifdef ARDUINO_ARCH_ESP8266
+        DPRINTLN("%2d.\n BSSID: %s\n SSID: %s\n Channel: %d\n Signal: %d dBm\n", i + 1, WiFi.BSSIDstr(i).c_str(), WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i));
+#endif
 #ifdef ARDUINO_ARCH_ESP32
         DPRINTLN("%2d.\n BSSID: %s\n SSID: %s\n Channel: %d\n Signal: %d dBm\n Auth Mode: %s", i + 1, WiFi.BSSIDstr(i).c_str(), WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i), translateEncryptionType(WiFi.encryptionType(i)).c_str());
 #endif
@@ -702,7 +706,7 @@ BLYNK_WRITE(BLYNK_SMARTCONFIG) {
   if (smartconfig) {
     smart_config();
     if (auto_reconnect())
-      Blynk.connect();
+      blynk_connect();
   }
 }
 

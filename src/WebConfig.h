@@ -28,6 +28,7 @@ ESP8266HTTPUpdateServer httpUpdater;
 WebServer               httpServer(80);
 #endif
 
+void blynk_refresh();
 void blynk_disconnect();
 
 #ifdef WEBCONFIG
