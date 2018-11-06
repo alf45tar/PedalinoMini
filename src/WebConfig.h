@@ -138,48 +138,101 @@ String get_root_page() {
   page += get_top_page();
 
   page += F("<p></p>");
-  page += F("<h6>Smart wireless MIDI foot controller for guitarists and more</h6>");
+  page += F("<h4 class='display-4'>Smart wireless MIDI foot controller</h4>");
   page += F("<p></p>");
 
+  page += F("<div class='row'>");
+
+  page += F("<div class='col-3'>");
+  page += F("<h3>Hardware</h3>");
   page += F("<dl>");
-  page += F("<dt>Chip ID</dt><dd>");
+  page += F("<dt>Chip</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
-  page += ESP.getChipId();
+  page += String("ESP8266");
 #endif
 #ifdef ARDUINO_ARCH_ESP32
-  page += String((uint32_t)ESP.getEfuseMac());
+  page += String("ESP32");
+#endif
+  page += F("</dd>");
+  page += F("<dt>Chip ID</dt><dd>");
+#ifdef ARDUINO_ARCH_ESP8266
+  page += String(ESP.getChipId(), HEX);
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+  page += String((uint32_t)ESP.getEfuseMac(), HEX);
 #endif
   page += F("</dd>");
   page += F("<dt>Flash Chip ID</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
-  page += ESP.getFlashChipId();
+  page += String(ESP.getFlashChipId(), HEX);
 #endif
 #ifdef ARDUINO_ARCH_ESP32
-  page += String((uint32_t)ESP.getEfuseMac());
+  page += String((uint32_t)ESP.getEfuseMac(), HEX);
 #endif
   page += F("</dd>");
   page += F("<dt>Chip Speed</dt><dd>");
-  page += ESP.getFlashChipSpeed();
-  page += F(" hertz</dd>");
+  page += ESP.getFlashChipSpeed() / 1000000;
+  page += F(" MHz</dd>");
   page += F("<dt>IDE Flash Size</dt><dd>");
-  page += ESP.getFlashChipSize();
-  page += F(" bytes</dd>");
+  page += ESP.getFlashChipSize() / (1024 * 1024);
+  page += F(" MB</dd>");
 #ifdef ARDUINO_ARCH_ESP8266 
   page += F("<dt>Real Flash Size</dt><dd>");
-  page += ESP.getFlashChipRealSize();
-  page += F(" bytes</dd>");
+  page += ESP.getFlashChipRealSize() / (1024 * 1024);
+  page += F(" MB</dd>");
 #endif
-  page += F("<dt>Soft AP IP</dt><dd>");
-  page += WiFi.softAPIP().toString();
+  if (WiFi.getMode() == WIFI_AP) {
+    page += F("<dt>Soft AP IP</dt><dd>");
+    page += WiFi.softAPIP().toString();
+    page += F("</dd>");
+    page += F("<dt>Soft AP MAC</dt><dd>");
+    page += WiFi.softAPmacAddress();
+    page += F("</dd>");
+  }
+  page += F("</div>");
+
+  page += F("<div class='col-3'>");
+  page += F("<h3>Wireless</h3>");
+  page += F("<dt>SSID</dt><dd>");
+  page += wifiSSID;
   page += F("</dd>");
-  page += F("<dt>Soft AP MAC</dt><dd>");
-  page += WiFi.softAPmacAddress();
+  page += F("<dt>BSSID</dt><dd>");
+  page += WiFi.BSSIDstr();
+  page += F("</dd>");
+  page += F("<dt>RSSI</dt><dd>");
+  page += String(WiFi.RSSI());
+  page += F(" dBm</dd>");
+  page += F("<dt>Channel</dt><dd>");
+  page += String(WiFi.channel());
   page += F("</dd>");
   page += F("<dt>Station MAC</dt><dd>");
   page += WiFi.macAddress();
   page += F("</dd>");
-  page += F("</dl>");
+  page += F("</div>");
 
+  page += F("<div class='col-3'>");
+  page += F("<h3>Network</h3>");
+  page += F("<dt>Hostname</dt><dd>");
+  page += WiFi.getHostname() + String(".local");
+  page += F("</dd>");
+  page += F("<dt>IP address</dt><dd>");
+  page += WiFi.localIP().toString();
+  page += F("</dd>");
+  page += F("<dt>Subnet mask</dt><dd>");
+  page += WiFi.subnetMask().toString();
+  page += F("</dd>");
+  page += F("<dt>Gataway IP</dt><dd>");
+  page += WiFi.gatewayIP().toString();
+  page += F("</dd>");
+  page += F("<dt>DNS 1</dt><dd>");
+  page += WiFi.dnsIP(0).toString();
+  page += F("</dd>");
+  page += F("<dt>DNS 2</dt><dd>");
+  page += WiFi.dnsIP(1).toString();
+  page += F("</dd>");
+  page += F("</div>");
+
+  page += F("</div>");
   page += get_footer_page();
 
   return page;
@@ -458,7 +511,7 @@ String get_pedals_page() {
 
     page += F("<div class='col-2'>");
     //page += F("<div class='form-group'>");
-    page += F("<select class='custom-select custom-select-sm' id='mode");
+    page += F("<select class='custom-select custom-select-sm' name='mode");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -503,43 +556,55 @@ String get_pedals_page() {
 
     page += F("<div class='col-1'>");
     //page += F("<div class='form-group'>");
-    page += F("<select class='custom-select custom-select-sm' id='function");
+    page += F("<select class='custom-select custom-select-sm' name='function");
     page += String(i);
     page += F("'>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_MIDI) + F("'");
     if (pedals[i-1].function == PED_MIDI) page += F(" selected");
     page += F(">MIDI</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_BANK_PLUS) + F("'");
     if (pedals[i-1].function == PED_BANK_PLUS) page += F(" selected");
     page += F(">Bank+</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_BANK_MINUS) + F("'");
     if (pedals[i-1].function == PED_BANK_MINUS) page += F(" selected");
     page += F(">Bank-</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_START) + F("'");
     if (pedals[i-1].function == PED_START) page += F(" selected");
     page += F(">Start</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_STOP) + F("'");
     if (pedals[i-1].function == PED_STOP) page += F(" selected");
     page += F(">Stop</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_CONTINUE) + F("'");
     if (pedals[i-1].function == PED_CONTINUE) page += F(" selected");
     page += F(">Continue</option>");
-    page += F("<option");
-    if (pedals[i-1].function == PED_CONTINUE) page += F(" selected");
+    page += F("<option value='");
+    page += String(PED_TAP) + F("'");
+    if (pedals[i-1].function == PED_TAP) page += F(" selected");
     page += F(">Tap</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_MENU) + F("'");
     if (pedals[i-1].function == PED_MENU) page += F(" selected");
     page += F(">Menu</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_CONFIRM) + F("'");
     if (pedals[i-1].function == PED_CONFIRM) page += F(" selected");
     page += F(">Confirm</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_ESCAPE) + F("'");
     if (pedals[i-1].function == PED_ESCAPE) page += F(" selected");
     page += F(">Excape</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_NEXT) + F("'");
     if (pedals[i-1].function == PED_NEXT) page += F(" selected");
     page += F(">Next</option>");
-    page += F("<option");
+    page += F("<option value='");
+    page += String(PED_PREVIOUS) + F("'");
     if (pedals[i-1].function == PED_PREVIOUS) page += F(" selected");
     page += F(">Previous</option>");
     page += F("</select>");
@@ -601,7 +666,7 @@ String get_pedals_page() {
 
     page += F("<div class='col-1'>");
     //page += F("<div class='form-group'>");
-    page += F("<select class='custom-select custom-select-sm' id='map");
+    page += F("<select class='custom-select custom-select-sm' name='map");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -625,6 +690,7 @@ String get_pedals_page() {
     page += F("<label for='minControlRange");
     page += String(i) + F("'></label>");
     page += F("<input type='range' class='form-control-range' id='minControlRange");
+    page += String(i) + F("' name='min");
     page += String(i) + F("' value='0'>");
     page += F("</div>");
     page += F("</div>");
@@ -634,6 +700,7 @@ String get_pedals_page() {
     page += F("<label for='maxControlRange");
     page += String(i) + F("'></label>");
     page += F("<input type='range' class='form-control-range' id='maxControlRange");
+    page += String(i) + F("' name='max");
     page += String(i) + F("' value='100'>");
     page += F("</div>");
     page += F("</div>");
@@ -641,7 +708,7 @@ String get_pedals_page() {
     page += F("</div>");
   }
 
-  page += F("<div class='form-group row'>");
+  page += F("<div class='form-row'>");
   page += F("<div class='col-1'>");
   page += F("<button type='submit' class='btn btn-primary'>Save</button>");
   page += F("</div>");
@@ -661,18 +728,18 @@ String get_interfaces_page() {
 
   page += F("<p></p>");
   page += F("<form method='post'>");
-  page += F("<div class='row'>");
+  page += F("<div class='form-row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<span class='badge badge-primary'>");
-    page += interfaces[i-1].name;
+    page += interfaces[i-1].name + String("            ");
     page += F("</span>");
     page += F("</div>");
   }
   page += F("</div>");
   page += F("<p></p>");
 
-  page += F("<div class='form-group row'>");
+  page += F("<div class='form-row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -686,7 +753,7 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
-  page += F("<div class='form-group row'>");
+  page += F("<div class='form-row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -700,7 +767,7 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
-  page += F("<div class='form-group row'>");
+  page += F("<div class='form-row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -714,7 +781,7 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
-  page += F("<div class='form-group row'>");
+  page += F("<div class='form-row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -728,7 +795,7 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
-  page += F("<div class='form-group row'>");
+  page += F("<div class='form-row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-checkbox'>");
@@ -742,8 +809,9 @@ String get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
+  page += F("<p></p>");
 
-  page += F("<div class='form-group row'>");
+  page += F("<div class='form-row'>");
   page += F("<div class='col-2'>");
   page += F("<button type='submit' class='btn btn-primary'>Save</button>");
   page += F("</div>");
@@ -764,15 +832,18 @@ String get_options_page() {
   page += F("<p></p>");
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
-  page += F("<label for='blynkauthtoken' class='col-sm-2 col-form-label'>Blynk Auth Token</label>");
+  page += F("<label for='authtoken' class='col-sm-2 col-form-label'>Blynk Auth Token</label>");
   page += F("<div class='col-sm-10'>");
-  page += F("<input class='form-control form-control-sm' type='text' length=32 id='blynkauthtoken' placeholder='Blynk Auth Token is 32 characters long. Copy and paste from email.'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='authtoken' name='blynkauthtoken' placeholder='Blynk Auth Token is 32 characters long. Copy and paste from email.' value='");
+  page += blynk_get_token() + F("'>");
   page += F("</div>");
   page += F("<div class='col-sm-2'>");
   page += F("</div>");
   page += F("<div class='col-sm-10'>");
-  page += F("Auth Token is a unique identifier which is needed to connect your Pedalino to your smartphone. Every Pedalino will have its own Auth Token. You’ll get Auth Token automatically on your email after Pedalino app clone. You can also copy it manually. Click on devices section and selected required device.");
-  page += F("Don’t share your Auth Token with anyone, unless you want someone to have access to your Pedalino.");
+  page += F("<div class='shadow p-3 mb-5 bg-white rounded'>");
+  page += F("<p>Auth Token is a unique identifier which is needed to connect your Pedalino to your smartphone. Every Pedalino will have its own Auth Token. You’ll get Auth Token automatically on your email after Pedalino app clone. You can also copy it manually. Click on devices section and selected required device.</p>");
+  page += F("<p>Don’t share your Auth Token with anyone, unless you want someone to have access to your Pedalino.</p>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("<div class='form-group row'>");
@@ -839,9 +910,11 @@ void http_handle_post_pedals() {
     pedals[i].autoSensing = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
     a = httpServer.arg(String("mode") + String(i+1));
-    DPRINT("[%s]\n", a.c_str());
-    //pedals[i].mode = (a == "1") ? PED_ENABLE : PED_DISABLE;
-    
+    pedals[i].mode = (byte)a.toInt();
+
+    a = httpServer.arg(String("function") + String(i+1));
+    pedals[i].function = (byte)a.toInt();
+
     a = httpServer.arg(String("singlepress") + String(i+1));
     pedals[i].pressMode = (a == checked) ? PED_PRESS_1 : 0;
 
@@ -853,6 +926,15 @@ void http_handle_post_pedals() {
 
     a = httpServer.arg(String("polarity") + String(i+1));
     pedals[i].invertPolarity += (a == checked) ? PED_ENABLE : PED_DISABLE;
+
+    a = httpServer.arg(String("map") + String(i+1));
+    pedals[i].mapFunction = (byte)a.toInt();
+
+    a = httpServer.arg(String("min") + String(i+1));
+    pedals[i].expZero = (int)a.toInt();
+
+    a = httpServer.arg(String("max") + String(i+1));
+    pedals[i].expMax = (int)a.toInt();
   }
   blynk_refresh();
   alert = "Saved";

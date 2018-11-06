@@ -85,7 +85,7 @@ inline void blynk_refresh() {}
 
 #define BLYNK_AUTHTOKEN_LEN          32
 
-char blynkAuthToken[BLYNK_AUTHTOKEN_LEN+1] = "1790c808239341938eca06280cc9e776";
+char blynkAuthToken[BLYNK_AUTHTOKEN_LEN+1];
 
 WidgetLCD  blynkLCD(V0);
 String     ssid, password;
