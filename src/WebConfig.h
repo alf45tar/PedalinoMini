@@ -33,6 +33,13 @@ void blynk_disconnect();
 
 #ifdef WEBCONFIG
 
+String blynk_get_token();
+String blynk_set_token(String);
+void blynk_connect();
+void blynk_disconnect();
+void blynk_refresh();
+
+
 String  theme = "bootstrap";
 String  alert = "";
 String  bank  = "1";
@@ -768,7 +775,7 @@ void http_handle_post_pedals() {
   String a;
   String checked("on");
   
-  httpServer.sendHeader("Connection", "close");
+  //httpServer.sendHeader("Connection", "close");
   for (unsigned int i = 0; i < PEDALS; i++) {
     a = httpServer.arg(String("autosensing") + String(i+1));
     pedals[i].autoSensing = (a == checked) ? PED_ENABLE : PED_DISABLE;
@@ -799,7 +806,7 @@ void http_handle_post_interfaces() {
   String a;
   String checked("on");
   
-  httpServer.sendHeader("Connection", "close");
+  //httpServer.sendHeader("Connection", "close");
   for (unsigned int i = 0; i < INTERFACES; i++) {
     a = httpServer.arg(String("in") + String(i+1));
     interfaces[i].midiIn = (a == checked) ? PED_ENABLE : PED_DISABLE;
@@ -819,6 +826,16 @@ void http_handle_post_interfaces() {
   blynk_refresh();
   alert = "Saved";
   httpServer.send(200, "text/html", get_interfaces_page());
+}
+
+void http_handle_post_options() {
+  
+  blynk_disconnect();
+  blynk_set_token(httpServer.arg(String("blynkauthtoken")));
+  blynk_connect();
+  blynk_refresh();
+  alert = "Saved";
+  httpServer.send(200, "text/html", get_options_page());
 }
 
 #endif  // WEBCONFIG
@@ -842,14 +859,17 @@ String get_update_page() {
 
 void http_handle_update () {
   if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
-  httpServer.sendHeader("Connection", "close");
+  // The connection will be closed after completion of the response.
+  // The connection SHOULD NOT be considered `persistent'.
+  // Applications that do not support persistent connections MUST include the "close" connection option in every message.
+  //httpServer.sendHeader("Connection", "close");
   httpServer.send(200, "text/html", get_update_page());
 }
 
 // handler for the /update form POST (once file upload finishes)
 
 void http_handle_update_file_upload_finish () {
-  httpServer.sendHeader("Connection", "close");
+  //httpServer.sendHeader("Connection", "close");
   httpServer.send(200, "text/plain", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/'>Update Success! Rebooting...\n");
   ESP.restart();
 }
@@ -961,7 +981,8 @@ void http_setup() {
   httpServer.on("/pedals", HTTP_POST, http_handle_post_pedals);
   httpServer.on("/interfaces", HTTP_GET, http_handle_interfaces);
   httpServer.on("/interfaces", HTTP_POST, http_handle_post_interfaces);
-  httpServer.on("/options", http_handle_options);
+  httpServer.on("/options", HTTP_GET, http_handle_options);
+  httpServer.on("/options", HTTP_POST, http_handle_post_options);
 #endif
   httpServer.on("/update", HTTP_GET, http_handle_update);
   httpServer.on("/update", HTTP_POST, http_handle_update_file_upload_finish, http_handle_update_file_upload);

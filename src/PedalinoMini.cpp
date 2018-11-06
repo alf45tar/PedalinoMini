@@ -56,7 +56,6 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include <esp_log.h>
 #include <string>
-#define NOWEBCONFIG   // temporary
 #endif
 
 #include "Pedalino.h"
@@ -137,7 +136,7 @@ void setup()
 
   } else if ((digitalRead(PIN_D(0)) == LOW) && (duration >= 8500)) {
     DPRINTLN("Reset EEPROM to factory default");
-#ifndef NOLCD
+#ifdef LCD
     lcd.setCursor(0, 1);
     lcd.print("Factory default ");
     delay(1000);

@@ -10,6 +10,8 @@
 
 
 #ifdef NOBLYNK
+inline String blynk_get_token() { return String("                                "); }
+inline String blynk_set_token(String token) { return token; }
 inline void blynk_config() {}
 inline void blynk_connect() {}
 inline void blynk_disconnect() {}
@@ -81,12 +83,28 @@ inline void blynk_refresh() {}
 
 #define PRINT_VIRTUAL_PIN(vPin)     { DPRINT("WRITE VirtualPIN %d", vPin); }
 
-const char blynkAuthToken[] = "1790c808239341938eca06280cc9e776";
+#define BLYNK_AUTHTOKEN_LEN          32
+
+char blynkAuthToken[BLYNK_AUTHTOKEN_LEN+1] = "1790c808239341938eca06280cc9e776";
+
 WidgetLCD  blynkLCD(V0);
 String     ssid, password;
 
 void screen_update(bool);
 void update_current_profile_eeprom();
+
+String blynk_get_token()
+{
+  return String(blynkAuthToken);
+}
+
+String blynk_set_token(String token)
+{
+  if (token.length() == BLYNK_AUTHTOKEN_LEN)
+    strncpy(blynkAuthToken, token.c_str(), BLYNK_AUTHTOKEN_LEN);
+
+  return String(blynkAuthToken);
+}
 
 void blynk_connect()
 {

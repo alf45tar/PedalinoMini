@@ -11,9 +11,11 @@
 #include <EEPROM.h>
 
 #define SIGNATURE "Pedalino(TM)"
-#define EEPROM_VERSION  1                 // Increment each time you change the eeprom structure
+#define EEPROM_VERSION  2                 // Increment each time you change the eeprom structure
 #define EEPROM_SIZE     4096
 
+String blynk_get_token();
+String blynk_set_token(String);
 void blynk_refresh();
 
 //
@@ -189,6 +191,10 @@ void update_eeprom()
   offset += sizeof(byte);
   DPRINT("Current profile:   %d\n", currentProfile);
 
+  EEPROM.writeString(offset, blynk_get_token());
+  offset += blynk_get_token().length() + 1;
+  DPRINT("Blynk Auth Token:  %s\n", blynk_get_token().c_str());
+
   // Jump to profile
   offset += currentProfile * EEPROM.length() / PROFILES;
 
@@ -318,6 +324,10 @@ void read_eeprom()
   currentProfile = constrain(currentProfile, 0, PROFILES - 1);
   offset += sizeof(byte);
   DPRINT("Current profile:   %d\n", currentProfile);
+
+  blynk_set_token(EEPROM.readString(offset));
+  offset += EEPROM.readString(offset).length() + 1;
+  DPRINT("Blynk Auth Token:  %s\n", blynk_get_token().c_str());
 
   // Jump to profile
   offset += currentProfile * EEPROM.length() / PROFILES;
