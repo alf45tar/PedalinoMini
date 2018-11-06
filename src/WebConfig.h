@@ -141,6 +141,45 @@ String get_root_page() {
   page += F("<h6>Smart wireless MIDI foot controller for guitarists and more</h6>");
   page += F("<p></p>");
 
+  page += F("<dl>");
+  page += F("<dt>Chip ID</dt><dd>");
+#ifdef ARDUINO_ARCH_ESP8266
+  page += ESP.getChipId();
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+  page += String((uint32_t)ESP.getEfuseMac());
+#endif
+  page += F("</dd>");
+  page += F("<dt>Flash Chip ID</dt><dd>");
+#ifdef ARDUINO_ARCH_ESP8266
+  page += ESP.getFlashChipId();
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+  page += String((uint32_t)ESP.getEfuseMac());
+#endif
+  page += F("</dd>");
+  page += F("<dt>Chip Speed</dt><dd>");
+  page += ESP.getFlashChipSpeed();
+  page += F(" hertz</dd>");
+  page += F("<dt>IDE Flash Size</dt><dd>");
+  page += ESP.getFlashChipSize();
+  page += F(" bytes</dd>");
+#ifdef ARDUINO_ARCH_ESP8266 
+  page += F("<dt>Real Flash Size</dt><dd>");
+  page += ESP.getFlashChipRealSize();
+  page += F(" bytes</dd>");
+#endif
+  page += F("<dt>Soft AP IP</dt><dd>");
+  page += WiFi.softAPIP().toString();
+  page += F("</dd>");
+  page += F("<dt>Soft AP MAC</dt><dd>");
+  page += WiFi.softAPmacAddress();
+  page += F("</dd>");
+  page += F("<dt>Station MAC</dt><dd>");
+  page += WiFi.macAddress();
+  page += F("</dd>");
+  page += F("</dl>");
+
   page += get_footer_page();
 
   return page;
@@ -723,6 +762,25 @@ String get_options_page() {
   page += get_top_page(5);
 
   page += F("<p></p>");
+  page += F("<form method='post'>");
+  page += F("<div class='form-row'>");
+  page += F("<label for='blynkauthtoken' class='col-sm-2 col-form-label'>Blynk Auth Token</label>");
+  page += F("<div class='col-sm-10'>");
+  page += F("<input class='form-control form-control-sm' type='text' length=32 id='blynkauthtoken' placeholder='Blynk Auth Token is 32 characters long. Copy and paste from email.'>");
+  page += F("</div>");
+  page += F("<div class='col-sm-2'>");
+  page += F("</div>");
+  page += F("<div class='col-sm-10'>");
+  page += F("Auth Token is a unique identifier which is needed to connect your Pedalino to your smartphone. Every Pedalino will have its own Auth Token. You’ll get Auth Token automatically on your email after Pedalino app clone. You can also copy it manually. Click on devices section and selected required device.");
+  page += F("Don’t share your Auth Token with anyone, unless you want someone to have access to your Pedalino.");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='form-group row'>");
+  page += F("<div class='col-2'>");
+  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
 
   page += get_footer_page();
 
