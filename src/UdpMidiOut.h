@@ -108,92 +108,92 @@ OSCMessage              oscMsg;
 
 void AppleMidiSendNoteOn(byte note, byte velocity, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.noteOn(note, velocity, channel);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendNoteOn(note, velocity, channel);
 }
 
 void AppleMidiSendNoteOff(byte note, byte velocity, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.noteOff(note, velocity, channel);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendNoteOff(note, velocity, channel);
 }
 
 void AppleMidiSendAfterTouchPoly(byte note, byte pressure, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.polyPressure(note, pressure, channel);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendPolyPressure(note, pressure, channel);
 }
 
 void AppleMidiSendControlChange(byte number, byte value, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.controlChange(number, value, channel);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendControlChange(number, value, channel);
 }
 
 void AppleMidiSendProgramChange(byte number, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.programChange(number, channel);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendProgramChange(number, channel);
 }
 
 void AppleMidiSendAfterTouch(byte pressure, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.afterTouch(pressure, channel);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendAfterTouch(pressure, channel);
 }
 
 void AppleMidiSendPitchBend(int bend, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.pitchBend(bend, channel);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendPitchBend(bend, channel);
 }
 
 void AppleMidiSendSystemExclusive(byte* array, unsigned size)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sysEx(array, size);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSysEx(array, size);
 }
 
 void AppleMidiSendTimeCodeQuarterFrame(byte data)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.timeCodeQuarterFrame(data);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendTimeCodeQuarterFrame(data);
 }
 
 void AppleMidiSendSongPosition(unsigned int beats)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.songPosition(beats);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSongPosition(beats);
 }
 
 void AppleMidiSendSongSelect(byte songnumber)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.songSelect(songnumber);
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSongSelect(songnumber);
 }
 
 void AppleMidiSendTuneRequest(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.tuneRequest();
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendTuneRequest();
 }
 
 void AppleMidiSendClock(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.clock();
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendClock();
 }
 
 void AppleMidiSendStart(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.start();
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendStart();
 }
 
 void AppleMidiSendContinue(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI._continue();
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendContinue();
 }
 
 void AppleMidiSendStop(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.stop();
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendStop();
 }
 
 void AppleMidiSendActiveSensing(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.activeSensing();
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendActiveSensing();
 }
 
 void AppleMidiSendSystemReset(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.reset();
+  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendReset();
 }
 
 

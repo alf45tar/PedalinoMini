@@ -19,7 +19,6 @@
       - WiFi OSC
 */
 
-#define NOLCD
 #define DEBUG_UPDATER Serial
 
 #ifdef NOWIFI

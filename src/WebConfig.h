@@ -31,11 +31,11 @@ WebServer               httpServer(80);
 
 #ifdef WEBCONFIG
 
-String blynk_get_token();
-String blynk_set_token(String);
-void blynk_connect();
-void blynk_disconnect();
-void blynk_refresh();
+String  blynk_get_token();
+String  blynk_set_token(String);
+void    blynk_connect();
+void    blynk_disconnect();
+void    blynk_refresh();
 
 
 String  theme = "bootstrap";
@@ -259,125 +259,14 @@ String get_banks_page() {
   String page = "";
 
   page += get_top_page(2);
-  /*
-    page += "<div class='container-fluid'>";
-
-    page += "<h1>Pedalino&trade;</h1>";
-    page += "<div class='row'>";
-    page += "<div class='col'>";
-    page += "<ul class='nav nav-pills'>";
-    page += "<li class='nav-item'><a class='nav-link' href='/live'>Live</a></li>";
-    page += "<li class='nav-item active'><a class='nav-link' href='/banks'>Banks</a></li>";
-    page += "<li class='nav-item'><a class='nav-link' href='/pedals'>Pedals</a></li>";
-    page += "<li class='nav-item'><a class='nav-link' href='/interfaces'>Interfaces</a></li>";
-    page += "<li class='nav-item dropdown'>";
-    page +=       "<form method='POST' name='selecttheme' id='selecttheme'/>";
-    page +=       "<input class='span' id='choixtheme' name='theme' type='hidden'>";
-    page += "<a class='nav-link dropdown-toggle' data-toggle='dropdown' href='#'>Theme</a>";
-    //page += "<div class='dropdown-menu'>";
-    //page += "<a class='dropdown-item' href='#''>Link 1</a>";
-    page += "<ul class='dropdown-menu'>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"bootstrap\"); $(\"#selecttheme\").submit()'><a href='#'>Boostrap</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"cerulean\"); $(\"#selecttheme\").submit()'><a href='#'>Cerulean</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"cosmo\"); $(\"#selecttheme\").submit()'><a href='#'>Cosmo</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"cyborg\"); $(\"#selecttheme\").submit()'><a href='#'>Cyborg</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"darkly\"); $(\"#selecttheme\").submit()'><a href='#'>Darkly</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"flatly\"); $(\"#selecttheme\").submit()'><a href='#'>Flatly</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"journal\"); $(\"#selecttheme\").submit()'><a href='#'>Journal</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"lumen\"); $(\"#selecttheme\").submit()'><a href='#'>Lumen</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"paper\"); $(\"#selecttheme\").submit()'><a href='#'>Paper</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"readable\"); $(\"#selecttheme\").submit()'><a href='#'>Readable</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"sandstone\"); $(\"#selecttheme\").submit()'><a href='#'>Sandstone</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"simplex\"); $(\"#selecttheme\").submit()'><a href='#'>Simplex</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"slate\"); $(\"#selecttheme\").submit()'><a href='#'>Slate</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"spacelab\"); $(\"#selecttheme\").submit()'><a href='#'>Spacelab</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"superhero\"); $(\"#selecttheme\").submit()'><a href='#'>Superhero</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"united\"); $(\"#selecttheme\").submit()'><a href='#'>United</a></li>";
-    page += "<li onclick='$(\"#choixtheme\").val(\"yeti\"); $(\"#selecttheme\").submit()'><a href='#'>Yeti</a></li>";
-    page += "</ul>";
-    //page += "</div>";
-    page +=       "</form>";
-    page += "</li>";
-    page += "</ul>";
-    page += "</div>";
-    page += "<div class='col' align='right'><button type='button' class='btn btn-primary'>Apply</button> <button type='button' class='btn btn-primary'>Save</button></div>";
-    page += "</div>";
-  */
-  /*
-    page += "<nav class='navbar navbar-expand-lg navbar-light bg-light'>";
-    page += "<a class='navbar-brand' href='#'>Pedalino&trade;</a>";
-    page += "<button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarNavDropdown' aria-controls='navbarNavDropdown' aria-expanded='false' aria-label='Toggle navigation'>";
-    page += "<span class='navbar-toggler-icon'></span>";
-    page += "</button>";
-    page += "<div class='collapse navbar-collapse' id='navbarNavDropdown'>";
-    page += "<ul class='navbar-nav'>";
-    page += "<li class='nav-item'>";
-    page += "<a class='nav-link' href='/'>Home <span class='sr-only'>(current)</span></a>";
-    page += "</li>";
-    page += "<li class='nav-item'>";
-    page += "<a class='nav-link' href='/live'>Live</a>";
-    page += "</li>";
-    page += "<li class='nav-item active'>";
-    page += "<a class='nav-link' href='/banks'>Banks</a>";
-    page += "</li>";
-    page += "<li class='nav-item'>";
-    page += "<a class='nav-link' href='/pedals'>Pedals</a>";
-    page += "</li>";
-    page += "<li class='nav-item dropdown'>";
-    page += "<form method='POST' name='selecttheme' id='selecttheme'/>";
-    page += "<input class='span' id='choixtheme' name='theme' type='hidden'>";
-    page += "<a class='nav-link dropdown-toggle' href='#' id='navbarDropdownMenuLink' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Theme</a>";
-    page += "<div class='dropdown-menu' aria-labelledby='navbarDropdownMenuLink'>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"bootstrap\"); $(\"#selecttheme\").submit()' href='#'>Boostrap</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"cerulean\"); $(\"#selecttheme\").submit()' href='#'>Cerulean</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"cosmo\"); $(\"#selecttheme\").submit()' href='#'>Cosmo</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"cyborg\"); $(\"#selecttheme\").submit()' href='#'>Cyborg</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"darkly\"); $(\"#selecttheme\").submit()' href='#'>Darkly</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"flatly\"); $(\"#selecttheme\").submit()' href='#'>Flatly</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"journal\"); $(\"#selecttheme\").submit()' href='#'>Journal</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"lumen\"); $(\"#selecttheme\").submit()' href='#'>Lumen</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"paper\"); $(\"#selecttheme\").submit()' href='#'>Paper</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"readable\"); $(\"#selecttheme\").submit()' href='#'>Readable</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"sandstone\"); $(\"#selecttheme\").submit()' href='#'>Sandstone</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"simplex\"); $(\"#selecttheme\").submit()' href='#'>Simplex</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"slate\"); $(\"#selecttheme\").submit()' href='#'>Slate</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"spacelab\"); $(\"#selecttheme\").submit()' href='#'>Spacelab</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"superhero\"); $(\"#selecttheme\").submit()' href='#'>Superhero</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"united\"); $(\"#selecttheme\").submit()' href='#'>United</a>";
-    page += "<a class='dropdown-item' onclick='$(\"#choixtheme\").val(\"yeti\"); $(\"#selecttheme\").submit()' href='#'>Yeti</a>";
-    page += "</div>";
-    page += "</form>";
-    page += "</li>";
-    page += "</ul>";
-    page += "<form class='form-inline'>";
-    page += "<button class='btn btn-primary' type='button'>Apply</button>";
-    page += "<button class='btn btn-primary' type='button'>Save</button>";
-    page += "</form>";
-    page += "</div>";
-    page += "</nav>";
-  */
-
+  
   page += F( "<div class='btn-group'>");
-  page += F( "<form><button type='button submit' class='btn ");
-  page += (bank == "1" ? String("btn-primary") : String("")) + F("' name='bank' value='1'>1</button></form>");
-  page += F( "<form><button type='button submit' class='btn ");
-  page += (bank == "2" ? String("btn-primary") : String("")) + F("' name='bank' value='2'>2</button></form>");
-  page += F( "<form><button type='button submit' class='btn ");
-  page += (bank == "3" ? String("btn-primary") : String("")) + F("' name='bank' value='3'>3</button></form>");
-  page += F( "<form><button type='button submit' class='btn ");
-  page += (bank == "4" ? String("btn-primary") : String("")) + F("' name='bank' value='4'>4</button></form>");
-  page += F( "<form><button type='button submit' class='btn ");
-  page += (bank == "5" ? String("btn-primary") : String("")) + F("' name='bank' value='5'>5</button></form>");
-  page += F( "<form><button type='button submit' class='btn ");
-  page += (bank == "6" ? String("btn-primary") : String("")) + F("' name='bank' value='6'>6</button></form>");
-  page += F( "<form><button type='button submit' class='btn ");
-  page += (bank == "7" ? String("btn-primary") : String("")) + F("' name='bank' value='7'>7</button></form>");
-  page += F("<form><button type='button submit' class='btn ");
-  page += (bank == "8" ? String("btn-primary") : String("")) + F("' name='bank' value='8'>8</button></form>");
-  page += F("<form><button type='button submit' class='btn ");
-  page += (bank == "9" ? String("btn-primary") : String("")) + F("' name='bank' value='9'>9</button></form>");
-  page += F("<form><button type='button submit' class='btn ");
-  page += (bank == "10" ? String("btn-primary") : String("")) + F("' name='bank' value='10'>10</button></form>");
+  for (unsigned int i = 1; i <= BANKS; i++) {
+    page += F( "<form><button type='button submit' class='btn");
+    page += (bank == String(i) ? String(" btn-primary") : String(""));
+    page += F("' name='bank' value='");
+    page += String(i) + F("'>") + String(i) + F("</button></form>");
+  }
   page += F("</div>");
 
   page += F("<table class='table-responsive-sm table-borderless'>");
@@ -930,6 +819,48 @@ void http_handle_options() {
   httpServer.send(200, "text/html", get_options_page());
 }
 
+void http_handle_post_live() {
+  
+  String a;
+  
+  a = httpServer.arg("profile");
+  currentProfile = a.toInt();
+
+  blynk_refresh();
+  alert = "Saved";
+  httpServer.send(200, "text/html", get_live_page());
+}
+
+
+void http_handle_post_banks() {
+  
+  String a;
+  byte   b = bank.toInt();
+  
+  for (unsigned int i = 0; i < PEDALS; i++) {
+    a = httpServer.arg(String("message") + String(i+1));
+    banks[b][i].midiMessage = a.toInt();
+
+    a = httpServer.arg(String("channel") + String(i+1));
+    banks[b][i].midiChannel = a.toInt();
+    
+    a = httpServer.arg(String("code") + String(i+1));
+    banks[b][i].midiCode = a.toInt();
+
+    a = httpServer.arg(String("value1") + String(i+1));
+    banks[b][i].midiValue1 = a.toInt();
+    
+    a = httpServer.arg(String("value2") + String(i+1));
+    banks[b][i].midiValue2 = a.toInt();
+
+    a = httpServer.arg(String("value3") + String(i+1));
+    banks[b][i].midiValue3 = a.toInt();
+  }
+  blynk_refresh();
+  alert = "Saved";
+  httpServer.send(200, "text/html", get_banks_page());
+}
+
 void http_handle_post_pedals() {
   
   String a;
@@ -941,10 +872,10 @@ void http_handle_post_pedals() {
     pedals[i].autoSensing = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
     a = httpServer.arg(String("mode") + String(i+1));
-    pedals[i].mode = (byte)a.toInt();
+    pedals[i].mode = a.toInt();
 
     a = httpServer.arg(String("function") + String(i+1));
-    pedals[i].function = (byte)a.toInt();
+    pedals[i].function = a.toInt();
 
     a = httpServer.arg(String("singlepress") + String(i+1));
     pedals[i].pressMode = (a == checked) ? PED_PRESS_1 : 0;
@@ -959,13 +890,13 @@ void http_handle_post_pedals() {
     pedals[i].invertPolarity += (a == checked) ? PED_ENABLE : PED_DISABLE;
 
     a = httpServer.arg(String("map") + String(i+1));
-    pedals[i].mapFunction = (byte)a.toInt();
+    pedals[i].mapFunction = a.toInt();
 
     a = httpServer.arg(String("min") + String(i+1));
-    pedals[i].expZero = (int)a.toInt();
+    pedals[i].expZero = a.toInt();
 
     a = httpServer.arg(String("max") + String(i+1));
-    pedals[i].expMax = (int)a.toInt();
+    pedals[i].expMax = a.toInt();
   }
   blynk_refresh();
   alert = "Saved";
@@ -1150,17 +1081,19 @@ void http_handle_not_found() {
 void http_setup() {
 
 #ifdef WEBCONFIG
-  httpServer.on("/", http_handle_root);
-  httpServer.on("/live", http_handle_live);
-  httpServer.on("/banks", http_handle_banks);
-  httpServer.on("/pedals", HTTP_GET, http_handle_pedals);
-  httpServer.on("/pedals", HTTP_POST, http_handle_post_pedals);
-  httpServer.on("/interfaces", HTTP_GET, http_handle_interfaces);
-  httpServer.on("/interfaces", HTTP_POST, http_handle_post_interfaces);
-  httpServer.on("/options", HTTP_GET, http_handle_options);
-  httpServer.on("/options", HTTP_POST, http_handle_post_options);
+  httpServer.on("/",                        http_handle_root);
+  httpServer.on("/live",        HTTP_GET,   http_handle_live);
+  httpServer.on("/live",        HTTP_POST,  http_handle_post_live);
+  httpServer.on("/banks",       HTTP_GET,   http_handle_banks);
+  httpServer.on("/banks",       HTTP_POST,  http_handle_post_banks);
+  httpServer.on("/pedals",      HTTP_GET,   http_handle_pedals);
+  httpServer.on("/pedals",      HTTP_POST,  http_handle_post_pedals);
+  httpServer.on("/interfaces",  HTTP_GET,   http_handle_interfaces);
+  httpServer.on("/interfaces",  HTTP_POST,  http_handle_post_interfaces);
+  httpServer.on("/options",     HTTP_GET,   http_handle_options);
+  httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
 #endif
-  httpServer.on("/update", HTTP_GET, http_handle_update);
-  httpServer.on("/update", HTTP_POST, http_handle_update_file_upload_finish, http_handle_update_file_upload);
+  httpServer.on("/update",      HTTP_GET,   http_handle_update);
+  httpServer.on("/update",      HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);
   httpServer.onNotFound(http_handle_not_found);
 }
