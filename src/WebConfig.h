@@ -152,6 +152,12 @@ String get_root_page() {
   page += String("ESP32");
 #endif
   page += F("</dd>");
+  page += F("<dt>Chip Revision</dt><dd>");
+  page += ESP.getChipRevision();
+  page += F("</dd>");
+  page += F("<dt>SDK Version</dt><dd>");
+  page += ESP.getSdkVersion();
+  page += F("</dd>");
   page += F("<dt>Chip ID</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
   page += String(ESP.getChipId(), HEX);
@@ -179,6 +185,10 @@ String get_root_page() {
   page += ESP.getFlashChipRealSize() / (1024 * 1024);
   page += F(" MB</dd>");
 #endif
+  page += F("<dt>Free Heap Size</dt><dd>");
+  page += ESP.getFreeHeap() / 1024;
+  page += F(" kB</dd>");
+
   if (WiFi.getMode() == WIFI_AP) {
     page += F("<dt>Soft AP IP</dt><dd>");
     page += WiFi.softAPIP().toString();
@@ -258,11 +268,13 @@ String get_banks_page() {
 
   String page = "";
 
+  const byte b = bank.toInt();
+
   page += get_top_page(2);
   
-  page += F( "<div class='btn-group'>");
+  page += F("<div class='btn-group'>");
   for (unsigned int i = 1; i <= BANKS; i++) {
-    page += F( "<form><button type='button submit' class='btn");
+    page += F("<form><button type='button submit' class='btn");
     page += (bank == String(i) ? String(" btn-primary") : String(""));
     page += F("' name='bank' value='");
     page += String(i) + F("'>") + String(i) + F("</button></form>");
@@ -271,6 +283,7 @@ String get_banks_page() {
 
   page += F("<table class='table-responsive-sm table-borderless'>");
   page += F("<tbody><tr><td>Pedal</td><td>Message</td><td>Channel</td><td>Code</td><td>Value 1</td><td>Value 2</td><td>Value 3</td></tr>");
+
   for (unsigned int i = 1; i <= PEDALS; i++) {
     page += F("<tr align='center' valign='center'>");
 
@@ -279,7 +292,7 @@ String get_banks_page() {
     page += F("</td>");
 
     page += F("<td><div class='form-group'>");
-    page += F("<select class='custom-select-sm' id='message");
+    page += F("<select class='custom-select-sm' name='message");
     page += String(i);
     page += F("'>");
     page += F("<option>Program Change</option>");
@@ -290,43 +303,37 @@ String get_banks_page() {
     page += F("</div></td>");
 
     page += F("<td><div class='form-group'>");
-    page += F("<select class='custom-select-sm' id='channel");
-    page += String(i);
-    page += F("'>");
-    page += F("<option>1</option>");
-    page += F("<option>2</option>");
-    page += F("<option>3</option>");
-    page += F("<option>4</option>");
-    page += F("<option>5</option>");
-    page += F("<option>6</option>");
-    page += F("<option>7</option>");
-    page += F("<option>8</option>");
-    page += F("<option>9</option>");
-    page += F("<option>10</option>");
-    page += F("<option>11</option>");
-    page += F("<option>12</option>");
-    page += F("<option>13</option>");
-    page += F("<option>14</option>");
-    page += F("<option>15</option>");
-    page += F("<option>16</option>");
+    page += F("<select class='custom-select-sm' name='channel");
+    page += String(i) + F("'>");
+    for (unsigned int c = 1; c <= 16; c++) {
+      page += F("<option value='");
+      page += String(c) + F("'");
+      if (banks[b][i].midiChannel == c) page += F(" selected");
+      page += F(">");
+      page += String(c) + F("</option>");
+    }
     page += F("</select>");
     page += F("</div></td>");
 
     page += F("<td><div class='form-group'>");
-    page += F("<input type='number' class='custom-select-sm' name='code' min='0' max='127'>");
-    page += F("</div></td>");
+    page += F("<input type='number' class='custom-select-sm' name='code' min='0' max='127' value='");
+    //page += String(banks[b][i].midiCode);
+    page += F("'></div></td>");
 
     page += F("<td><div class='form-group'>");
-    page += F("<input type='number' class='custom-select-sm' name='code1' min='0' max='127'>");
-    page += F("</div></td>");
+    page += F("<input type='number' class='custom-select-sm' name='code1' min='0' max='127' value='");
+    //page += String(banks[b][i].midiValue1);
+    page += F("'></div></td>");
 
     page += F("<td><div class='form-group'>");
-    page += F("<input type='number' class='custom-select-sm' name='code2' min='0' max='127'>");
-    page += F("</div></td>");
+    page += F("<input type='number' class='custom-select-sm' name='code2' min='0' max='127' value='");
+    //page += String(banks[b][i].midiValue2);
+    page += F("'></div></td>");
 
     page += F("<td><div class='form-group'>");
-    page += F("<input type='number' class='custom-select-sm' name='code3' min='0' max='127'>");
-    page += F("</div></td>");
+    page += F("<input type='number' class='custom-select-sm' name='code3' min='0' max='127' value='");
+    //page += String(banks[b][i].midiValue3);
+    page += F("'></div></td>");
 
     page += F("</tr>");
   }
@@ -583,7 +590,8 @@ String get_pedals_page() {
     page += String(i) + F("'></label>");
     page += F("<input type='range' class='form-control-range' id='minControlRange");
     page += String(i) + F("' name='min");
-    page += String(i) + F("' value='0'>");
+    page += String(i) + F("' value='");
+    page += String((pedals[i-1].expZero * 100) / ADC_RESOLUTION) + F("'>");
     page += F("</div>");
     page += F("</div>");
 
@@ -593,7 +601,8 @@ String get_pedals_page() {
     page += String(i) + F("'></label>");
     page += F("<input type='range' class='form-control-range' id='maxControlRange");
     page += String(i) + F("' name='max");
-    page += String(i) + F("' value='100'>");
+    page += String(i) + F("' value='");
+    page += String((pedals[i-1].expMax * 100) / ADC_RESOLUTION) + F("'>");
     page += F("</div>");
     page += F("</div>");
 
@@ -725,22 +734,27 @@ String get_options_page() {
   page += F("<form method='post'>");
 
   page += F("<div class='form-row'>");
-  page += F("<label for='bootstraptheme' class='col-sm-2 col-form-label'>Web UI Theme</label>");
-  page += F("<div class='col-sm-10'>");
-  page += F("<select class='custom-select custom-select-sm' id='bootstraptheme' name='theme'>");
+  page += F("<label for='bootstraptheme' class='col-2 col-form-label'>Web UI Theme</label>");
+  page += F("<div class='col-10'>");
+  page += F("<select class='custom-select' id='bootstraptheme' name='theme'>");
   page += F("<option value='bootstrap'>Bootstrap</option>");
   page += F("<option value='cerulean'>Cerulean</option>");
   page += F("<option value='cosmo'>Cosmo</option>");
   page += F("<option value='cyborg'>Cyborg</option>");
   page += F("<option value='darkly'>Darkly</option>");
   page += F("<option value='flatly'>Flatly</option>");
+  page += F("<option value='litera'>Litera</option>");
   page += F("<option value='journal'>Journal</option>");
   page += F("<option value='lumen'>Lumen</option>");
-  page += F("<option value='paper'>Paper</option>");
-  page += F("<option value='readable'>Readable</option>");
+  page += F("<option value='lux'>Lux</option>");
+  page += F("<option value='materia'>Materia</option>");
+  page += F("<option value='minty'>Minty</option>");
+  page += F("<option value='pulse'>Pulse</option>");
   page += F("<option value='sandstone'>Sandstone</option>");
   page += F("<option value='simplex'>Simplex</option>");
+  page += F("<option value='sketchy'>Sketchy</option>");
   page += F("<option value='slate'>Slate</option>");
+  page += F("<option value='solar'>Solar</option>");
   page += F("<option value='spacelab'>Spacelab</option>");
   page += F("<option value='superhero'>Superhero</option>");
   page += F("<option value='united'>United</option>");
@@ -749,15 +763,17 @@ String get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
+  page += F("<p></p>");
+
   page += F("<div class='form-row'>");
-  page += F("<label for='authtoken' class='col-sm-2 col-form-label'>Blynk Auth Token</label>");
-  page += F("<div class='col-sm-10'>");
+  page += F("<label for='authtoken' class='col-2 col-form-label'>Blynk Auth Token</label>");
+  page += F("<div class='col-10'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='authtoken' name='blynkauthtoken' placeholder='Blynk Auth Token is 32 characters long. Copy and paste from email.' value='");
   page += blynk_get_token() + F("'>");
   page += F("</div>");
-  page += F("<div class='col-sm-2'>");
+  page += F("<div class='col-2'>");
   page += F("</div>");
-  page += F("<div class='col-sm-10'>");
+  page += F("<div class='col-10'>");
   page += F("<div class='shadow p-3 mb-5 bg-white rounded'>");
   page += F("<p>Auth Token is a unique identifier which is needed to connect your Pedalino to your smartphone. Every Pedalino will have its own Auth Token. You’ll get Auth Token automatically on your email after Pedalino app clone. You can also copy it manually. Click on devices section and selected required device.</p>");
   page += F("<p>Don’t share your Auth Token with anyone, unless you want someone to have access to your Pedalino.</p>");
@@ -766,7 +782,7 @@ String get_options_page() {
   page += F("</div>");
 
   page += F("<div class='form-row'>");
-  page += F("<div class='col-sm-2'>");
+  page += F("<div class='col-2'>");
   page += F("<button type='submit' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
@@ -893,10 +909,10 @@ void http_handle_post_pedals() {
     pedals[i].mapFunction = a.toInt();
 
     a = httpServer.arg(String("min") + String(i+1));
-    pedals[i].expZero = a.toInt();
+    pedals[i].expZero = a.toInt() * ADC_RESOLUTION / 100;
 
     a = httpServer.arg(String("max") + String(i+1));
-    pedals[i].expMax = a.toInt();
+    pedals[i].expMax = a.toInt() * ADC_RESOLUTION / 100;
   }
   blynk_refresh();
   alert = "Saved";
