@@ -28,8 +28,6 @@ ESP8266HTTPUpdateServer httpUpdater;
 WebServer               httpServer(80);
 #endif
 
-void blynk_refresh();
-void blynk_disconnect();
 
 #ifdef WEBCONFIG
 
@@ -176,7 +174,7 @@ String get_root_page() {
   page += F("<dt>IDE Flash Size</dt><dd>");
   page += ESP.getFlashChipSize() / (1024 * 1024);
   page += F(" MB</dd>");
-#ifdef ARDUINO_ARCH_ESP8266 
+#ifdef ARDUINO_ARCH_ESP8266
   page += F("<dt>Real Flash Size</dt><dd>");
   page += ESP.getFlashChipRealSize() / (1024 * 1024);
   page += F(" MB</dd>");
@@ -213,7 +211,12 @@ String get_root_page() {
   page += F("<div class='col-3'>");
   page += F("<h3>Network</h3>");
   page += F("<dt>Hostname</dt><dd>");
+#ifdef ARDUINO_ARCH_ESP8266
+  page += WiFi.hostname() + String(".local");
+#endif
+#ifdef ARDUINO_ARCH_ESP32
   page += WiFi.getHostname() + String(".local");
+#endif
   page += F("</dd>");
   page += F("<dt>IP address</dt><dd>");
   page += WiFi.localIP().toString();

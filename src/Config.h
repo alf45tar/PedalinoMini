@@ -155,28 +155,72 @@ void load_factory_default()
 //
 //  Write current profile to EEPROM
 //
-void update_current_profile_eeprom()
+void eeprom_update_current_profile()
 {
   int offset = 0;
+  char signature[sizeof(SIGNATURE) + 1];
+  byte saved_version;
+
+  EEPROM.get(offset, signature);
+  offset += sizeof(SIGNATURE);
+  EEPROM.get(offset, saved_version);
+  offset += sizeof(byte);
+
+  DPRINT("EEPROM signature: %s\n", signature);
+  DPRINT("EEPROM version  : %d\n", saved_version);
+
+  if ((strcmp(signature, SIGNATURE) != 0) || (saved_version != EEPROM_VERSION))
+    return;
 
   DPRINT("Updating EEPROM ...\n");
 
-  EEPROM.put(offset, SIGNATURE);
+  EEPROM.put(offset, currentProfile);
+  offset += sizeof(byte);
+  EEPROM.commit();
+
+  DPRINT("Current profile:   %d\n", currentProfile);
+}
+
+//
+//  Write Blynk Auth Token to EEPROM
+//
+void eeprom_update_blynk_auth_token()
+{
+  int offset = 0;
+  char signature[sizeof(SIGNATURE) + 1];
+  byte saved_version;
+
+  EEPROM.get(offset, signature);
   offset += sizeof(SIGNATURE);
-  EEPROM.put(offset, EEPROM_VERSION);
+  EEPROM.get(offset, saved_version);
   offset += sizeof(byte);
 
-  EEPROM.put(offset, currentProfile);
+  DPRINT("EEPROM signature: %s\n", signature);
+  DPRINT("EEPROM version  : %d\n", saved_version);
+
+  if ((strcmp(signature, SIGNATURE) != 0) || (saved_version != EEPROM_VERSION))
+    return;
+
+  DPRINT("Reading EEPROM ...\n");
+
+  EEPROM.get(offset, currentProfile);
+  currentProfile = constrain(currentProfile, 0, PROFILES - 1);
   offset += sizeof(byte);
   DPRINT("Current profile:   %d\n", currentProfile);
 
+  DPRINT("Updating EEPROM ...\n");
+
+  EEPROM.put(offset, blynk_get_token().c_str());
+  offset += blynk_get_token().length() + 1;
   EEPROM.commit();
+
+  DPRINT("Blynk Auth Token:  %s\n", blynk_get_token().c_str());
 }
 
 //
 //  Write current configuration to EEPROM
 //
-void update_eeprom()
+void eeprom_update()
 {
   int offset = 0;
 
@@ -191,7 +235,7 @@ void update_eeprom()
   offset += sizeof(byte);
   DPRINT("Current profile:   %d\n", currentProfile);
 
-  EEPROM.writeString(offset, blynk_get_token());
+  EEPROM.put(offset, blynk_get_token().c_str());
   offset += blynk_get_token().length() + 1;
   DPRINT("Blynk Auth Token:  %s\n", blynk_get_token().c_str());
 
@@ -299,11 +343,12 @@ void update_eeprom()
 //
 //  Read configuration from EEPROM
 //
-void read_eeprom()
+void eeprom_read()
 {
   int offset = 0;
   char signature[sizeof(SIGNATURE) + 1];
   byte saved_version;
+  char token[33];
 
   load_factory_default();
 
@@ -325,8 +370,9 @@ void read_eeprom()
   offset += sizeof(byte);
   DPRINT("Current profile:   %d\n", currentProfile);
 
-  blynk_set_token(EEPROM.readString(offset));
-  offset += EEPROM.readString(offset).length() + 1;
+  EEPROM.get(offset, token);
+  blynk_set_token(String(token));
+  offset += sizeof(token);
   DPRINT("Blynk Auth Token:  %s\n", blynk_get_token().c_str());
 
   // Jump to profile

@@ -91,7 +91,7 @@ WidgetLCD  blynkLCD(V0);
 String     ssid, password;
 
 void screen_update(bool);
-void update_current_profile_eeprom();
+void eeprom_update_current_profile();
 
 String blynk_get_token()
 {
@@ -285,7 +285,7 @@ BLYNK_WRITE(BLYNK_PROFILE) {
   PRINT_VIRTUAL_PIN(request.pin);
   DPRINT(" - Profile %d\n", profile);
   currentProfile = constrain(profile - 1, 0, PROFILES - 1);
-  update_current_profile_eeprom();
+  eeprom_update_current_profile();
   DPRINTLN("Switching profile");
   ESP.restart();
 }

@@ -48,7 +48,7 @@ void blynk_connect();
 void save_wifi_credentials(String ssid, String password)
 {
 #ifdef ARDUINO_ARCH_ESP32
-  update_eeprom();
+  eeprom_update();
 #endif
 }
 

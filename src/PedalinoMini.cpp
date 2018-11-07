@@ -142,9 +142,9 @@ void setup()
     delay(1000);
 #endif
     load_factory_default();
-    update_eeprom();
+    eeprom_update();
   }
-  read_eeprom();
+  eeprom_read();
 
 #ifdef ARDUINO_ARCH_ESP8266
   SerialMIDI.begin(SERIALMIDI_BAUD_RATE);
