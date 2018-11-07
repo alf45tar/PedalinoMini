@@ -834,6 +834,32 @@ String get_options_page() {
 
   page += F("<p></p>");
   page += F("<form method='post'>");
+
+  page += F("<div class='form-row'>");
+  page += F("<label for='bootstraptheme' class='col-sm-2 col-form-label'>Web UI Theme</label>");
+  page += F("<div class='col-sm-10'>");
+  page += F("<select class='custom-select custom-select-sm' id='bootstraptheme' name='theme'>");
+  page += F("<option value='bootstrap'>Bootstrap</option>");
+  page += F("<option value='cerulean'>Cerulean</option>");
+  page += F("<option value='cosmo'>Cosmo</option>");
+  page += F("<option value='cyborg'>Cyborg</option>");
+  page += F("<option value='darkly'>Darkly</option>");
+  page += F("<option value='flatly'>Flatly</option>");
+  page += F("<option value='journal'>Journal</option>");
+  page += F("<option value='lumen'>Lumen</option>");
+  page += F("<option value='paper'>Paper</option>");
+  page += F("<option value='readable'>Readable</option>");
+  page += F("<option value='sandstone'>Sandstone</option>");
+  page += F("<option value='simplex'>Simplex</option>");
+  page += F("<option value='slate'>Slate</option>");
+  page += F("<option value='spacelab'>Spacelab</option>");
+  page += F("<option value='superhero'>Superhero</option>");
+  page += F("<option value='united'>United</option>");
+  page += F("<option value='yeti'>Yeti</option>");
+  page += F("</select>");
+  page += F("</div>");
+  page += F("</div>");
+
   page += F("<div class='form-row'>");
   page += F("<label for='authtoken' class='col-sm-2 col-form-label'>Blynk Auth Token</label>");
   page += F("<div class='col-sm-10'>");
@@ -849,11 +875,13 @@ String get_options_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-  page += F("<div class='form-group row'>");
-  page += F("<div class='col-2'>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-sm-2'>");
   page += F("<button type='submit' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
+
   page += F("</form>");
 
   page += get_footer_page();
@@ -973,11 +1001,16 @@ void http_handle_post_interfaces() {
 
 void http_handle_post_options() {
   
-  blynk_disconnect();
-  blynk_set_token(httpServer.arg(String("blynkauthtoken")));
-  blynk_connect();
-  blynk_refresh();
-  alert = "Saved";
+  if (httpServer.hasArg("theme"))
+    theme = httpServer.arg("theme");
+
+  if (httpServer.arg("blynkauthtoken")) {
+    blynk_disconnect();
+    blynk_set_token(httpServer.arg("blynkauthtoken"));
+    blynk_connect();
+    blynk_refresh();
+    alert = "Saved";
+  }
   httpServer.send(200, "text/html", get_options_page());
 }
 
