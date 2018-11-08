@@ -40,7 +40,7 @@ void    blynk_refresh();
 
 String  theme = "bootstrap";
 String  alert = "";
-String  bank  = "1";
+String  uibank = "1";
 
 String get_top_page(byte p = 0) {
 
@@ -100,6 +100,7 @@ String get_top_page(byte p = 0) {
   page += F("</nav>");
 
   if (alert != "") {
+    page += F("<p></p>");
     page += F("<div class='alert alert-success alert-dismissible fade show' role='alert'>");
     page += alert;
     page += F("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>");
@@ -116,7 +117,7 @@ String get_footer_page() {
 
   String page = "";
   page += F("<nav class='navbar fixed-bottom navbar-light bg-light'>");
-  page += F("<a class='navbar-text' href='https://github.com/alf45tar/Pedalino'>https://github.com/alf45tar/Pedalino</a>");
+  page += F("<a class='navbar-text' href='https://github.com/alf45tar/PedalinoMini'>https://github.com/alf45tar/PedalinoMini</a>");
   page += F("</nav>");
 
   page += F("</div>");
@@ -267,43 +268,83 @@ String get_live_page() {
 String get_banks_page() {
 
   String page = "";
-
-  const byte b = bank.toInt();
+  const byte b = uibank.toInt();
 
   page += get_top_page(2);
   
+  page += F("<p></p>");
+
   page += F("<div class='btn-group'>");
   for (unsigned int i = 1; i <= BANKS; i++) {
-    page += F("<form><button type='button submit' class='btn");
-    page += (bank == String(i) ? String(" btn-primary") : String(""));
+    page += F("<form method='get'><button type='button submit' class='btn");
+    page += (uibank == String(i) ? String(" btn-primary") : String(""));
     page += F("' name='bank' value='");
     page += String(i) + F("'>") + String(i) + F("</button></form>");
   }
   page += F("</div>");
+  
+  page += F("<p></p>");
 
-  page += F("<table class='table-responsive-sm table-borderless'>");
-  page += F("<tbody><tr><td>Pedal</td><td>Message</td><td>Channel</td><td>Code</td><td>Value 1</td><td>Value 2</td><td>Value 3</td></tr>");
+  page += F("<form method='post'>");
+  page += F("<div>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-auto'>");
+  page += F("<span class='badge badge-primary'>Pedal</span>");
+  page += F("</div>");
+  page += F("<div class='col-auto'>");
+  page += F("<span class='badge badge-primary'>Message</span>");
+  page += F("</div>");
+  page += F("<div class='col-auto'>");
+  page += F("<span class='badge badge-primary'>Channel</span>");
+  page += F("</div>");
+  page += F("<div class='col-auto'>");
+  page += F("<span class='badge badge-primary'>Code</span>");
+  page += F("</div>");
+  page += F("<div class='col-auto'>");
+  page += F("<span class='badge badge-primary'>Value 1</span>");
+  page += F("</div>");
+  page += F("<div class='col-auto'>");
+  page += F("<span class='badge badge-primary'>Value 2</span>");
+  page += F("</div>");
+  page += F("<div class='col-auto'>");
+  page += F("<span class='badge badge-primary'>Value 3</span>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<p></p>");
 
   for (unsigned int i = 1; i <= PEDALS; i++) {
-    page += F("<tr align='center' valign='center'>");
 
-    page += F("<td>");
+    page += F("<div class='form-row'>");
+
+    page += F("<div class='col-auto'>");
     page += String(i);
-    page += F("</td>");
+    page += F("</div>");
 
-    page += F("<td><div class='form-group'>");
-    page += F("<select class='custom-select-sm' name='message");
+    page += F("<div class='col-auto'>");
+    page += F("<select class='custom-select custom-select-sm' name='message");
     page += String(i);
     page += F("'>");
-    page += F("<option>Program Change</option>");
-    page += F("<option>Control Change</option>");
-    page += F("<option>Note On/Off</option>");
-    page += F("<option>Pitch Bend</option>");
+    page += F("<option value='>");
+    page += String(PED_PROGRAM_CHANGE) + F("'");
+    if (banks[b-1][i-1].midiMessage == PED_PROGRAM_CHANGE) page += F(" selected");
+    page += F(">Program Change</option>");
+    page += F("<option value='>");
+    page += String(PED_CONTROL_CHANGE) + F("'");
+    if (banks[b-1][i-1].midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
+    page += F(">Control Change</option>");
+    page += F("<option value='>");
+    page += String(PED_NOTE_ON_OFF) + F("'");
+    if (banks[b-1][i-1].midiMessage == PED_NOTE_ON_OFF) page += F(" selected");
+    page += F(">Note On/Off</option>");
+    page += F("<option value='>");
+    page += String(PED_PITCH_BEND) + F("'");
+    if (banks[b-1][i-1].midiMessage == PED_PITCH_BEND) page += F(" selected");
+    page += F(">Pitch Bend</option>");
     page += F("</select>");
-    page += F("</div></td>");
+    page += F("</div>");
 
-    page += F("<td><div class='form-group'>");
-    page += F("<select class='custom-select-sm' name='channel");
+    page += F("<div class='col-auto'>");
+    page += F("<select class='custom-select custom-select-sm' name='channel");
     page += String(i) + F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
       page += F("<option value='");
@@ -313,32 +354,40 @@ String get_banks_page() {
       page += String(c) + F("</option>");
     }
     page += F("</select>");
-    page += F("</div></td>");
+    page += F("</div>");
 
-    page += F("<td><div class='form-group'>");
-    page += F("<input type='number' class='custom-select-sm' name='code' min='0' max='127' value='");
-    //page += String(banks[b][i].midiCode);
-    page += F("'></div></td>");
+    page += F("<div class='col-auto'>");
+    page += F("<input type='number' class='form-control form-control-sm' name='code' min='0' max='127' value='");
+    page += String(banks[b-1][i-1].midiCode);
+    page += F("'></div>");
 
-    page += F("<td><div class='form-group'>");
-    page += F("<input type='number' class='custom-select-sm' name='code1' min='0' max='127' value='");
-    //page += String(banks[b][i].midiValue1);
-    page += F("'></div></td>");
+    page += F("<div class='col-auto'>");
+    page += F("<input type='number' class='form-control form-control-sm' name='code1' min='0' max='127' value='");
+    page += String(banks[b-1][i-1].midiValue1);
+    page += F("'></div>");
 
-    page += F("<td><div class='form-group'>");
-    page += F("<input type='number' class='custom-select-sm' name='code2' min='0' max='127' value='");
-    //page += String(banks[b][i].midiValue2);
-    page += F("'></div></td>");
+    page += F("<div class='col-auto'>");
+    page += F("<input type='number' class='form-control form-control-sm' name='code2' min='0' max='127' value='");
+    page += String(banks[b-1][i-1].midiValue2);
+    page += F("'></div>");
 
-    page += F("<td><div class='form-group'>");
-    page += F("<input type='number' class='custom-select-sm' name='code3' min='0' max='127' value='");
-    //page += String(banks[b][i].midiValue3);
-    page += F("'></div></td>");
+    page += F("<div class='col-auto'>");
+    page += F("<input type='number' class='form-control form-control-sm' name='code3' min='0' max='127' value='");
+    page += String(banks[b-1][i-1].midiValue3);
+    page += F("'></div>");
 
-    page += F("</tr>");
+    page += F("</div>");
   }
-  page += F("</tbody>");
-  page += F("</table>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-auto'>");
+  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
 
   page += get_footer_page();
 
@@ -588,10 +637,12 @@ String get_pedals_page() {
     page += F("<div class='form-group'>");
     page += F("<label for='minControlRange");
     page += String(i) + F("'></label>");
-    page += F("<input type='range' class='form-control-range' id='minControlRange");
+    page += F("<input type='range' class='custom-range' id='minControlRange");
     page += String(i) + F("' name='min");
     page += String(i) + F("' value='");
-    page += String((pedals[i-1].expZero * 100) / ADC_RESOLUTION) + F("'>");
+    page += String(pedals[i-1].expZero);
+    page += String("' min='0' max='");
+    page += String(ADC_RESOLUTION) + F("'>");
     page += F("</div>");
     page += F("</div>");
 
@@ -599,18 +650,22 @@ String get_pedals_page() {
     page += F("<div class='form-group'>");
     page += F("<label for='maxControlRange");
     page += String(i) + F("'></label>");
-    page += F("<input type='range' class='form-control-range' id='maxControlRange");
+    page += F("<input type='range' class='custom-range' id='maxControlRange");
     page += String(i) + F("' name='max");
     page += String(i) + F("' value='");
-    page += String((pedals[i-1].expMax * 100) / ADC_RESOLUTION) + F("'>");
+    page += String(pedals[i-1].expMax);
+    page += String("' min='0' max='");
+    page += String(ADC_RESOLUTION) + F("'>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("</div>");
   }
 
+  page += F("<p></p>");
+
   page += F("<div class='form-row'>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-auto'>");
   page += F("<button type='submit' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
@@ -713,7 +768,7 @@ String get_interfaces_page() {
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
-  page += F("<div class='col-2'>");
+  page += F("<div class='col-auto'>");
   page += F("<button type='submit' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
@@ -782,7 +837,7 @@ String get_options_page() {
   page += F("</div>");
 
   page += F("<div class='form-row'>");
-  page += F("<div class='col-2'>");
+  page += F("<div class='col-auto'>");
   page += F("<button type='submit' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
@@ -800,7 +855,7 @@ void http_handle_root() {
     theme = httpServer.arg("theme");
     httpServer.send(200, "text/html", get_root_page());
   } else if (httpServer.hasArg("bank")) {
-    bank = httpServer.arg("bank");
+    uibank = httpServer.arg("bank");
     httpServer.send(200, "text/html", get_banks_page());
   } else {
     httpServer.send(200, "text/html", get_root_page());
@@ -815,7 +870,7 @@ void http_handle_live() {
 
 void http_handle_banks() {
   if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
-  if (httpServer.hasArg("bank"))  bank  = httpServer.arg("bank");
+  if (httpServer.hasArg("bank"))  uibank  = httpServer.arg("bank");
   httpServer.send(200, "text/html", get_banks_page());
 }
 
@@ -851,7 +906,7 @@ void http_handle_post_live() {
 void http_handle_post_banks() {
   
   String a;
-  byte   b = bank.toInt();
+  byte   b = uibank.toInt();
   
   for (unsigned int i = 0; i < PEDALS; i++) {
     a = httpServer.arg(String("message") + String(i+1));
@@ -909,10 +964,10 @@ void http_handle_post_pedals() {
     pedals[i].mapFunction = a.toInt();
 
     a = httpServer.arg(String("min") + String(i+1));
-    pedals[i].expZero = a.toInt() * ADC_RESOLUTION / 100;
+    pedals[i].expZero = a.toInt();
 
     a = httpServer.arg(String("max") + String(i+1));
-    pedals[i].expMax = a.toInt() * ADC_RESOLUTION / 100;
+    pedals[i].expMax = a.toInt();
   }
   blynk_refresh();
   alert = "Saved";
