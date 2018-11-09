@@ -110,6 +110,9 @@ String get_top_page(byte p = 0) {
     alert = "";
   }
 
+  
+  page += F("<p></p>");
+
   return page;
 }
 
@@ -136,7 +139,6 @@ String get_root_page() {
 
   page += get_top_page();
 
-  page += F("<p></p>");
   page += F("<h4 class='display-4'>Smart wireless MIDI foot controller</h4>");
   page += F("<p></p>");
 
@@ -153,9 +155,11 @@ String get_root_page() {
   page += String("ESP32");
 #endif
   page += F("</dd>");
+#ifdef ARDUINO_ARCH_ESP32
   page += F("<dt>Chip Revision</dt><dd>");
   page += ESP.getChipRevision();
   page += F("</dd>");
+#endif
   page += F("<dt>SDK Version</dt><dd>");
   page += ESP.getSdkVersion();
   page += F("</dd>");
@@ -271,8 +275,6 @@ String get_banks_page() {
   const byte b = uibank.toInt();
 
   page += get_top_page(2);
-  
-  page += F("<p></p>");
 
   page += F("<div class='btn-group'>");
   for (unsigned int i = 1; i <= BANKS; i++) {
@@ -286,41 +288,38 @@ String get_banks_page() {
   page += F("<p></p>");
 
   page += F("<form method='post'>");
-  page += F("<div>");
   page += F("<div class='form-row'>");
-  page += F("<div class='col-auto'>");
+  page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>Pedal</span>");
   page += F("</div>");
-  page += F("<div class='col-auto'>");
+  page += F("<div class='col-2'>");
   page += F("<span class='badge badge-primary'>Message</span>");
   page += F("</div>");
-  page += F("<div class='col-auto'>");
+  page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>Channel</span>");
   page += F("</div>");
-  page += F("<div class='col-auto'>");
+  page += F("<div class='col-2'>");
   page += F("<span class='badge badge-primary'>Code</span>");
   page += F("</div>");
-  page += F("<div class='col-auto'>");
+  page += F("<div class='col-2'>");
   page += F("<span class='badge badge-primary'>Value 1</span>");
   page += F("</div>");
-  page += F("<div class='col-auto'>");
+  page += F("<div class='col-2'>");
   page += F("<span class='badge badge-primary'>Value 2</span>");
   page += F("</div>");
   page += F("<div class='col-auto'>");
   page += F("<span class='badge badge-primary'>Value 3</span>");
   page += F("</div>");
-  page += F("</div>");
-  page += F("<p></p>");
 
   for (unsigned int i = 1; i <= PEDALS; i++) {
 
-    page += F("<div class='form-row'>");
+    page += F("<div class='w-100'></div>");
 
-    page += F("<div class='col-auto'>");
+    page += F("<div class='col-1'>");
     page += String(i);
     page += F("</div>");
 
-    page += F("<div class='col-auto'>");
+    page += F("<div class='col-2'>");
     page += F("<select class='custom-select custom-select-sm' name='message");
     page += String(i);
     page += F("'>");
@@ -343,7 +342,7 @@ String get_banks_page() {
     page += F("</select>");
     page += F("</div>");
 
-    page += F("<div class='col-auto'>");
+    page += F("<div class='col-1'>");
     page += F("<select class='custom-select custom-select-sm' name='channel");
     page += String(i) + F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
@@ -356,22 +355,22 @@ String get_banks_page() {
     page += F("</select>");
     page += F("</div>");
 
-    page += F("<div class='col-auto'>");
+    page += F("<div class='col-2'>");
     page += F("<input type='number' class='form-control form-control-sm' name='code' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiCode);
     page += F("'></div>");
 
-    page += F("<div class='col-auto'>");
+    page += F("<div class='col-2'>");
     page += F("<input type='number' class='form-control form-control-sm' name='code1' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiValue1);
     page += F("'></div>");
 
-    page += F("<div class='col-auto'>");
+    page += F("<div class='col-2'>");
     page += F("<input type='number' class='form-control form-control-sm' name='code2' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiValue2);
     page += F("'></div>");
 
-    page += F("<div class='col-auto'>");
+    page += F("<div class='col-2'>");
     page += F("<input type='number' class='form-control form-control-sm' name='code3' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiValue3);
     page += F("'></div>");
@@ -401,8 +400,9 @@ String get_pedals_page() {
   page += get_top_page(3);
 
   page += F("<p></p>");
+
   page += F("<form method='post'>");
-  page += F("<div class='form-row align-items-center'>");
+  page += F("<div class='form-row'>");
   page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>Pedal<br>#</span>");
   page += F("</div>");
@@ -436,11 +436,10 @@ String get_pedals_page() {
   page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>Analog<br>Max</span>");
   page += F("</div>");
-  page += F("</div>");
-  page += F("<p></p>");
 
   for (unsigned int i = 1; i <= PEDALS; i++) {
-    page += F("<div class='form-row align-items-center'>");
+
+    page += F("<div class='w-100'></div>");
 
     page += F("<div class='col-1'>");
     page += String(i);
@@ -661,6 +660,7 @@ String get_pedals_page() {
 
     page += F("</div>");
   }
+  page += F("</div>");
 
   page += F("<p></p>");
 
@@ -781,7 +781,9 @@ String get_interfaces_page() {
 
 String get_options_page() {
 
-  String page = "";
+  String        page = "";
+  const String  bootswatch[] = {"bootstrap", "cerulean", "cosmo", "cyborg", "darkly", "flatly", "litera", "journal", "lumen", "lux", "materia",
+                                "minty", "pulse", "sandstone", "simplex", "sketchy", "slate", "solar", "spacelab", "superhero", "united", "yeti"};
 
   page += get_top_page(5);
 
@@ -792,28 +794,13 @@ String get_options_page() {
   page += F("<label for='bootstraptheme' class='col-2 col-form-label'>Web UI Theme</label>");
   page += F("<div class='col-10'>");
   page += F("<select class='custom-select' id='bootstraptheme' name='theme'>");
-  page += F("<option value='bootstrap'>Bootstrap</option>");
-  page += F("<option value='cerulean'>Cerulean</option>");
-  page += F("<option value='cosmo'>Cosmo</option>");
-  page += F("<option value='cyborg'>Cyborg</option>");
-  page += F("<option value='darkly'>Darkly</option>");
-  page += F("<option value='flatly'>Flatly</option>");
-  page += F("<option value='litera'>Litera</option>");
-  page += F("<option value='journal'>Journal</option>");
-  page += F("<option value='lumen'>Lumen</option>");
-  page += F("<option value='lux'>Lux</option>");
-  page += F("<option value='materia'>Materia</option>");
-  page += F("<option value='minty'>Minty</option>");
-  page += F("<option value='pulse'>Pulse</option>");
-  page += F("<option value='sandstone'>Sandstone</option>");
-  page += F("<option value='simplex'>Simplex</option>");
-  page += F("<option value='sketchy'>Sketchy</option>");
-  page += F("<option value='slate'>Slate</option>");
-  page += F("<option value='solar'>Solar</option>");
-  page += F("<option value='spacelab'>Spacelab</option>");
-  page += F("<option value='superhero'>Superhero</option>");
-  page += F("<option value='united'>United</option>");
-  page += F("<option value='yeti'>Yeti</option>");
+  for (unsigned int i = 0; i < 22; i++) {
+    page += F("<option value='");
+    page += bootswatch[i] + F("'");
+    if (theme == bootswatch[i]) page += F(" selected");
+    page += F(">");
+    page + bootswatch[i] + F("</option>");
+  }
   page += F("</select>");
   page += F("</div>");
   page += F("</div>");
