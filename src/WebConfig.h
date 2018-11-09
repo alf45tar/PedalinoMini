@@ -349,7 +349,7 @@ String get_banks_page() {
     for (unsigned int c = 1; c <= 16; c++) {
       page += F("<option value='");
       page += String(c) + F("'");
-      if (banks[b][i].midiChannel == c) page += F(" selected");
+      if (banks[b-1][i-1].midiChannel == c) page += F(" selected");
       page += F(">");
       page += String(c) + F("</option>");
     }

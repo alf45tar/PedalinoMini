@@ -218,7 +218,7 @@ void screen_update(bool force = false) {
   static int  analog;
   static byte batteryLevel = 0;
 
-  byte        f, p;
+  byte        f = 0, p = 0;
 
   if (!powersaver) {
 
