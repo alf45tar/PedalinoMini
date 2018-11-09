@@ -262,8 +262,6 @@ String get_live_page() {
 
   page += get_top_page(1);
 
-  page += F("<p></p>");
-
   page += get_footer_page();
 
   return page;
@@ -272,7 +270,7 @@ String get_live_page() {
 String get_banks_page() {
 
   String page = "";
-  const byte b = uibank.toInt();
+  const byte b = constrain(uibank.toInt(), 0, BANKS);
 
   page += get_top_page(2);
 
@@ -289,33 +287,34 @@ String get_banks_page() {
 
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Pedal</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>Message</span>");
+  page += F("<span class='badge badge-primary'>MIDI Message</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>Channel</span>");
+  page += F("<span class='badge badge-primary'>MIDI Channel</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>Code</span>");
+  page += F("<span class='badge badge-primary'>MIDI Code/Note</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>Value 1</span>");
+  page += F("<span class='badge badge-primary'>MIDI Value 1</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>Value 2</span>");
+  page += F("<span class='badge badge-primary'>MIDI Value 2</span>");
   page += F("</div>");
-  page += F("<div class='col-auto'>");
-  page += F("<span class='badge badge-primary'>Value 3</span>");
+  page += F("<div class='col-2'>");
+  page += F("<span class='badge badge-primary'>MIDI Value 3</span>");
+  page += F("</div>");
   page += F("</div>");
 
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
   for (unsigned int i = 1; i <= PEDALS; i++) {
-
-    page += F("<div class='w-100'></div>");
-
-    page += F("<div class='col-1'>");
+    page += F("<div class='col-1 mb-3 text-center'>");
     page += String(i);
     page += F("</div>");
 
@@ -323,19 +322,19 @@ String get_banks_page() {
     page += F("<select class='custom-select custom-select-sm' name='message");
     page += String(i);
     page += F("'>");
-    page += F("<option value='>");
+    page += F("<option value='");
     page += String(PED_PROGRAM_CHANGE) + F("'");
     if (banks[b-1][i-1].midiMessage == PED_PROGRAM_CHANGE) page += F(" selected");
     page += F(">Program Change</option>");
-    page += F("<option value='>");
+    page += F("<option value='");
     page += String(PED_CONTROL_CHANGE) + F("'");
     if (banks[b-1][i-1].midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
     page += F(">Control Change</option>");
-    page += F("<option value='>");
+    page += F("<option value='");
     page += String(PED_NOTE_ON_OFF) + F("'");
     if (banks[b-1][i-1].midiMessage == PED_NOTE_ON_OFF) page += F(" selected");
     page += F(">Note On/Off</option>");
-    page += F("<option value='>");
+    page += F("<option value='");
     page += String(PED_PITCH_BEND) + F("'");
     if (banks[b-1][i-1].midiMessage == PED_PITCH_BEND) page += F(" selected");
     page += F(">Pitch Bend</option>");
@@ -356,26 +355,34 @@ String get_banks_page() {
     page += F("</div>");
 
     page += F("<div class='col-2'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='code' min='0' max='127' value='");
+    page += F("<input type='number' class='form-control form-control-sm' name='code");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiCode);
     page += F("'></div>");
 
     page += F("<div class='col-2'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='code1' min='0' max='127' value='");
+    page += F("<input type='number' class='form-control form-control-sm' name='value1");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiValue1);
     page += F("'></div>");
 
     page += F("<div class='col-2'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='code2' min='0' max='127' value='");
+    page += F("<input type='number' class='form-control form-control-sm' name='value2");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiValue2);
     page += F("'></div>");
 
     page += F("<div class='col-2'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='code3' min='0' max='127' value='");
+    page += F("<input type='number' class='form-control form-control-sm' name='value3");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiValue3);
     page += F("'></div>");
 
-    page += F("</div>");
+    page += F("<div class='w-100'></div>");
   }
   page += F("</div>");
 
@@ -399,14 +406,12 @@ String get_pedals_page() {
 
   page += get_top_page(3);
 
-  page += F("<p></p>");
-
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Pedal<br>#</span>");
   page += F("</div>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Auto<br>Sensing</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
@@ -415,37 +420,38 @@ String get_pedals_page() {
   page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>Pedal<br>Function</span>");
   page += F("</div>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Single<br>Press</span>");
   page += F("</div>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Double<br>Press</span>");
   page += F("</div>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Long<br>Press</span>");
   page += F("</div>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Invert<br>Polarity</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>Analog<br>Map</span>");
   page += F("</div>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Analog<br>Zero</span>");
   page += F("</div>");
-  page += F("<div class='col-1'>");
+  page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Analog<br>Max</span>");
   page += F("</div>");
+  page += F("</div>");
 
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
   for (unsigned int i = 1; i <= PEDALS; i++) {
-
-    page += F("<div class='w-100'></div>");
-
-    page += F("<div class='col-1'>");
+    page += F("<div class='col-1 text-center'>");
     page += String(i);
     page += F("</div>");
 
-    page += F("<div class='col-1'>");
+    page += F("<div class='col-1 text-center'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='autoCheck");
     page += String(i) + F("' name='autosensing") + String(i) + F("'");
@@ -457,7 +463,6 @@ String get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='col-2'>");
-    //page += F("<div class='form-group'>");
     page += F("<select class='custom-select custom-select-sm' name='mode");
     page += String(i);
     page += F("'>");
@@ -498,11 +503,9 @@ String get_pedals_page() {
     if (pedals[i-1].mode == PED_LADDER) page += F(" selected");
     page += F(">Ladder</option>");
     page += F("</select>");
-    //page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='col-1'>");
-    //page += F("<div class='form-group'>");
     page += F("<select class='custom-select custom-select-sm' name='function");
     page += String(i);
     page += F("'>");
@@ -555,10 +558,9 @@ String get_pedals_page() {
     if (pedals[i-1].function == PED_PREVIOUS) page += F(" selected");
     page += F(">Previous</option>");
     page += F("</select>");
-    //page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-1'>");
+    page += F("<div class='col-1 text-center'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='singleCheck");
     page += String(i) + F("' name='singlepress") + String(i) + F("'");
@@ -572,7 +574,7 @@ String get_pedals_page() {
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-1'>");
+    page += F("<div class='col-1 text-center'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='doubleCheck");
     page += String(i) + F("' name='doublepress") + String(i) + F("'");
@@ -586,7 +588,7 @@ String get_pedals_page() {
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-1'>");
+    page += F("<div class='col-1 text-center'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='longCheck");
     page += String(i) + F("' name='longpress") + String(i) + F("'");
@@ -600,7 +602,7 @@ String get_pedals_page() {
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-1'>");
+    page += F("<div class='col-1 text-center'>");
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='polarityCheck");
     page += String(i) + F("' name='polarity") + String(i) + F("'");
@@ -612,7 +614,6 @@ String get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='col-1'>");
-    //page += F("<div class='form-group'>");
     page += F("<select class='custom-select custom-select-sm' name='map");
     page += String(i);
     page += F("'>");
@@ -629,7 +630,6 @@ String get_pedals_page() {
     if (pedals[i-1].mapFunction == PED_ANTILOG) page += F(" selected");
     page += F(">Antilog</option>");  
     page += F("</select>");
-    //page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='col-1'>");
@@ -658,7 +658,7 @@ String get_pedals_page() {
     page += F("</div>");
     page += F("</div>");
 
-    page += F("</div>");
+    page += F("<div class='w-100'></div>");
   }
   page += F("</div>");
 
@@ -682,7 +682,6 @@ String get_interfaces_page() {
 
   page += get_top_page(4);
 
-  page += F("<p></p>");
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
@@ -782,12 +781,31 @@ String get_interfaces_page() {
 String get_options_page() {
 
   String        page = "";
-  const String  bootswatch[] = {"bootstrap", "cerulean", "cosmo", "cyborg", "darkly", "flatly", "litera", "journal", "lumen", "lux", "materia",
-                                "minty", "pulse", "sandstone", "simplex", "sketchy", "slate", "solar", "spacelab", "superhero", "united", "yeti"};
+  const String  bootswatch[] = { "bootstrap",
+                                 "cerulean",
+                                 "cosmo",
+                                 "cyborg",
+                                 "darkly",
+                                 "flatly",
+                                 "litera",
+                                 "journal",
+                                 "lumen",
+                                 "lux",
+                                 "materia",
+                                 "minty",
+                                 "pulse",
+                                 "sandstone",
+                                 "simplex",
+                                 "sketchy",
+                                 "slate",
+                                 "solar",
+                                 "spacelab",
+                                 "superhero",
+                                 "united",
+                                 "yeti"};
 
   page += get_top_page(5);
 
-  page += F("<p></p>");
   page += F("<form method='post'>");
 
   page += F("<div class='form-row'>");
@@ -799,7 +817,7 @@ String get_options_page() {
     page += bootswatch[i] + F("'");
     if (theme == bootswatch[i]) page += F(" selected");
     page += F(">");
-    page + bootswatch[i] + F("</option>");
+    page += bootswatch[i] + F("</option>");
   }
   page += F("</select>");
   page += F("</div>");
@@ -892,8 +910,8 @@ void http_handle_post_live() {
 
 void http_handle_post_banks() {
   
-  String a;
-  byte   b = uibank.toInt();
+  String     a;
+  const byte b = constrain(uibank.toInt() - 1, 0, BANKS);
   
   for (unsigned int i = 0; i < PEDALS; i++) {
     a = httpServer.arg(String("message") + String(i+1));
@@ -921,8 +939,8 @@ void http_handle_post_banks() {
 
 void http_handle_post_pedals() {
   
-  String a;
-  String checked("on");
+  String       a;
+  const String checked("on");
   
   //httpServer.sendHeader("Connection", "close");
   for (unsigned int i = 0; i < PEDALS; i++) {
@@ -963,8 +981,8 @@ void http_handle_post_pedals() {
 
 void http_handle_post_interfaces() {
   
-  String a;
-  String checked("on");
+  String       a;
+  const String checked("on");
   
   //httpServer.sendHeader("Connection", "close");
   for (unsigned int i = 0; i < INTERFACES; i++) {
