@@ -38,9 +38,10 @@ void    blynk_disconnect();
 void    blynk_refresh();
 
 
-String  theme = "bootstrap";
-String  alert = "";
-String  uibank = "1";
+String  theme     = "bootstrap";
+String  alert     = "";
+String  uiprofile = "1";
+String  uibank    = "1";
 
 String get_top_page(byte p = 0) {
 
@@ -93,9 +94,22 @@ String get_top_page(byte p = 0) {
   page += F("<a class='nav-link' href='/options'>Options</a>");
   page += F("</li>");
   page += F("</ul>");
-  //page += F("<form class='form-inline my-2 my-lg-0'>");
+  page += F("<form class='form-inline my-2 my-lg-0'>");
   //page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
-  //page += F("</form>");
+  page += F("<div class='btn-group my-2 my-sm-0'>");
+  page += F("<button type='button' class='btn btn-warning'>Profile ");
+  page += String((char)('A' + uiprofile.toInt() - 1));
+  page += F("</button>");
+  page += F("<button type='button' class='btn btn-warning dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
+  page += F("<span class='sr-only'>Toggle Dropdown</span>");
+  page += F("</button>");
+  page += F("<div class='dropdown-menu' aria-labelledby='navbarDropdownMenuLink'>");
+  page += F("<a class='dropdown-item' href='?profile=1'>A</a>");
+  page += F("<a class='dropdown-item' href='?profile=2'>B</a>");
+  page += F("<a class='dropdown-item' href='?profile=3'>C</a>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
   page += F("</div>");
   page += F("</nav>");
 
@@ -110,7 +124,6 @@ String get_top_page(byte p = 0) {
     alert = "";
   }
 
-  
   page += F("<p></p>");
 
   return page;
@@ -856,6 +869,7 @@ String get_options_page() {
 
 void http_handle_root() {
 
+  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
   if (httpServer.hasArg("theme")) {
     theme = httpServer.arg("theme");
     httpServer.send(200, "text/html", get_root_page());
@@ -870,28 +884,32 @@ void http_handle_root() {
 
 void http_handle_live() {
   if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
+  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
   httpServer.send(200, "text/html", get_live_page());
 }
 
 void http_handle_banks() {
   if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
+  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
   if (httpServer.hasArg("bank"))  uibank  = httpServer.arg("bank");
   httpServer.send(200, "text/html", get_banks_page());
 }
 
 void http_handle_pedals() {
   if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
+  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
   httpServer.send(200, "text/html", get_pedals_page());
 }
 
 void http_handle_interfaces() {
   if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
-  httpServer.sendHeader("Connection", "close");
+  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
   httpServer.send(200, "text/html", get_interfaces_page());
 }
 
 void http_handle_options() {
   if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
+  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
   httpServer.send(200, "text/html", get_options_page());
 }
 
