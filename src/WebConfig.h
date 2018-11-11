@@ -865,6 +865,14 @@ String get_options_page() {
   }
   page += F("</select>");
   page += F("</div>");
+  page += F("<div class='w-100'></div>");
+  page += F("<div class='col-2'>");
+  page += F("</div>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
+  page += F("<p>Changing default theme require internet connection because theme are served via a CDN network. Only default 'bootstrap' theme can be stored into Pedalino flash memory.</p>");
+  page += F("</div>");
+  page += F("</div>");
   page += F("</div>");
 
   page += F("<p></p>");
@@ -875,10 +883,11 @@ String get_options_page() {
   page += F("<input class='form-control' type='text' maxlength='32' id='authtoken' name='blynkauthtoken' placeholder='Blynk Auth Token is 32 characters long. Copy and paste from email.' value='");
   page += blynk_get_token() + F("'>");
   page += F("</div>");
+  page += F("<div class='w-100'></div>");
   page += F("<div class='col-2'>");
   page += F("</div>");
   page += F("<div class='col-10'>");
-  page += F("<div class='shadow p-3 mb-5 bg-white rounded'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
   page += F("<p>Auth Token is a unique identifier which is needed to connect your Pedalino to your smartphone. Every Pedalino will have its own Auth Token. You’ll get Auth Token automatically on your email after Pedalino app clone. You can also copy it manually. Click on devices section and selected required device.</p>");
   page += F("<p>Don’t share your Auth Token with anyone, unless you want someone to have access to your Pedalino.</p>");
   page += F("</div>");
@@ -900,8 +909,8 @@ String get_options_page() {
 
 void http_handle_bootstrap_file() {
 
-  const char  *file;
-  size_t       filesize;
+  const char  *file = NULL;
+  size_t       filesize = 0;
 
   if (httpServer.uri() == "/css/bootstrap.min.css") {
     file = (const char *)css_bootstrap_min_css_start;
@@ -928,52 +937,15 @@ void http_handle_bootstrap_file() {
     httpServer.send(200, "application/javascript", "");
    }
   
-  DPRINT("File %s %d bytes\n", file, filesize);
-/*
-#define BLOCK 2*1460
-
-  for (unsigned int i = 0; i < (filesize/BLOCK+1) && httpServer.client().connected(); i++) {
-    httpServer.client().write(&file[i*BLOCK], (filesize-i*BLOCK) < BLOCK ? filesize-i*BLOCK : BLOCK);
-    DPRINT("Block %d\n", i);
+  const unsigned int PACKET_SIZE = 2*1460;
+  unsigned int bytesOut = 0;
+  for (unsigned int i = 0; i < filesize / PACKET_SIZE && httpServer.client().connected(); i++) {
+    bytesOut += httpServer.client().write(&file[i*PACKET_SIZE], PACKET_SIZE);
   }
-*/
-
-  #define STREAMFILE_BUFSIZE 2*1460
- /* 
-  uint8_t *buf = (uint8_t *)malloc(STREAMFILE_BUFSIZE);
-  if (buf == NULL) {
-    DPRINT("http_handle_bootstrap_file(): malloc failed\n");
-    return;
-  }
-  */
-  size_t totalBytesOut = 0;
-  while (httpServer.client().connected() && (totalBytesOut < filesize)) {
-    int bytesIn;
-    int bytesOut;
-    if ((totalBytesOut + STREAMFILE_BUFSIZE) < filesize)
-      bytesIn = STREAMFILE_BUFSIZE;
-    else
-      bytesIn = filesize - totalBytesOut;
-    if (bytesIn <= 0) break;
-    while (1) {
-      bytesOut = 0;
-      if (!httpServer.client().connected()) break;
-      DPRINT("prima");
-      bytesOut = httpServer.client().write(&file[totalBytesOut], bytesIn);
-      DPRINT("dopo");
-      if (bytesIn == bytesOut) break;
-      DPRINT("http_handle_bootstrap_file(): bytesIn %d != bytesOut %d\n", bytesIn, bytesOut);
-      delay(1);
-    }
-    totalBytesOut += bytesOut;
-    DPRINT("%d\n", totalBytesOut);
-    yield();
-  }
-  if (totalBytesOut != filesize) {
-    DPRINT("http_handle_bootstrap_file(): file size %d bytes out %d\n", filesize, totalBytesOut);
-  }
-  //free(buf);
-
+  if (httpServer.client().connected())
+    bytesOut += httpServer.client().write(&file[filesize / PACKET_SIZE * PACKET_SIZE], filesize % PACKET_SIZE);
+   
+  DPRINT("HTTP Requested %s of %d bytes and sent %d bytes\n", httpServer.uri().c_str(), filesize, bytesOut);
 }
 
 void http_handle_globals() {
