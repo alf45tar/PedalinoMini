@@ -15,6 +15,7 @@
 
 const char host[] = "pedalino";
 
+#define MODEL     "PedalinoMini™"      
 #define INTERFACES        6
 #define PROFILES          3
 #define BANKS            10

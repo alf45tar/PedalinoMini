@@ -181,8 +181,23 @@ String get_root_page() {
   page += F("<div class='row'>");
 
   page += F("<div class='col-3'>");
+  page += F("<h3>Product</h3>");
+  page += F("<dt>Model</dt><dd>");
+  page += String(MODEL);
+  page += F("</dd>");
+  page += F("<dt>Profiles</dt><dd>");
+  page += String(PROFILES);
+  page += F("</dd>");
+  page += F("<dt>Banks</dt><dd>");
+  page += String(BANKS);
+  page += F("</dd>");
+  page += F("<dt>Pedals</dt><dd>");
+  page += String(PEDALS);
+  page += F("</dd>");
+  page += F("</div>");
+
+  page += F("<div class='col-3'>");
   page += F("<h3>Hardware</h3>");
-  page += F("<dl>");
   page += F("<dt>Chip</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
   page += String("ESP8266");
@@ -284,13 +299,13 @@ String get_root_page() {
   page += F("<dt>DNS 2</dt><dd>");
   page += WiFi.dnsIP(1).toString();
   page += F("</dd>");
-  page += F("</div>");
-
-  page += F("<div class='col-3'>");
-  page += F("<h3>Blynk</h3>");
   page += F("<dt>Blynk Cloud</dt><dd>");
   if (blynk_cloud_connected()) page += String("Online");
   else page += String("Offline");
+  page += F("</dd>");
+  page += F("<dt>MIDI Network</dt><dd>");
+  if (appleMidiConnected) page += String("Connected");
+  else page += String("Disconnected");
   page += F("</dd>");
   page += F("</div>");
 
@@ -870,7 +885,7 @@ String get_options_page() {
   page += F("</div>");
   page += F("<div class='col-10'>");
   page += F("<div class='shadow p-3 bg-white rounded'>");
-  page += F("<p>Changing default theme require internet connection because theme are served via a CDN network. Only default 'bootstrap' theme can be stored into Pedalino flash memory.</p>");
+  page += F("<p>Changing default theme require internet connection because themes are served via a CDN network. Only default 'bootstrap' theme has been stored into Pedalino flash memory.</p>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");

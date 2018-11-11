@@ -85,7 +85,7 @@ inline void blynk_refresh() {}
 
 #define BLYNK_AUTHTOKEN_LEN          32
 
-char blynkAuthToken[BLYNK_AUTHTOKEN_LEN+1] = "";
+char blynkAuthToken[BLYNK_AUTHTOKEN_LEN+1] = { 0 }; // all elements 0;
 
 WidgetLCD  blynkLCD(V0);
 String     ssid("");

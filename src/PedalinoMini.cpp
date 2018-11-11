@@ -87,6 +87,12 @@
 
 void setup()
 {
+  pinMode(WIFI_LED, OUTPUT);
+
+#ifdef ARDUINO_ARCH_ESP32
+  pinMode(BLE_LED, OUTPUT);
+#endif
+
 #ifdef ARDUINO_ARCH_ESP32
   esp_log_level_set("*",      ESP_LOG_ERROR);
   //esp_log_level_set("wifi",   ESP_LOG_WARN);
@@ -126,7 +132,10 @@ void setup()
     lcd.setCursor(duration / 500, 0);
     lcd.print("#");
 #endif
-    delay(100);
+    WIFI_LED_ON();
+    delay(50);
+    WIFI_LED_OFF();
+    delay(50);
     duration = millis() - milliStart;
   }
   DPRINTLN("");
@@ -159,12 +168,6 @@ void setup()
   autosensing_setup();
   controller_setup();
   mtc_setup();
-
-  pinMode(WIFI_LED, OUTPUT);
-
-#ifdef ARDUINO_ARCH_ESP32
-  pinMode(BLE_LED, OUTPUT);
-#endif
 
 #ifdef BLE
   // BLE MIDI service advertising
