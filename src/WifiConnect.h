@@ -76,6 +76,55 @@ String translateEncryptionType(wifi_auth_mode_t encryptionType) {
 }
 #endif
 
+void start_services () {
+
+      // Start mDNS (Multicast DNS) responder (ping pedalino.local)
+      if (MDNS.begin(host)) {
+        DPRINTLN("mDNS responder started");
+        // service name is lower case
+        // service name and protocol starts with an '_' e.g. '_udp'
+        MDNS.addService("_apple-midi", "_udp", 5004);
+        MDNS.addService("_osc",        "_udp", oscLocalPort);
+#ifdef PEDALINO_TELNET_DEBUG
+        MDNS.addService("_telnet", "_tcp", 23);
+#endif
+      }
+
+      // OTA update init
+      ota_begin(host);
+      DPRINT("OTA update started\n");
+
+      http_setup();
+      httpServer.begin();
+      MDNS.addService("http", "tcp", 80);
+      DPRINTLN("HTTP server started");
+      DPRINTLN("Connect to http://pedalino.local/update for firmware update");
+#ifdef WEBCONFIG
+      DPRINTLN("Connect to http://pedalino.local for configuration");
+#endif
+
+      ipMIDI.beginMulticast(ipMIDImulticast, ipMIDIdestPort);
+      DPRINT("ipMIDI server started\n");
+
+      // RTP-MDI
+      apple_midi_start();
+      DPRINT("RTP-MIDI started\n");
+
+      // Calculate the broadcast address of local WiFi to broadcast OSC messages
+      oscRemoteIp = WiFi.localIP();
+      IPAddress localMask = WiFi.subnetMask();
+      for (int i = 0; i < 4; i++)
+        oscRemoteIp[i] |= (localMask[i] ^ B11111111);
+
+      // Set incoming OSC messages port
+      oscUDP.begin(oscLocalPort);
+      DPRINT("OSC server started\n");
+
+      // Connect to Blynk Cloud
+      blynk_connect();
+}
+
+
 void WiFiEvent(WiFiEvent_t event) {
 
   IPAddress localMask;
@@ -259,50 +308,7 @@ void WiFiEvent(WiFiEvent_t event) {
       DPRINT("DNS 1       : %s\n", WiFi.dnsIP(0).toString().c_str());
       DPRINT("DNS 2       : %s\n", WiFi.dnsIP(1).toString().c_str());
 
-      // Start mDNS (Multicast DNS) responder (ping pedalino.local)
-      if (MDNS.begin(host)) {
-        DPRINTLN("mDNS responder started");
-        // service name is lower case
-        // service name and protocol starts with an '_' e.g. '_udp'
-        MDNS.addService("_apple-midi", "_udp", 5004);
-        MDNS.addService("_osc",        "_udp", oscLocalPort);
-#ifdef PEDALINO_TELNET_DEBUG
-        MDNS.addService("_telnet", "_tcp", 23);
-#endif
-      }
-
-      // OTA update init
-      ota_begin(host);
-      DPRINT("OTA update started\n");
-
-      http_setup();
-      httpServer.begin();
-      MDNS.addService("http", "tcp", 80);
-      DPRINTLN("HTTP server started");
-      DPRINTLN("Connect to http://pedalino.local/update for firmware update");
-#ifdef WEBCONFIG
-      DPRINTLN("Connect to http://pedalino.local for configuration");
-#endif
-
-      ipMIDI.beginMulticast(ipMIDImulticast, ipMIDIdestPort);
-      DPRINT("ipMIDI server started\n");
-
-      // RTP-MDI
-      apple_midi_start();
-      DPRINT("RTP-MIDI started\n");
-
-      // Calculate the broadcast address of local WiFi to broadcast OSC messages
-      oscRemoteIp = WiFi.localIP();
-      localMask = WiFi.subnetMask();
-      for (int i = 0; i < 4; i++)
-        oscRemoteIp[i] |= (localMask[i] ^ B11111111);
-
-      // Set incoming OSC messages port
-      oscUDP.begin(oscLocalPort);
-      DPRINT("OSC server started\n");
-
-      // Connect to Blynk Cloud
-      blynk_connect();
+      start_services();
       break;
 
     case SYSTEM_EVENT_STA_LOST_IP:
@@ -322,6 +328,16 @@ void WiFiEvent(WiFiEvent_t event) {
 
     case SYSTEM_EVENT_AP_START:
       DPRINT("SYSTEM_EVENT_AP_START\n");
+      WiFi.softAPsetHostname(host);
+      //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
+      //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
+      DPRINT("AP SSID     : Pedalino\n");
+      DPRINT("AP PSK      : \n");
+      DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
+      DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
+      DPRINT("Channel     : %d\n", WiFi.channel());
+      DPRINT("Connect to 'Pedalino' wireless network with no password\n");
+      start_services();
       break;
 
     case SYSTEM_EVENT_AP_STOP:
@@ -360,13 +376,8 @@ void ap_mode_start()
   WIFI_LED_OFF();
 
   WiFi.mode(WIFI_AP);
-  if (WiFi.softAP("Pedalino")) {
-    DPRINT("AP mode started\n");
-    DPRINT("Connect to 'Pedalino' wireless with no password\n");
-  }
-  else {
+  if (!WiFi.softAP("Pedalino"))
     DPRINT("AP mode failed\n");
-  }
 }
 
 void ap_mode_stop()
@@ -478,6 +489,7 @@ bool auto_reconnect(String ssid = "", String password = "")
   DPRINT("SSID        : %s\n", ssid.c_str());
   DPRINT("Password    : %s\n", password.c_str());
 
+  WiFi.disconnect();
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), password.c_str());
   for (byte i = 0; i < WIFI_CONNECT_TIMEOUT * 2 && !WiFi.isConnected(); i++) {
@@ -494,10 +506,10 @@ bool auto_reconnect(String ssid = "", String password = "")
 
 void wifi_connect()
 {
-  if (!auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
-    if (smart_config())        // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters
-      auto_reconnect();        // WIFI_CONNECT_TIMEOUT seconds to connect to SmartConfig access point
-  if (!WiFi.isConnected())
+//  if (!auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
+//    if (smart_config())        // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters
+//      auto_reconnect();        // WIFI_CONNECT_TIMEOUT seconds to connect to SmartConfig access point
+//  if (!WiFi.isConnected())
     ap_mode_start();           // switch to AP mode until next reboot
 }
 

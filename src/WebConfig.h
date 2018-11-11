@@ -214,6 +214,9 @@ String get_root_page() {
   page += F("<dt>SDK Version</dt><dd>");
   page += ESP.getSdkVersion();
   page += F("</dd>");
+  page += F("<dt>Running On Core</dt><dd>");
+  page += xPortGetCoreID();
+  page += F("</dd>");
   page += F("<dt>Chip ID</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
   page += String(ESP.getChipId(), HEX);
@@ -227,7 +230,7 @@ String get_root_page() {
   page += String(ESP.getFlashChipId(), HEX);
 #endif
 #ifdef ARDUINO_ARCH_ESP32
-  page += String((uint32_t)ESP.getEfuseMac(), HEX);
+  page += String((uint32_t)ESP.getEfuseMac(), HEX); // Low 4 bytes of MAC address (6 bytes)
 #endif
   page += F("</dd>");
   page += F("<dt>Chip Speed</dt><dd>");
@@ -244,34 +247,51 @@ String get_root_page() {
   page += F("<dt>Free Heap Size</dt><dd>");
   page += ESP.getFreeHeap() / 1024;
   page += F(" kB</dd>");
-
-  if (WiFi.getMode() == WIFI_AP) {
-    page += F("<dt>Soft AP IP</dt><dd>");
-    page += WiFi.softAPIP().toString();
-    page += F("</dd>");
-    page += F("<dt>Soft AP MAC</dt><dd>");
-    page += WiFi.softAPmacAddress();
-    page += F("</dd>");
-  }
   page += F("</div>");
 
   page += F("<div class='col-3'>");
   page += F("<h3>Wireless</h3>");
-  page += F("<dt>SSID</dt><dd>");
-  page += wifiSSID;
-  page += F("</dd>");
-  page += F("<dt>BSSID</dt><dd>");
-  page += WiFi.BSSIDstr();
-  page += F("</dd>");
-  page += F("<dt>RSSI</dt><dd>");
-  page += String(WiFi.RSSI());
-  page += F(" dBm</dd>");
-  page += F("<dt>Channel</dt><dd>");
-  page += String(WiFi.channel());
-  page += F("</dd>");
-  page += F("<dt>Station MAC</dt><dd>");
-  page += WiFi.macAddress();
-  page += F("</dd>");
+  switch (WiFi.getMode()) {
+    case WIFI_STA:
+      page += F("<dt>SSID</dt><dd>");
+      page += wifiSSID;
+      page += F("</dd>");
+      page += F("<dt>BSSID</dt><dd>");
+      page += WiFi.BSSIDstr();
+      page += F("</dd>");
+      page += F("<dt>RSSI</dt><dd>");
+      page += String(WiFi.RSSI());
+      page += F(" dBm</dd>");
+      page += F("<dt>Channel</dt><dd>");
+      page += String(WiFi.channel());
+      page += F("</dd>");
+      page += F("<dt>Station MAC</dt><dd>");
+      page += WiFi.macAddress();
+      page += F("</dd>");
+      break;
+    case WIFI_AP:
+      page += F("<dt>AP SSID</dt><dd>");
+#ifdef ARDUINO_ARCH_ESP8266
+      page += WiFi.softAPSSID();
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+      page += String("Pedalino");
+#endif
+      page += F("</dd>");
+      page += F("<dt>AP MAC Address</dt><dd>");
+      page += WiFi.softAPmacAddress();
+      page += F("</dd>");
+      page += F("<dt>AP IP Address</dt><dd>");
+      page += WiFi.softAPIP().toString();
+      page += F("</dd>");
+      page += F("<dt>Channel</dt><dd>");
+      page += String(WiFi.channel());
+      page += F("</dd>");
+      page += F("<dt>Hostname</dt><dd>");
+      page += WiFi.softAPgetHostname();
+      page += F("</dd>");
+      break;
+  }
   page += F("</div>");
 
   page += F("<div class='col-3'>");
@@ -307,6 +327,12 @@ String get_root_page() {
   if (appleMidiConnected) page += String("Connected");
   else page += String("Disconnected");
   page += F("</dd>");
+#ifdef BLE
+  page += F("<dt>Bluetooth LE MIDI</dt><dd>");
+  if (bleMidiConnected) page += String("Connected");
+  else page += String("Disconnected");
+  page += F("</dd>");
+#endif
   page += F("</div>");
 
   page += F("</div>");
