@@ -209,8 +209,8 @@ byte  backlight               = 150;
 bool  wifiConnected           = false;
 bool  bleConnected            = false;
 
-String wifiSSID;
-String wifiPassword;
+String wifiSSID("");
+String wifiPassword("");
 
 // Serial MIDI interface to comunicate with Arduino
 

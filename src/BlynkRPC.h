@@ -85,13 +85,14 @@ inline void blynk_refresh() {}
 
 #define BLYNK_AUTHTOKEN_LEN          32
 
-char blynkAuthToken[BLYNK_AUTHTOKEN_LEN+1];
+char blynkAuthToken[BLYNK_AUTHTOKEN_LEN+1] = "";
 
 WidgetLCD  blynkLCD(V0);
-String     ssid, password;
+String     ssid("");
+String     password("");
 
 void screen_update(bool);
-void eeprom_update_current_profile();
+void eeprom_update_current_profile(byte);
 
 String blynk_get_token()
 {
@@ -100,16 +101,21 @@ String blynk_get_token()
 
 String blynk_set_token(String token)
 {
-  if (token.length() == BLYNK_AUTHTOKEN_LEN)
+  if (token.length() == BLYNK_AUTHTOKEN_LEN || token == "")
     strncpy(blynkAuthToken, token.c_str(), BLYNK_AUTHTOKEN_LEN);
 
   return String(blynkAuthToken);
 }
 
+bool blynk_cloud_connected()
+{
+  return Blynk.connected();
+}
+
 void blynk_connect()
 {
   // Connect to Blynk Cloud
-  if (WiFi.getMode() != WIFI_AP) {
+  if (WiFi.getMode() != WIFI_AP && strlen(blynkAuthToken) == BLYNK_AUTHTOKEN_LEN) {
     Blynk.config(blynkAuthToken);
     Blynk.connect();
   }
@@ -118,7 +124,8 @@ void blynk_connect()
 void blynk_disconnect()
 {
   // Disconnect to Blynk Cloud
-  Blynk.disconnect();
+  if (Blynk.connected())
+    Blynk.disconnect();
 }
 
 inline void blynk_run()
@@ -285,7 +292,7 @@ BLYNK_WRITE(BLYNK_PROFILE) {
   PRINT_VIRTUAL_PIN(request.pin);
   DPRINT(" - Profile %d\n", profile);
   currentProfile = constrain(profile - 1, 0, PROFILES - 1);
-  eeprom_update_current_profile();
+  eeprom_update_current_profile(currentProfile);
   DPRINTLN("Switching profile");
   ESP.restart();
 }

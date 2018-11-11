@@ -11,12 +11,14 @@
 #include <EEPROM.h>
 
 #define SIGNATURE "Pedalino(TM)"
-#define EEPROM_VERSION  2                 // Increment each time you change the eeprom structure
+#define EEPROM_VERSION  3                 // Increment each time you change the eeprom structure
 #define EEPROM_SIZE     4096
+
+extern String theme;
 
 String blynk_get_token();
 String blynk_set_token(String);
-void blynk_refresh();
+void   blynk_refresh();
 
 //
 //  Initialize EEPROM
@@ -48,11 +50,21 @@ void eeprom_init()
 #endif
 }
 
+void eeprom_initialize_to_zero()
+{
+  for (unsigned int i = 0; i < EEPROM_SIZE; i++)
+    EEPROM.put(i, 0);
+  EEPROM.commit();
+}
+
 //
 //  Load factory deafult value for banks, pedals and interfaces
 //
 void load_factory_default()
 {
+  theme = "bootstrap";
+  blynk_set_token("");
+
   for (byte b = 0; b < BANKS; b++)
     for (byte p = 0; p < PEDALS; p++)
       switch (b % 4)
@@ -155,9 +167,9 @@ void load_factory_default()
 //
 //  Write current profile to EEPROM
 //
-void eeprom_update_current_profile()
+void eeprom_update_current_profile(byte profile)
 {
-  int offset = 0;
+  int  offset = 0;
   char signature[sizeof(SIGNATURE) + 1];
   byte saved_version;
 
@@ -174,21 +186,58 @@ void eeprom_update_current_profile()
 
   DPRINT("Updating EEPROM ...\n");
 
-  EEPROM.put(offset, currentProfile);
+  EEPROM.put(offset, profile);
+  DPRINT("[%4d]Current profile:   %d\n", offset, profile);
   offset += sizeof(byte);
+  
   EEPROM.commit();
-
-  DPRINT("Current profile:   %d\n", currentProfile);
 }
 
 //
 //  Write Blynk Auth Token to EEPROM
 //
-void eeprom_update_blynk_auth_token()
+void eeprom_update_blynk_auth_token(String token)
 {
-  int offset = 0;
+  int  offset = 0;
   char signature[sizeof(SIGNATURE) + 1];
   byte saved_version;
+
+  EEPROM.get(offset, signature);
+  offset += sizeof(SIGNATURE);
+  EEPROM.get(offset, saved_version);
+  offset += sizeof(byte);
+
+  DPRINT("EEPROM signature: %s\n", signature);
+  DPRINT("EEPROM version  : %d\n", saved_version);
+
+  if ((strcmp(signature, SIGNATURE) != 0) || (saved_version != EEPROM_VERSION))
+    return;
+
+  DPRINT("Reading EEPROM ...\n");
+
+  EEPROM.get(offset, currentProfile);
+  currentProfile = constrain(currentProfile, 0, PROFILES - 1);
+  DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
+  offset += sizeof(byte);
+
+  DPRINT("Updating EEPROM ...\n");
+
+  EEPROM.writeString(offset, token);
+  DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, token.c_str());
+  offset += 33;
+
+  EEPROM.commit();
+}
+
+//
+//  Write web UI theme
+//
+void eeprom_update_theme(String theme)
+{
+  int  offset = 0;
+  char signature[sizeof(SIGNATURE) + 1];
+  byte saved_version;
+  String token;
 
   EEPROM.get(offset, signature);
   offset += sizeof(SIGNATURE);
@@ -208,13 +257,18 @@ void eeprom_update_blynk_auth_token()
   offset += sizeof(byte);
   DPRINT("Current profile:   %d\n", currentProfile);
 
+  token = EEPROM.readString(offset);
+  blynk_set_token(token);
+  DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, blynk_get_token().c_str());
+  offset += 33;
+
   DPRINT("Updating EEPROM ...\n");
 
-  EEPROM.put(offset, blynk_get_token().c_str());
-  offset += blynk_get_token().length() + 1;
-  EEPROM.commit();
+  EEPROM.writeString(offset, theme);
+  DPRINT("[%4d]Bootstrap theme:   %s\n", offset, theme.c_str());
+  offset += 10;
 
-  DPRINT("Blynk Auth Token:  %s\n", blynk_get_token().c_str());
+  EEPROM.commit();
 }
 
 //
@@ -232,12 +286,16 @@ void eeprom_update()
   offset += sizeof(byte);
 
   EEPROM.put(offset, currentProfile);
+  DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
   offset += sizeof(byte);
-  DPRINT("Current profile:   %d\n", currentProfile);
 
-  EEPROM.put(offset, blynk_get_token().c_str());
-  offset += blynk_get_token().length() + 1;
-  DPRINT("Blynk Auth Token:  %s\n", blynk_get_token().c_str());
+  EEPROM.writeString(offset, blynk_get_token());
+  DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, blynk_get_token().c_str());
+  offset += 33;
+
+  EEPROM.writeString(offset, theme);
+  DPRINT("[%4d]Bootstrap theme:   %s\n", offset, theme.c_str());
+  offset += 10;
 
   // Jump to profile
   offset += currentProfile * EEPROM.length() / PROFILES;
@@ -328,11 +386,11 @@ void eeprom_update()
 
 #ifdef ARDUINO_ARCH_ESP32
   EEPROM.writeString(offset, wifiSSID);
+  DPRINT("[%4d]SSID     : %s\n", offset, wifiSSID.c_str());
   offset += wifiSSID.length() + 1;
   EEPROM.writeString(offset, wifiPassword);
+  DPRINT("[%4d]Password : %s\n", offset, wifiPassword.c_str());
   offset += wifiPassword.length() + 1;
-  DPRINT("SSID     : %s\n", wifiSSID.c_str());
-  DPRINT("Password : %s\n", wifiPassword.c_str());
 #endif
 
   EEPROM.commit();
@@ -345,10 +403,10 @@ void eeprom_update()
 //
 void eeprom_read()
 {
-  int offset = 0;
-  char signature[sizeof(SIGNATURE) + 1];
-  byte saved_version;
-  char token[33];
+  int     offset = 0;
+  char    signature[sizeof(SIGNATURE) + 1];
+  byte    saved_version;
+  String  token;
 
   load_factory_default();
 
@@ -367,13 +425,17 @@ void eeprom_read()
 
   EEPROM.get(offset, currentProfile);
   currentProfile = constrain(currentProfile, 0, PROFILES - 1);
+  DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
   offset += sizeof(byte);
-  DPRINT("Current profile:   %d\n", currentProfile);
 
-  EEPROM.get(offset, token);
-  blynk_set_token(String(token));
-  offset += sizeof(token);
-  DPRINT("Blynk Auth Token:  %s\n", blynk_get_token().c_str());
+  token = EEPROM.readString(offset);
+  blynk_set_token(token);
+  DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, blynk_get_token().c_str());
+  offset += 33;
+
+  theme = EEPROM.readString(offset);
+  DPRINT("[%4d]Bootstrap theme:   %s\n", offset, theme.c_str());
+  offset += 10;
 
   // Jump to profile
   offset += currentProfile * EEPROM.length() / PROFILES;
@@ -470,11 +532,11 @@ void eeprom_read()
 
 #if defined(ARDUINO_ARCH_ESP32) && !defined(NOWIFI)
   wifiSSID = EEPROM.readString(offset);
+  DPRINT("[%4d]SSID     : %s\n", offset, wifiSSID.c_str());
   offset += wifiSSID.length() + 1;
   wifiPassword = EEPROM.readString(offset);
+  DPRINT("[%4d]Password : %s\n", offset, wifiPassword.c_str());
   offset += wifiPassword.length() + 1;
-  DPRINT("SSID     : %s\n", wifiSSID.c_str());
-  DPRINT("Password : %s\n", wifiPassword.c_str());
 #endif
 
   blynk_refresh();

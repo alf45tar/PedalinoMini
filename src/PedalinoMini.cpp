@@ -140,6 +140,7 @@ void setup()
     lcd.print("Factory default ");
     delay(1000);
 #endif
+    //eeprom_initialize_to_zero();
     load_factory_default();
     eeprom_update();
   }

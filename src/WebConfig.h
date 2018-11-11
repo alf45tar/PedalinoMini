@@ -26,6 +26,15 @@ ESP8266HTTPUpdateServer httpUpdater;
 #include <Update.h>
 
 WebServer               httpServer(80);
+
+extern const uint8_t css_bootstrap_min_css_start[]        asm("_binary_css_bootstrap_min_css_start");
+extern const uint8_t css_bootstrap_min_css_end[]          asm("_binary_css_bootstrap_min_css_end");
+extern const uint8_t js_bootstrap_min_js_start[]          asm("_binary_js_bootstrap_min_js_start");
+extern const uint8_t js_bootstrap_min_js_end[]            asm("_binary_js_bootstrap_min_js_end");
+extern const uint8_t js_jquery_3_3_1_slim_min_js_start[]  asm("_binary_js_jquery_3_3_1_slim_min_js_start");
+extern const uint8_t js_jquery_3_3_1_slim_min_js_end[]    asm("_binary_js_jquery_3_3_1_slim_min_js_end");
+extern const uint8_t js_popper_min_js_start[]             asm("_binary_js_popper_min_js_start");
+extern const uint8_t js_popper_min_js_end[]               asm("_binary_js_popper_min_js_end");
 #endif
 
 
@@ -33,6 +42,7 @@ WebServer               httpServer(80);
 
 String  blynk_get_token();
 String  blynk_set_token(String);
+bool    blynk_cloud_connected();
 void    blynk_connect();
 void    blynk_disconnect();
 void    blynk_refresh();
@@ -54,7 +64,11 @@ String get_top_page(byte p = 0) {
   page += F("<meta charset='utf-8'>");
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
+  #ifdef BOOTSTRAP_LOCAL
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO' crossorigin='anonymous'>");
+  #else
     page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO' crossorigin='anonymous'>");
+  #endif
   } else {
     page += F("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/4.1.3/");
     page += theme;
@@ -94,22 +108,25 @@ String get_top_page(byte p = 0) {
   page += F("<a class='nav-link' href='/options'>Options</a>");
   page += F("</li>");
   page += F("</ul>");
-  page += F("<form class='form-inline my-2 my-lg-0'>");
-  //page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
-  page += F("<div class='btn-group my-2 my-sm-0'>");
-  page += F("<button type='button' class='btn btn-warning'>Profile ");
-  page += String((char)('A' + uiprofile.toInt() - 1));
-  page += F("</button>");
-  page += F("<button type='button' class='btn btn-warning dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
-  page += F("<span class='sr-only'>Toggle Dropdown</span>");
-  page += F("</button>");
-  page += F("<div class='dropdown-menu' aria-labelledby='navbarDropdownMenuLink'>");
-  page += F("<a class='dropdown-item' href='?profile=1'>A</a>");
-  page += F("<a class='dropdown-item' href='?profile=2'>B</a>");
-  page += F("<a class='dropdown-item' href='?profile=3'>C</a>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</form>");
+  if (p > 1) {
+    page += F("<form class='form-inline my-2 my-lg-0'>");
+    //page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
+    page += F("<div class='btn-group my-2 my-sm-0'>");
+    page += F("<button type='button' class='btn btn-info'>Profile ");
+    uiprofile = String(currentProfile + 1);
+    page += String((char)('A' + uiprofile.toInt() - 1));
+    page += F("</button>");
+    page += F("<button type='button' class='btn btn-info dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
+    page += F("<span class='sr-only'>Toggle Dropdown</span>");
+    page += F("</button>");
+    page += F("<div class='dropdown-menu' aria-labelledby='navbarDropdownMenuLink'>");
+    page += F("<a class='dropdown-item' href='?profile=1'>A</a>");
+    page += F("<a class='dropdown-item' href='?profile=2'>B</a>");
+    page += F("<a class='dropdown-item' href='?profile=3'>C</a>");
+    page += F("</div>");
+    page += F("</div>");
+    page += F("</form>");
+  }
   page += F("</div>");
   page += F("</nav>");
 
@@ -137,9 +154,15 @@ String get_footer_page() {
   page += F("</nav>");
 
   page += F("</div>");
+#ifdef BOOTSTRAP_LOCAL
+  page += F("<script src='/js/jquery-3.3.1.slim.min.js' integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>");
+#else
   page += F("<script src='https://code.jquery.com/jquery-3.3.1.slim.min.js' integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo' crossorigin='anonymous'></script>");
   page += F("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>");
   page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>");
+#endif
   page += F("</body>");
   page += F("</html>");
 
@@ -260,6 +283,14 @@ String get_root_page() {
   page += F("</dd>");
   page += F("<dt>DNS 2</dt><dd>");
   page += WiFi.dnsIP(1).toString();
+  page += F("</dd>");
+  page += F("</div>");
+
+  page += F("<div class='col-3'>");
+  page += F("<h3>Blynk</h3>");
+  page += F("<dt>Blynk Cloud</dt><dd>");
+  if (blynk_cloud_connected()) page += String("Online");
+  else page += String("Offline");
   page += F("</dd>");
   page += F("</div>");
 
@@ -867,49 +898,127 @@ String get_options_page() {
   return page;
 }
 
-void http_handle_root() {
+void http_handle_bootstrap_file() {
 
-  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
+  const char  *file;
+  size_t       filesize;
+
+  if (httpServer.uri() == "/css/bootstrap.min.css") {
+    file = (const char *)css_bootstrap_min_css_start;
+    filesize = strlen(file);
+    httpServer.setContentLength(filesize);
+    httpServer.send(200, "text/css", "");
+  }
+  if (httpServer.uri() == "/js/jquery-3.3.1.slim.min.js") {
+    file = (const char *)js_jquery_3_3_1_slim_min_js_start;
+    filesize = strlen(file);
+    httpServer.setContentLength(filesize);
+    httpServer.send(200, "application/javascript", "");
+  }
+  if (httpServer.uri() == "/js/popper.min.js") {
+    file = (const char *)js_popper_min_js_start;
+    filesize = strlen(file);
+    httpServer.setContentLength(filesize);
+    httpServer.send(200, "application/javascript", "");
+  }
+  if (httpServer.uri() == "/js/bootstrap.min.js") {
+    file = (const char *)js_bootstrap_min_js_start;
+    filesize = strlen(file);
+    httpServer.setContentLength(filesize);
+    httpServer.send(200, "application/javascript", "");
+   }
+  
+  DPRINT("File %s %d bytes\n", file, filesize);
+/*
+#define BLOCK 2*1460
+
+  for (unsigned int i = 0; i < (filesize/BLOCK+1) && httpServer.client().connected(); i++) {
+    httpServer.client().write(&file[i*BLOCK], (filesize-i*BLOCK) < BLOCK ? filesize-i*BLOCK : BLOCK);
+    DPRINT("Block %d\n", i);
+  }
+*/
+
+  #define STREAMFILE_BUFSIZE 2*1460
+ /* 
+  uint8_t *buf = (uint8_t *)malloc(STREAMFILE_BUFSIZE);
+  if (buf == NULL) {
+    DPRINT("http_handle_bootstrap_file(): malloc failed\n");
+    return;
+  }
+  */
+  size_t totalBytesOut = 0;
+  while (httpServer.client().connected() && (totalBytesOut < filesize)) {
+    int bytesIn;
+    int bytesOut;
+    if ((totalBytesOut + STREAMFILE_BUFSIZE) < filesize)
+      bytesIn = STREAMFILE_BUFSIZE;
+    else
+      bytesIn = filesize - totalBytesOut;
+    if (bytesIn <= 0) break;
+    while (1) {
+      bytesOut = 0;
+      if (!httpServer.client().connected()) break;
+      DPRINT("prima");
+      bytesOut = httpServer.client().write(&file[totalBytesOut], bytesIn);
+      DPRINT("dopo");
+      if (bytesIn == bytesOut) break;
+      DPRINT("http_handle_bootstrap_file(): bytesIn %d != bytesOut %d\n", bytesIn, bytesOut);
+      delay(1);
+    }
+    totalBytesOut += bytesOut;
+    DPRINT("%d\n", totalBytesOut);
+    yield();
+  }
+  if (totalBytesOut != filesize) {
+    DPRINT("http_handle_bootstrap_file(): file size %d bytes out %d\n", filesize, totalBytesOut);
+  }
+  //free(buf);
+
+}
+
+void http_handle_globals() {
+  
+  if (httpServer.hasArg("profile")) {
+    uiprofile = httpServer.arg("profile");
+    currentProfile = constrain(uiprofile.toInt() - 1, 0, PROFILES - 1);
+    eeprom_update_current_profile(currentProfile);
+    eeprom_read();
+  }
+
   if (httpServer.hasArg("theme")) {
     theme = httpServer.arg("theme");
-    httpServer.send(200, "text/html", get_root_page());
-  } else if (httpServer.hasArg("bank")) {
-    uibank = httpServer.arg("bank");
-    httpServer.send(200, "text/html", get_banks_page());
-  } else {
-    httpServer.send(200, "text/html", get_root_page());
-  }
-  return;
+    eeprom_update_theme(theme);
+  }  
+}
+
+void http_handle_root() {
+  http_handle_globals();
+  httpServer.send(200, "text/html", get_root_page());
 }
 
 void http_handle_live() {
-  if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
-  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
+  http_handle_globals();
   httpServer.send(200, "text/html", get_live_page());
 }
 
 void http_handle_banks() {
-  if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
-  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
+  http_handle_globals();
   if (httpServer.hasArg("bank"))  uibank  = httpServer.arg("bank");
   httpServer.send(200, "text/html", get_banks_page());
 }
 
 void http_handle_pedals() {
-  if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
-  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
+  http_handle_globals();
   httpServer.send(200, "text/html", get_pedals_page());
 }
 
 void http_handle_interfaces() {
-  if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
-  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
+  http_handle_globals();
   httpServer.send(200, "text/html", get_interfaces_page());
 }
 
 void http_handle_options() {
-  if (httpServer.hasArg("theme")) theme = httpServer.arg("theme");
-  if (httpServer.hasArg("profile")) uiprofile = httpServer.arg("profile");
+  http_handle_globals();
   httpServer.send(200, "text/html", get_options_page());
 }
 
@@ -1026,16 +1135,17 @@ void http_handle_post_interfaces() {
 
 void http_handle_post_options() {
   
-  if (httpServer.hasArg("theme"))
-    theme = httpServer.arg("theme");
+  http_handle_globals();
 
   if (httpServer.arg("blynkauthtoken")) {
     blynk_disconnect();
+    eeprom_update_blynk_auth_token(httpServer.arg("blynkauthtoken"));
     blynk_set_token(httpServer.arg("blynkauthtoken"));
     blynk_connect();
     blynk_refresh();
     alert = "Saved";
   }
+
   httpServer.send(200, "text/html", get_options_page());
 }
 
@@ -1186,7 +1296,14 @@ void http_setup() {
   httpServer.on("/interfaces",  HTTP_POST,  http_handle_post_interfaces);
   httpServer.on("/options",     HTTP_GET,   http_handle_options);
   httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
-#endif
+
+#ifdef BOOTSTRAP_LOCAL
+  httpServer.on("/css/bootstrap.min.css",        http_handle_bootstrap_file);
+  httpServer.on("/js/jquery-3.3.1.slim.min.js",  http_handle_bootstrap_file);
+  httpServer.on("/js/popper.min.js",             http_handle_bootstrap_file);
+  httpServer.on("/js/bootstrap.min.js",          http_handle_bootstrap_file);
+#endif  // BOOTSTRAP_LOCAL
+#endif  // WEBCONFIG
   httpServer.on("/update",      HTTP_GET,   http_handle_update);
   httpServer.on("/update",      HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);
   httpServer.onNotFound(http_handle_not_found);
