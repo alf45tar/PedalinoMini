@@ -141,7 +141,7 @@ void AppleMidiSendPitchBend(int bend, byte channel)
   if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendPitchBend(bend, channel);
 }
 
-void AppleMidiSendSystemExclusive(byte* array, unsigned size)
+void AppleMidiSendSystemExclusive(const byte* array, unsigned size)
 {
   if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSysEx(array, size);
 }

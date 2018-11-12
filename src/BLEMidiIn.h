@@ -104,7 +104,7 @@ void OnBleMidiReceivePitchBend(byte channel, int bend)
   OSCSendPitchBend(bend, channel);
 }
 
-void OnBleMidiReceiveSysEx(const byte * data, uint16_t size)
+void OnBleMidiReceiveSysEx(const byte *data, uint16_t size)
 {
   if (!interfaces[PED_BLEMIDI].midiIn) return;
 
