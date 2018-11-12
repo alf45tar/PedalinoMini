@@ -19,6 +19,7 @@ install:
     - platformio update
     - platformio lib -g install 62 64 136 222 415 423 1106 1194 1266 1954 2978
                                 https://github.com/dxinteractive/ResponsiveAnalogRead.git
+                                https://github.com/lathoub/Arduino-BLE-MIDI
 
 script:
     -  platformio ci $PLATFORMIO_CI_EXTRA_ARGS --project-option="lib_deps=Wire" --project-option="board_build.partitions=min_spiffs.csv"
