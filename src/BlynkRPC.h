@@ -659,6 +659,8 @@ BLYNK_WRITE(BLYNK_INTERFACE_MIDICLOCK) {
   interfaces[currentInterface].midiClock = onoff;
 }
 
+#ifdef WIFI
+
 BLYNK_WRITE(BLYNK_WIFICONNECT) {
   WiFi.scanDelete();
   if (ap_connect(ssid, password))
@@ -735,4 +737,5 @@ BLYNK_WRITE(BLYNK_SMARTCONFIG) {
   }
 }
 
+#endif  // WIFI
 #endif  // NOBLYNK

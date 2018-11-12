@@ -61,10 +61,11 @@
 #include "Config.h"
 #include "DisplayOLED.h"
 #include "OTAUpdate.h"
-#include "BLEMidi.h"
 #include "UdpMidiOut.h"
+#include "BLEMidiOut.h"
 #include "SerialMidi.h"
 #include "UdpMidiIn.h"
+#include "BLEMidiIn.h"
 #include "Controller.h"
 #include "WebConfig.h"
 #include "WifiConnect.h"
@@ -192,8 +193,12 @@ void setup()
 
 void loop()
 {
+#ifdef WIFI
   if (!appleMidiConnected) WIFI_LED_OFF();
+#endif
+#ifdef BLE
   if (!bleMidiConnected)  BLE_LED_OFF();
+#endif
   if (appleMidiConnected ||  bleMidiConnected) {
     // led fast blinking (5 times per second)
     if (millis() - wifiLastOn > 200) {
