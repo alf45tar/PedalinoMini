@@ -506,10 +506,10 @@ bool auto_reconnect(String ssid = "", String password = "")
 
 void wifi_connect()
 {
-//  if (!auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
-//    if (smart_config())        // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters
-//      auto_reconnect();        // WIFI_CONNECT_TIMEOUT seconds to connect to SmartConfig access point
-//  if (!WiFi.isConnected())
+  if (!auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
+    if (smart_config())        // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters
+      auto_reconnect();        // WIFI_CONNECT_TIMEOUT seconds to connect to SmartConfig access point
+  if (!WiFi.isConnected())
     ap_mode_start();           // switch to AP mode until next reboot
 }
 

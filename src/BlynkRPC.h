@@ -12,6 +12,7 @@
 #ifdef NOBLYNK
 inline String blynk_get_token() { return String("                                "); }
 inline String blynk_set_token(String token) { return token; }
+inline bool blynk_cloud_connected() {}
 inline void blynk_config() {}
 inline void blynk_connect() {}
 inline void blynk_disconnect() {}
