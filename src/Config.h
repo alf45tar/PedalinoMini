@@ -254,9 +254,9 @@ void eeprom_update_theme(String theme)
 
   EEPROM.get(offset, currentProfile);
   currentProfile = constrain(currentProfile, 0, PROFILES - 1);
+  DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
   offset += sizeof(byte);
-  DPRINT("Current profile:   %d\n", currentProfile);
-
+  
   token = EEPROM.readString(offset);
   blynk_set_token(token);
   DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, blynk_get_token().c_str());
@@ -357,25 +357,25 @@ void eeprom_update()
   }
 
   EEPROM.put(offset, currentBank);
+  DPRINT("[%4d]Current bank:      %d\n", offset, currentBank);
   offset += sizeof(byte);
-  DPRINT("Current bank:      %d\n", currentBank);
 
   EEPROM.put(offset, currentPedal);
+  DPRINT("[%4d]Current pedal:     %d\n", offset, currentPedal);
   offset += sizeof(byte);
-  DPRINT("Current pedal:     %d\n", currentPedal);
 
   EEPROM.put(offset, currentInterface);
+  DPRINT("[%4d]Current interface: %d\n", offset, currentInterface);
   offset += sizeof(byte);
-  DPRINT("Current interface: %d\n", currentInterface);
 
   EEPROM.put(offset, currentMidiTimeCode);
+  DPRINT("[%4d]Current MTC:       %d\n", offset, currentMidiTimeCode);
   offset += sizeof(byte);
-  DPRINT("Current MTC:       %d\n", currentMidiTimeCode);
 
 #ifndef NOLCD
   EEPROM.put(offset, backlight);
+  DPRINT("[%4d]Backlight:         %d\n", offset, backlight);
   offset += sizeof(byte);
-  DPRINT("Backlight:         %d\n", backlight);
 
   for (byte c = 0; c < IR_CUSTOM_CODES; c++)
   {
@@ -501,27 +501,27 @@ void eeprom_read()
 
   EEPROM.get(offset, currentBank);
   currentBank = constrain(currentBank, 0, BANKS - 1);
+  DPRINT("[%4d]Current bank:      %d\n", offset, currentBank);
   offset += sizeof(byte);
-  DPRINT("Current bank:      %d\n", currentBank);
 
   EEPROM.get(offset, currentPedal);
   currentPedal = constrain(currentPedal, 0, PEDALS - 1);
+  DPRINT("[%4d]Current pedal:     %d\n", offset, currentPedal);
   offset += sizeof(byte);
-  DPRINT("Current pedal:     %d\n", currentPedal);
 
   EEPROM.get(offset, currentInterface);
   currentInterface = constrain(currentInterface, 0, INTERFACES - 1);
+  DPRINT("[%4d]Current interface: %d\n", offset, currentInterface);
   offset += sizeof(byte);
-  DPRINT("Current interface: %d\n", currentInterface);
 
   EEPROM.get(offset, currentMidiTimeCode);
+  DPRINT("[%4d]Current MTC:       %d\n", offset, currentMidiTimeCode);
   offset += sizeof(byte);
-  DPRINT("Current MTC:       %d\n", currentMidiTimeCode);
 
 #ifndef NOLCD
   EEPROM.get(offset, backlight);
+  DPRINT("[%4d]Backlight:         %d\n", backlight);
   offset += sizeof(byte);
-  DPRINT("Backlight:         %d\n", backlight);
 
   for (byte c = 0; c < IR_CUSTOM_CODES; c++)
   {

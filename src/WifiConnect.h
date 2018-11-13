@@ -76,27 +76,29 @@ String translateEncryptionType(wifi_auth_mode_t encryptionType) {
 }
 #endif
 
-void start_services () {
+void start_services() {
 
       // Start mDNS (Multicast DNS) responder (ping pedalino.local)
-      if (MDNS.begin(host)) {
-        DPRINTLN("mDNS responder started");
-        // service name is lower case
-        // service name and protocol starts with an '_' e.g. '_udp'
-        MDNS.addService("_apple-midi", "_udp", 5004);
-        MDNS.addService("_osc",        "_udp", oscLocalPort);
+      if (WiFi.getMode() == WIFI_STA) {
+        if (MDNS.begin(host)) {
+          DPRINTLN("mDNS responder started");
+          // service name is lower case
+          // service name and protocol starts with an '_' e.g. '_udp'
+          MDNS.addService("_apple-midi", "_udp", 5004);
+          MDNS.addService("_osc",        "_udp", oscLocalPort);
+          MDNS.addService("http", "tcp", 80);
 #ifdef PEDALINO_TELNET_DEBUG
-        MDNS.addService("_telnet", "_tcp", 23);
+          MDNS.addService("_telnet", "_tcp", 23);
 #endif
-      }
+        }
 
-      // OTA update init
-      ota_begin(host);
-      DPRINT("OTA update started\n");
+        // OTA update init
+        ota_begin(host);
+        DPRINT("OTA update started\n");
+      }
 
       http_setup();
       httpServer.begin();
-      MDNS.addService("http", "tcp", 80);
       DPRINTLN("HTTP server started");
       DPRINTLN("Connect to http://pedalino.local/update for firmware update");
 #ifdef WEBCONFIG
@@ -307,7 +309,6 @@ void WiFiEvent(WiFiEvent_t event) {
       DPRINT("Gataway IP  : %s\n", WiFi.gatewayIP().toString().c_str());
       DPRINT("DNS 1       : %s\n", WiFi.dnsIP(0).toString().c_str());
       DPRINT("DNS 2       : %s\n", WiFi.dnsIP(1).toString().c_str());
-
       start_services();
       break;
 
@@ -337,7 +338,7 @@ void WiFiEvent(WiFiEvent_t event) {
       DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
       DPRINT("Channel     : %d\n", WiFi.channel());
       DPRINT("Connect to 'Pedalino' wireless network with no password\n");
-      start_services();
+      //start_services();
       break;
 
     case SYSTEM_EVENT_AP_STOP:
@@ -375,9 +376,14 @@ void ap_mode_start()
 {
   WIFI_LED_OFF();
 
+  WiFi.disconnect();  // mandatory after the unsuccessful try to connect to an AP
+                      // and before setting up the softAP
   WiFi.mode(WIFI_AP);
-  if (!WiFi.softAP("Pedalino"))
+  if (WiFi.softAP("Pedalino"))
+    start_services();
+  else
     DPRINT("AP mode failed\n");
+
 }
 
 void ap_mode_stop()
