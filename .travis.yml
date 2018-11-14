@@ -7,11 +7,13 @@ sudo: false
 cache:
     directories:
         - "~/.platformio"
+env:
+    - PLATFORMIO_CI_SRC=src
 
 install:
     - pip install -U platformio
     - platformio update
-    - export PLATFORMIO_SRC_DIR=src
+#    - export PLATFORMIO_SRC_DIR=src
     - export PLATFORMIO_DATA_DIR=data
 
 script:
