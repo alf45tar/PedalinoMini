@@ -21,6 +21,7 @@ install:
                                 https://github.com/dxinteractive/ResponsiveAnalogRead.git
                                 https://github.com/lathoub/Arduino-BLE-MIDI
     - export PLATFORMIO_BUILD_FLAGS="-D NOLCD"
+    - export PLATFORMIO_CI_SRC=src
 
 script:
 #    -  platformio ci $PLATFORMIO_CI_EXTRA_ARGS --project-option="lib_deps=Wire" --project-option="board_build.partitions=min_spiffs.csv"
