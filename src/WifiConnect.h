@@ -78,6 +78,26 @@ String translateEncryptionType(wifi_auth_mode_t encryptionType) {
 
 void start_services() {
 
+#ifdef ARDUINO_ARCH_ESP8266
+      // Start LLMNR (Link-Local Multicast Name Resolution) responder
+      LLMNR.begin(host);
+      DPRINT("LLMNR responder started\n");
+
+      // Start mDNS (Multicast DNS) responder (ping pedalino.local)
+      if (MDNS.begin(host)) {
+        DPRINTLN("mDNS responder started");
+        // service name is lower case
+        // ESP8266 only: do not add '_' to service name and protocol
+        MDNS.addService("apple-midi", "udp", 5004);
+        MDNS.addService("osc",        "udp", oscLocalPort);
+        MDNS.addService("http",       "tcp", 80);
+#ifdef PEDALINO_TELNET_DEBUG
+        MDNS.addService("telnet",     "tcp", 23);
+#endif
+      }
+#endif
+
+#ifdef ARDUINO_ARCH_ESP32
       // Start mDNS (Multicast DNS) responder (ping pedalino.local)
       if (WiFi.getMode() == WIFI_STA) {
         if (MDNS.begin(host)) {
@@ -86,16 +106,22 @@ void start_services() {
           // service name and protocol starts with an '_' e.g. '_udp'
           MDNS.addService("_apple-midi", "_udp", 5004);
           MDNS.addService("_osc",        "_udp", oscLocalPort);
-          MDNS.addService("http", "tcp", 80);
+          MDNS.addService("_http",       "_tcp", 80);
 #ifdef PEDALINO_TELNET_DEBUG
-          MDNS.addService("_telnet", "_tcp", 23);
+          MDNS.addService("_telnet",     "_tcp", 23);
 #endif
         }
-
-        // OTA update init
-        ota_begin(host);
-        DPRINT("OTA update started\n");
       }
+#endif
+
+      // OTA update init
+      ota_begin(host);
+      DPRINT("OTA update started\n");
+
+#ifdef ARDUINO_ARCH_ESP8266
+      // Start firmawre update via HTTP (connect to http://pedalino.local/update)
+      httpUpdater.setup(&httpServer);
+#endif
 
       http_setup();
       httpServer.begin();
@@ -105,7 +131,12 @@ void start_services() {
       DPRINTLN("Connect to http://pedalino.local for configuration");
 #endif
 
+#ifdef ARDUINO_ARCH_ESP8266
+      ipMIDI.beginMulticast(WiFi.localIP(), ipMIDImulticast, ipMIDIdestPort);
+#endif
+#ifdef ARDUINO_ARCH_ESP32
       ipMIDI.beginMulticast(ipMIDImulticast, ipMIDIdestPort);
+#endif
       DPRINT("ipMIDI server started\n");
 
       // RTP-MDI
@@ -169,59 +200,7 @@ void WiFiEvent(WiFiEvent_t event) {
       DPRINTLN("Gataway IP  : %s", WiFi.gatewayIP().toString().c_str());
       DPRINTLN("DNS 1       : %s", WiFi.dnsIP(0).toString().c_str());
       DPRINTLN("DNS 2       : %s", WiFi.dnsIP(1).toString().c_str());
-
-      // Start LLMNR (Link-Local Multicast Name Resolution) responder
-      LLMNR.begin(host);
-      DPRINT("LLMNR responder started\n");
-
-      // Start mDNS (Multicast DNS) responder (ping pedalino.local)
-      if (MDNS.begin(host)) {
-        DPRINTLN("mDNS responder started");
-        // service name is lower case
-        // ESP8266 only: do not add '_' to service name and protocol
-        MDNS.addService("apple-midi", "udp", 5004);
-        MDNS.addService("osc",        "udp", oscLocalPort);
-#ifdef PEDALINO_TELNET_DEBUG
-        MDNS.addService("telnet", "tcp", 23);
-#endif
-      }
-
-      // OTA update init
-      ota_begin(host);
-      DPRINT("OTA update started\n");
-
-      // Start firmawre update via HTTP (connect to http://pedalino.local/update)
-      httpUpdater.setup(&httpServer);
-
-      http_setup();
-      httpServer.begin();
-      MDNS.addService("http", "tcp", 80);
-      DPRINTLN("HTTP server started");
-      DPRINTLN("Connect to http://pedalino.local/update for firmware update");
-#ifdef WEBCONFIG
-      DPRINTLN("Connect to http://pedalino.local for configuration");
-#endif
-
-      // ipMIDI
-      ipMIDI.beginMulticast(WiFi.localIP(), ipMIDImulticast, ipMIDIdestPort);
-      DPRINTLN("ipMIDI server started");
-
-      // RTP-MDI
-      apple_midi_start();
-      DPRINTLN("RTP-MIDI started");
-
-      // Calculate the broadcast address of local WiFi to broadcast OSC messages
-      oscRemoteIp = WiFi.localIP();
-      localMask = WiFi.subnetMask();
-      for (int i = 0; i < 4; i++)
-        oscRemoteIp[i] |= (localMask[i] ^ B11111111);
-
-      // Set incoming OSC messages port
-      oscUDP.begin(oscLocalPort);
-      DPRINTLN("OSC server started");
-
-      // Connect to Blynk Cloud
-      blynk_connect();
+      start_services();
       break;
 
     case WIFI_EVENT_STAMODE_DHCP_TIMEOUT:

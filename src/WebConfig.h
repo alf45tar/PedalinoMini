@@ -214,8 +214,8 @@ String get_root_page() {
   page += F("<dt>SDK Version</dt><dd>");
   page += ESP.getSdkVersion();
   page += F("</dd>");
-  page += F("<dt>Running On Core</dt><dd>");
-  page += xPortGetCoreID();
+  //page += F("<dt>Running On Core</dt><dd>");
+  //page += xPortGetCoreID();
   page += F("</dd>");
   page += F("<dt>Chip ID</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
@@ -287,9 +287,11 @@ String get_root_page() {
       page += F("<dt>Channel</dt><dd>");
       page += String(WiFi.channel());
       page += F("</dd>");
+#ifdef ARDUINO_ARCH_ESP32  
       page += F("<dt>Hostname</dt><dd>");
       page += WiFi.softAPgetHostname();
       page += F("</dd>");
+#endif
       break;
   }
   page += F("</div>");
@@ -948,6 +950,7 @@ String get_options_page() {
   return page;
 }
 
+#ifdef BOOTSTRAP_LOCAL
 void http_handle_bootstrap_file() {
 
   const char  *file = NULL;
@@ -988,6 +991,7 @@ void http_handle_bootstrap_file() {
    
   DPRINT("HTTP Requested %s of %d bytes and sent %d bytes\n", httpServer.uri().c_str(), filesize, bytesOut);
 }
+#endif
 
 void http_handle_globals() {
   

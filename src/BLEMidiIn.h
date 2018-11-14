@@ -225,7 +225,7 @@ void OnBleMidiReceiveReset(void)
   OSCSendSystemReset();
 }
 
-void ble_midi_start_service ()
+void ble_midi_start_service()
 {
   // Create a session and wait for a remote host to connect to us
   BleMIDI.begin("Pedalino");

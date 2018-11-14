@@ -50,6 +50,7 @@
 #ifdef ARDUINO_ARCH_ESP8266
 #undef BLE
 #define NOBLE
+#undef BOOTSTRAP_LOCAL
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32

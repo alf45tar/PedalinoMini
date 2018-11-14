@@ -57,6 +57,70 @@ void eeprom_initialize_to_zero()
   EEPROM.commit();
 }
 
+size_t eeprom_readString(int address, char* value, size_t maxLen)
+{
+  if (!value)
+    return 0;
+
+  if (address < 0 || address + maxLen > EEPROM_SIZE)
+    return 0;
+
+  uint16_t len;
+  for (len = 0; len <= EEPROM_SIZE; len++)
+    if (EEPROM.getDataPtr()[address + len] == 0)
+      break;
+
+  if (address + len > EEPROM_SIZE)
+    return 0;
+
+  memcpy((uint8_t*) value, EEPROM.getDataPtr(), len);
+  return len;
+}
+
+String eeprom_readString(int address)
+{
+  if (address < 0 || address > EEPROM_SIZE)
+    return String(0);
+
+  uint16_t len;
+  for (len = 0; len <= EEPROM_SIZE; len++)
+    if (EEPROM.getDataPtr()[address + len] == 0)
+      break;
+
+  if (address + len > EEPROM_SIZE)
+    return String(0);
+
+  char value[len];
+  memcpy((uint8_t*) value, EEPROM.getDataPtr(), len);
+  value[len] = 0;
+  return String(value);
+}
+
+size_t eeprom_writeString(int address, const char* value)
+{
+  if (!value)
+    return 0;
+
+  if (address < 0 || address > EEPROM_SIZE)
+    return 0;
+
+  uint16_t len;
+  for (len = 0; len <= EEPROM_SIZE; len++)
+    if (value[len] == 0)
+      break;
+
+  if (address + len > EEPROM_SIZE)
+    return 0;
+
+  memcpy(&(EEPROM.getDataPtr()[address]), (const uint8_t*) value, len + 1);
+  return strlen(value);
+}
+
+size_t eeprom_writeString(int address, String value)
+{
+  return eeprom_writeString(address, value.c_str());
+}
+
 //
 //  Load factory deafult value for banks, pedals and interfaces
 //
@@ -222,7 +286,7 @@ void eeprom_update_blynk_auth_token(String token)
 
   DPRINT("Updating EEPROM ...\n");
 
-  EEPROM.writeString(offset, token);
+  eeprom_writeString(offset, token);
   DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, token.c_str());
   offset += 33;
 
@@ -257,14 +321,14 @@ void eeprom_update_theme(String theme)
   DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
   offset += sizeof(byte);
   
-  token = EEPROM.readString(offset);
+  token = eeprom_readString(offset);
   blynk_set_token(token);
   DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, blynk_get_token().c_str());
   offset += 33;
 
   DPRINT("Updating EEPROM ...\n");
 
-  EEPROM.writeString(offset, theme);
+  eeprom_writeString(offset, theme);
   DPRINT("[%4d]Bootstrap theme:   %s\n", offset, theme.c_str());
   offset += 10;
 
@@ -289,11 +353,11 @@ void eeprom_update()
   DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
   offset += sizeof(byte);
 
-  EEPROM.writeString(offset, blynk_get_token());
+  eeprom_writeString(offset, blynk_get_token());
   DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, blynk_get_token().c_str());
   offset += 33;
 
-  EEPROM.writeString(offset, theme);
+  eeprom_writeString(offset, theme);
   DPRINT("[%4d]Bootstrap theme:   %s\n", offset, theme.c_str());
   offset += 10;
 
@@ -385,10 +449,10 @@ void eeprom_update()
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32
-  EEPROM.writeString(offset, wifiSSID);
+  eeprom_writeString(offset, wifiSSID);
   DPRINT("[%4d]SSID     : %s\n", offset, wifiSSID.c_str());
   offset += wifiSSID.length() + 1;
-  EEPROM.writeString(offset, wifiPassword);
+  eeprom_writeString(offset, wifiPassword);
   DPRINT("[%4d]Password : %s\n", offset, wifiPassword.c_str());
   offset += wifiPassword.length() + 1;
 #endif
@@ -428,12 +492,12 @@ void eeprom_read()
   DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
   offset += sizeof(byte);
 
-  token = EEPROM.readString(offset);
+  token = eeprom_readString(offset);
   blynk_set_token(token);
   DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, blynk_get_token().c_str());
   offset += 33;
 
-  theme = EEPROM.readString(offset);
+  theme = eeprom_readString(offset);
   DPRINT("[%4d]Bootstrap theme:   %s\n", offset, theme.c_str());
   offset += 10;
 
@@ -531,10 +595,10 @@ void eeprom_read()
 #endif
 
 #if defined(ARDUINO_ARCH_ESP32) && !defined(NOWIFI)
-  wifiSSID = EEPROM.readString(offset);
+  wifiSSID = eeprom_readString(offset);
   DPRINT("[%4d]SSID     : %s\n", offset, wifiSSID.c_str());
   offset += wifiSSID.length() + 1;
-  wifiPassword = EEPROM.readString(offset);
+  wifiPassword = eeprom_readString(offset);
   DPRINT("[%4d]Password : %s\n", offset, wifiPassword.c_str());
   offset += wifiPassword.length() + 1;
 #endif
