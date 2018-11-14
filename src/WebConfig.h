@@ -28,14 +28,14 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 WebServer               httpServer(80);
 
-extern const uint8_t css_bootstrap_min_css_start[]        asm("_binary_data_bootstrap_min_css_gz_start");
-extern const uint8_t css_bootstrap_min_css_end[]          asm("_binary_data_bootstrap_min_css_gz_end");
-extern const uint8_t js_bootstrap_min_js_start[]          asm("_binary_data_bootstrap_min_js_gz_start");
-extern const uint8_t js_bootstrap_min_js_end[]            asm("_binary_data_bootstrap_min_js_gz_end");
-extern const uint8_t js_jquery_3_3_1_slim_min_js_start[]  asm("_binary_data_jquery_3_3_1_slim_min_js_gz_start");
-extern const uint8_t js_jquery_3_3_1_slim_min_js_end[]    asm("_binary_data_jquery_3_3_1_slim_min_js_gz_end");
-extern const uint8_t js_popper_min_js_start[]             asm("_binary_data_popper_min_js_gz_start");
-extern const uint8_t js_popper_min_js_end[]               asm("_binary_data_popper_min_js_gz_end");
+extern const uint8_t bootstrap_min_css_start[]        asm("_binary_data_bootstrap_min_css_gz_start");
+extern const uint8_t bootstrap_min_css_end[]          asm("_binary_data_bootstrap_min_css_gz_end");
+extern const uint8_t bootstrap_min_js_start[]         asm("_binary_data_bootstrap_min_js_gz_start");
+extern const uint8_t bootstrap_min_js_end[]           asm("_binary_data_bootstrap_min_js_gz_end");
+extern const uint8_t jquery_3_3_1_slim_min_js_start[] asm("_binary_data_jquery_3_3_1_slim_min_js_gz_start");
+extern const uint8_t jquery_3_3_1_slim_min_js_end[]   asm("_binary_data_jquery_3_3_1_slim_min_js_gz_end");
+extern const uint8_t popper_min_js_start[]            asm("_binary_data_popper_min_js_gz_start");
+extern const uint8_t popper_min_js_end[]              asm("_binary_data_popper_min_js_gz_end");
 #endif
 
 
@@ -66,7 +66,7 @@ String get_top_page(byte p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-E4SIy8+WZ8geICgYs8SHokD0bZQdTIzWYilH7hF2mYw=' crossorigin='anonymous'>");
   #else
     page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO' crossorigin='anonymous'>");
   #endif
@@ -156,9 +156,9 @@ String get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/jquery-3.3.1.slim.min.js' integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/jquery-3.3.1.slim.min.js' integrity='sha256-P19aadgcRaJnyFAvxAqf1WZZZK3S30+slob6JgR1lQ4=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/popper.min.js' integrity='sha256-Zk1APEbcN02Ow+xuSJwDQwHvACYlAftrr8xyPOu1gnY=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-p75bDRQm4cpte9SiYxRqnDtH3/k9C5KlPx1Xwal0g1E=' crossorigin='anonymous'></script>");
 #else
   page += F("<script src='https://code.jquery.com/jquery-3.3.1.slim.min.js' integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo' crossorigin='anonymous'></script>");
   page += F("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>");
@@ -921,7 +921,7 @@ String get_options_page() {
 
   page += F("<p></p>");
 
-#ifdef NOBLINK
+#ifdef BLYNK
   page += F("<div class='form-row'>");
   page += F("<label for='authtoken' class='col-2 col-form-label'>Blynk Auth Token</label>");
   page += F("<div class='col-10'>");
@@ -984,33 +984,33 @@ void http_handle_bootstrap_file() {
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32
-  const char  *file = NULL;
+  const uint8_t *file = NULL;
   size_t filesize = 0;
 
   if (httpServer.uri() == "/css/bootstrap.min.css") {
-    file = (const char *)css_bootstrap_min_css_start;
-    filesize = strlen(file);
+    file = bootstrap_min_css_start;
+    filesize = bootstrap_min_css_end - bootstrap_min_css_start;
     httpServer.setContentLength(filesize);
     httpServer.sendHeader("Content-Encoding", "gzip");
     httpServer.send(200, "text/css", "");
   }
   if (httpServer.uri() == "/js/jquery-3.3.1.slim.min.js") {
-    file = (const char *)js_jquery_3_3_1_slim_min_js_start;
-    filesize = strlen(file);
+    file = jquery_3_3_1_slim_min_js_start;
+    filesize = jquery_3_3_1_slim_min_js_end - jquery_3_3_1_slim_min_js_start;
     httpServer.setContentLength(filesize);
     httpServer.sendHeader("Content-Encoding", "gzip");
     httpServer.send(200, "application/javascript", "");
   }
   if (httpServer.uri() == "/js/popper.min.js") {
-    file = (const char *)js_popper_min_js_start;
-    filesize = strlen(file);
+    file = popper_min_js_start;
+    filesize = popper_min_js_end - popper_min_js_start;
     httpServer.setContentLength(filesize);
     httpServer.sendHeader("Content-Encoding", "gzip");
     httpServer.send(200, "application/javascript", "");
   }
   if (httpServer.uri() == "/js/bootstrap.min.js") {
-    file = (const char *)js_bootstrap_min_js_start;
-    filesize = strlen(file);
+    file = bootstrap_min_js_start;
+    filesize = bootstrap_min_js_end - bootstrap_min_js_start;
     httpServer.setContentLength(filesize);
     httpServer.sendHeader("Content-Encoding", "gzip");
     httpServer.send(200, "application/javascript", "");

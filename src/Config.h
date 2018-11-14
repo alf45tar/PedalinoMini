@@ -84,14 +84,14 @@ String eeprom_readString(int address)
 
   uint16_t len;
   for (len = 0; len <= EEPROM_SIZE; len++)
-    if (EEPROM.getDataPtr()[address + len] == 0)
+    if (*(EEPROM.getDataPtr() + address + len) == 0)
       break;
 
   if (address + len > EEPROM_SIZE)
     return String(0);
 
   char value[len];
-  memcpy((uint8_t*) value, EEPROM.getDataPtr(), len);
+  memcpy((uint8_t*) value, EEPROM.getDataPtr() + address, len);
   value[len] = 0;
   return String(value);
 }
@@ -112,7 +112,7 @@ size_t eeprom_writeString(int address, const char* value)
   if (address + len > EEPROM_SIZE)
     return 0;
 
-  memcpy(&(EEPROM.getDataPtr()[address]), (const uint8_t*) value, len + 1);
+  memcpy(EEPROM.getDataPtr() + address, (const uint8_t*) value, len + 1);
   return strlen(value);
 }
 
