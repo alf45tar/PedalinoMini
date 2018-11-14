@@ -11,8 +11,8 @@ cache:
 install:
     - pip install -U platformio
     - platformio update
-    - export PLATFORMIO_CI_SRC=src
-    - export PLATFORMIO_BUILD_FLAGS="-D NOLCD"
+    - export PLATFORMIO_SRC_DIR=src
+    - export PLATFORMIO_DATA_DIR=data
 
 script:
     - platformio ci --project-conf=platformio.ini
