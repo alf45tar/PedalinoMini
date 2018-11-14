@@ -28,14 +28,14 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 WebServer               httpServer(80);
 
-extern const uint8_t css_bootstrap_min_css_start[]        asm("_binary_css_bootstrap_min_css_gz_start");
-extern const uint8_t css_bootstrap_min_css_end[]          asm("_binary_css_bootstrap_min_css_gz_end");
-extern const uint8_t js_bootstrap_min_js_start[]          asm("_binary_js_bootstrap_min_js_gz_start");
-extern const uint8_t js_bootstrap_min_js_end[]            asm("_binary_js_bootstrap_min_js_gz_end");
-extern const uint8_t js_jquery_3_3_1_slim_min_js_start[]  asm("_binary_js_jquery_3_3_1_slim_min_js_gz_start");
-extern const uint8_t js_jquery_3_3_1_slim_min_js_end[]    asm("_binary_js_jquery_3_3_1_slim_min_js_gz_end");
-extern const uint8_t js_popper_min_js_start[]             asm("_binary_js_popper_min_js_gz_start");
-extern const uint8_t js_popper_min_js_end[]               asm("_binary_js_popper_min_js_gz_end");
+extern const uint8_t css_bootstrap_min_css_start[]        asm("_binary_data_bootstrap_min_css_gz_start");
+extern const uint8_t css_bootstrap_min_css_end[]          asm("_binary_data_bootstrap_min_css_gz_end");
+extern const uint8_t js_bootstrap_min_js_start[]          asm("_binary_data_bootstrap_min_js_gz_start");
+extern const uint8_t js_bootstrap_min_js_end[]            asm("_binary_data_bootstrap_min_js_gz_end");
+extern const uint8_t js_jquery_3_3_1_slim_min_js_start[]  asm("_binary_data_jquery_3_3_1_slim_min_js_gz_start");
+extern const uint8_t js_jquery_3_3_1_slim_min_js_end[]    asm("_binary_data_jquery_3_3_1_slim_min_js_gz_end");
+extern const uint8_t js_popper_min_js_start[]             asm("_binary_data_popper_min_js_gz_start");
+extern const uint8_t js_popper_min_js_end[]               asm("_binary_data_popper_min_js_gz_end");
 #endif
 
 
