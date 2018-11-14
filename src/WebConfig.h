@@ -27,14 +27,14 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 WebServer               httpServer(80);
 
-extern const uint8_t css_bootstrap_min_css_start[]        asm("_binary_css_bootstrap_min_css_start");
-extern const uint8_t css_bootstrap_min_css_end[]          asm("_binary_css_bootstrap_min_css_end");
-extern const uint8_t js_bootstrap_min_js_start[]          asm("_binary_js_bootstrap_min_js_start");
-extern const uint8_t js_bootstrap_min_js_end[]            asm("_binary_js_bootstrap_min_js_end");
-extern const uint8_t js_jquery_3_3_1_slim_min_js_start[]  asm("_binary_js_jquery_3_3_1_slim_min_js_start");
-extern const uint8_t js_jquery_3_3_1_slim_min_js_end[]    asm("_binary_js_jquery_3_3_1_slim_min_js_end");
-extern const uint8_t js_popper_min_js_start[]             asm("_binary_js_popper_min_js_start");
-extern const uint8_t js_popper_min_js_end[]               asm("_binary_js_popper_min_js_end");
+extern const uint8_t css_bootstrap_min_css_start[]        asm("_binary_css_bootstrap_min_css_gz_start");
+extern const uint8_t css_bootstrap_min_css_end[]          asm("_binary_css_bootstrap_min_css_gz_end");
+extern const uint8_t js_bootstrap_min_js_start[]          asm("_binary_js_bootstrap_min_js_gz_start");
+extern const uint8_t js_bootstrap_min_js_end[]            asm("_binary_js_bootstrap_min_js_gz_end");
+extern const uint8_t js_jquery_3_3_1_slim_min_js_start[]  asm("_binary_js_jquery_3_3_1_slim_min_js_gz_start");
+extern const uint8_t js_jquery_3_3_1_slim_min_js_end[]    asm("_binary_js_jquery_3_3_1_slim_min_js_gz_end");
+extern const uint8_t js_popper_min_js_start[]             asm("_binary_js_popper_min_js_gz_start");
+extern const uint8_t js_popper_min_js_end[]               asm("_binary_js_popper_min_js_gz_end");
 #endif
 
 
@@ -920,6 +920,7 @@ String get_options_page() {
 
   page += F("<p></p>");
 
+#ifdef NOBLINK
   page += F("<div class='form-row'>");
   page += F("<label for='authtoken' class='col-2 col-form-label'>Blynk Auth Token</label>");
   page += F("<div class='col-10'>");
@@ -936,6 +937,7 @@ String get_options_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+#endif
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
@@ -960,24 +962,28 @@ void http_handle_bootstrap_file() {
     file = (const char *)css_bootstrap_min_css_start;
     filesize = strlen(file);
     httpServer.setContentLength(filesize);
+    httpServer.sendHeader("Content-Encoding", "gzip");
     httpServer.send(200, "text/css", "");
   }
   if (httpServer.uri() == "/js/jquery-3.3.1.slim.min.js") {
     file = (const char *)js_jquery_3_3_1_slim_min_js_start;
     filesize = strlen(file);
     httpServer.setContentLength(filesize);
+    httpServer.sendHeader("Content-Encoding", "gzip");
     httpServer.send(200, "application/javascript", "");
   }
   if (httpServer.uri() == "/js/popper.min.js") {
     file = (const char *)js_popper_min_js_start;
     filesize = strlen(file);
     httpServer.setContentLength(filesize);
+    httpServer.sendHeader("Content-Encoding", "gzip");
     httpServer.send(200, "application/javascript", "");
   }
   if (httpServer.uri() == "/js/bootstrap.min.js") {
     file = (const char *)js_bootstrap_min_js_start;
     filesize = strlen(file);
     httpServer.setContentLength(filesize);
+    httpServer.sendHeader("Content-Encoding", "gzip");
     httpServer.send(200, "application/javascript", "");
    }
   
@@ -989,7 +995,7 @@ void http_handle_bootstrap_file() {
   if (httpServer.client().connected())
     bytesOut += httpServer.client().write(&file[filesize / PACKET_SIZE * PACKET_SIZE], filesize % PACKET_SIZE);
    
-  DPRINT("HTTP Requested %s of %d bytes and sent %d bytes\n", httpServer.uri().c_str(), filesize, bytesOut);
+  DPRINT("HTTP Requested %s. Sent %d of %d bytes.\n", httpServer.uri().c_str(), bytesOut, filesize);
 }
 #endif
 
@@ -1127,8 +1133,7 @@ void http_handle_post_interfaces() {
   
   String       a;
   const String checked("on");
-  
-  //httpServer.sendHeader("Connection", "close");
+
   for (unsigned int i = 0; i < INTERFACES; i++) {
     a = httpServer.arg(String("in") + String(i+1));
     interfaces[i].midiIn = (a == checked) ? PED_ENABLE : PED_DISABLE;
