@@ -24,7 +24,7 @@ install:
 
 script:
 #    -  platformio ci $PLATFORMIO_CI_EXTRA_ARGS --project-option="lib_deps=Wire" --project-option="board_build.partitions=min_spiffs.csv"
-    - platformio ci --project-conf=platoformio.ini
+    - platformio ci --project-conf=platformio.ini
     
 deploy-no:
   provider: pages
