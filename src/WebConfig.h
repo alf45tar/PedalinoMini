@@ -9,6 +9,7 @@
  */
 
 #include <StreamString.h>
+#include <FS.h>
 
 #ifdef ARDUINO_ARCH_ESP8266
 #include <ESP8266WiFi.h>
@@ -955,8 +956,36 @@ String get_options_page() {
 #ifdef BOOTSTRAP_LOCAL
 void http_handle_bootstrap_file() {
 
+  size_t bytesOut = 0;
+
+#ifdef ARDUINO_ARCH_ESP8266
+  File file;
+
+  SPIFFS.begin();
+  if (httpServer.uri() == "/css/bootstrap.min.css") {
+    file = SPIFFS.open("bootstrap.min.css.gz", "r"); 
+    bytesOut = httpServer.streamFile(file, "text/css");
+  }
+  if (httpServer.uri() == "/js/jquery-3.3.1.slim.min.js") {
+    file = SPIFFS.open("jquery-3.3.1.slim.min.js.gz", "r"); 
+    bytesOut = httpServer.streamFile(file, "application/javascript");
+  }
+  if (httpServer.uri() == "/js/popper.min.js") {
+    file = SPIFFS.open("popper.min.js.gz", "r"); 
+    bytesOut = httpServer.streamFile(file, "application/javascript");
+  }
+  if (httpServer.uri() == "/js/bootstrap.min.js") {
+    file = SPIFFS.open("bootstrap.min.js.gz", "r"); 
+    bytesOut = httpServer.streamFile(file, "application/javascript");
+   }
+   DPRINT("HTTP Requested %s. Sent %d of %d bytes.\n", httpServer.uri().c_str(), bytesOut, file.size());
+   file.close();
+   SPIFFS.end();
+#endif
+
+#ifdef ARDUINO_ARCH_ESP32
   const char  *file = NULL;
-  size_t       filesize = 0;
+  size_t filesize = 0;
 
   if (httpServer.uri() == "/css/bootstrap.min.css") {
     file = (const char *)css_bootstrap_min_css_start;
@@ -988,14 +1017,14 @@ void http_handle_bootstrap_file() {
    }
   
   const unsigned int PACKET_SIZE = 2*1460;
-  unsigned int bytesOut = 0;
   for (unsigned int i = 0; i < filesize / PACKET_SIZE && httpServer.client().connected(); i++) {
     bytesOut += httpServer.client().write(&file[i*PACKET_SIZE], PACKET_SIZE);
   }
   if (httpServer.client().connected())
     bytesOut += httpServer.client().write(&file[filesize / PACKET_SIZE * PACKET_SIZE], filesize % PACKET_SIZE);
-   
+
   DPRINT("HTTP Requested %s. Sent %d of %d bytes.\n", httpServer.uri().c_str(), bytesOut, filesize);
+#endif
 }
 #endif
 
