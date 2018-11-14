@@ -8,29 +8,11 @@ cache:
     directories:
         - "~/.platformio"
 
-env:
-#    - PLATFORMIO_CI_SRC=src PLATFORMIO_CI_EXTRA_ARGS="--board=esp01_1m"
-#    - PLATFORMIO_CI_SRC=src PLATFORMIO_CI_EXTRA_ARGS="--board=esp12e"
-#    - PLATFORMIO_CI_SRC=src PLATFORMIO_CI_EXTRA_ARGS="--board=esp32dev"
-#    - PLATFORMIO_CI_SRC=src PLATFORMIO_CI_EXTRA_ARGS="--board=esp32doit-devkit-v1"
-
 install:
     - pip install -U platformio
     - platformio update
-    - platformio lib -g install 62 64 136 222 415 423 1106 1194 1266 1954 2978
-                                https://github.com/dxinteractive/ResponsiveAnalogRead.git
-                                https://github.com/lathoub/Arduino-BLE-MIDI
-    - export PLATFORMIO_BUILD_FLAGS="-D NOLCD"
     - export PLATFORMIO_CI_SRC=src
+    - export PLATFORMIO_BUILD_FLAGS="-D NOLCD"
 
 script:
-#    -  platformio ci $PLATFORMIO_CI_EXTRA_ARGS --project-option="lib_deps=Wire" --project-option="board_build.partitions=min_spiffs.csv"
     - platformio ci --project-conf=platformio.ini
-    
-deploy-no:
-  provider: pages
-  skip-cleanup: true
-  github-token: $GITHUB_TOKEN   # Set in travis-ci.org dashboard, marked secure
-  keep-history: true
-  on:
-    branch: master
