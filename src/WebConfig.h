@@ -66,7 +66,7 @@ String get_top_page(byte p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-E4SIy8+WZ8geICgYs8SHokD0bZQdTIzWYilH7hF2mYw=' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=' crossorigin='anonymous'>");
   #else
     page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO' crossorigin='anonymous'>");
   #endif
@@ -156,9 +156,9 @@ String get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/jquery-3.3.1.slim.min.js' integrity='sha256-P19aadgcRaJnyFAvxAqf1WZZZK3S30+slob6JgR1lQ4=' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/popper.min.js' integrity='sha256-Zk1APEbcN02Ow+xuSJwDQwHvACYlAftrr8xyPOu1gnY=' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-p75bDRQm4cpte9SiYxRqnDtH3/k9C5KlPx1Xwal0g1E=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/jquery-3.3.1.slim.min.js' integrity='sha256-o3xvfVoAnalAlD3CPebt5QWZ3yLdooNGruu0ZJvZy0U=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/popper.min.js' integrity='sha256-0rnynqH0KmCovrHAT3aGgofypI1uxQ+znWuIhYSgPEk=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=' crossorigin='anonymous'></script>");
 #else
   page += F("<script src='https://code.jquery.com/jquery-3.3.1.slim.min.js' integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo' crossorigin='anonymous'></script>");
   page += F("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>");
