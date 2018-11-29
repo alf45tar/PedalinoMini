@@ -90,7 +90,7 @@ String eeprom_readString(int address)
   if (address + len > EEPROM_SIZE)
     return String(0);
 
-  char value[len];
+  char value[len+1];
   memcpy((uint8_t*) value, EEPROM.getDataPtr() + address, len);
   value[len] = 0;
   return String(value);
@@ -126,6 +126,8 @@ size_t eeprom_writeString(int address, String value)
 //
 void load_factory_default()
 {
+  wifiSSID = "";
+  wifiPassword = "";
   theme = "bootstrap";
   blynk_set_token("");
 
@@ -208,10 +210,12 @@ void load_factory_default()
     pedals[11].mode = PED_MOMENTARY2;
     pedals[12].mode = PED_MOMENTARY3;
   */
+#ifdef ARDUINO_ARCH_ESP32
   pedals[0].function = PED_BANK_PLUS;
   pedals[0].mode     = PED_MOMENTARY3;
   pedals[5].function = PED_MIDI;
   pedals[5].mode = PED_ANALOG;
+#endif
 
   for (byte i = 0; i < INTERFACES; i++) 
     {
@@ -594,7 +598,7 @@ void eeprom_read()
   }
 #endif
 
-#if defined(ARDUINO_ARCH_ESP32) && !defined(NOWIFI)
+#if defined(ARDUINO_ARCH_ESP32) && defined(WIFI)
   wifiSSID = eeprom_readString(offset);
   DPRINT("[%4d]SSID     : %s\n", offset, wifiSSID.c_str());
   offset += wifiSSID.length() + 1;

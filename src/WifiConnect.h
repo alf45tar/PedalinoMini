@@ -24,7 +24,6 @@
 #include <Update.h>
 #endif
 
-
 #define WIFI_CONNECT_TIMEOUT    10
 #define SMART_CONFIG_TIMEOUT    30
 
@@ -80,11 +79,11 @@ void start_services() {
 
 #ifdef ARDUINO_ARCH_ESP8266
       // Start LLMNR (Link-Local Multicast Name Resolution) responder
-      LLMNR.begin(host);
+      LLMNR.begin(host.c_str());
       DPRINT("LLMNR responder started\n");
 
       // Start mDNS (Multicast DNS) responder (ping pedalino.local)
-      if (MDNS.begin(host)) {
+      if (MDNS.begin(host.c_str())) {
         DPRINTLN("mDNS responder started");
         // service name is lower case
         // ESP8266 only: do not add '_' to service name and protocol
@@ -95,12 +94,12 @@ void start_services() {
         MDNS.addService("telnet",     "tcp", 23);
 #endif
       }
-#endif
+#endif  //  ARDUINO_ARCH_ESP8266
 
 #ifdef ARDUINO_ARCH_ESP32
       // Start mDNS (Multicast DNS) responder (ping pedalino.local)
       if (WiFi.getMode() == WIFI_STA) {
-        if (MDNS.begin(host)) {
+        if (MDNS.begin(host.c_str())) {
           DPRINTLN("mDNS responder started");
           // service name is lower case
           // service name and protocol starts with an '_' e.g. '_udp'
@@ -112,10 +111,10 @@ void start_services() {
 #endif
         }
       }
-#endif
+#endif  //  ARDUINO_ARCH_ESP32
 
       // OTA update init
-      ota_begin(host);
+      ota_begin(host.c_str());
       DPRINT("OTA update started\n");
 
 #ifdef ARDUINO_ARCH_ESP8266
@@ -124,7 +123,6 @@ void start_services() {
 #endif
 
       http_setup();
-      httpServer.begin();
       DPRINTLN("HTTP server started");
       DPRINTLN("Connect to http://pedalino.local/update for firmware update");
 #ifdef WEBCONFIG
@@ -277,7 +275,7 @@ void WiFiEvent(WiFiEvent_t event) {
       DPRINT("RSSI        : %d dBm\n", WiFi.RSSI());
       DPRINT("Channel     : %d\n", WiFi.channel());
       DPRINT("STA         : %02X:%02X:%02X:%02X:%02X:%02X\n", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
-      WiFi.setHostname(host);
+      WiFi.setHostname(host.c_str());
       break;
 
     case SYSTEM_EVENT_STA_GOT_IP:
@@ -308,15 +306,18 @@ void WiFiEvent(WiFiEvent_t event) {
 
     case SYSTEM_EVENT_AP_START:
       DPRINT("SYSTEM_EVENT_AP_START\n");
-      WiFi.softAPsetHostname(host);
+      //IPAddress apIP(192, 168, 1, 1);
+      //IPAddress netMsk(255, 255, 255, 0);
+      //WiFi.softAPConfig(apIP, apIP, netMsk);
+      WiFi.softAPsetHostname(host.c_str());
       //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
       //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
-      DPRINT("AP SSID     : Pedalino\n");
-      DPRINT("AP PSK      : \n");
+      DPRINT("AP SSID     : %s\n", wifiSoftAP.c_str());
+      //DPRINT("AP PSK      : \n");
       DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
       DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
       DPRINT("Channel     : %d\n", WiFi.channel());
-      DPRINT("Connect to 'Pedalino' wireless network with no password\n");
+      DPRINT("Connect to %s wireless network with no password\n", wifiSoftAP.c_str());
       //start_services();
       break;
 
@@ -355,21 +356,27 @@ void ap_mode_start()
 {
   WIFI_LED_OFF();
 
-  WiFi.disconnect();  // mandatory after the unsuccessful try to connect to an AP
+  //WiFi.disconnect();  // mandatory after the unsuccessful try to connect to an AP
                       // and before setting up the softAP
-  WiFi.mode(WIFI_AP);
-  if (WiFi.softAP("Pedalino"))
-    start_services();
+
+  WiFi.mode(WIFI_AP_STA);
+  
+  if (WiFi.softAP(wifiSoftAP.c_str())) {
+    DPRINT("AP %s started\n", wifiSoftAP.c_str());
+    // Setup the DNS server redirecting all the domains to the apIP
+    //dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+    //dnsServer.start(53, "*", apIP);
+    //start_services();
+  }  
   else
     DPRINT("AP mode failed\n");
-
 }
 
 void ap_mode_stop()
 {
   WIFI_LED_OFF();
 
-  if (WiFi.getMode() == WIFI_AP) {
+  if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA) {
     if (WiFi.softAPdisconnect()) {
       DPRINT("AP mode disconnected\n");
     }
@@ -496,6 +503,12 @@ void wifi_connect()
       auto_reconnect();        // WIFI_CONNECT_TIMEOUT seconds to connect to SmartConfig access point
   if (!WiFi.isConnected())
     ap_mode_start();           // switch to AP mode until next reboot
+}
+
+inline void http_run()
+{
+  // Run web server
+  httpServer.handleClient();
 }
 
 #endif  // WIFI

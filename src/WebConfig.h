@@ -199,6 +199,11 @@ String get_root_page() {
 
   page += F("<div class='col-3'>");
   page += F("<h3>Hardware</h3>");
+  page += F("<dt>SDK Version</dt><dd>");
+  page += ESP.getSdkVersion();
+  page += F("</dd>");
+  //page += F("<dt>Running On Core</dt><dd>");
+  //page += xPortGetCoreID();
   page += F("<dt>Chip</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
   page += String("ESP8266");
@@ -212,27 +217,9 @@ String get_root_page() {
   page += ESP.getChipRevision();
   page += F("</dd>");
 #endif
-  page += F("<dt>SDK Version</dt><dd>");
-  page += ESP.getSdkVersion();
-  page += F("</dd>");
-  //page += F("<dt>Running On Core</dt><dd>");
-  //page += xPortGetCoreID();
   page += F("</dd>");
   page += F("<dt>Chip ID</dt><dd>");
-#ifdef ARDUINO_ARCH_ESP8266
-  page += String(ESP.getChipId(), HEX);
-#endif
-#ifdef ARDUINO_ARCH_ESP32
-  page += String((uint32_t)ESP.getEfuseMac(), HEX);
-#endif
-  page += F("</dd>");
-  page += F("<dt>Flash Chip ID</dt><dd>");
-#ifdef ARDUINO_ARCH_ESP8266
-  page += String(ESP.getFlashChipId(), HEX);
-#endif
-#ifdef ARDUINO_ARCH_ESP32
-  page += String((uint32_t)ESP.getEfuseMac(), HEX); // Low 4 bytes of MAC address (6 bytes)
-#endif
+  page += getChipId();
   page += F("</dd>");
   page += F("<dt>Chip Speed</dt><dd>");
   page += ESP.getFlashChipSpeed() / 1000000;
@@ -251,50 +238,44 @@ String get_root_page() {
   page += F("</div>");
 
   page += F("<div class='col-3'>");
-  page += F("<h3>Wireless</h3>");
-  switch (WiFi.getMode()) {
-    case WIFI_STA:
-      page += F("<dt>SSID</dt><dd>");
-      page += wifiSSID;
-      page += F("</dd>");
-      page += F("<dt>BSSID</dt><dd>");
-      page += WiFi.BSSIDstr();
-      page += F("</dd>");
-      page += F("<dt>RSSI</dt><dd>");
-      page += String(WiFi.RSSI());
-      page += F(" dBm</dd>");
-      page += F("<dt>Channel</dt><dd>");
-      page += String(WiFi.channel());
-      page += F("</dd>");
-      page += F("<dt>Station MAC</dt><dd>");
-      page += WiFi.macAddress();
-      page += F("</dd>");
-      break;
-    case WIFI_AP:
-      page += F("<dt>AP SSID</dt><dd>");
-#ifdef ARDUINO_ARCH_ESP8266
-      page += WiFi.softAPSSID();
-#endif
-#ifdef ARDUINO_ARCH_ESP32
-      page += String("Pedalino");
-#endif
-      page += F("</dd>");
-      page += F("<dt>AP MAC Address</dt><dd>");
-      page += WiFi.softAPmacAddress();
-      page += F("</dd>");
-      page += F("<dt>AP IP Address</dt><dd>");
-      page += WiFi.softAPIP().toString();
-      page += F("</dd>");
-      page += F("<dt>Channel</dt><dd>");
-      page += String(WiFi.channel());
-      page += F("</dd>");
+  page += F("<h3>Wireless STA</h3>");
+  page += F("<dt>SSID</dt><dd>");
+  page += wifiSSID;
+  page += F("</dd>");
+  page += F("<dt>BSSID</dt><dd>");
+  page += WiFi.BSSIDstr();
+  page += F("</dd>");
+  page += F("<dt>RSSI</dt><dd>");
+  page += String(WiFi.RSSI());
+  page += F(" dBm</dd>");
+  page += F("<dt>Channel</dt><dd>");
+  page += String(WiFi.channel());
+  page += F("</dd>");
+  page += F("<dt>Station MAC</dt><dd>");
+  page += WiFi.macAddress();
+  page += F("</dd>");
+
+  page += F("<h3>Wireless AP</h3>");
+  page += F("<dt>AP SSID</dt><dd>");
+  page += wifiSoftAP;
+  page += F("</dd>");
+  page += F("<dt>AP MAC Address</dt><dd>");
+  page += WiFi.softAPmacAddress();
+  page += F("</dd>");
+  page += F("<dt>AP IP Address</dt><dd>");
+  page += WiFi.softAPIP().toString();
+  page += F("</dd>");
+  page += F("<dt>Channel</dt><dd>");
+  page += String(WiFi.channel());
+  page += F("</dd>");
 #ifdef ARDUINO_ARCH_ESP32  
-      page += F("<dt>Hostname</dt><dd>");
-      page += WiFi.softAPgetHostname();
-      page += F("</dd>");
+  page += F("<dt>Hostname</dt><dd>");
+  page += WiFi.softAPgetHostname();
+  page += F("</dd>");
 #endif
-      break;
-  }
+  page += F("<dt>Connected Stations</dt><dd>");
+  page += WiFi.softAPgetStationNum();
+  page += F("</dd>");
   page += F("</div>");
 
   page += F("<div class='col-3'>");
@@ -1358,4 +1339,6 @@ void http_setup() {
   httpServer.on("/update",      HTTP_GET,   http_handle_update);
   httpServer.on("/update",      HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);
   httpServer.onNotFound(http_handle_not_found);
+
+  httpServer.begin();
 }

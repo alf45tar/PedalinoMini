@@ -115,6 +115,7 @@ void setup()
   DPRINTLN("                 \\/     \\/     \\/             \\/           \\__\\                 \\/  /__/");
   DPRINTLN("                                                                (c) 2018 alf45star");
   DPRINTLN("                                                        https://github.com/alf45tar/Pedalino");
+  DPRINT("\nHostname: %s\n", host.c_str());
 
   display_init();
 
@@ -140,12 +141,11 @@ void setup()
     delay(50);
     duration = millis() - milliStart;
   }
-  DPRINTLN("");
   if ((digitalRead(PIN_D(0)) == HIGH) && (duration > 100 && duration < 8500)) {
-    DPRINTLN("Serial passthrough mode for ESP firmware update and monitor");
+    DPRINT("\nSerial passthrough mode for ESP firmware update and monitor\n");
 
   } else if ((digitalRead(PIN_D(0)) == LOW) && (duration >= 8500)) {
-    DPRINTLN("Reset EEPROM to factory default");
+    DPRINT("\nReset EEPROM to factory default\n");
 #ifdef LCD
     lcd.setCursor(0, 1);
     lcd.print("Factory default ");
@@ -154,6 +154,8 @@ void setup()
     //eeprom_initialize_to_zero();
     load_factory_default();
     eeprom_update();
+    //ESP.eraseConfig();
+    //ESP.reset();
   }
   eeprom_read();
 
@@ -251,8 +253,7 @@ void loop()
   // Update display
   //ui.update();
 
-  // Run web server
-  httpServer.handleClient();
+  http_run();
 
   // Run OTA update service
   ota_handle();

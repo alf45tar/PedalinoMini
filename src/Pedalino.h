@@ -13,8 +13,6 @@
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-const char host[] = "pedalino";
-
 #define MODEL     "PedalinoMini™"      
 #define INTERFACES        6
 #define PROFILES          3
@@ -282,5 +280,19 @@ RemoteDebug Debug;
 #define DPRINTLN(...)
 #define DPRINTMIDI(...)
 #endif
+
+String getChipId() {
+#ifdef ARDUINO_ARCH_ESP8266
+  String id(ESP.getChipId(), HEX);
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+  String id((uint32_t)ESP.getEfuseMac(), HEX); // Low 4 bytes of MAC address (6 bytes)
+#endif
+  id.toUpperCase();
+  return id;
+}
+
+String host("pedalino_" + getChipId());
+String wifiSoftAP("Pedalino_" + getChipId());
 
 #endif // _PEDALINO_H
