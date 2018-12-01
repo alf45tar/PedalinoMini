@@ -150,9 +150,9 @@ String get_top_page(byte p = 0) {
 String get_footer_page() {
 
   String page = "";
-  page += F("<nav class='navbar fixed-bottom navbar-light bg-light'>");
-  page += F("<a class='navbar-text' href='https://github.com/alf45tar/PedalinoMini'>https://github.com/alf45tar/PedalinoMini</a>");
-  page += F("</nav>");
+  //page += F("<nav class='navbar align-items-end navbar-light bg-light'>");
+  //page += F("<a class='navbar-text' href='https://github.com/alf45tar/PedalinoMini'>https://github.com/alf45tar/PedalinoMini</a>");
+  //page += F("</nav>");
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
@@ -199,11 +199,6 @@ String get_root_page() {
 
   page += F("<div class='col-3'>");
   page += F("<h3>Hardware</h3>");
-  page += F("<dt>SDK Version</dt><dd>");
-  page += ESP.getSdkVersion();
-  page += F("</dd>");
-  //page += F("<dt>Running On Core</dt><dd>");
-  //page += xPortGetCoreID();
   page += F("<dt>Chip</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
   page += String("ESP8266");
@@ -235,6 +230,12 @@ String get_root_page() {
   page += F("<dt>Free Heap Size</dt><dd>");
   page += ESP.getFreeHeap() / 1024;
   page += F(" kB</dd>");
+  page += F("<dt>SDK Version</dt><dd>");
+  page += ESP.getSdkVersion();
+  page += F("</dd>");
+  //page += F("<dt>Running On Core</dt><dd>");
+  //page += xPortGetCoreID();
+  //page += F("</dd>");
   page += F("</div>");
 
   page += F("<div class='col-3'>");
@@ -878,6 +879,25 @@ String get_options_page() {
   page += F("<form method='post'>");
 
   page += F("<div class='form-row'>");
+  page += F("<label for='bootstraptheme' class='col-2 col-form-label'>mDNS Device Name</label>");
+  page += F("<div class='col-10'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='devicename' name='mdnsdevicename' placeholder='' value='");
+  page += host + F("'>");
+  page += F("</div>");
+  page += F("<div class='w-100'></div>");
+  page += F("<div class='col-2'>");
+  page += F("</div>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
+  page += F("<p>Each device must have a different name. Enter the device name without .local. Web UI will be available at http://<i>device_name</i>.local</p>");
+  page += F("<p>Pedalino will be restarted if you change it.</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
   page += F("<label for='bootstraptheme' class='col-2 col-form-label'>Web UI Theme</label>");
   page += F("<div class='col-10'>");
   page += F("<select class='custom-select' id='bootstraptheme' name='theme'>");
@@ -1168,6 +1188,14 @@ void http_handle_post_interfaces() {
 void http_handle_post_options() {
   
   http_handle_globals();
+
+  if (host != httpServer.arg("mdnsdevicename")) {
+    host = httpServer.arg("mdnsdevicename");
+    eeprom_update_device_name(host);
+    delay(1000);
+    ESP.restart();
+    alert = "Saved";
+  }
 
   if (httpServer.arg("blynkauthtoken")) {
     blynk_disconnect();

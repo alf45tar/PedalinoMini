@@ -11,7 +11,7 @@
 #include <EEPROM.h>
 
 #define SIGNATURE "Pedalino(TM)"
-#define EEPROM_VERSION  3                 // Increment each time you change the eeprom structure
+#define EEPROM_VERSION  4                 // Increment each time you change the eeprom structure
 #define EEPROM_SIZE     4096
 
 extern String theme;
@@ -235,6 +235,35 @@ void load_factory_default()
 //
 //  Write current profile to EEPROM
 //
+void eeprom_update_device_name(String name)
+{
+  int  offset = 0;
+  char signature[sizeof(SIGNATURE) + 1];
+  byte saved_version;
+
+  EEPROM.get(offset, signature);
+  offset += sizeof(SIGNATURE);
+  EEPROM.get(offset, saved_version);
+  offset += sizeof(byte);
+
+  DPRINT("EEPROM signature: %s\n", signature);
+  DPRINT("EEPROM version  : %d\n", saved_version);
+
+  if ((strcmp(signature, SIGNATURE) != 0) || (saved_version != EEPROM_VERSION))
+    return;
+
+  DPRINT("Updating EEPROM ...\n");
+
+  eeprom_writeString(offset, name);
+  DPRINT("[%4d]Device Name:       %s\n", offset, name.c_str());
+  offset += 33;
+  
+  EEPROM.commit();
+}
+
+//
+//  Write current profile to EEPROM
+//
 void eeprom_update_current_profile(byte profile)
 {
   int  offset = 0;
@@ -251,6 +280,8 @@ void eeprom_update_current_profile(byte profile)
 
   if ((strcmp(signature, SIGNATURE) != 0) || (saved_version != EEPROM_VERSION))
     return;
+
+  offset += 33;   // Skip device name
 
   DPRINT("Updating EEPROM ...\n");
 
@@ -283,10 +314,8 @@ void eeprom_update_blynk_auth_token(String token)
 
   DPRINT("Reading EEPROM ...\n");
 
-  EEPROM.get(offset, currentProfile);
-  currentProfile = constrain(currentProfile, 0, PROFILES - 1);
-  DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
-  offset += sizeof(byte);
+  offset += 33;             // Skip device name
+  offset += sizeof(byte);   // Skip current profile
 
   DPRINT("Updating EEPROM ...\n");
 
@@ -320,15 +349,9 @@ void eeprom_update_theme(String theme)
 
   DPRINT("Reading EEPROM ...\n");
 
-  EEPROM.get(offset, currentProfile);
-  currentProfile = constrain(currentProfile, 0, PROFILES - 1);
-  DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
-  offset += sizeof(byte);
-  
-  token = eeprom_readString(offset);
-  blynk_set_token(token);
-  DPRINT("[%4d]Blynk Auth Token:  %s\n", offset, blynk_get_token().c_str());
-  offset += 33;
+  offset += 33;             // Skip device name
+  offset += sizeof(byte);   // Skip current profile
+  offset += 33;             // Skip Blynk authentication token
 
   DPRINT("Updating EEPROM ...\n");
 
@@ -352,6 +375,10 @@ void eeprom_update()
   offset += sizeof(SIGNATURE);
   EEPROM.put(offset, EEPROM_VERSION);
   offset += sizeof(byte);
+
+  eeprom_writeString(offset, host);
+  DPRINT("[%4d]Device Name:       %s\n", offset, host.c_str());
+  offset += 33;
 
   EEPROM.put(offset, currentProfile);
   DPRINT("[%4d]Current profile:   %d\n", offset, currentProfile);
@@ -490,6 +517,10 @@ void eeprom_read()
     return;
 
   DPRINT("Reading EEPROM ...\n");
+
+  host = eeprom_readString(offset);
+  DPRINT("[%4d]Device Name:       %s\n", offset, host.c_str());
+  offset += 33;
 
   EEPROM.get(offset, currentProfile);
   currentProfile = constrain(currentProfile, 0, PROFILES - 1);
