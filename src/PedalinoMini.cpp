@@ -129,6 +129,7 @@ void setup()
 #ifndef NOLCD
   lcd.clear();
 #endif
+  if (digitalRead(PIN_D(0)) == LOW) display_progress_bar_title("Factory reset");
   while ((digitalRead(PIN_D(0)) == LOW) && (duration < 8500)) {
     DPRINT("#");
 #ifndef NOLCD
@@ -140,7 +141,9 @@ void setup()
     WIFI_LED_OFF();
     delay(50);
     duration = millis() - milliStart;
+    display_progress_bar_update(duration, 8500);
   }
+  display_clear();
   if ((digitalRead(PIN_D(0)) == HIGH) && (duration > 100 && duration < 8500)) {
     DPRINT("\nSerial passthrough mode for ESP firmware update and monitor\n");
 

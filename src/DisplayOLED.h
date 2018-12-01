@@ -147,17 +147,57 @@ void display_init()
   display.flipScreenVertically();
   display.setContrast(255);
 
-#ifndef NOWIFI
+#ifdef WIFI
   display.clear();
   display.drawXbm((display.getWidth() - WIFI_LOGO_WIDTH) / 2, (display.getHeight() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
   display.display();
   delay(500);
 #endif
 
-#ifndef NOBLE
+#ifdef BLE
   display.clear();
   display.drawXbm((display.getWidth() - BLUETOOTH_LOGO_WIDTH) / 2, (display.getHeight() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
   display.display();
   delay(500);
 #endif
+}
+
+void display_clear()
+{
+  display.clear();
+  display.display();
+}
+
+void display_progress_bar_title(String title)
+{
+  display.clear();
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+  display.drawString(display.getWidth() / 2, display.getHeight() / 2 - 10, title.c_str());
+  display.display();
+}
+
+void display_progress_bar_title2(String title1, String title2)
+{
+  display.clear();
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+  display.drawString(display.getWidth() / 2, display.getHeight() / 2 - 20, title1.c_str());
+  display.drawString(display.getWidth() / 2, display.getHeight() / 2 - 10, title2.c_str());
+  display.display();
+}
+
+void display_progress_bar_update(unsigned int progress, unsigned int total)
+{
+  display.drawProgressBar(4, 32, 120, 8, 100*progress/total);
+  display.display();
+}
+
+void display_full_screen_centered(String text)
+{
+  display.clear();
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+  display.drawString(display.getWidth() / 2, display.getHeight() / 2, text.c_str());
+  display.display();
 }
