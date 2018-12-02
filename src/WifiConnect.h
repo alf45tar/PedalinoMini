@@ -408,7 +408,7 @@ bool smart_config()
     status_blink();
     delay(950);
   }
-  display_clear();
+  display_progress_bar_update(1, 1);
   
   if (WiFi.smartConfigDone())
   {
@@ -456,7 +456,7 @@ bool ap_connect(String ssid = "", String password = "")
     status_blink();
     delay(300);
   }
-  display_clear();
+  display_progress_bar_update(1, 1);
 
   WiFi.isConnected() ? WIFI_LED_ON() : WIFI_LED_OFF();
 
@@ -497,7 +497,7 @@ bool auto_reconnect(String ssid = "", String password = "")
     status_blink();
     delay(300);
   }
-  display_clear();
+  display_progress_bar_update(1, 1);
 
   WiFi.isConnected() ? WIFI_LED_ON() : WIFI_LED_OFF();
 

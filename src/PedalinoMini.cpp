@@ -126,34 +126,28 @@ void setup()
   pinMode(PIN_D(0), INPUT_PULLUP);
   unsigned long milliStart = millis();
   unsigned long duration = 0;
-#ifndef NOLCD
-  lcd.clear();
-#endif
+  lcdClear();
   if (digitalRead(PIN_D(0)) == LOW) display_progress_bar_title("Factory reset");
   while ((digitalRead(PIN_D(0)) == LOW) && (duration < 8500)) {
     DPRINT("#");
-#ifndef NOLCD
-    lcd.setCursor(duration / 500, 0);
-    lcd.print("#");
-#endif
+    lcdSetCursor(duration / 500, 0);
+    lcdPrint("#");
+    display_progress_bar_update(duration, 8500);
     WIFI_LED_ON();
     delay(50);
     WIFI_LED_OFF();
     delay(50);
     duration = millis() - milliStart;
-    display_progress_bar_update(duration, 8500);
   }
-  display_clear();
+  //display_clear();
   if ((digitalRead(PIN_D(0)) == HIGH) && (duration > 100 && duration < 8500)) {
     DPRINT("\nSerial passthrough mode for ESP firmware update and monitor\n");
 
   } else if ((digitalRead(PIN_D(0)) == LOW) && (duration >= 8500)) {
     DPRINT("\nReset EEPROM to factory default\n");
-#ifdef LCD
-    lcd.setCursor(0, 1);
-    lcd.print("Factory default ");
+    lcdSetCursor(0, 1);
+    lcdPrint("Factory default ");
     delay(1000);
-#endif
     //eeprom_initialize_to_zero();
     load_factory_default();
     eeprom_update();
@@ -254,7 +248,7 @@ void loop()
   oscUDP_listen();
 
   // Update display
-  //ui.update();
+  display_update();
 
   http_run();
 
