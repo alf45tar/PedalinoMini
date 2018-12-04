@@ -292,7 +292,7 @@ String getChipId() {
   return id;
 }
 
-String host("pedalino_" + getChipId());
-String wifiSoftAP("Pedalino_" + getChipId());
+String host(getChipId());
+String wifiSoftAP("Pedalino" + getChipId());
 
 #endif // _PEDALINO_H
