@@ -259,6 +259,10 @@ const uint8_t batteryIndicator[] PROGMEM = {
 SSD1306Wire   display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 OLEDDisplayUi ui(&display);
 
+char screen1[LCD_COLS + 1];
+char screen2[LCD_COLS + 1];
+int  analog;
+
 bool blynk_cloud_connected();
 extern bool appleMidiConnected;
 
@@ -356,9 +360,42 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
-  display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->setFont(ArialMT_Plain_16);
-  display->drawString(64 + x, 24 + y, MODEL); 
+  if (millis() < endMillis2) {
+    display->setFont(ArialMT_Plain_10);
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    switch (m1) {
+        case midi::NoteOn:
+        case midi::NoteOff:
+          display->drawString(x, 10 + y, String("Note ") + String(m2));
+          break;
+        case midi::ControlChange:
+          display->drawString(x, 10 + y, String("Control Code ") + String(m2));
+          display->setFont(ArialMT_Plain_16);
+          display->setTextAlignment(TEXT_ALIGN_RIGHT);
+          display->drawString(128 + x, 12 + y, String(m3));
+          break;
+        case midi::ProgramChange:
+          display->drawString(x, 10 + y, String("Program Change ") + String(m2));
+          break;
+        case midi::PitchBend:
+          display->drawString(x, 10 + y, String("Pitch Bend ") + String(m2));
+          break;
+      }
+    display->setFont(ArialMT_Plain_10);
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->drawString(x, 20 + y, String("Channel ") + String(m4));
+
+    if (analog != pedals[lastUsedPedal].pedalValue[0]) {     // do not update if not changed
+      int f = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
+      display->drawProgressBar(4, 32, 120, 8, f);
+      analog = pedals[lastUsedPedal].pedalValue[0];
+    }  
+  }  
+  else {
+    display->setFont(ArialMT_Plain_16);
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->drawString(64 + x, 24 + y, MODEL); 
+  }
 }
 
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
@@ -449,7 +486,63 @@ void display_init()
   display.flipScreenVertically();
 }
 
-void display_update()
-{
+void display_update(bool force = false) {
+
+  byte        f = 0, p = 0;
+
+  if (!powersaver) {
+
+    char buf[LCD_COLS + 1];
+
+    // Line 1
+    memset(buf, 0, sizeof(buf));
+    if (millis() < endMillis2) {
+      switch (m1) {
+        case midi::NoteOn:
+        case midi::NoteOff:
+          sprintf(&buf[strlen(buf)], "Note %3d Ch%2d", m2, m4);
+          break;
+        case midi::ControlChange:
+          sprintf(&buf[strlen(buf)], "CC%3d/%3dCh%2d", m2, m3, m4);
+          break;
+        case midi::ProgramChange:
+          sprintf(&buf[strlen(buf)], "PC%3d    Ch%2d", m2, m4);
+          break;
+        case midi::PitchBend:
+          sprintf(&buf[strlen(buf)], "Pitch%3d Ch%2d", m2, m4);
+          break;
+      }
+    }
+    else if ( MidiTimeCode::getMode() == MidiTimeCode::SynchroClockMaster || MidiTimeCode::getMode() == MidiTimeCode::SynchroClockSlave) {
+      sprintf(&buf[strlen(buf)], "%3dBPM", bpm);
+      for (byte i = 0; i < (LCD_COLS - 9); i++)
+        if (MTC.isPlaying())
+          buf[6 + i] = (MTC.getBeat() == i) ? '>' : ' ';
+        else
+          buf[6 + i] = (MTC.getBeat() == i) ? '.' : ' ';
+    }
+    else if ( MidiTimeCode::getMode() == MidiTimeCode::SynchroMTCMaster || MidiTimeCode::getMode() == MidiTimeCode::SynchroMTCSlave) {
+      sprintf(&buf[strlen(buf)], "%02d:%02d:%02d:%02d    ", MTC.getHours(), MTC.getMinutes(), MTC.getSeconds(), MTC.getFrames());
+    }
+    else {
+      for (byte i = 0; i < (LCD_COLS - 3); i++) {
+        buf[i] = ' ';
+      }
+    }
+    if (force || strcmp(screen1, buf) != 0) {     // do not update if not changed
+      memset(screen1, 0, sizeof(screen1));
+      strncpy(screen1, buf, LCD_COLS);
+      ui.switchToFrame(0);
+    }
+
+    // Line 2
+    memset(buf, 0, sizeof(buf));
+    sprintf(&buf[strlen(buf)], "Bank%2d", currentBank + 1);
+    if (force || strcmp(screen2, buf) != 0) {     // do not update if not changed
+      memset(screen2, 0, sizeof(screen2));
+      strncpy(screen2, buf, LCD_COLS);
+      ui.switchToFrame(0);
+    }
+  }
   int remainingTimeBudget = ui.update();
 }

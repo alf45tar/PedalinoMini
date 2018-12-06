@@ -24,7 +24,7 @@ inline void blynk_refresh() {}
 //#define BLYNK_NO_FLOAT                  // Disable float operations
 
 #ifdef SERIALDEBUG
-#define BLYNK_PRINT SERIALDEBUG         // Defines the object that is used for printing
+#define BLYNK_PRINT SERIALDEBUG           // Defines the object that is used for printing
 //#define BLYNK_DEBUG                     // Optional, this enables more detailed prints
 #endif
 
@@ -94,6 +94,10 @@ String     password("");
 
 void screen_update(bool);
 void eeprom_update_current_profile(byte);
+bool auto_reconnect(String ssid = "", String password = "");
+bool smart_config();
+bool ap_connect(String ssid = "", String password = "");
+String translateEncryptionType(wifi_auth_mode_t);
 
 String blynk_get_token()
 {

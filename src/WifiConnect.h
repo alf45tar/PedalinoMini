@@ -435,7 +435,8 @@ bool smart_config()
   }
 }
 
-bool ap_connect(String ssid = "", String password = "")
+//bool ap_connect(String ssid = "", String password = "")
+bool ap_connect(String ssid, String password)
 {
   // Return 'true' if connected to the access point within WIFI_CONNECT_TIMEOUT seconds
 
@@ -463,7 +464,8 @@ bool ap_connect(String ssid = "", String password = "")
   return WiFi.isConnected();
 }
 
-bool auto_reconnect(String ssid = "", String password = "")
+//bool auto_reconnect(String ssid = "", String password = "")
+bool auto_reconnect(String ssid, String password)
 {
   // Return 'true' if connected to the (last used) access point within WIFI_CONNECT_TIMEOUT seconds
 

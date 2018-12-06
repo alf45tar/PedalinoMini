@@ -60,18 +60,18 @@
 
 #include "Pedalino.h"
 #include "Config.h"
-#include "DisplayOLED.h"
-#include "OTAUpdate.h"
 #include "UdpMidiOut.h"
 #include "BLEMidiOut.h"
 #include "SerialMidi.h"
 #include "UdpMidiIn.h"
 #include "BLEMidiIn.h"
 #include "Controller.h"
-#include "WebConfig.h"
-#include "WifiConnect.h"
 #include "BlynkRPC.h"
 #include "DisplayLCD.h"
+#include "DisplayOLED.h"
+#include "WebConfig.h"
+#include "OTAUpdate.h"
+#include "WifiConnect.h"
 #include "Menu.h"
 
 #ifndef LED_BUILTIN
