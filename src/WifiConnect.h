@@ -24,7 +24,7 @@
 #include <Update.h>
 #endif
 
-#define WIFI_CONNECT_TIMEOUT    10
+#define WIFI_CONNECT_TIMEOUT     5
 #define SMART_CONFIG_TIMEOUT    30
 
 #ifdef ARDUINO_ARCH_ESP8266

@@ -1112,6 +1112,7 @@ void http_handle_post_banks() {
     a = httpServer.arg(String("value3") + String(i+1));
     banks[b][i].midiValue3 = a.toInt();
   }
+  eeprom_update();
   blynk_refresh();
   alert = "Saved";
   httpServer.send(200, "text/html", get_banks_page());
@@ -1154,6 +1155,7 @@ void http_handle_post_pedals() {
     a = httpServer.arg(String("max") + String(i+1));
     pedals[i].expMax = a.toInt();
   }
+  eeprom_update();
   blynk_refresh();
   alert = "Saved";
   httpServer.send(200, "text/html", get_pedals_page());
@@ -1180,6 +1182,7 @@ void http_handle_post_interfaces() {
     a = httpServer.arg(String("clock") + String(i+1));
     interfaces[i].midiClock = (a == checked) ? PED_ENABLE : PED_DISABLE;
   }
+  eeprom_update();
   blynk_refresh();
   alert = "Saved";
   httpServer.send(200, "text/html", get_interfaces_page());

@@ -237,6 +237,22 @@ const uint8_t midiIcons[] PROGMEM = {
 };
 
 // Font generated or edited with the glyphEditor
+const uint8_t _midiIcons[] PROGMEM = {
+0x14, // Width: 20
+0x0A, // Height: 10
+0x30, // First char: 48
+0x04, // Number of chars: 4
+// Jump Table:
+0xFF, 0xFF, 0x00, 0x14, // 48
+0x00, 0x00, 0x26, 0x14, // 49
+0x00, 0x26, 0x28, 0x14, // 50
+0x00, 0x4E, 0x26, 0x14, // 51
+// Font Data:
+0x00, 0x00, 0xFF, 0x03, 0xFF, 0x03, 0x81, 0x02, 0xFD, 0x02, 0x81, 0x02, 0xFD, 0x02, 0x81, 0x02, 0xFF, 0x02, 0x81, 0x02, 0xFF, 0x02, 0x85, 0x02, 0xBD, 0x02, 0xBD, 0x02, 0x83, 0x02, 0xFF, 0x02, 0x81, 0x02, 0xFF, 0x03, 0xFF, 0x03, // 49
+0x85, 0x03, 0xFF, 0x03, 0x07, 0x02, 0xB7, 0x03, 0xCF, 0x03, 0xFF, 0x03, 0x81, 0x02, 0xFD, 0x02, 0x81, 0x02, 0xFD, 0x02, 0x83, 0x02, 0xFF, 0x02, 0x81, 0x02, 0xFF, 0x02, 0x85, 0x02, 0xBD, 0x02, 0xBD, 0x02, 0xC3, 0x02, 0xFF, 0x02, 0x81, 0x02, // 50
+0x00, 0x00, 0xFF, 0x03, 0xFF, 0x03, 0x83, 0x03, 0x7D, 0x03, 0x7D, 0x03, 0x83, 0x03, 0xFF, 0x03, 0xB3, 0x03, 0x6D, 0x03, 0x6D, 0x03, 0x9B, 0x03, 0xFF, 0x03, 0x83, 0x03, 0x7D, 0x03, 0x7D, 0x03, 0xBB, 0x03, 0xFF, 0x03, 0xFF, 0x03, // 51
+};
+// Font generated or edited with the glyphEditor
 const uint8_t batteryIndicator[] PROGMEM = {
 0x14, // Width: 20
 0x0A, // Height: 10
@@ -300,9 +316,11 @@ void display_progress_bar_update(unsigned int progress, unsigned int total)
 
 void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
+  static int signal;
+
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->setFont(wifiSignal);
-  static int signal = (signal + WiFi.RSSI()) / 2;
+  signal = (4*signal + WiFi.RSSI()) / 5;
   if      (signal < -90) display->drawString(0, 0, String(0));
   else if (signal < -85) display->drawString(0, 0, String(1));
   else if (signal < -80) display->drawString(0, 0, String(2));
@@ -319,25 +337,10 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   if (blynk_cloud_connected()) display->drawString(36, 0, String(1));
   else display->drawString(36, 0, String(0));
 
-/*
-  display->setFont(midiIcons);
-  if(appleMidiConnected) display->drawString(40, 0, String(1));
-  else display->drawString(40, 0, String(0));
-
-  if (interfaces[PED_IPMIDI].midiIn) display->drawString(62, 0, String(2));
-  else display->drawString(62, 0, String(0));
-
-  if (interfaces[PED_OSC].midiIn) display->drawString(84, 0, String(3));
-  else display->drawString(84, 0, String(0));
-*/
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->setFont(batteryIndicator);
   display->drawString(128, 0, String((millis()>>10)%4));
 
-/*
-  display->setFont(ArialMT_Plain_10);
-  display->drawString(100, 0, "Profile " + String((char)('A' + currentProfile)));
-*/
   display->setTextAlignment(TEXT_ALIGN_CENTER);
   display->setFont(profileSign);
   display->drawString(64 + 10*currentProfile, 0, String(currentProfile));
@@ -345,68 +348,73 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
-  display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->setFont(midiIcons);
-  if(appleMidiConnected) display->drawString(0, 54, String(1));
-  else display->drawString(0, 54, String(0));
+  if ((millis() < endMillis2) && analog != pedals[lastUsedPedal].pedalValue[0]) {
+      int f = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
+      display->drawProgressBar(4, 54, 120, 8, f);
+      analog = pedals[lastUsedPedal].pedalValue[0];
+    }
+  else { 
+    display->drawLine(0, 52, 127, 52);
 
-  display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  if (interfaces[PED_IPMIDI].midiIn) display->drawString(106, 54, String(2));
-  else display->drawString(106, 54, String(0));
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->setFont(ArialMT_Plain_10);
+    display->drawString(0, 54, String("Bank " + String(currentBank+1)));
 
-  if (interfaces[PED_OSC].midiIn) display->drawString(128, 54, String(3));
-  else display->drawString(128, 54, String(0));
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->setFont(midiIcons);
+    if(appleMidiConnected) display->drawString(84, 54, String(1));
+    else display->drawString(84, 54, String(0));
+
+    if (interfaces[PED_IPMIDI].midiIn) display->drawString(106, 54, String(2));
+    else display->drawString(106, 54, String(0));
+
+    if (interfaces[PED_OSC].midiIn) display->drawString(128, 54, String(3));
+    else display->drawString(128, 54, String(0));
+  }
 }
 
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
   if (millis() < endMillis2) {
     display->setFont(ArialMT_Plain_10);
-    display->setTextAlignment(TEXT_ALIGN_LEFT);
     switch (m1) {
         case midi::NoteOn:
         case midi::NoteOff:
-          display->drawString(x, 10 + y, String("Note ") + String(m2));
+          display->setTextAlignment(TEXT_ALIGN_LEFT);
+          display->drawString(x, 16 + y, String("Note"));
           break;
         case midi::ControlChange:
-          display->drawString(x, 10 + y, String("Control Code ") + String(m2));
-          display->setFont(ArialMT_Plain_16);
+          display->setTextAlignment(TEXT_ALIGN_LEFT);
+          display->drawString(x, 16 + y, String("Control Code"));
+          display->setTextAlignment(TEXT_ALIGN_LEFT);
+          display->drawString(x, 36 + y, String("Value"));
           display->setTextAlignment(TEXT_ALIGN_RIGHT);
-          display->drawString(128 + x, 12 + y, String(m3));
+          display->drawString(128 + x, 36 + y, String(m3));
           break;
         case midi::ProgramChange:
-          display->drawString(x, 10 + y, String("Program Change ") + String(m2));
+          display->setTextAlignment(TEXT_ALIGN_LEFT);
+          display->drawString(x, 16 + y, String("Program Change"));
           break;
         case midi::PitchBend:
-          display->drawString(x, 10 + y, String("Pitch Bend ") + String(m2));
+          display->setTextAlignment(TEXT_ALIGN_LEFT);
+          display->drawString(x, 16 + y, String("Pitch Bend"));   
           break;
       }
-    display->setFont(ArialMT_Plain_10);
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->drawString(128 + x, 16 + y, String(m2));
     display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->drawString(x, 20 + y, String("Channel ") + String(m4));
-
-    if (analog != pedals[lastUsedPedal].pedalValue[0]) {     // do not update if not changed
-      int f = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
-      display->drawProgressBar(4, 32, 120, 8, f);
-      analog = pedals[lastUsedPedal].pedalValue[0];
-    }  
+    display->drawString(x, 26 + y, String("Channel"));
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->drawString(128 + x, 26 + y, String(m4));
   }  
   else {
     display->setFont(ArialMT_Plain_16);
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
-    display->drawString(64 + x, 24 + y, MODEL); 
+    display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+    display->drawString(64 + x, 32 + y, MODEL); 
   }
 }
 
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
-{
-  display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->setFont(ArialMT_Plain_16);
-  display->drawString(64 + x, 16 + y, host);
-  display->drawString(64 + x, 36 + y, WiFi.localIP().toString());
-}
-
-void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
   display->setFont(ArialMT_Plain_10);
   display->setTextAlignment(TEXT_ALIGN_LEFT);
@@ -423,16 +431,22 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->drawString(128 + x, 36 + y, WiFi.localIP().toString());
 }
 
+void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
+{
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->setFont(ArialMT_Plain_16);
+  display->drawString(64 + x, 16 + y, host);
+  display->drawString(64 + x, 36 + y, WiFi.localIP().toString());
+}
+
 // This array keeps function pointers to all frames
 // frames are the single views that slide in
-FrameCallback frames[] = { drawFrame1, drawFrame2, drawFrame3 };
-
-// how many frames are there?
-int frameCount = 3;
+FrameCallback frames[] = { drawFrame1, drawFrame2 };
+int frameCount = sizeof(frames) / sizeof(FrameCallback);
 
 // Overlays are statically drawn on top of a frame
 OverlayCallback overlays[] = { topOverlay, bottomOverlay };
-int overlaysCount = 2;
+int overlaysCount = sizeof(overlays) / sizeof(OverlayCallback);
 
 void display_init()
 {
@@ -470,6 +484,9 @@ void display_init()
   // Defines where the first frame is located in the bar.
   ui.setIndicatorDirection(LEFT_RIGHT);
 
+  // Disable drawing of all indicators.
+  ui.disableAllIndicators();
+
   // You can change the transition that is used
   // SLIDE_LEFT, SLIDE_RIGHT, SLIDE_UP, SLIDE_DOWN
   ui.setFrameAnimation(SLIDE_LEFT);
@@ -487,8 +504,6 @@ void display_init()
 }
 
 void display_update(bool force = false) {
-
-  byte        f = 0, p = 0;
 
   if (!powersaver) {
 
@@ -535,14 +550,6 @@ void display_update(bool force = false) {
       ui.switchToFrame(0);
     }
 
-    // Line 2
-    memset(buf, 0, sizeof(buf));
-    sprintf(&buf[strlen(buf)], "Bank%2d", currentBank + 1);
-    if (force || strcmp(screen2, buf) != 0) {     // do not update if not changed
-      memset(screen2, 0, sizeof(screen2));
-      strncpy(screen2, buf, LCD_COLS);
-      ui.switchToFrame(0);
-    }
   }
   int remainingTimeBudget = ui.update();
 }
