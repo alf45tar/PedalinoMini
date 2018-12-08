@@ -220,7 +220,7 @@ const uint8_t profileSign[] PROGMEM = {
 };
 
 // Font generated or edited with the glyphEditor
-const uint8_t midiIcons[] PROGMEM = {
+const uint8_t _midiIcons[] PROGMEM = {
 0x14, // Width: 20
 0x0A, // Height: 10
 0x30, // First char: 48
@@ -237,7 +237,7 @@ const uint8_t midiIcons[] PROGMEM = {
 };
 
 // Font generated or edited with the glyphEditor
-const uint8_t _midiIcons[] PROGMEM = {
+const uint8_t midiIcons[] PROGMEM = {
 0x14, // Width: 20
 0x0A, // Height: 10
 0x30, // First char: 48
@@ -331,7 +331,8 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   else                   display->drawString(0, 0, String(7));
   
   display->setFont(bluetoothSign);
-  display->drawString(24, 0, String(1));
+  if (bleMidiConnected) display->drawString(24, 0, String(1));
+  else display->drawString(24, 0, String(0));
 
   display->setFont(blynkSign);
   if (blynk_cloud_connected()) display->drawString(36, 0, String(1));
@@ -348,13 +349,12 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
-  if ((millis() < endMillis2) && analog != pedals[lastUsedPedal].pedalValue[0]) {
-      int f = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
-      display->drawProgressBar(4, 54, 120, 8, f);
-      analog = pedals[lastUsedPedal].pedalValue[0];
+  if (millis() < endMillis2) {
+    int p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
+    display->drawProgressBar(4, 54, 120, 8, p);
     }
   else { 
-    display->drawLine(0, 52, 127, 52);
+    display->drawLine(0, 51, 127, 51);
 
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(ArialMT_Plain_10);
@@ -382,6 +382,10 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
         case midi::NoteOff:
           display->setTextAlignment(TEXT_ALIGN_LEFT);
           display->drawString(x, 16 + y, String("Note"));
+          display->setTextAlignment(TEXT_ALIGN_LEFT);
+          display->drawString(x, 36 + y, String("Velocity"));
+          display->setTextAlignment(TEXT_ALIGN_RIGHT);
+          display->drawString(128 + x, 36 + y, String(m3));
           break;
         case midi::ControlChange:
           display->setTextAlignment(TEXT_ALIGN_LEFT);
@@ -512,6 +516,7 @@ void display_update(bool force = false) {
     // Line 1
     memset(buf, 0, sizeof(buf));
     if (millis() < endMillis2) {
+      ui.switchToFrame(0);
       switch (m1) {
         case midi::NoteOn:
         case midi::NoteOff:
@@ -547,7 +552,6 @@ void display_update(bool force = false) {
     if (force || strcmp(screen1, buf) != 0) {     // do not update if not changed
       memset(screen1, 0, sizeof(screen1));
       strncpy(screen1, buf, LCD_COLS);
-      ui.switchToFrame(0);
     }
 
   }

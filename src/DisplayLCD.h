@@ -179,11 +179,11 @@ const char bar1[]  = {49, 50, 51, 52, 53, 54, 55, 56, 57, 58};
 const char bar2[]  = {'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o'};
 //const char bar2[]  = {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#'};
 
-byte m1, m2, m3, m4;
+int m1, m2, m3, m4;
 unsigned long endMillis2;
 
 
-void screen_info(byte b1, byte b2, byte b3, byte b4)
+void screen_info(int b1, int b2, int b3, int b4)
 {
   m1 = b1;
   m2 = b2;

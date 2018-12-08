@@ -8,7 +8,7 @@
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
-void screen_info(byte, byte, byte, byte);
+void screen_info(int, int, int, int);
 
 //
 //  Autosensing setup

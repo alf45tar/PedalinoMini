@@ -879,7 +879,7 @@ String get_options_page() {
   page += F("<form method='post'>");
 
   page += F("<div class='form-row'>");
-  page += F("<label for='bootstraptheme' class='col-2 col-form-label'>mDNS Device Name</label>");
+  page += F("<label for='bootstraptheme' class='col-2 col-form-label'>Device Name</label>");
   page += F("<div class='col-10'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='devicename' name='mdnsdevicename' placeholder='' value='");
   page += host + F("'>");

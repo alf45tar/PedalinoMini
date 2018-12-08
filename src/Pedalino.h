@@ -118,6 +118,8 @@ typedef uint8_t   byte;
 #define PED_TIMESIGNATURE_12_8  6
 
 #define MIDI_RESOLUTION         128       // MIDI 7-bit CC resolution
+#define MIDI_PITCH_BEND_MIN   -8192
+#define MIDI_PITCH_BEND_MAX    8191
 #define ADC_RESOLUTION         4096       // 12-bit ADC converter resolution
 #define CALIBRATION_DURATION   8000       // milliseconds
 
