@@ -1216,10 +1216,11 @@ void menu_navigation()
         case PED_BANK_PLUS:
           switch (k) {
             case 1:
-              if (currentBank < BANKS - 1) currentBank++;
+              currentBank = (currentBank + 1) % BANKS;
               break;
             case 2:
               if (currentBank > 0) currentBank--;
+              else currentBank = BANKS - 1;
               break;
             case 3:
               break;
@@ -1230,9 +1231,10 @@ void menu_navigation()
           switch (k) {
             case 1:
               if (currentBank > 0) currentBank--;
+              else currentBank = BANKS - 1;
               break;
             case 2:
-              if (currentBank < BANKS - 1) currentBank++;
+              currentBank = (currentBank + 1) % BANKS;
               break;
             case 3:
               break;

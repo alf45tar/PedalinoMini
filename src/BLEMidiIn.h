@@ -228,7 +228,7 @@ void OnBleMidiReceiveReset(void)
 void ble_midi_start_service()
 {
   // Create a session and wait for a remote host to connect to us
-  BleMIDI.begin("Pedalino");
+  BleMIDI.begin(host.c_str());
 
   BleMIDI.onConnected(OnBleMidiConnected);
   BleMIDI.onDisconnected(OnBleMidiDisconnected);

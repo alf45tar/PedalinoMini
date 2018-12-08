@@ -8,6 +8,12 @@
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
+String  theme     = "bootstrap";
+
+#ifdef NOWIFI 
+inline void http_run() {};
+#else
+
 #include <StreamString.h>
 #include <FS.h>
 
@@ -48,8 +54,6 @@ void    blynk_connect();
 void    blynk_disconnect();
 void    blynk_refresh();
 
-
-String  theme     = "bootstrap";
 String  alert     = "";
 String  uiprofile = "1";
 String  uibank    = "1";
@@ -1373,3 +1377,5 @@ void http_setup() {
 
   httpServer.begin();
 }
+
+#endif  // WIFI
