@@ -316,6 +316,7 @@ void display_progress_bar_update(unsigned int progress, unsigned int total)
 
 void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
+#ifdef WIFI
   static int signal;
 
   display->setTextAlignment(TEXT_ALIGN_LEFT);
@@ -329,7 +330,8 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   else if (signal < -65) display->drawString(0, 0, String(5));
   else if (signal < -60) display->drawString(0, 0, String(6));
   else                   display->drawString(0, 0, String(7));
-  
+#endif
+
   display->setFont(bluetoothSign);
   if (bleMidiConnected) display->drawString(24, 0, String(1));
   else display->drawString(24, 0, String(0));
@@ -349,8 +351,10 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
-  if (millis() < endMillis2) {
-    int p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
+  if (millis() < endMillis2 &&
+      pedals[lastUsedPedal].lastUpdate[0] > pedals[lastUsedSwitch].lastUpdate[0] &&
+      pedals[lastUsedPedal].lastUpdate[0] > pedals[lastUsedSwitch].lastUpdate[1]) {
+    byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
     display->drawProgressBar(4, 54, 120, 8, p);
     }
   else { 
@@ -360,6 +364,7 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     display->setFont(ArialMT_Plain_10);
     display->drawString(0, 54, String("Bank " + String(currentBank+1)));
 
+#ifdef WIFI
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(midiIcons);
     if(appleMidiConnected) display->drawString(84, 54, String(1));
@@ -370,6 +375,7 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
     if (interfaces[PED_OSC].midiIn) display->drawString(128, 54, String(3));
     else display->drawString(128, 54, String(0));
+#endif
   }
 }
 
@@ -414,7 +420,14 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   else {
     display->setFont(ArialMT_Plain_16);
     display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-    display->drawString(64 + x, 32 + y, MODEL); 
+    display->drawString(64 + x, 32 + y, MODEL);
+    display->setFont(ArialMT_Plain_10);
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->drawString(110 + x, 16 + y, String("TM"));
+/*
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->drawString(128 + x, 54 + y, host);
+*/
   }
 }
 
@@ -425,6 +438,7 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->drawString(0 + x, 16 + y, "Device:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->drawString(128 + x, 16 + y, host);
+#ifdef WIFI  
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0 + x, 26 + y, "SSID:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
@@ -433,6 +447,7 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->drawString(0 + x, 36 + y, "IP:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->drawString(128 + x, 36 + y, WiFi.localIP().toString());
+#endif
 }
 
 void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)

@@ -119,6 +119,35 @@ unsigned int map_analog(byte p, unsigned int value)
   return value;
 }
 
+void bank_update (byte b, byte p, bool enable = true)
+{
+  if (enable) {
+    switch (banks[b][p].midiMessage) {
+
+      case PED_BANK_SELECT_INC:
+        if (banks[b][p].midiValue2 == banks[b][p].midiValue3) banks[b][p].midiValue2 = banks[b][p].midiValue1;
+        else banks[b][p].midiValue2++;
+        break;
+
+      case PED_BANK_SELECT_DEC:
+        if (banks[b][p].midiValue2 == banks[b][p].midiValue1) banks[b][p].midiValue2 = banks[b][p].midiValue3;
+        else banks[b][p].midiValue2--;
+        break;
+
+      case PED_PROGRAM_CHANGE_INC:
+        if (banks[b][p].midiValue2 == banks[b][p].midiValue3) banks[b][p].midiValue2 = banks[b][p].midiValue1;
+        else banks[b][p].midiValue2++;
+        banks[b][p].midiCode = banks[b][p].midiValue2;
+        break;
+
+      case PED_PROGRAM_CHANGE_DEC:
+        if (banks[b][p].midiValue2 == banks[b][p].midiValue1) banks[b][p].midiValue2 = banks[b][p].midiValue3;
+        else banks[b][p].midiValue2--;
+        banks[b][p].midiCode = banks[b][p].midiValue2;
+        break;
+    }
+  }
+}
 
 void midi_send(byte message, byte code, byte value, byte channel, bool on_off = true )
 {
@@ -163,6 +192,8 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
       break;
 
     case PED_PROGRAM_CHANGE:
+    case PED_PROGRAM_CHANGE_INC:
+    case PED_PROGRAM_CHANGE_DEC:
 
       if (on_off) {
         DPRINT("     PROGRAM CHANGE     Program %d     Channel %d", code, channel);
@@ -179,7 +210,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     case PED_PITCH_BEND:
 
       if (on_off) {
-        int bend = map(value, 0, 127, - 8192, 8191);
+        int bend = map(value, 0, MIDI_RESOLUTION-1, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX);
         DPRINT("     PITCH BEND     Value %d     Channel %d", bend, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendPitchBend(bend, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendPitchBend(bend, channel);
@@ -188,6 +219,31 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendPitchBend(bend, channel);
         OSCSendPitchBend(bend, channel);
         screen_info(midi::PitchBend, bend, 0, channel);
+      }
+      break;
+    
+    case PED_BANK_SELECT_INC:
+    case PED_BANK_SELECT_DEC:
+
+      if (on_off) {
+        // MSB
+        DPRINT("     CONTROL CHANGE     Code %d     Value %d     Channel %d\n", midi::BankSelect, value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect, value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect, value, channel);
+        AppleMidiSendControlChange(midi::BankSelect, value, channel);
+        ipMIDISendControlChange(midi::BankSelect, value, channel);
+        BLESendControlChange(midi::BankSelect, value, channel);
+        OSCSendControlChange(midi::BankSelect, value, channel);
+        screen_info(midi::ControlChange, midi::BankSelect, value, channel);
+        // LSB
+        DPRINT("     CONTROL CHANGE     Code %d     Value %d     Channel %d\n", midi::BankSelect+32, value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect+32, value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect+32, value, channel);
+        AppleMidiSendControlChange(midi::BankSelect+32, value, channel);
+        ipMIDISendControlChange(midi::BankSelect+32, value, channel);
+        BLESendControlChange(midi::BankSelect+32, value, channel);
+        OSCSendControlChange(midi::BankSelect+32, value, channel);
+        screen_info(midi::ControlChange, midi::BankSelect+32, value, channel);
       }
       break;
   }
@@ -229,17 +285,17 @@ void midi_refresh(bool send = true)
                 DPRINT("\nPedal %2d   input %d output %d", i + 1, input, value);
 
                 b = (currentBank + 2) % BANKS;
+                bank_update(b, i);
                 if (value == LOW)                                                         // LOW = pressed, HIGH = released
-                  midi_send(banks[b][i].midiMessage,
-                            banks[b][i].midiCode,
-                            banks[b][i].midiValue1,
-                            banks[b][i].midiChannel);
-                else
-                  midi_send(banks[b][i].midiMessage,
-                            banks[b][i].midiCode,
-                            banks[b][i].midiValue2,
-                            banks[b][i].midiChannel,
-                            pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2);
+                  if (send) midi_send(banks[b][i].midiMessage,
+                                      banks[b][i].midiCode,
+                                      banks[b][i].midiValue1,
+                                      banks[b][i].midiChannel);
+                else if (send) midi_send(banks[b][i].midiMessage,
+                                         banks[b][i].midiCode,
+                                         banks[b][i].midiValue2,
+                                         banks[b][i].midiChannel,
+                                         pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2);
                 pedals[i].pedalValue[0] = value;
                 pedals[i].lastUpdate[0] = millis();
                 pedals[i].pedalValue[1] = pedals[i].pedalValue[0];
@@ -256,16 +312,24 @@ void midi_refresh(bool send = true)
 
                   b = currentBank;
                   if (value == LOW) {                                                     // LOW = pressed, HIGH = released
-                    if (send) midi_send(banks[b][i].midiMessage,
-                                          banks[b][i].midiCode,
-                                          banks[b][i].midiValue1,
-                                          banks[b][i].midiChannel);
+                    if (send) {
+                      bank_update(b, i);
+                      midi_send(banks[b][i].midiMessage,
+                                banks[b][i].midiCode,
+                                banks[b][i].midiValue1,
+                                banks[b][i].midiChannel);
+                    }
                   }
-                  else if (send) midi_send(banks[b][i].midiMessage,
-                                             banks[b][i].midiCode,
-                                             banks[b][i].midiValue2,
-                                             banks[b][i].midiChannel,
-                                             pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2);
+                  else
+                    if (send) {
+                      bool latch = pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2;
+                      bank_update(b, i, latch);
+                      midi_send(banks[b][i].midiMessage,
+                                banks[b][i].midiCode,
+                                banks[b][i].midiValue2,
+                                banks[b][i].midiChannel,
+                                latch);
+                    }
                   pedals[i].pedalValue[0] = value;
                   pedals[i].lastUpdate[0] = millis();
                   lastUsedSwitch = i;
@@ -278,17 +342,18 @@ void midi_refresh(bool send = true)
                   DPRINT("\nPedal %2d   input %d output %d", i + 1, input, value);
 
                   b = (currentBank + 1) % BANKS;
+                  bank_update(b, i);
                   if (value == LOW) {                                                      // LOW = pressed, HIGH = released
                     if (send) midi_send(banks[b][i].midiMessage,
-                                          banks[b][i].midiCode,
-                                          banks[b][i].midiValue1,
-                                          banks[b][i].midiChannel);
+                                        banks[b][i].midiCode,
+                                        banks[b][i].midiValue1,
+                                        banks[b][i].midiChannel);
                   }
                   else if (send) midi_send(banks[b][i].midiMessage,
-                                             banks[b][i].midiCode,
-                                             banks[b][i].midiValue2,
-                                             banks[b][i].midiChannel,
-                                             pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2);
+                                           banks[b][i].midiCode,
+                                           banks[b][i].midiValue2,
+                                           banks[b][i].midiChannel,
+                                           pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2);
                   pedals[i].pedalValue[1] = value;
                   pedals[i].lastUpdate[1] = millis();
                   lastUsedSwitch = i;
@@ -387,12 +452,12 @@ void midi_refresh(bool send = true)
           if (pedals[i].analogPedal->hasChanged())                  // if the value changed since last time
           {
             value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
-            double velocity = (1.0 * (value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
+            double velocity = (1.0 * (value - pedals[i].pedalValue[0])) / (millis() - pedals[i].lastUpdate[0]);
             DPRINT("\nPedal %2d   input %d output %d velocity %.2f", i + 1, input, value, velocity);
             if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel);
             if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false);
             pedals[i].pedalValue[0] = value;
-            pedals[i].lastUpdate[0] = micros();
+            pedals[i].lastUpdate[0] = millis();
             lastUsedPedal = i;
           }
           break;

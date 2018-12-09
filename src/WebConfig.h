@@ -412,6 +412,22 @@ String get_banks_page() {
     page += String(PED_PITCH_BEND) + F("'");
     if (banks[b-1][i-1].midiMessage == PED_PITCH_BEND) page += F(" selected");
     page += F(">Pitch Bend</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_SELECT_INC) + F("'");
+    if (banks[b-1][i-1].midiMessage == PED_BANK_SELECT_INC) page += F(" selected");
+    page += F(">Bank Select+</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_SELECT_DEC) + F("'");
+    if (banks[b-1][i-1].midiMessage == PED_BANK_SELECT_DEC) page += F(" selected");
+    page += F(">Bank Select-</option>");
+    page += F("<option value='");
+    page += String(PED_PROGRAM_CHANGE_INC) + F("'");
+    if (banks[b-1][i-1].midiMessage == PED_PROGRAM_CHANGE_INC) page += F(" selected");
+    page += F(">Program Change+</option>");
+    page += F("<option value='");
+    page += String(PED_PROGRAM_CHANGE_DEC) + F("'");
+    if (banks[b-1][i-1].midiMessage == PED_PROGRAM_CHANGE_DEC) page += F(" selected");
+    page += F(">Program Change-</option>");
     page += F("</select>");
     page += F("</div>");
 

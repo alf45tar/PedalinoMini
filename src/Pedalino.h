@@ -46,59 +46,63 @@ typedef uint8_t   byte;
 
 #include "MidiTimeCode.h"
 
-#define PED_PROGRAM_CHANGE  0
-#define PED_CONTROL_CHANGE  1
-#define PED_NOTE_ON_OFF     2
-#define PED_PITCH_BEND      3
+#define PED_PROGRAM_CHANGE      0
+#define PED_CONTROL_CHANGE      1
+#define PED_NOTE_ON_OFF         2
+#define PED_PITCH_BEND          3
+#define PED_BANK_SELECT_INC     4
+#define PED_BANK_SELECT_DEC     5
+#define PED_PROGRAM_CHANGE_INC  6
+#define PED_PROGRAM_CHANGE_DEC  7
 
-#define PED_NONE            0
-#define PED_MOMENTARY1      1
-#define PED_LATCH1          2
-#define PED_ANALOG          3
-#define PED_JOG_WHEEL       4
-#define PED_MOMENTARY2      5
-#define PED_MOMENTARY3      6
-#define PED_LATCH2          7
-#define PED_LADDER          8
+#define PED_NONE                0
+#define PED_MOMENTARY1          1
+#define PED_LATCH1              2
+#define PED_ANALOG              3
+#define PED_JOG_WHEEL           4
+#define PED_MOMENTARY2          5
+#define PED_MOMENTARY3          6
+#define PED_LATCH2              7
+#define PED_LADDER              8
 
-#define PED_PRESS_1         1
-#define PED_PRESS_2         2
-#define PED_PRESS_L         4
-#define PED_PRESS_1_2       3
-#define PED_PRESS_1_L       5
-#define PED_PRESS_2_L       6
-#define PED_PRESS_1_2_L     7
+#define PED_PRESS_1             1
+#define PED_PRESS_2             2
+#define PED_PRESS_L             4
+#define PED_PRESS_1_2           3
+#define PED_PRESS_1_L           5
+#define PED_PRESS_2_L           6
+#define PED_PRESS_1_2_L         7
 
-#define PED_MIDI            0
-#define PED_BANK_PLUS       1
-#define PED_BANK_MINUS      2
-#define PED_START           3
-#define PED_STOP            4
-#define PED_CONTINUE        5
-#define PED_TAP             6
-#define PED_MENU            7
-#define PED_CONFIRM         8
-#define PED_ESCAPE          9
-#define PED_NEXT            10
-#define PED_PREVIOUS        11
+#define PED_MIDI                0
+#define PED_BANK_PLUS           1
+#define PED_BANK_MINUS          2
+#define PED_START               3
+#define PED_STOP                4
+#define PED_CONTINUE            5
+#define PED_TAP                 6
+#define PED_MENU                7
+#define PED_CONFIRM             8
+#define PED_ESCAPE              9
+#define PED_NEXT               10
+#define PED_PREVIOUS           11
 
-#define PED_LINEAR          0
-#define PED_LOG             1
-#define PED_ANTILOG         2
+#define PED_LINEAR              0
+#define PED_LOG                 1
+#define PED_ANTILOG             2
 
-#define PED_USBMIDI         0
-#define PED_DINMIDI         1
-#define PED_RTPMIDI         2
-#define PED_IPMIDI          3
-#define PED_BLEMIDI         4
-#define PED_OSC             5
+#define PED_USBMIDI             0
+#define PED_DINMIDI             1
+#define PED_RTPMIDI             2
+#define PED_IPMIDI              3
+#define PED_BLEMIDI             4
+#define PED_OSC                 5
 
-#define PED_DISABLE         0
-#define PED_ENABLE          1
+#define PED_DISABLE             0
+#define PED_ENABLE              1
 
-#define PED_LEGACY_MIDI_OUT   0
-#define PED_LEGACY_MIDI_IN    1
-#define PED_LEGACY_MIDI_THRU  2
+#define PED_LEGACY_MIDI_OUT     0
+#define PED_LEGACY_MIDI_IN      1
+#define PED_LEGACY_MIDI_THRU    2
 
 #define PED_MTC_NONE            0
 #define PED_MTC_SLAVE           1
@@ -118,8 +122,6 @@ typedef uint8_t   byte;
 #define PED_TIMESIGNATURE_12_8  6
 
 #define MIDI_RESOLUTION         128       // MIDI 7-bit CC resolution
-#define MIDI_PITCH_BEND_MIN   -8192
-#define MIDI_PITCH_BEND_MAX    8191
 #define ADC_RESOLUTION         4096       // 12-bit ADC converter resolution
 #define CALIBRATION_DURATION   8000       // milliseconds
 
@@ -127,7 +129,11 @@ struct bank {
   byte                   midiMessage;     /* 0 = Program Change,
                                              1 = Control Code
                                              2 = Note On/Note Off
-                                             3 = Pitch Bend */
+                                             3 = Pitch Bend 
+                                             4 = Bank Select+
+                                             5 = Bank Select-
+                                             6 = Program Change+
+                                             7 = Program Change- */
   byte                   midiChannel;     /* MIDI channel 1-16 */
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue1;      /* Single click */
