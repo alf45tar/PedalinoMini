@@ -119,10 +119,33 @@ unsigned int map_analog(byte p, unsigned int value)
   return value;
 }
 
-void bank_update (byte b, byte p, bool enable = true)
+void bank_update (byte b, byte p, int d = 1, bool enable = true)
 {
   if (enable) {
-    switch (banks[b][p].midiMessage) {
+    byte m = banks[b][p].midiMessage;
+    switch (d) {
+      case 1:
+        break;
+      case -1:
+        switch (m) {
+          case PED_PROGRAM_CHANGE_INC:
+            m = PED_PROGRAM_CHANGE_DEC;
+            break;
+          case PED_PROGRAM_CHANGE_DEC:
+            m = PED_PROGRAM_CHANGE_INC;
+            break;
+        }
+        break;
+      case 0:
+        banks[b][p].midiValue2 = banks[b][p].midiValue1;
+        banks[b][p].midiCode = banks[b][p].midiValue2;
+        return;
+      case 2:
+        banks[b][p].midiValue2 = banks[b][p].midiValue3;
+        banks[b][p].midiCode = banks[b][p].midiValue2;
+        return;
+    }
+    switch (m) {
 
       case PED_BANK_SELECT_INC:
         if (banks[b][p].midiValue2 == banks[b][p].midiValue3) banks[b][p].midiValue2 = banks[b][p].midiValue1;
@@ -323,7 +346,7 @@ void midi_refresh(bool send = true)
                   else
                     if (send) {
                       bool latch = pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2;
-                      bank_update(b, i, latch);
+                      bank_update(banks[b][i].midiMessage, b, i, latch);
                       midi_send(banks[b][i].midiMessage,
                                 banks[b][i].midiCode,
                                 banks[b][i].midiValue2,
@@ -382,38 +405,86 @@ void midi_refresh(bool send = true)
 
               int j = 2;
               while ( j >= 0) {
-                b = (currentBank + j) % BANKS;
                 switch (j) {
                   case 0: k = k1; break;
                   case 1: k = k2; break;
                   case 2: k = (k1 == k2) ? k1 : MD_UISwitch::KEY_NULL; break;
                 }
+                b = currentBank;
                 switch (k) {
 
                   case MD_UISwitch::KEY_PRESS:
 
                     DPRINT("\nPedal %2d   SINGLE PRESS ", i + 1);
+                    switch (banks[b][i].midiMessage) {
+                      case PED_BANK_SELECT_INC:
+                      case PED_BANK_SELECT_DEC:
+                        break;
 
-                    if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel);
-                    if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel, false);
+                      case PED_PROGRAM_CHANGE_INC:
+                      case PED_PROGRAM_CHANGE_DEC:
+                          bank_update(b, i, 1);
+                        break;
+
+                      default:
+                          b = (currentBank + j) % BANKS;
+                        break;
+                    }
+                    if (send) {
+                      midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel);
+                      midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel, false);
+                    }
                     lastUsedSwitch = i;
                     break;
 
                   case MD_UISwitch::KEY_DPRESS:
 
                     DPRINT("\nPedal %2d   DOUBLE PRESS ", i + 1);
+                    switch (banks[b][i].midiMessage) {
+                      case PED_BANK_SELECT_INC:
+                      case PED_BANK_SELECT_DEC:
+                        break;
 
-                    if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
-                    if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, false);
+                      case PED_PROGRAM_CHANGE_INC:
+                      case PED_PROGRAM_CHANGE_DEC:
+                        bank_update(b, i, -1);
+                        break;
+                        
+                      default:
+                        b = (currentBank + j) % BANKS;
+                        break;
+                    }
+                    if (send) {
+                      midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
+                      midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, false);
+                    }                   
                     lastUsedSwitch = i;
                     break;
 
                   case MD_UISwitch::KEY_LONGPRESS:
 
                     DPRINT("\nPedal %2d   LONG   PRESS ", i + 1);
+                    switch (banks[b][i].midiMessage) {
+                      case PED_BANK_SELECT_INC:
+                      case PED_BANK_SELECT_DEC:
+                        break;
 
-                    if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel);
-                    if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel, false);
+                      case PED_PROGRAM_CHANGE_INC:
+                        bank_update(b, i, 0);
+                        break;
+
+                      case PED_PROGRAM_CHANGE_DEC:
+                        bank_update(b, i, 2);
+                        break;
+                        
+                      default:
+                        b = (currentBank + j) % BANKS;
+                        break;
+                    }
+                    if (send) {
+                      midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel);
+                      midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel, false);
+                    }
                     lastUsedSwitch = i;
                     break;
 
