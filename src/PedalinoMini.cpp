@@ -231,6 +231,8 @@ void loop()
 
   screen_update();
 
+  MTC.loop();
+
   // Check whether the input has changed since last time, if so, send the new value over MIDI
   midi_refresh();
 

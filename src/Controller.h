@@ -863,11 +863,8 @@ void calibrate()
 //
 void mtc_midi_send(byte b)
 {
-  /*
-    if (interfaces[0].midiClock) Serial.write(b);                               // USB
-    if (interfaces[1].midiClock) Serial2.write(b);                              // DIN
-    if (interfaces[2].midiClock || interfaces[3].midiClock) Serial3.write(b);   // AppleMIDI - BLE
-  */
+  if (interfaces[PED_RTPMIDI].midiClock) AppleMidiSendTimeCodeQuarterFrame(b);
+  if (interfaces[PED_IPMIDI].midiClock)  ipMIDISendTimeCodeQuarterFrame(b);
 }
 
 //

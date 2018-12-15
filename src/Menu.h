@@ -1223,6 +1223,7 @@ void menu_navigation()
               else currentBank = BANKS - 1;
               break;
             case 3:
+              currentBank = 0;
               break;
           }
           break;
@@ -1237,6 +1238,7 @@ void menu_navigation()
               currentBank = (currentBank + 1) % BANKS;
               break;
             case 3:
+              currentBank = BANKS - 1;
               break;
           }
           break;

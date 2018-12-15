@@ -15,6 +15,7 @@
 #ifndef _MIDI_CLOCK_MTC_H_
 #define _MIDI_CLOCK_MTC_H_
 
+#include <esp32-hal-timer.h>
 #include <Arduino.h>
 
 // TAP_NUM_READINGS doesn't mean we have to wait for this many samples
@@ -60,6 +61,9 @@ class MidiTimeCode
     // To be called on main program setup
     void setup(void (*midi_send_callback)(byte b));
 
+    // To be called on main program loop
+    void loop();
+
     // Only active in Midi Clock mode
     void        setBpm(const float iBpm);
     const float tapTempo();
@@ -89,6 +93,10 @@ class MidiTimeCode
 
     static void doSendMidiClock();
     static void doSendMTC();
+
+    static hw_timer_t                *mTimer;
+    static portMUX_TYPE               mTimerMux;
+    static volatile int               mInterruptCounter;
 
   private:
     enum MidiType

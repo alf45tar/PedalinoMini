@@ -455,54 +455,40 @@ void MidiTimeCode::setBeat(byte signature)
   mTimeSignature = signature;
 }
 
+void IRAM_ATTR ISR()
+{
+  portENTER_CRITICAL_ISR(&MidiTimeCode::mTimerMux);
+  MidiTimeCode::mInterruptCounter++;
+  portEXIT_CRITICAL_ISR(&MidiTimeCode::mTimerMux);
+}
+
 void MidiTimeCode::setTimer(const double frequency)
 {
-  /*
-  if (frequency > 244.16f) // First value with cmp_match < 65536 (thus allowing to decrease prescaler for higher precision)
-  {
-    mPrescaler = 1;
-    mSelectBits = (1 << CS10);
-  }
-  else if (frequency > 30.52f) // First value with cmp_match < 65536
-  {
-    mPrescaler = 8;
-    mSelectBits = (1 << CS11);
-  }
-  else
-  {
-    mPrescaler = 64;
-    mSelectBits = (1 << CS11) | (1 << CS10);
-  }
-  const uint16_t cmp_match = 16000000 / (frequency * mPrescaler) - 1 + 0.5f; // (must be < 65536)
-
-  noInterrupts();
-  TCCR1A = 0;// set entire TCCR1A register to 0
-  TCCR1B = 0;// same for TCCR1B
-  TCNT1  = 0;//initialize counter value to 0
-  // set compare match register for given increments
-  OCR1A = cmp_match;
-  // turn on CTC mode
-  TCCR1B |= (1 << WGM12);
-  // Set CS10 for prescaler 1, CS11 for prescaler 8, and both for prescaler 64
-  TCCR1B |= mSelectBits;
-  // enable timer compare interrupt
-  TIMSK1 |= (1 << OCIE1A);
-  interrupts();
-  */
+  mTimer = timerBegin(0, 80, true);
+  timerAttachInterrupt(mTimer, &ISR, true);
+  timerAlarmWrite(mTimer, 1000000/frequency, true);
+  timerAlarmEnable(mTimer);
 }
 
-/*
-ISR(TIMER1_COMPA_vect) //timer1 interrupt
+void MidiTimeCode::loop()
 {
-  if ( MidiTimeCode::getMode() == MidiTimeCode::SynchroMTCMaster )
-    MidiTimeCode::doSendMTC();
-  else if ( MidiTimeCode::getMode() == MidiTimeCode::SynchroClockMaster )
-    MidiTimeCode::doSendMidiClock();
-}
-*/
+  if (mInterruptCounter > 0) {
 
-int                     MidiTimeCode::mPrescaler = 0;
+    portENTER_CRITICAL(&mTimerMux);
+    mInterruptCounter--;
+    portEXIT_CRITICAL(&mTimerMux);
+
+    if ( MidiTimeCode::getMode() == MidiTimeCode::SynchroMTCMaster )
+      MidiTimeCode::doSendMTC();
+    else if ( MidiTimeCode::getMode() == MidiTimeCode::SynchroClockMaster )
+      MidiTimeCode::doSendMidiClock();
+  }
+}
+
+hw_timer_t             *MidiTimeCode::mTimer = NULL;
+portMUX_TYPE            MidiTimeCode::mTimerMux = portMUX_INITIALIZER_UNLOCKED;
 unsigned char           MidiTimeCode::mSelectBits = 0;
+volatile int            MidiTimeCode::mInterruptCounter = 0;
 
 const int               MidiTimeCode::mMidiClockPpqn = 24;
 volatile unsigned long  MidiTimeCode::mEventTime = 0;

@@ -381,6 +381,8 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
+  static long startFrameDisplay;
+
   if (millis() < endMillis2) {
     display->setFont(ArialMT_Plain_10);
     switch (m1) {
@@ -417,6 +419,34 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->drawString(128 + x, 26 + y, String(m4));
   }  
+  else if ((MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
+            MTC.getMode() == MidiTimeCode::SynchroClockSlave) ||
+           (!MTC.isPlaying() && millis() < startFrameDisplay)) {
+    char buf[12];
+    sprintf(buf, "%3dBPM", bpm);
+    for (byte i = 0; i < 5; i++)
+      if (MTC.isPlaying())
+        buf[6 + i] = (MTC.getBeat() == i) ? '>' : ' ';
+      else
+        buf[6 + i] = (MTC.getBeat() == i) ? '.' : ' ';
+    display->setFont(ArialMT_Plain_24);
+    display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+    display->drawString(64 + x, 32 + y, buf);
+    ui.disableAutoTransition();
+    if (MTC.isPlaying()) startFrameDisplay = millis() + 60000;
+  }
+  else if ((MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
+            MTC.getMode() == MidiTimeCode::SynchroMTCSlave) &&
+            MTC.isPlaying() ||
+            millis() < startFrameDisplay) {
+    char buf[12];
+    sprintf(buf, "%02d:%02d:%02d:%02d", MTC.getHours(), MTC.getMinutes(), MTC.getSeconds(), MTC.getFrames());
+    display->setFont(ArialMT_Plain_24);
+    display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+    display->drawString(64 + x, 32 + y, buf);
+    ui.disableAutoTransition();
+    if (MTC.isPlaying()) startFrameDisplay = millis() + 60000;
+  }
   else {
     display->setFont(ArialMT_Plain_16);
     display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
@@ -424,15 +454,14 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     display->setFont(ArialMT_Plain_10);
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->drawString(110 + x, 16 + y, String("TM"));
-/*
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->drawString(128 + x, 54 + y, host);
-*/
+    ui.enableAutoTransition();
   }
 }
 
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
+  if (MTC.isPlaying()) ui.switchToFrame(0);
+
   display->setFont(ArialMT_Plain_10);
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0 + x, 16 + y, "Device:");
