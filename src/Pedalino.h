@@ -206,7 +206,7 @@ byte  currentInterface        = PED_USBMIDI;
 byte  lastUsedSwitch          = 0xFF;
 byte  lastUsedPedal           = 0xFF;
 bool  selectBank              = true;
-byte  currentMidiTimeCode     = PED_MTC_MASTER_24;
+byte  currentMidiTimeCode     = PED_MTC_NONE;
 byte  timeSignature           = PED_TIMESIGNATURE_4_4;
 
 MidiTimeCode  MTC;
