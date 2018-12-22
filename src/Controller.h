@@ -615,6 +615,8 @@ void controller_setup()
       case PED_ESCAPE:      DPRINT("ESCAPE    "); break;
       case PED_NEXT:        DPRINT("NEXT      "); break;
       case PED_PREVIOUS:    DPRINT("PREVIOUS  "); break;
+      case PED_BPM_PLUS:    DPRINT("BPM+      "); break;
+      case PED_BPM_MINUS:   DPRINT("BPM-      "); break;
     }
     DPRINT("   ");
     switch (pedals[i].mode) {
@@ -752,7 +754,8 @@ void controller_setup()
       case PED_ANALOG:
         pinMode(PIN_D(i), OUTPUT);
         digitalWrite(PIN_D(i), HIGH);
-        if (pedals[i].function == PED_MIDI) {
+        //if (pedals[i].function == PED_MIDI)
+        {
           pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
           pedals[i].analogPedal->setActivityThreshold(6.0);
           pedals[i].analogPedal->setAnalogResolution(MIDI_RESOLUTION);        // 7-bit MIDI resolution
@@ -905,6 +908,55 @@ void mtc_setup() {
       DPRINTLN("MIDI Clock Master");
       MTC.setMode(MidiTimeCode::SynchroClockMaster);
       MTC.setBpm(bpm);
+      break;
+  }
+}
+
+void mtc_start()
+{
+  if (MTC.isPlaying()) 
+    MTC.sendStop();
+  else {
+    MTC.sendPosition(0, 0, 0, 0);
+    MTC.sendPlay();
+  }
+}
+
+void mtc_stop()
+{
+  if (MTC.isPlaying()) 
+    MTC.sendStop();
+  else
+    MTC.sendPosition(0, 0, 0, 0);
+}
+
+void mtc_continue()
+{
+  if (MTC.isPlaying())
+    MTC.sendStop();
+  else if (MTC.getFrames()  == 0 &&
+           MTC.getSeconds() == 0 &&
+           MTC.getMinutes() == 0 &&
+           MTC.getHours()   == 0)
+    MTC.sendPlay();
+  else
+    MTC.sendContinue();
+}
+
+void mtc_tap()
+{
+  bpm = MTC.tapTempo();
+  if (bpm > 0) MTC.setBpm(bpm);
+}
+
+void mtc_tap_continue()
+{
+  switch (MTC.getMode()) {
+    case MidiTimeCode::SynchroClockMaster:
+      mtc_tap();
+      break;
+    case MidiTimeCode::SynchroMTCMaster:
+      mtc_continue();
       break;
   }
 }

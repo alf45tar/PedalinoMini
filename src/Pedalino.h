@@ -85,6 +85,8 @@ typedef uint8_t   byte;
 #define PED_ESCAPE              9
 #define PED_NEXT               10
 #define PED_PREVIOUS           11
+#define PED_BPM_PLUS           12
+#define PED_BPM_MINUS          13
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
@@ -152,14 +154,15 @@ struct pedal {
                                              7 = previous */
   byte                   autoSensing;     /* 0 = disable
                                              1 = enable   */
-  byte                   mode;            /* 0 = momentary
-                                             1 = latch
-                                             2 = analog
-                                             3 = jog wheel
-                                             4 = momentary 2
-                                             5 = momentary 3
-                                             6 = latch 2
-                                             7 = ladder */
+  byte                   mode;            /* 0 = none
+                                             1 = momentary
+                                             2 = latch
+                                             3 = analog
+                                             4 = jog wheel
+                                             5 = momentary 2
+                                             6 = momentary 3
+                                             7 = latch 2
+                                             8 = ladder */
   byte                   pressMode;       /* 0 = single click
                                              1 = double click
                                              2 = long click
@@ -190,8 +193,8 @@ struct interface {
 bank      banks[BANKS][PEDALS];                   // Banks Setup
 pedal     pedals[PEDALS];                         // Pedals Setup
 interface interfaces[] = {
-                           "USB MIDI   ", 1, 1, 0, 1, 0,
-                           "Legacy MIDI", 1, 1, 0, 1, 0,
+                           "USB MIDI   ", 1, 1, 0, 1, 0,    // Not present in PedalinoMini
+                           "Legacy MIDI", 1, 1, 0, 1, 0,    // Not present in PedalinoMini
                            "RTP-MIDI   ", 1, 1, 0, 1, 0,
                            "ipMIDI     ", 1, 1, 0, 1, 0,
                            "BLE MIDI   ", 1, 1, 0, 1, 0,

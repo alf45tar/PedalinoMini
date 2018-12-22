@@ -249,6 +249,7 @@ void OnAppleMidiReceiveSysEx(const byte * data, uint16_t size)
   BLESendSystemExclusive(data, size);
   ipMIDISendSystemExclusive(data, size);
   OSCSendSystemExclusive(data, size);
+  MTC.decodeMTCFullFrame(size, data);
 }
 
 void OnAppleMidiReceiveTimeCodeQuarterFrame(byte data)
@@ -259,6 +260,7 @@ void OnAppleMidiReceiveTimeCodeQuarterFrame(byte data)
   BLESendTimeCodeQuarterFrame(data);
   ipMIDISendTimeCodeQuarterFrame(data);
   OSCSendTimeCodeQuarterFrame(data);
+  MTC.decodMTCQuarterFrame(data);
 }
 
 void OnAppleMidiReceiveSongPosition(unsigned short beats)
@@ -299,6 +301,7 @@ void OnAppleMidiReceiveClock(void)
   BLESendClock();
   ipMIDISendClock();
   OSCSendClock();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) bpm = MTC.tapTempo();
 }
 
 void OnAppleMidiReceiveStart(void)
@@ -309,6 +312,7 @@ void OnAppleMidiReceiveStart(void)
   BLESendStart();
   ipMIDISendStart();
   OSCSendStart();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendPlay();
 }
 
 void OnAppleMidiReceiveContinue(void)
@@ -319,6 +323,7 @@ void OnAppleMidiReceiveContinue(void)
   BLESendContinue();
   ipMIDISendContinue();
   OSCSendContinue();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendContinue();
 }
 
 void OnAppleMidiReceiveStop(void)
@@ -329,6 +334,7 @@ void OnAppleMidiReceiveStop(void)
   BLESendStop();
   ipMIDISendStop();
   OSCSendStop();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendStop();
 }
 
 void OnAppleMidiReceiveActiveSensing(void)
@@ -530,6 +536,7 @@ void ipMIDI_listen() {
             BLESendTimeCodeQuarterFrame(value);
             AppleMidiSendTimeCodeQuarterFrame(value);
             OSCSendTimeCodeQuarterFrame(value);
+            MTC.decodMTCQuarterFrame(value);
             break;
 
           case midi::SongPosition:
@@ -562,6 +569,7 @@ void ipMIDI_listen() {
             BLESendClock();
             AppleMidiSendClock();
             OSCSendClock();
+            if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) bpm = MTC.tapTempo();
             break;
 
           case midi::Start:
@@ -569,6 +577,7 @@ void ipMIDI_listen() {
             BLESendStart();
             AppleMidiSendStart();
             OSCSendStart();
+            if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendPlay();
             break;
 
           case midi::Continue:
@@ -576,6 +585,7 @@ void ipMIDI_listen() {
             BLESendContinue();
             AppleMidiSendContinue();
             OSCSendContinue();
+            if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendContinue();
             break;
 
           case midi::Stop:
@@ -583,6 +593,7 @@ void ipMIDI_listen() {
             BLESendStop();
             AppleMidiSendStop();
             OSCSendStop();
+            if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendStop();
             break;
 
           case midi::ActiveSensing:

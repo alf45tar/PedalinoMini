@@ -647,6 +647,14 @@ String get_pedals_page() {
     page += String(PED_PREVIOUS) + F("'");
     if (pedals[i-1].function == PED_PREVIOUS) page += F(" selected");
     page += F(">Previous</option>");
+    page += F("<option value='");
+    page += String(PED_BPM_PLUS) + F("'");
+    if (pedals[i-1].function == PED_BPM_PLUS) page += F(" selected");
+    page += F(">BPM+</option>");
+    page += F("<option value='");
+    page += String(PED_BPM_MINUS) + F("'");
+    if (pedals[i-1].function == PED_BPM_MINUS) page += F(" selected");
+    page += F(">BPM-</option>");
     page += F("</select>");
     page += F("</div>");
 

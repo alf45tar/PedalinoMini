@@ -1139,7 +1139,7 @@ void menu_run()
 
 #endif  // NOLCD
 
-void menu_navigation()
+void menu_navigation1()
 {
   MD_UISwitch::keyResult_t k1;    // Close status between T and S
   MD_UISwitch::keyResult_t k2;    // Close status between R and S
@@ -1162,7 +1162,6 @@ void menu_navigation()
     if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
         (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
     if (k > 0 && (k1 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_PRESS)) {
-      DPRINTLN("Press %d %d %d\n", k, k1, k2)
       // Single press
       if (pedals[i].mode == PED_LADDER) {
         if (k1 != MD_UISwitch::KEY_NULL) {
@@ -1246,13 +1245,13 @@ void menu_navigation()
         case PED_START:
           switch (k) {
             case 1:
-              MTC.sendPosition(0, 0, 0, 0);
-              MTC.sendPlay();
+              mtc_start();
               break;
             case 2:
-              bpm = MTC.tapTempo();
+              mtc_stop();
               break;
             case 3:
+              mtc_tap_continue();
               break;
           }
           break;
@@ -1261,13 +1260,13 @@ void menu_navigation()
         case PED_STOP:
           switch (k) {
             case 1:
-              MTC.sendStop();
+              mtc_stop();
               break;
             case 2:
-              bpm = MTC.tapTempo();
-              if (bpm > 0) MTC.setBpm(bpm);
+              mtc_start();
               break;
             case 3:
+              mtc_tap_continue();
               break;
           }
           break;
@@ -1275,12 +1274,13 @@ void menu_navigation()
         case PED_CONTINUE:
           switch (k) {
             case 1:
-              MTC.sendContinue();
+              mtc_continue();
               break;
             case 2:
-              bpm = MTC.tapTempo();
+              mtc_stop();
               break;
             case 3:
+              mtc_tap();
               break;
           }
           break;
@@ -1288,14 +1288,13 @@ void menu_navigation()
         case PED_TAP:
           switch (k) {
             case 1:
-              bpm = MTC.tapTempo();
-              if (bpm > 0) MTC.setBpm(bpm);
+              mtc_tap();
               break;
             case 2:
-              MTC.sendPlay();
+              mtc_start();
               break;
             case 3:
-              MTC.sendStop();
+              mtc_stop();
               break;
           }
           break;
@@ -1381,4 +1380,58 @@ void menu_navigation()
           break;
       }
   }
+}
+
+void menu_navigation2()
+{
+  unsigned int              input;
+  unsigned int              value;
+
+  for (byte i = 0; i < PEDALS; i++) {
+    if (pedals[i].function == PED_MIDI) continue;
+    switch (pedals[i].mode) {
+
+      case PED_ANALOG:
+          if (pedals[i].analogPedal == nullptr) continue;           // sanity check
+
+          input = analogRead(PIN_A(i));                             // read the raw analog input value
+          if (pedals[i].autoSensing) {                              // continuos calibration
+
+            if (pedals[i].expZero > round(1.1 * input)) {
+              DPRINT("Pedal %2d calibration min %d\n", i + 1, round(1.1 * input));
+            }
+            if (pedals[i].expMax < round(0.9 * input)) {
+              DPRINT("Pedal %2d calibration max %d\n", i + 1, round(0.9 * input));
+            }
+
+            pedals[i].expZero = _min(pedals[i].expZero, round(1.1 * input));
+            pedals[i].expMax  = _max(pedals[i].expMax,  round(0.9 * input));
+          }
+          value = map_analog(i, input);                             // apply the digital map function to the value
+          if (pedals[i].invertPolarity) value = ADC_RESOLUTION - 1 - value;   // invert the scale
+          value = value >> 5;                                       // map from 12-bit value [0, 4095] to the 7-bit MIDI value [0, 127]
+          pedals[i].analogPedal->update(value);                     // update the responsive analog average
+          if (pedals[i].analogPedal->hasChanged())                  // if the value changed since last time
+          {
+            value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
+            switch (pedals[i].function) {
+              case PED_BPM_PLUS:
+              case PED_BPM_MINUS:
+                bpm = map(value, 0, MIDI_RESOLUTION, 40, 300);
+                MTC.setBpm(bpm);
+                break;
+            }    
+            //pedals[i].pedalValue[0] = value;
+            //pedals[i].lastUpdate[0] = millis();
+            //lastUsedPedal = i;
+          }
+    
+    }
+  }
+}
+
+void menu_navigation()
+{
+  menu_navigation1();
+  menu_navigation2();
 }
