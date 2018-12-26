@@ -325,6 +325,7 @@ const uint8_t block[] PROGMEM = {
 // Initialize the OLED display using Wire library
 SSD1306Wire   display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 OLEDDisplayUi ui(&display);
+bool          uiUpdate = true;
 
 char screen1[LCD_COLS + 1];
 char screen2[LCD_COLS + 1];
@@ -656,8 +657,20 @@ void display_init()
   display.flipScreenVertically();
 }
 
+void display_ui_update_disable()
+{
+  uiUpdate = false;
+}
+
+void display_ui_update_enable()
+{
+  uiUpdate = true;
+}
+
 void display_update(bool force = false)
 {
-  if (millis() < endMillis2) ui.switchToFrame(0);
-  int remainingTimeBudget = ui.update();
+  if (uiUpdate) {
+    if (millis() < endMillis2) ui.switchToFrame(0);
+    int remainingTimeBudget = ui.update();
+  }
 }

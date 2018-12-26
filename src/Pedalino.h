@@ -192,15 +192,26 @@ struct interface {
 
 bank      banks[BANKS][PEDALS];                   // Banks Setup
 pedal     pedals[PEDALS];                         // Pedals Setup
+
+#ifdef PEDALINO_MINI
 interface interfaces[] = {
-                           "USB MIDI   ", 1, 1, 0, 1, 0,    // Not present in PedalinoMini
-                           "Legacy MIDI", 1, 1, 0, 1, 0,    // Not present in PedalinoMini
+                           "USB MIDI   ", 0, 0, 0, 0, 0,    // Not present in PedalinoMini
+                           "Legacy MIDI", 0, 0, 0, 0, 0,    // Not present in PedalinoMini
                            "RTP-MIDI   ", 1, 1, 0, 1, 0,
                            "ipMIDI     ", 1, 1, 0, 1, 0,
                            "BLE MIDI   ", 1, 1, 0, 1, 0,
                            "OSC        ", 1, 1, 0, 1, 0
                           };                       // Interfaces Setup
-
+#else
+interface interfaces[] = {
+                           "USB MIDI   ", 1, 1, 0, 1, 0,
+                           "Legacy MIDI", 1, 1, 0, 1, 0,
+                           "RTP-MIDI   ", 1, 1, 0, 1, 0,
+                           "ipMIDI     ", 1, 1, 0, 1, 0,
+                           "BLE MIDI   ", 1, 1, 0, 1, 0,
+                           "OSC        ", 1, 1, 0, 1, 0
+                          };                       // Interfaces Setup
+#endif
 
 byte  currentProfile          = 0;
 byte  currentBank             = 0;

@@ -19,7 +19,7 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <WebServer.h>
+//#include <WebServer.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #endif
@@ -518,8 +518,10 @@ void wifi_connect()
 
 inline void http_run()
 {
+#ifndef ASYNC_WEB_SERVER
   // Run web server
   httpServer.handleClient();
+#endif
 }
 
 #endif  // WIFI

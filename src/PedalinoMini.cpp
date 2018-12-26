@@ -69,7 +69,11 @@
 #include "BlynkRPC.h"
 #include "DisplayLCD.h"
 #include "DisplayOLED.h"
+#ifdef ASYNC_WEB_SERVER
+#include "WebConfigAsync.h"
+#else
 #include "WebConfig.h"
+#endif
 #include "OTAUpdate.h"
 #include "WifiConnect.h"
 #include "Menu.h"
