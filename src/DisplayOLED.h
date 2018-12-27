@@ -17,11 +17,14 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 #include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 #endif
 
 #define OLED_I2C_ADDRESS  0x3c
 #define OLED_I2C_SDA      SDA
 #define OLED_I2C_SCL      SCL
+
 
 #define WIFI_LOGO_WIDTH   78
 #define WIFI_LOGO_HEIGHT  64
@@ -333,6 +336,7 @@ int  analog;
 
 bool blynk_cloud_connected();
 extern bool appleMidiConnected;
+extern AsyncEventSource events;
 
 void display_clear()
 {
@@ -551,6 +555,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     display->setFont(ArialMT_Plain_24);
     display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
     display->drawString(64 + x, 32 + y, buf);
+    events.send(buf, "mtc");
     ui.disableAutoTransition();
   }
   else {

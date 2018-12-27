@@ -170,10 +170,6 @@ void setup()
   serial_midi_connect();              // On receiving MIDI data callbacks setup
   DPRINT("Serial MIDI started\n");
 
-  autosensing_setup();
-  controller_setup();
-  mtc_setup();
-
 #ifdef BLE
   // BLE MIDI service advertising
   ble_midi_start_service();
@@ -192,6 +188,10 @@ void setup()
   Debug.begin(host);              // Initiaze the telnet server
   Debug.setResetCmdEnabled(true); // Enable the reset command
 #endif
+
+  autosensing_setup();
+  controller_setup();
+  mtc_setup();
 }
 
 
@@ -231,14 +231,12 @@ void loop()
     }
 #endif
 
-  menu_navigation();
-
   screen_update();
 
   MTC.loop();
 
   // Check whether the input has changed since last time, if so, send the new value over MIDI
-  midi_refresh();
+  controller_run();
 
   // Listen to incoming messages from Arduino
   if (MIDI.read())

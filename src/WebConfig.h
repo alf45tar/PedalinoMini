@@ -1407,4 +1407,10 @@ void http_setup() {
   httpServer.begin();
 }
 
+inline void http_run()
+{
+  // Run web server
+  httpServer.handleClient();
+}
+
 #endif  // WIFI

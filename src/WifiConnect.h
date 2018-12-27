@@ -516,12 +516,4 @@ void wifi_connect()
     ap_mode_start();           // switch to AP mode until next reboot
 }
 
-inline void http_run()
-{
-#ifndef ASYNC_WEB_SERVER
-  // Run web server
-  httpServer.handleClient();
-#endif
-}
-
 #endif  // WIFI

@@ -35,7 +35,7 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 AsyncWebServer          httpServer(80);
 AsyncWebSocket          webSocket("/ws");
-AsyncEventSource        events("/events");
+AsyncEventSource        events("/events");    // EventSource is single direction, text-only protocol.
 
 extern const uint8_t bootstrap_min_css_start[]        asm("_binary_data_bootstrap_min_css_gz_start");
 extern const uint8_t bootstrap_min_css_end[]          asm("_binary_data_bootstrap_min_css_gz_end");
@@ -60,6 +60,25 @@ void    blynk_refresh();
 String  alert     = "";
 String  uiprofile = "1";
 String  uibank    = "1";
+
+
+String convert2XBM (const uint8_t *buffer, unsigned int len) {
+
+  String x;
+  char   h[8];
+
+  x  = "#define screen_width 128\n";
+  x += "#define screen_height 64\n";
+  x += "static char screen_bits[] = {";
+  for (unsigned int i = 0; i < len; i++) {
+    sprintf(h, "0x%02x, ", buffer[i]);
+    if (i % 128 == 0) x += "\n";
+    x += h;
+  }
+  x += "};";
+
+  return x;
+}
 
 String get_top_page(byte p = 0) {
 
@@ -171,6 +190,53 @@ String get_footer_page() {
   page += F("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>");
   page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>");
 #endif
+  page += F("<script>");
+  page += F("function createImageFromRGBdata(rgbData, width, height)");
+  page += F("{");
+	page += F("var mCanvas = document.createElement('canvas');");
+	page += F("mCanvas.width = width;");
+	page += F("mCanvas.height = height;");
+	page += F("var mContext = mCanvas.getContext('2d');");
+	page += F("var mImgData = mContext.createImageData(width, height);");
+	page += F("var srcIndex=0, dstIndex=0, curPixelNum=0;");
+	page += F("for (curPixelNum=0; curPixelNum<width*height;  curPixelNum++)");
+	page += F("{");
+	page += F("mImgData.data[dstIndex] = rgbData[srcIndex];");
+	page += F("mImgData.data[dstIndex+1] = rgbData[srcIndex];");
+	page += F("mImgData.data[dstIndex+2] = rgbData[srcIndex];");
+	page += F("mImgData.data[dstIndex+3] = 255;");
+	page += F("srcIndex += 1;");
+	page += F("dstIndex += 4;");
+	page += F("}");
+	page += F("mContext.putImageData(mImgData, 0, 0);");
+	page += F("return mCanvas;");
+  page += F("}");
+
+  page += F("if (!!window.EventSource) {");
+  page += F("var source = new EventSource('/events');");
+  page += F("source.addEventListener('open', function(e) {");
+  page += F("console.log('Events Connected');");
+  page += F("}, false);");
+  page += F("source.addEventListener('error', function(e) {");
+  page += F("if (e.target.readyState != EventSource.OPEN) {");
+  page += F("console.log('Events Disconnected');");
+  page += F("}");
+  page += F("}, false);");
+  page += F("source.addEventListener('message', function(e) {");
+  page += F("console.log('Event: ', e.data);");
+  page += F("}, false);");
+  page += F("source.addEventListener('mtc', function(e) {");
+  page += F("var myDiv = document.getElementById('myDiv');");
+	page += F("myDiv.innerHTML = e.data;");
+  page += F("}, false);");
+  page += F("source.addEventListener('screen', function(e) {");
+  page += F("var mCanvas = createImageFromRGBdata(e.data, 128, 64);");
+	page += F("mCanvas.setAttribute('style', 'width:128px; height:64px; border:solid 1px black');");
+	page += F("document.body.appendChild(mCanvas);");
+  page += F("}, false);");
+  page += F("}");
+  page += F("</script>");
+
   page += F("</body>");
   page += F("</html>");
 
@@ -338,6 +404,9 @@ String get_live_page() {
   String page = "";
 
   page += get_top_page(1);
+
+  page += F("<div id='myDiv'>");
+  page += F("</div>");
 
   page += get_footer_page();
 
@@ -1253,6 +1322,9 @@ void http_handle_update (AsyncWebServerRequest *request) {
   // The connection SHOULD NOT be considered `persistent'.
   // Applications that do not support persistent connections MUST include the "close" connection option in every message.
   //httpServer.sendHeader("Connection", "close");
+  if (!request->authenticate("admin", "password")) {
+			return request->requestAuthentication();
+	}
   request->send(200, "text/html", get_update_page());
 }
 
@@ -1270,7 +1342,7 @@ void http_handle_update_file_upload_finish (AsyncWebServerRequest *request) {
 // them through the Update object
 
 void http_handle_update_file_upload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-  
+
   if (!index) {
     // Disconnect, not to interfere with OTA process
     blynk_disconnect();
@@ -1332,6 +1404,13 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
     }
   }
 }
+
+
+void http_handle_screen(AsyncWebServerRequest *request) {
+
+  request->send(200, "text/plain", convert2XBM(display.buffer, 1024));
+}
+
 
 void http_handle_not_found(AsyncWebServerRequest *request) {
 
@@ -1423,6 +1502,8 @@ void http_setup() {
 
   webSocket.onEvent(onWsEvent);
   httpServer.addHandler(&webSocket);
+  //events.setAuthentication("user", "pass");
+  httpServer.addHandler(&events);
 
 #ifdef WEBCONFIG
   httpServer.on("/",                        http_handle_root);
@@ -1437,6 +1518,8 @@ void http_setup() {
   httpServer.on("/options",     HTTP_GET,   http_handle_options);
   httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
 
+  httpServer.on("/screen.xbm",  HTTP_GET,   http_handle_screen);
+
 #ifdef BOOTSTRAP_LOCAL
   httpServer.on("/css/bootstrap.min.css",        http_handle_bootstrap_file);
   httpServer.on("/js/jquery-3.3.1.slim.min.js",  http_handle_bootstrap_file);
@@ -1449,6 +1532,14 @@ void http_setup() {
   httpServer.onNotFound(http_handle_not_found);
 
   httpServer.begin();
+}
+
+
+
+inline void http_run() {
+  //if (millis() % 1000 == 0)
+    //DPRINT("%s\n", convert2XBM(display.buffer, display.getWidth()*display.getHeight()).c_str());
+    //events.send((char *)display.buffer, "screen");
 }
 
 #endif  // WIFI
