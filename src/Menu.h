@@ -1409,7 +1409,7 @@ void menu_navigation2()
           }
           value = map_analog(i, input);                             // apply the digital map function to the value
           if (pedals[i].invertPolarity) value = ADC_RESOLUTION - 1 - value;   // invert the scale
-          value = value >> 5;                                       // map from 12-bit value [0, 4095] to the 7-bit MIDI value [0, 127]
+          value = value >> 3;                                       // map from 12-bit value [0, 4095] to the 7-bit MIDI value [0, 127]
           pedals[i].analogPedal->update(value);                     // update the responsive analog average
           if (pedals[i].analogPedal->hasChanged())                  // if the value changed since last time
           {

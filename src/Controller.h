@@ -847,8 +847,8 @@ void refresh_analog(byte i, bool send)
     pedals[i].expMax  = _max(pedals[i].expMax,  round(0.9 * input));
   }
   value = map_analog(i, input);                             // apply the digital map function to the value
-  if (pedals[i].invertPolarity) value = ADC_RESOLUTION - 1 - value;   // invert the scale
-  value = value >> 5;                                       // map from 12-bit value [0, 4095] to the 7-bit MIDI value [0, 127]
+  value = value >> (ADC_RESOLUTION_BITS - 7);               // map from ADC resolution to the 7-bit MIDI value [0, 127]
+  if (pedals[i].invertPolarity) value = MIDI_RESOLUTION - 1 - value;   // invert the scale
   pedals[i].analogPedal->update(value);                     // update the responsive analog average
   if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
     value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
@@ -1110,6 +1110,8 @@ void controller_setup()
           pedals[i].analogPedal->setActivityThreshold(6.0);
           pedals[i].analogPedal->setAnalogResolution(MIDI_RESOLUTION);        // 7-bit MIDI resolution
           pedals[i].analogPedal->enableEdgeSnap();                            // ensures that values at the edges of the spectrum can be easily reached when sleep is enabled
+          analogReadResolution(ADC_RESOLUTION_BITS);
+          analogSetPinAttenuation(PIN_A(i), ADC_11db);
           if (lastUsedPedal == 0xFF) lastUsedPedal = i;
         }
         DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));

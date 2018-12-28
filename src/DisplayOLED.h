@@ -438,40 +438,46 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
   if (millis() < endMillis2) {
+    //display->drawRect(40, 15, 48, 25);
+    display->drawLine(64-22+1, 15,      64+24-1, 15);
+    display->drawLine(64+24,   15+1,    64+24,   15+23-1);
+    display->drawLine(64+24-1, 15+23,   64-22+1, 15+23);
+    display->drawLine(64-22,   15+23-1, 64-22,   15+1);
     display->setFont(ArialMT_Plain_10);
     switch (m1) {
         case midi::NoteOn:
         case midi::NoteOff:
-          display->setTextAlignment(TEXT_ALIGN_LEFT);
-          display->drawString(x, 16 + y, String("Note"));
-          display->setTextAlignment(TEXT_ALIGN_LEFT);
-          display->drawString(x, 36 + y, String("Velocity"));
+          display->setTextAlignment(TEXT_ALIGN_CENTER);
+          display->drawString(64 + x, 38 + y, String("Note"));
           display->setTextAlignment(TEXT_ALIGN_RIGHT);
-          display->drawString(128 + x, 36 + y, String(m3));
+          display->drawString(128 + x, 38 + y, String("Velocity"));
+          display->setTextAlignment(TEXT_ALIGN_RIGHT);
+          display->drawString(128 + x, 28 + y, String(m3));
           break;
         case midi::ControlChange:
-          display->setTextAlignment(TEXT_ALIGN_LEFT);
-          display->drawString(x, 16 + y, String("Control Code"));
-          display->setTextAlignment(TEXT_ALIGN_LEFT);
-          display->drawString(x, 36 + y, String("Value"));
+          display->setTextAlignment(TEXT_ALIGN_CENTER);
+          display->drawString(64 + x, 38 + y, String("CC"));
           display->setTextAlignment(TEXT_ALIGN_RIGHT);
-          display->drawString(128 + x, 36 + y, String(m3));
+          display->drawString(128 + x, 38 + y, String("Value"));
+          display->setTextAlignment(TEXT_ALIGN_RIGHT);
+          display->drawString(128 + x, 28 + y, String(m3));
           break;
         case midi::ProgramChange:
-          display->setTextAlignment(TEXT_ALIGN_LEFT);
-          display->drawString(x, 16 + y, String("Program Change"));
+          display->setTextAlignment(TEXT_ALIGN_CENTER);
+          display->drawString(64 + x, 38 + y, String("PC"));
           break;
         case midi::PitchBend:
-          display->setTextAlignment(TEXT_ALIGN_LEFT);
-          display->drawString(x, 16 + y, String("Pitch Bend"));   
+          display->setTextAlignment(TEXT_ALIGN_CENTER);
+          display->drawString(64 + x, 38 + y, String("Pitch"));   
           break;
       }
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->drawString(128 + x, 16 + y, String(m2));
     display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->drawString(x, 26 + y, String("Channel"));
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->drawString(128 + x, 26 + y, String(m4));
+    display->drawString(x, 38 + y, String("Channel"));
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->drawString(x, 28 + y, String(m4));
+    display->setFont(ArialMT_Plain_24);  
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->drawString(64 + x, 14 + y, String(m2));
   }  
   else if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
            MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
@@ -571,7 +577,8 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
-  if (MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE) ui.switchToFrame(0);
+  if (MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2)
+    ui.switchToFrame(0);
 
   display->setFont(ArialMT_Plain_10);
   display->setTextAlignment(TEXT_ALIGN_LEFT);

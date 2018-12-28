@@ -124,7 +124,8 @@ typedef uint8_t   byte;
 #define PED_TIMESIGNATURE_12_8  6
 
 #define MIDI_RESOLUTION         128       // MIDI 7-bit CC resolution
-#define ADC_RESOLUTION         4096       // 12-bit ADC converter resolution
+#define ADC_RESOLUTION         1024       // hardware 9 to 12-bit ADC converter resolution
+#define ADC_RESOLUTION_BITS      10       // software 1 to 16-bit resolution
 #define CALIBRATION_DURATION   8000       // milliseconds
 
 struct bank {
@@ -277,7 +278,7 @@ bool powersaver = false;
 #define DPRINTLN(...)     { DEBUG_ESP_PORT.printf( __VA_ARGS__ ); DEBUG_ESP_PORT.println(); }
 #endif
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) && defined(DEBUG_ESP_PORT)
 #include <esp_log.h>
 #define SERIALDEBUG       Serial
 #define LOG_TAG           "PedalinoESP"

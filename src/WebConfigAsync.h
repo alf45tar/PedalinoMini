@@ -191,6 +191,8 @@ String get_footer_page() {
   page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>");
 #endif
   page += F("<script>");
+  page += F("window.setTimeout(function(){$('.alert').fadeTo(500, 0).slideUp(500,function(){$(this).remove();});},4000);");
+
   page += F("function createImageFromRGBdata(rgbData, width, height)");
   page += F("{");
 	page += F("var mCanvas = document.createElement('canvas');");
@@ -1229,7 +1231,7 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     pedals[i].pressMode += (a == checked) ? PED_PRESS_L : 0;
 
     a = request->arg(String("polarity") + String(i+1));
-    pedals[i].invertPolarity += (a == checked) ? PED_ENABLE : PED_DISABLE;
+    pedals[i].invertPolarity = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
     a = request->arg(String("map") + String(i+1));
     pedals[i].mapFunction = a.toInt();

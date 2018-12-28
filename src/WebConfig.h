@@ -704,7 +704,7 @@ String get_pedals_page() {
     page += F("<div class='custom-control custom-checkbox'>");
     page += F("<input type='checkbox' class='custom-control-input' id='polarityCheck");
     page += String(i) + F("' name='polarity") + String(i) + F("'");
-    if (pedals[i-1].invertPolarity) page += F(" checked");
+    if (pedals[i-1].invertPolarity == PED_ENABLE) page += F(" checked");
     page += F(">");
     page += F("<label class='custom-control-label' for='polarityCheck");
     page += String(i) + F("'></p></label>");
@@ -1177,7 +1177,7 @@ void http_handle_post_pedals() {
     pedals[i].pressMode += (a == checked) ? PED_PRESS_L : 0;
 
     a = httpServer.arg(String("polarity") + String(i+1));
-    pedals[i].invertPolarity += (a == checked) ? PED_ENABLE : PED_DISABLE;
+    pedals[i].invertPolarity = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
     a = httpServer.arg(String("map") + String(i+1));
     pedals[i].mapFunction = a.toInt();

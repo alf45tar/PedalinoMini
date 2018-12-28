@@ -19,8 +19,6 @@
       - WiFi OSC
 */
 
-#define DEBUG_UPDATER Serial
-
 #ifdef NOWIFI
 #undef WIFI
 #else
@@ -99,7 +97,7 @@ void setup()
   pinMode(BLE_LED, OUTPUT);
 #endif
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) && defined(DEBUG_ESP_PORT)
   esp_log_level_set("*",      ESP_LOG_ERROR);
   //esp_log_level_set("wifi",   ESP_LOG_WARN);
   //esp_log_level_set("BLE*",   ESP_LOG_ERROR);
