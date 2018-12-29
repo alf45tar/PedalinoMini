@@ -190,7 +190,9 @@ String get_footer_page() {
   page += F("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>");
   page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>");
 #endif
+
   page += F("<script>");
+/*
   page += F("window.setTimeout(function(){$('.alert').fadeTo(500, 0).slideUp(500,function(){$(this).remove();});},4000);");
 
   page += F("function createImageFromRGBdata(rgbData, width, height)");
@@ -213,7 +215,7 @@ String get_footer_page() {
 	page += F("mContext.putImageData(mImgData, 0, 0);");
 	page += F("return mCanvas;");
   page += F("}");
-
+*/
   page += F("if (!!window.EventSource) {");
   page += F("var source = new EventSource('/events');");
   page += F("source.addEventListener('open', function(e) {");
@@ -314,6 +316,7 @@ String get_root_page() {
   page += F("</div>");
 
   page += F("<div class='col-3'>");
+  if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA) {
   page += F("<h3>Wireless STA</h3>");
   page += F("<dt>SSID</dt><dd>");
   page += wifiSSID;
@@ -330,7 +333,9 @@ String get_root_page() {
   page += F("<dt>Station MAC</dt><dd>");
   page += WiFi.macAddress();
   page += F("</dd>");
+  }
 
+  if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA) {
   page += F("<h3>Wireless AP</h3>");
   page += F("<dt>AP SSID</dt><dd>");
   page += wifiSoftAP;
@@ -352,6 +357,7 @@ String get_root_page() {
   page += F("<dt>Connected Stations</dt><dd>");
   page += WiFi.softAPgetStationNum();
   page += F("</dd>");
+  }
   page += F("</div>");
 
   page += F("<div class='col-3'>");

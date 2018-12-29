@@ -330,10 +330,6 @@ SSD1306Wire   display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 OLEDDisplayUi ui(&display);
 bool          uiUpdate = true;
 
-char screen1[LCD_COLS + 1];
-char screen2[LCD_COLS + 1];
-int  analog;
-
 bool blynk_cloud_connected();
 extern bool appleMidiConnected;
 extern AsyncEventSource events;
@@ -443,40 +439,37 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     display->drawLine(64+24,   15+1,    64+24,   15+23-1);
     display->drawLine(64+24-1, 15+23,   64-22+1, 15+23);
     display->drawLine(64-22,   15+23-1, 64-22,   15+1);
-    display->setFont(ArialMT_Plain_10);
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
     switch (m1) {
         case midi::NoteOn:
         case midi::NoteOff:
-          display->setTextAlignment(TEXT_ALIGN_CENTER);
-          display->drawString(64 + x, 38 + y, String("Note"));
-          display->setTextAlignment(TEXT_ALIGN_RIGHT);
-          display->drawString(128 + x, 38 + y, String("Velocity"));
-          display->setTextAlignment(TEXT_ALIGN_RIGHT);
-          display->drawString(128 + x, 28 + y, String(m3));
+          display->setFont(ArialMT_Plain_10);
+          display->drawString( 64 + x, 39 + y, String("Note"));
+          display->drawString(110 + x, 39 + y, String("Velocity"));
+          display->setFont(ArialMT_Plain_16);
+          display->drawString(110 + x, 22 + y, String(m3));
           break;
         case midi::ControlChange:
-          display->setTextAlignment(TEXT_ALIGN_CENTER);
-          display->drawString(64 + x, 38 + y, String("CC"));
-          display->setTextAlignment(TEXT_ALIGN_RIGHT);
-          display->drawString(128 + x, 38 + y, String("Value"));
-          display->setTextAlignment(TEXT_ALIGN_RIGHT);
-          display->drawString(128 + x, 28 + y, String(m3));
+          display->setFont(ArialMT_Plain_10);
+          display->drawString( 64 + x, 39 + y, String("CC"));
+          display->drawString(110 + x, 39 + y, String("Value"));
+          display->setFont(ArialMT_Plain_16);
+          display->drawString(110 + x, 22 + y, String(m3));
           break;
         case midi::ProgramChange:
-          display->setTextAlignment(TEXT_ALIGN_CENTER);
-          display->drawString(64 + x, 38 + y, String("PC"));
+          display->setFont(ArialMT_Plain_10);
+          display->drawString(64 + x, 39 + y, String("PC"));
           break;
         case midi::PitchBend:
-          display->setTextAlignment(TEXT_ALIGN_CENTER);
-          display->drawString(64 + x, 38 + y, String("Pitch"));   
+          display->setFont(ArialMT_Plain_10);
+          display->drawString(64 + x, 39 + y, String("Pitch"));   
           break;
       }
-    display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->drawString(x, 38 + y, String("Channel"));
-    display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->drawString(x, 28 + y, String(m4));
-    display->setFont(ArialMT_Plain_24);  
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->setFont(ArialMT_Plain_10);
+    display->drawString(18 + x, 39 + y, String("Channel"));
+    display->setFont(ArialMT_Plain_16);
+    display->drawString(18 + x, 22 + y, String(m4));
+    display->setFont(ArialMT_Plain_24);
     display->drawString(64 + x, 14 + y, String(m2));
   }  
   else if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
@@ -585,15 +578,30 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->drawString(0 + x, 16 + y, "Device:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->drawString(128 + x, 16 + y, host);
-#ifdef WIFI  
-  display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(0 + x, 26 + y, "SSID:");
-  display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  display->drawString(128 + x, 26 + y, wifiSSID);
-  display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(0 + x, 36 + y, "IP:");
-  display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  display->drawString(128 + x, 36 + y, WiFi.localIP().toString());
+#ifdef WIFI
+  switch (WiFi.getMode()) {
+    case WIFI_AP:
+    case WIFI_AP_STA:
+      display->setTextAlignment(TEXT_ALIGN_LEFT);
+      display->drawString(0 + x, 26 + y, "AP:");
+      display->setTextAlignment(TEXT_ALIGN_RIGHT);
+      display->drawString(128 + x, 26 + y, wifiSoftAP);
+      display->setTextAlignment(TEXT_ALIGN_LEFT);
+      display->drawString(0 + x, 36 + y, "AP IP:");
+      display->setTextAlignment(TEXT_ALIGN_RIGHT);
+      display->drawString(128 + x, 36 + y, WiFi.softAPIP().toString());
+      break;
+    case WIFI_STA:
+      display->setTextAlignment(TEXT_ALIGN_LEFT);
+      display->drawString(0 + x, 26 + y, "SSID:");
+      display->setTextAlignment(TEXT_ALIGN_RIGHT);
+      display->drawString(128 + x, 26 + y, wifiSSID);
+      display->setTextAlignment(TEXT_ALIGN_LEFT);
+      display->drawString(0 + x, 36 + y, "IP:");
+      display->setTextAlignment(TEXT_ALIGN_RIGHT);
+      display->drawString(128 + x, 36 + y, WiFi.localIP().toString());
+      break;
+  }
 #endif
 }
 
@@ -679,10 +687,24 @@ void display_ui_update_enable()
   uiUpdate = true;
 }
 
+//char buf[129*64+1];
+
 void display_update(bool force = false)
 {
   if (uiUpdate) {
     if (millis() < endMillis2) ui.switchToFrame(0);
     int remainingTimeBudget = ui.update();
+/*
+    if (millis() % 1000) return;
+
+    buf[129*64] = 0;
+    for (byte y = 0; y < 64; y++) {
+      for (byte x = 0; x < 128; x++)
+        buf[y*129+x] = ((display.buffer[x+(y/8)*128] & (1 << (y&7))) == 0) ? ' ' : 'o';
+      buf[y*129+128] = (char)13;
+    }
+    events.send(buf, "mtc");
+*/
   }
+
 }

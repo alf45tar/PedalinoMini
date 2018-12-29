@@ -19,7 +19,6 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include <WiFi.h>
 #include <WiFiClient.h>
-//#include <WebServer.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #endif
@@ -412,6 +411,10 @@ bool smart_config()
   
   if (WiFi.smartConfigDone())
   {
+    // Wait for WiFi to connect to AP
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+    }
     wifiSSID = WiFi.SSID();
     wifiPassword = WiFi.psk();
 
@@ -482,36 +485,14 @@ bool auto_reconnect(String ssid, String password)
 #endif
   }
 
-  if (ssid.length() == 0) return false;
-
-  DPRINT("Connecting to\n");
-  DPRINT("SSID        : %s\n", ssid.c_str());
-  DPRINT("Password    : %s\n", password.c_str());
-
-  WiFi.disconnect();
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid.c_str(), password.c_str());
-  display_progress_bar_title2("Connecting to", ssid);
-  for (byte i = 0; i < WIFI_CONNECT_TIMEOUT * 2 && !WiFi.isConnected(); i++) {
-    display_progress_bar_update(i, WIFI_CONNECT_TIMEOUT*2-1);
-    status_blink();
-    delay(100);
-    status_blink();
-    delay(300);
-  }
-  display_progress_bar_update(1, 1);
-
-  WiFi.isConnected() ? WIFI_LED_ON() : WIFI_LED_OFF();
-
-  return WiFi.isConnected();
+  return (ssid.length() == 0) ? false : ap_connect(ssid, password);
 }
 
 void wifi_connect()
 {
-  if (!auto_reconnect()) {     // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
-    if (smart_config())        // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters
-      auto_reconnect();        // WIFI_CONNECT_TIMEOUT seconds to connect to SmartConfig access point
-  }
+  if (!auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
+    smart_config();            // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+
   if (!WiFi.isConnected())
     ap_mode_start();           // switch to AP mode until next reboot
 }

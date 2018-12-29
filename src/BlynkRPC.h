@@ -736,9 +736,7 @@ BLYNK_WRITE(BLYNK_PASSWORD) {
 BLYNK_WRITE(BLYNK_SMARTCONFIG) {
   int smartconfig = param.asInt();
   if (smartconfig) {
-    smart_config();
-    if (auto_reconnect())
-      blynk_connect();
+    if (smart_config()) blynk_connect();
   }
 }
 
