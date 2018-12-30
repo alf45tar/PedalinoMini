@@ -45,6 +45,49 @@ extern const uint8_t jquery_3_3_1_slim_min_js_start[] asm("_binary_data_jquery_3
 extern const uint8_t jquery_3_3_1_slim_min_js_end[]   asm("_binary_data_jquery_3_3_1_slim_min_js_gz_end");
 extern const uint8_t popper_min_js_start[]            asm("_binary_data_popper_min_js_gz_start");
 extern const uint8_t popper_min_js_end[]              asm("_binary_data_popper_min_js_gz_end");
+
+#define FAVICON_ICO_GZ_LEN  621
+const uint8_t favicon_ico_gz[] PROGMEM = {
+  0x1f, 0x8b, 0x08, 0x08, 0x54, 0x41, 0x29, 0x5c, 0x02, 0x00, 0x66, 0x61, 0x76, 0x69, 0x63, 0x6f, 
+  0x6e, 0x2e, 0x69, 0x63, 0x6f, 0x00, 0xad, 0x53, 0x4d, 0x6f, 0x12, 0x61, 0x10, 0x7e, 0xf9, 0xd8, 
+  0x5d, 0x92, 0x26, 0xb4, 0xc2, 0x62, 0xb1, 0x58, 0x41, 0xd6, 0x76, 0xbf, 0x17, 0x58, 0x58, 0xc2, 
+  0x52, 0x16, 0x30, 0x42, 0x23, 0x85, 0xd4, 0x10, 0xd3, 0xa6, 0xd2, 0x83, 0x50, 0x35, 0xa0, 0x31, 
+  0x1e, 0x4b, 0x82, 0x72, 0xd1, 0x93, 0x89, 0x47, 0x7b, 0x31, 0x26, 0x5e, 0xd5, 0x83, 0xf1, 0xe6, 
+  0xc1, 0x98, 0x78, 0x31, 0x6a, 0xa2, 0x69, 0x1a, 0x13, 0x8d, 0x17, 0x7f, 0x83, 0xff, 0x40, 0x1f, 
+  0x16, 0xbc, 0x08, 0x45, 0x4d, 0x9c, 0xcd, 0x93, 0xd9, 0xbc, 0x33, 0xcf, 0xcc, 0xbc, 0xcf, 0xec, 
+  0x12, 0xe2, 0xc0, 0x33, 0x37, 0x37, 0xf0, 0x11, 0xd2, 0x71, 0x13, 0x72, 0x94, 0x10, 0x22, 0x00, 
+  0x38, 0xc2, 0xc9, 0xf0, 0xdc, 0x36, 0xc4, 0x38, 0xcd, 0xc6, 0x44, 0xa3, 0x28, 0xca, 0xf6, 0x6c, 
+  0x20, 0x40, 0x05, 0x02, 0x01, 0xda, 0xe5, 0x72, 0x11, 0x86, 0x61, 0xc8, 0x34, 0x73, 0xbb, 0xdd, 
+  0xa4, 0xbc, 0xba, 0x4a, 0x54, 0x55, 0x9d, 0x5d, 0xab, 0x56, 0xf3, 0xaa, 0xa6, 0xb1, 0x09, 0x5d, 
+  0xdf, 0xd2, 0x93, 0xc9, 0x4b, 0x08, 0x3b, 0x7d, 0x3e, 0xdf, 0x54, 0xbe, 0xc7, 0xe3, 0x21, 0x17, 
+  0x1a, 0x0d, 0x72, 0xa6, 0x54, 0xca, 0xf5, 0xfb, 0xfd, 0x6f, 0xd5, 0x5a, 0x6d, 0x1d, 0xfc, 0x3b, 
+  0xc9, 0x54, 0x6a, 0x6f, 0x50, 0x1e, 0x73, 0xfc, 0x91, 0x9f, 0xb3, 0x2c, 0x82, 0xbe, 0xb1, 0x7c, 
+  0xa1, 0x70, 0xa0, 0xc5, 0x62, 0x45, 0xf4, 0xfe, 0x6b, 0x3e, 0x4d, 0xd3, 0xc4, 0x30, 0x0c, 0x22, 
+  0x49, 0x92, 0x6c, 0xa4, 0xd3, 0x1f, 0x44, 0x49, 0x5a, 0x19, 0xf1, 0xef, 0x23, 0xec, 0xf2, 0xfb, 
+  0xfd, 0xff, 0xc2, 0xff, 0x28, 0x0d, 0xf9, 0xb7, 0xc1, 0x7f, 0x2c, 0x88, 0xa2, 0x2e, 0x2b, 0x8a, 
+  0x02, 0x1f, 0x3d, 0x11, 0x0e, 0x7b, 0x07, 0xab, 0x40, 0xfe, 0x74, 0xbe, 0x2c, 0x67, 0xc1, 0xbf, 
+  0x81, 0xf7, 0x2f, 0xc0, 0xbb, 0x11, 0xde, 0xa6, 0x0c, 0xe3, 0x79, 0x3c, 0x91, 0xd8, 0x08, 0x06, 
+  0x83, 0x1e, 0xd4, 0x3b, 0x94, 0xaf, 0xa8, 0x6a, 0x36, 0x12, 0x89, 0xf8, 0x78, 0x9e, 0x57, 0x80, 
+  0xb8, 0x20, 0x08, 0x3a, 0x6a, 0x9e, 0x86, 0x3e, 0xb7, 0x10, 0xdf, 0x87, 0xb6, 0x2d, 0x68, 0x46, 
+  0x45, 0xa3, 0x51, 0xe2, 0x70, 0x38, 0xc6, 0xf9, 0x8a, 0x62, 0xa2, 0x86, 0x82, 0x19, 0x6e, 0x02, 
+  0x7d, 0x5d, 0xd7, 0x77, 0x33, 0x99, 0x4c, 0xb9, 0xdd, 0x6e, 0xf7, 0x2b, 0x95, 0xca, 0xc3, 0xdd, 
+  0x6e, 0xf7, 0xab, 0x69, 0x9a, 0x62, 0xa9, 0x5c, 0x26, 0xf8, 0x3e, 0xc6, 0xf8, 0xb2, 0x2c, 0x67, 
+  0x30, 0x67, 0x13, 0xdc, 0xa7, 0xb1, 0x78, 0xfc, 0x22, 0xde, 0xb7, 0xd2, 0xe9, 0xf4, 0x5a, 0x63, 
+  0x7b, 0xfb, 0x55, 0xb1, 0x58, 0x3c, 0xdf, 0x6c, 0xb5, 0xae, 0xe0, 0x9c, 0xb5, 0xf2, 0x79, 0xe2, 
+  0x74, 0x3a, 0xc7, 0xf8, 0xd0, 0xdf, 0x44, 0xbf, 0xab, 0x19, 0xd3, 0xbc, 0x1b, 0x0e, 0x87, 0x23, 
+  0x3c, 0x0c, 0xf9, 0x1d, 0xcc, 0xfd, 0xe0, 0xf8, 0xe2, 0x62, 0x08, 0x77, 0x3b, 0xe9, 0x67, 0x59, 
+  0xea, 0xd8, 0xc2, 0xc2, 0xc4, 0xfb, 0x9f, 0x5a, 0x5a, 0xca, 0xb6, 0x3b, 0x9d, 0x6e, 0x6b, 0x67, 
+  0xe7, 0x19, 0x7a, 0xef, 0x61, 0x0f, 0x8f, 0x80, 0x7b, 0xa2, 0x28, 0xa6, 0x50, 0xa7, 0x09, 0x1d, 
+  0x9f, 0x20, 0xe7, 0x08, 0x34, 0x99, 0x74, 0xff, 0x7d, 0xec, 0x6b, 0x1d, 0x79, 0xc2, 0x4a, 0x2e, 
+  0x77, 0x4e, 0xd3, 0xb4, 0xf2, 0x32, 0xcf, 0x67, 0xa1, 0x61, 0x16, 0xb5, 0xae, 0x0d, 0xea, 0x63, 
+  0x8e, 0x0e, 0xda, 0xba, 0xe6, 0xe7, 0xe7, 0x6d, 0x3e, 0xfe, 0x99, 0x5f, 0xfc, 0x65, 0xc4, 0x3f, 
+  0x01, 0x07, 0xf8, 0x17, 0xae, 0xf7, 0x7a, 0xbd, 0x17, 0x1b, 0x9b, 0x9b, 0x9f, 0xd1, 0xfb, 0xcd, 
+  0x68, 0x87, 0x2f, 0xc1, 0xbd, 0x1c, 0x0a, 0x85, 0x66, 0x2c, 0xcb, 0xb2, 0xb9, 0x30, 0xdb, 0xe3, 
+  0x9b, 0x25, 0x51, 0x8e, 0x9b, 0x81, 0x2f, 0xa0, 0x77, 0x0d, 0xfb, 0x95, 0xea, 0xf5, 0xfa, 0x59, 
+  0xe8, 0x55, 0xc3, 0x3c, 0x26, 0x34, 0x55, 0x39, 0x8e, 0x63, 0x19, 0x9a, 0x76, 0x7a, 0xbd, 0x5e, 
+  0xf2, 0x3f, 0xed, 0xfb, 0x0f, 0x42, 0x5e, 0xff, 0x8e, 0x59, 0x80, 0x01, 0x5c, 0x87, 0x80, 0x19, 
+  0xe6, 0xbc, 0x47, 0xee, 0x4f, 0xac, 0x9d, 0x13, 0xe3, 0x7e, 0x04, 0x00, 0x00
+};
 #endif
 
 
@@ -61,24 +104,6 @@ String  alert     = "";
 String  uiprofile = "1";
 String  uibank    = "1";
 
-
-String convert2XBM (const uint8_t *buffer, unsigned int len) {
-
-  String x;
-  char   h[8];
-
-  x  = "#define screen_width 128\n";
-  x += "#define screen_height 64\n";
-  x += "static char screen_bits[] = {";
-  for (unsigned int i = 0; i < len; i++) {
-    sprintf(h, "0x%02x, ", buffer[i]);
-    if (i % 128 == 0) x += "\n";
-    x += h;
-  }
-  x += "};";
-
-  return x;
-}
 
 String get_top_page(byte p = 0) {
 
@@ -190,57 +215,6 @@ String get_footer_page() {
   page += F("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>");
   page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>");
 #endif
-
-  page += F("<script>");
-/*
-  page += F("window.setTimeout(function(){$('.alert').fadeTo(500, 0).slideUp(500,function(){$(this).remove();});},4000);");
-
-  page += F("function createImageFromRGBdata(rgbData, width, height)");
-  page += F("{");
-	page += F("var mCanvas = document.createElement('canvas');");
-	page += F("mCanvas.width = width;");
-	page += F("mCanvas.height = height;");
-	page += F("var mContext = mCanvas.getContext('2d');");
-	page += F("var mImgData = mContext.createImageData(width, height);");
-	page += F("var srcIndex=0, dstIndex=0, curPixelNum=0;");
-	page += F("for (curPixelNum=0; curPixelNum<width*height;  curPixelNum++)");
-	page += F("{");
-	page += F("mImgData.data[dstIndex] = rgbData[srcIndex];");
-	page += F("mImgData.data[dstIndex+1] = rgbData[srcIndex];");
-	page += F("mImgData.data[dstIndex+2] = rgbData[srcIndex];");
-	page += F("mImgData.data[dstIndex+3] = 255;");
-	page += F("srcIndex += 1;");
-	page += F("dstIndex += 4;");
-	page += F("}");
-	page += F("mContext.putImageData(mImgData, 0, 0);");
-	page += F("return mCanvas;");
-  page += F("}");
-*/
-  page += F("if (!!window.EventSource) {");
-  page += F("var source = new EventSource('/events');");
-  page += F("source.addEventListener('open', function(e) {");
-  page += F("console.log('Events Connected');");
-  page += F("}, false);");
-  page += F("source.addEventListener('error', function(e) {");
-  page += F("if (e.target.readyState != EventSource.OPEN) {");
-  page += F("console.log('Events Disconnected');");
-  page += F("}");
-  page += F("}, false);");
-  page += F("source.addEventListener('message', function(e) {");
-  page += F("console.log('Event: ', e.data);");
-  page += F("}, false);");
-  page += F("source.addEventListener('mtc', function(e) {");
-  page += F("var myDiv = document.getElementById('myDiv');");
-	page += F("myDiv.innerHTML = e.data;");
-  page += F("}, false);");
-  page += F("source.addEventListener('screen', function(e) {");
-  page += F("var mCanvas = createImageFromRGBdata(e.data, 128, 64);");
-	page += F("mCanvas.setAttribute('style', 'width:128px; height:64px; border:solid 1px black');");
-	page += F("document.body.appendChild(mCanvas);");
-  page += F("}, false);");
-  page += F("}");
-  page += F("</script>");
-
   page += F("</body>");
   page += F("</html>");
 
@@ -413,8 +387,56 @@ String get_live_page() {
 
   page += get_top_page(1);
 
+  page += F("<canvas id='screen' height='128' width='256'>");
+  page += F("Sorry, your browser does not support canvas.");
+  page += F("</canvas>");
   page += F("<div id='myDiv'>");
   page += F("</div>");
+
+  page += F("<script>");
+  page += F("var con = new WebSocket('ws://' + location.hostname + ':80/ws');");
+  page += F("con.binaryType = 'arraybuffer';");
+  page += F("con.onopen = function () {");
+  page += F("console.log('WebSocket connection open');");  
+  page += F("};");
+  page += F("con.onerror = function (error) {");
+  page += F("console.log('WebSocket Error ', error);");
+  page += F("};");
+  page += F("con.onmessage = function (e) {");
+  page += F("var data = e.data;");
+  page += F("var dv = new DataView(data);");
+  page += F("var canvas=document.getElementById('screen');");
+  page += F("var context=canvas.getContext('2d');");
+  page += F("var x=0; y=0;");
+  page += F("for (y=0; y<64; y++)");
+  page += F("  for (x=0; x<128; x++)");
+  page += F("    ((dv.getUint8(x+Math.floor(y/8)*128) & (1<<(y&7))) == 0) ? context.clearRect(x*2,y*2,2,2) : context.fillRect(x*2,y*2,2,2);");
+  page += F("};");
+  page += F("con.onclose = function () {");
+  page += F("console.log('WebSocket connection closed');");
+  page += F("};");
+
+  page += F("if (!!window.EventSource) {");
+  page += F("var source = new EventSource('/events');");
+  page += F("source.addEventListener('open', function(e) {");
+  page += F("console.log('Events Connected');");
+  page += F("}, false);");
+  page += F("source.addEventListener('error', function(e) {");
+  page += F("if (e.target.readyState != EventSource.OPEN) {");
+  page += F("console.log('Events Disconnected');");
+  page += F("}");
+  page += F("}, false);");
+  page += F("source.addEventListener('message', function(e) {");
+  page += F("console.log('Event: ', e.data);");
+  page += F("}, false);");
+  page += F("source.addEventListener('mtc', function(e) {");
+  page += F("var myDiv = document.getElementById('myDiv');");
+	page += F("myDiv.innerHTML = e.data;");
+  page += F("}, false);");
+  page += F("source.addEventListener('screen', function(e) {");
+  page += F("}, false);");
+  page += F("}");
+  page += F("</script>");
 
   page += get_footer_page();
 
@@ -1122,6 +1144,12 @@ void http_handle_bootstrap_file(AsyncWebServerRequest *request) {
 }
 #endif
 
+void http_handle_favicon(AsyncWebServerRequest *request) {
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-icon", favicon_ico_gz, FAVICON_ICO_GZ_LEN);
+  response->addHeader("Content-Encoding", "gzip");
+  request->send(response);
+}
+
 void http_handle_globals(AsyncWebServerRequest *request) {
   
   if (request->hasArg("profile")) {
@@ -1413,13 +1441,6 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
   }
 }
 
-
-void http_handle_screen(AsyncWebServerRequest *request) {
-
-  request->send(200, "text/plain", convert2XBM(display.buffer, 1024));
-}
-
-
 void http_handle_not_found(AsyncWebServerRequest *request) {
 
   String message = "File Not Found\n\n";
@@ -1443,8 +1464,8 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
   if(type == WS_EVT_CONNECT){
     //client connected
     DPRINT("ws[%s][%u] connect\n", server->url(), client->id());
-    client->printf("Hello Client %u :)", client->id());
-    client->ping();
+    //client->printf("Hello Client %u :)", client->id());
+    //client->ping();
   } else if(type == WS_EVT_DISCONNECT){
     //client disconnected
     DPRINT("ws[%s][%u] disconnect: %u\n", server->url(), client->id());
@@ -1515,6 +1536,7 @@ void http_setup() {
 
 #ifdef WEBCONFIG
   httpServer.on("/",                        http_handle_root);
+  httpServer.on("/favicon.ico", HTTP_GET,   http_handle_favicon);
   httpServer.on("/live",        HTTP_GET,   http_handle_live);
   httpServer.on("/live",        HTTP_POST,  http_handle_post_live);
   httpServer.on("/banks",       HTTP_GET,   http_handle_banks);
@@ -1525,8 +1547,6 @@ void http_setup() {
   httpServer.on("/interfaces",  HTTP_POST,  http_handle_post_interfaces);
   httpServer.on("/options",     HTTP_GET,   http_handle_options);
   httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
-
-  httpServer.on("/screen.xbm",  HTTP_GET,   http_handle_screen);
 
 #ifdef BOOTSTRAP_LOCAL
   httpServer.on("/css/bootstrap.min.css",        http_handle_bootstrap_file);
@@ -1545,9 +1565,8 @@ void http_setup() {
 
 
 inline void http_run() {
-  //if (millis() % 1000 == 0)
-    //DPRINT("%s\n", convert2XBM(display.buffer, display.getWidth()*display.getHeight()).c_str());
-    //events.send((char *)display.buffer, "screen");
+  if (millis() % 250 == 0)
+    webSocket.binaryAll(display.buffer, 128*64);
 }
 
 #endif  // WIFI

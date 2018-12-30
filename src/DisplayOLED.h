@@ -331,7 +331,8 @@ OLEDDisplayUi ui(&display);
 bool          uiUpdate = true;
 
 bool blynk_cloud_connected();
-extern bool appleMidiConnected;
+extern bool             appleMidiConnected;
+extern AsyncWebSocket   webSocket;
 extern AsyncEventSource events;
 
 void display_clear()
@@ -687,24 +688,10 @@ void display_ui_update_enable()
   uiUpdate = true;
 }
 
-//char buf[129*64+1];
-
 void display_update(bool force = false)
 {
   if (uiUpdate) {
     if (millis() < endMillis2) ui.switchToFrame(0);
     int remainingTimeBudget = ui.update();
-/*
-    if (millis() % 1000) return;
-
-    buf[129*64] = 0;
-    for (byte y = 0; y < 64; y++) {
-      for (byte x = 0; x < 128; x++)
-        buf[y*129+x] = ((display.buffer[x+(y/8)*128] & (1 << (y&7))) == 0) ? ' ' : 'o';
-      buf[y*129+128] = (char)13;
-    }
-    events.send(buf, "mtc");
-*/
   }
-
 }
