@@ -432,46 +432,61 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   }
 }
 
+void drawRect (OLEDDisplay *display, int16_t x0, int16_t y0, int16_t x1, int16_t y1)
+{
+  display->drawLine(x0+1, y0,   x1-1, y0);
+  display->drawLine(x1,   y0+1, x1,   y1-1);
+  display->drawLine(x1-1, y1,   x0+1, y1);
+  display->drawLine(x0,   y1-1, x0,   y0+1);
+}
+
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
   if (millis() < endMillis2) {
-    //display->drawRect(40, 15, 48, 25);
-    display->drawLine(64-22+1, 15,      64+24-1, 15);
-    display->drawLine(64+24,   15+1,    64+24,   15+23-1);
-    display->drawLine(64+24-1, 15+23,   64-22+1, 15+23);
-    display->drawLine(64-22,   15+23-1, 64-22,   15+1);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     switch (m1) {
         case midi::NoteOn:
         case midi::NoteOff:
+          drawRect(display, 64-22, 15, 64+24, 15+23);
           display->setFont(ArialMT_Plain_10);
           display->drawString( 64 + x, 39 + y, String("Note"));
+          display->setFont(ArialMT_Plain_24);
+          display->drawString( 64 + x, 14 + y, String(m2));
+          display->setFont(ArialMT_Plain_10);
           display->drawString(110 + x, 39 + y, String("Velocity"));
           display->setFont(ArialMT_Plain_16);
           display->drawString(110 + x, 22 + y, String(m3));
           break;
         case midi::ControlChange:
+          drawRect(display, 64-22, 15, 64+24, 15+23);
           display->setFont(ArialMT_Plain_10);
           display->drawString( 64 + x, 39 + y, String("CC"));
+          display->setFont(ArialMT_Plain_24);
+          display->drawString( 64 + x, 14 + y, String(m2));
+          display->setFont(ArialMT_Plain_10);
           display->drawString(110 + x, 39 + y, String("Value"));
           display->setFont(ArialMT_Plain_16);
           display->drawString(110 + x, 22 + y, String(m3));
           break;
         case midi::ProgramChange:
+          drawRect(display, 84-22, 15, 84+24, 15+23);
           display->setFont(ArialMT_Plain_10);
-          display->drawString(64 + x, 39 + y, String("PC"));
+          display->drawString(84 + x, 39 + y, String("PC"));
+          display->setFont(ArialMT_Plain_24);
+          display->drawString(84 + x, 14 + y, String(m2));
           break;
         case midi::PitchBend:
+          drawRect(display, 84-38, 15, 84+36, 15+23);
           display->setFont(ArialMT_Plain_10);
-          display->drawString(64 + x, 39 + y, String("Pitch"));   
+          display->drawString(84 + x, 39 + y, String("Pitch")); 
+          display->setFont(ArialMT_Plain_24);
+          display->drawString(84 + x, 14 + y, String(m2));  
           break;
       }
     display->setFont(ArialMT_Plain_10);
     display->drawString(18 + x, 39 + y, String("Channel"));
     display->setFont(ArialMT_Plain_16);
     display->drawString(18 + x, 22 + y, String(m4));
-    display->setFont(ArialMT_Plain_24);
-    display->drawString(64 + x, 14 + y, String(m2));
   }  
   else if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
            MTC.getMode() == MidiTimeCode::SynchroClockSlave) {

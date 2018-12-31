@@ -32,6 +32,7 @@ ESP8266HTTPUpdateServer httpUpdater;
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <Update.h>
+#include <esp32-hal-timer.h>
 
 AsyncWebServer          httpServer(80);
 AsyncWebSocket          webSocket("/ws");
@@ -1527,6 +1528,17 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
   }
 }
 
+hw_timer_t   *_timer2 = NULL;
+portMUX_TYPE  _timer2Mux = portMUX_INITIALIZER_UNLOCKED;
+volatile int  _interruptCounter2 = 0;
+
+void IRAM_ATTR timer2_isr()
+{
+  portENTER_CRITICAL_ISR(&_timer2Mux);
+  _interruptCounter2++;
+  portEXIT_CRITICAL_ISR(&_timer2Mux);
+}
+
 void http_setup() {
 
   webSocket.onEvent(onWsEvent);
@@ -1560,13 +1572,24 @@ void http_setup() {
   httpServer.onNotFound(http_handle_not_found);
 
   httpServer.begin();
+
+  // Setup a 10Hz timer
+  _timer2 = timerBegin(1, 80, true);
+  timerAttachInterrupt(_timer2, &timer2_isr, true);
+  timerAlarmWrite(_timer2, 1000000/10, true);
+  timerAlarmEnable(_timer2);
 }
 
+void http_run() {
 
+  if (_interruptCounter2 > 0) {
 
-inline void http_run() {
-  if (millis() % 250 == 0)
+    portENTER_CRITICAL(&_timer2Mux);
+    _interruptCounter2 = 0;
+    portEXIT_CRITICAL(&_timer2Mux);
+
     webSocket.binaryAll(display.buffer, 128*64);
+  }
 }
 
 #endif  // WIFI
