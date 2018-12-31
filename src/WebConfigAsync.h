@@ -388,13 +388,19 @@ String get_live_page() {
 
   page += get_top_page(1);
 
-  page += F("<canvas id='screen' height='128' width='256'>");
+  page += F("<a id='zoom1' href='#' role='button'>1x</a> ");
+  page += F("<a id='zoom2' href='#' role='button'>2x</a> ");
+  page += F("<a id='zoom4' href='#' role='button'>4x</a> ");
+  page += F("<a id='invert' href='#' role='button'>Invert</a><p></p>");
+  page += F("<canvas id='screen' height='64' width='128'>");
   page += F("Sorry, your browser does not support canvas.");
   page += F("</canvas>");
   page += F("<div id='myDiv'>");
   page += F("</div>");
 
   page += F("<script>");
+  page += F("var invert = 0;");
+  page += F("var zoom = 1;");
   page += F("var con = new WebSocket('ws://' + location.hostname + ':80/ws');");
   page += F("con.binaryType = 'arraybuffer';");
   page += F("con.onopen = function () {");
@@ -411,11 +417,40 @@ String get_live_page() {
   page += F("var x=0; y=0;");
   page += F("for (y=0; y<64; y++)");
   page += F("  for (x=0; x<128; x++)");
-  page += F("    ((dv.getUint8(x+Math.floor(y/8)*128) & (1<<(y&7))) == 0) ? context.clearRect(x*2,y*2,2,2) : context.fillRect(x*2,y*2,2,2);");
+  page += F("    if ((dv.getUint8(x+Math.floor(y/8)*128) & (1<<(y&7))) == 0){");
+  page += F("      (invert == 0) ? context.clearRect(x*zoom,y*zoom,zoom,zoom) : context.fillRect(x*zoom,y*zoom,zoom,zoom);");
+  page += F("    } else {(invert == 0) ? context.fillRect(x*zoom,y*zoom,zoom,zoom) : context.clearRect(x*zoom,y*zoom,zoom,zoom);}");
   page += F("};");
   page += F("con.onclose = function () {");
   page += F("console.log('WebSocket connection closed');");
   page += F("};");
+
+  page += F("var a1 = document.getElementById('invert');");
+  page += F("a1.onclick = function() { if (invert == 0 ) invert = 1; else invert = 0; return false; };");
+  page += F("var a2 = document.getElementById('zoom1');");
+  page += F("a2.onclick = function() {");
+  page += F("zoom = 1;");
+  page += F("var canvas=document.getElementById('screen');");
+  page += F("var context=canvas.getContext('2d');");
+  page += F("context.canvas.width = 128*zoom;");
+  page += F("context.canvas.height = 64*zoom;");
+  page += F("return false; };");
+  page += F("var a3 = document.getElementById('zoom2');");
+  page += F("a3.onclick = function() {");
+  page += F("zoom = 2;");
+  page += F("var canvas=document.getElementById('screen');");
+  page += F("var context=canvas.getContext('2d');");
+  page += F("context.canvas.width = 128*zoom;");
+  page += F("context.canvas.height = 64*zoom;");
+  page += F("return false; };");
+  page += F("var a4 = document.getElementById('zoom4');");
+  page += F("a4.onclick = function() {");
+  page += F("zoom = 4;");
+  page += F("var canvas=document.getElementById('screen');");
+  page += F("var context=canvas.getContext('2d');");
+  page += F("context.canvas.width = 128*zoom;");
+  page += F("context.canvas.height = 64*zoom;");
+  page += F("return false; };");
 
   page += F("if (!!window.EventSource) {");
   page += F("var source = new EventSource('/events');");
@@ -1532,7 +1567,7 @@ hw_timer_t   *_timer2 = NULL;
 portMUX_TYPE  _timer2Mux = portMUX_INITIALIZER_UNLOCKED;
 volatile int  _interruptCounter2 = 0;
 
-void IRAM_ATTR timer2_isr()
+void IRAM_ATTR onTimer2_isr()
 {
   portENTER_CRITICAL_ISR(&_timer2Mux);
   _interruptCounter2++;
@@ -1575,8 +1610,8 @@ void http_setup() {
 
   // Setup a 10Hz timer
   _timer2 = timerBegin(1, 80, true);
-  timerAttachInterrupt(_timer2, &timer2_isr, true);
-  timerAlarmWrite(_timer2, 1000000/10, true);
+  timerAttachInterrupt(_timer2, &onTimer2_isr, true);
+  timerAlarmWrite(_timer2, 1000000/5, true);
   timerAlarmEnable(_timer2);
 }
 
