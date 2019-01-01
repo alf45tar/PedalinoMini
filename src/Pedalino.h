@@ -26,6 +26,9 @@ const byte pinA[] = {2};
 
 #ifdef ARDUINO_ARCH_ESP32
 #define PEDALS             6
+// https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+// GPIOs 34 to 39 are GPIs – input only pins.
+// These pins don’t have internal pull-ups or pull-down resistors. 
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
 #endif
