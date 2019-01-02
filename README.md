@@ -50,11 +50,13 @@ The shortest bill of materials ever: an ESP32 board and a OLED display. That's i
     - Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
   - OLED I2C 0.96" display 128x64 pixels SSD1306 based
 
-## PedalinoMini™ Breadboard Prototype
+## PedalinoMini™ Breadboard Prototype example
+
+The breadboard shows the connection between the ESP32 board and the OLED display. Momentary switches are just an example.
 
 ![Breadboard](https://github.com/alf45tar/PedalinoMini/blob/master/images/PedalinoMini_bb.png "Breadboard")
 
-## OLED display screenshot
+## OLED display screenshots
 
 Home screen|Device info|MIDI message
 -----|-----|-----
