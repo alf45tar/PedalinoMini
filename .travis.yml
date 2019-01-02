@@ -15,4 +15,4 @@ install:
     - platformio update
 
 script:
-    - platformio ci --project-conf=platformio.ini
+    - platformio ci -v --project-conf=platformio.ini
