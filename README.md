@@ -52,7 +52,7 @@ The shortest bill of materials ever: an ESP32 board and a OLED display. That's i
 
 ## PedalinoMini™ Breadboard Prototype example
 
-The breadboard shows the connection between the ESP32 board and the OLED display. Momentary switches are just an example.
+The breadboard shows the connection (4 wires only) between the ESP32 board and the OLED display. Momentary switches are just an example.
 
 ![Breadboard](https://github.com/alf45tar/PedalinoMini/blob/master/images/PedalinoMini_bb.png "Breadboard")
 
