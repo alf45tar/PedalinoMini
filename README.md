@@ -20,7 +20,6 @@ Open source wireless MIDI foot controller for guitarists and more.
 - OSC to MIDI and vicecersa
 - Any number of pedals of any type in any order
 - Auto-sensing footswitches and expression pedals
-- Shortest bill of materials
 
 ## Features
 
@@ -45,6 +44,8 @@ The app made with [Blynk](https://www.blynk.cc) is on the way.
 
 ## Bill of materials
 
+The shortest bill of materials ever: an ESP32 board and a OLED display. That's it.
+
   - Any ESP32 board supported by [Arduino core for ESP32 WiFi chip](https://github.com/espressif/arduino-esp32)
     - Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
   - OLED I2C 0.96" display 128x64 pixels SSD1306 based
@@ -55,20 +56,13 @@ The app made with [Blynk](https://www.blynk.cc) is on the way.
 
 ## OLED display screenshot
 
-### Home screen
-![OLED Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-home.png "Screen 1")
+Home screen|Device info|MIDI message
+-----|-----|-----
+![OLED Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-home.png "Screen 1")|![OLED Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-device.png "Screen 2")|![OLED Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi.png "Screen 3")
 
-### Device info
-![OLED Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-device.png "Screen 2")
-
-### MIDI message sent
-![OLED Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi.png "Screen 3")
-
-### MIDI Clock screen
-![OLED Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi-clock.png "Screen 4")
-
-### MIDI Time Code screen
-![OLED Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-mtc.png "Screen 5")
+MIDI Clock|MIDI Time Code
+-----|-----
+![OLED Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi-clock.png "Screen 4")|![OLED Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-mtc.png "Screen 5")
 
 ## WEB user interface
 
