@@ -1,12 +1,72 @@
-# PedalinoMini
 [![Build Status](https://travis-ci.org/alf45tar/PedalinoMini.svg?branch=master)](https://travis-ci.org/alf45tar/PedalinoMini)
 
-![OLED Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-home.png "Screen 1")
-![OLED Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-device.png "Screen 2")
+# PedalinoMini™
 
-![OLED Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi.png "Screen 3")
-![OLED Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi-clock.png "Screen 4")
-![OLED Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-mtc.png "Screen 5")
+Open source wireless MIDI foot controller for guitarists and more.
+
+- Plug-and-play with any MIDI-compatible app on iOS 8 and above as well as OS X Yosemite and above.
+- High customizable using iOS or Android app
+- Bluetooth and WiFI MIDI interface
+- No extra drivers to connect Windows, macOS, iOS (iPad/iPhone) and Android
+- Bluetooth LE MIDI (iOS and macOS compatible)
+- Network MIDI (aka AppleMIDI or RTP-MIDI)
+- ipMIDI
+- Open Sound Control (OSC)
+- IEEE 802.11 b/g/n Wi-Fi 2.4 GHZ with WPA/WPA2 authentication
+- Bluetooth Low Energy 4.0
+- MIDI routing
+- MIDI clock master and slave
+- MIDI Time Code (MTC) master and slave
+- OSC to MIDI and vicecersa
+- Any number of pedals of any type in any order
+- Auto-sensing footswitches and expression pedals
+
+## Features
+
+- Support for digital foot switches (momentary or latch), analog expression pedals and jog wheels (rotary encoders)
+- 10 banks of 6 controllers each
+- 3 user configuration profiles
+- Each port can connect 1 expression pedal or up to 3 foot switches for a maximum of 18 foot switches.
+- MIDI output via AppleMIDI (also known as RTP-MIDI) or ipMIDI via Wi-Fi
+- Send the following MIDI events: Program Change, Control Code, Note On/Off or Pitch Bend
+- MIDI channel, MIDI note, MIDI control code, MIDI program change can be configured by each pedal and by each bank
+- Switch debouncing and analog noise suppression without decreasing responsiveness
+- Invert polarity via software
+- Individual automatic calibration of expression pedals. Manual fine tuning is not usually requested.
+- Transform a linear expression pedal into log expression pedal and vice versa
+- Responsive and mobile-first configuration web interface (http://pedalino.local)
+- Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
+- Firmware update via HTTP (<http://pedalino.local/update>)
+
+## iOS and Android App
+
+The app made with [Blynk](https://www.blynk.cc) is on the way.
+
+## Bill of materials
+
+The shortest bill of materials ever: an ESP32 board and a OLED display. That's it.
+
+  - Any ESP32 board supported by [Arduino core for ESP32 WiFi chip](https://github.com/espressif/arduino-esp32)
+    - Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
+  - OLED I2C 0.96" display 128x64 pixels SSD1306 based
+
+## PedalinoMini™ Breadboard Prototype example
+
+The breadboard shows the connection (4 wires only) between the ESP32 board and the OLED display. Momentary switches are just an example.
+
+![Breadboard](https://github.com/alf45tar/PedalinoMini/blob/master/images/PedalinoMini_bb.png "Breadboard")
+
+## OLED display screenshots
+
+Home screen|Device info|MIDI message
+-----|-----|-----
+![OLED Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-home.png "Screen 1")|![OLED Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-device.png "Screen 2")|![OLED Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi.png "Screen 3")
+
+MIDI Clock|MIDI Time Code
+-----|-----
+![OLED Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi-clock.png "Screen 4")|![OLED Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-mtc.png "Screen 5")
+
+## WEB user interface
 
 ![WEB Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-home.png "Screen 1")
 
