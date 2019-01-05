@@ -443,6 +443,8 @@ void drawRect (OLEDDisplay *display, int16_t x0, int16_t y0, int16_t x1, int16_t
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
   if (millis() < endMillis2) {
+    ui.disableAutoTransition();
+    ui.switchToFrame(0);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     switch (m1) {
         case midi::NoteOn:
@@ -570,7 +572,6 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     display->setFont(ArialMT_Plain_24);
     display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
     display->drawString(64 + x, 32 + y, buf);
-    events.send(buf, "mtc");
     ui.disableAutoTransition();
   }
   else {
@@ -581,6 +582,13 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->drawString(110 + x, 16 + y, String("TM"));
     ui.enableAutoTransition();
+  }
+  
+  if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
+      MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
+    char buf[12];
+    sprintf(buf, "%02d:%02d:%02d:%02d", MTC.getHours(), MTC.getMinutes(), MTC.getSeconds(), MTC.getFrames());
+    events.send(buf, "mtc");
   }
 }
 
@@ -706,7 +714,7 @@ void display_ui_update_enable()
 void display_update(bool force = false)
 {
   if (uiUpdate) {
-    if (millis() < endMillis2) ui.switchToFrame(0);
+    //if (millis() < endMillis2) ui.switchToFrame(0);
     int remainingTimeBudget = ui.update();
   }
 }

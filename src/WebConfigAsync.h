@@ -118,12 +118,12 @@ String get_top_page(byte p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-azvvU9xKluwHFJ0Cpgtf0CYzK7zgtOznnzxV4924X1w=' crossorigin='anonymous'>");
   #else
-    page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css' integrity='sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS' crossorigin='anonymous'>");
   #endif
   } else {
-    page += F("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/4.1.3/");
+    page += F("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/4.2.1/");
     page += theme;
     page += F("/bootstrap.min.css' crossorigin='anonymous'>");
   }
@@ -134,7 +134,8 @@ String get_top_page(byte p = 0) {
   page += F("<div class='container-fluid'>");
 
   page += F("<nav class='navbar navbar-expand navbar-light bg-light'>");
-  page += F("<a class='navbar-brand' href='/'>Pedalino&trade;</a>");
+  page += F("<a class='navbar-brand' href='/'>");
+  page += F("<img src='/favicon.ico' width='30' height='30' class='d-inline-block align-top' alt=''>Pedalino&trade;</a>");
   page += F("<button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarNavDropdown' aria-controls='navbarNavDropdown' aria-expanded='false' aria-label='Toggle navigation'>");
   page += F("<span class='navbar-toggler-icon'></span>");
   page += F("</button>");
@@ -209,12 +210,12 @@ String get_footer_page() {
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
   page += F("<script src='/js/jquery-3.3.1.slim.min.js' integrity='sha256-o3xvfVoAnalAlD3CPebt5QWZ3yLdooNGruu0ZJvZy0U=' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/popper.min.js' integrity='sha256-0rnynqH0KmCovrHAT3aGgofypI1uxQ+znWuIhYSgPEk=' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-VsEqElsCHSGmnmHXGQzvoWjWwoznFSZc6hs7ARLRacQ=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/popper.min.js' integrity='sha256-WHwIASWxNdKakx7TceUP/BqWQYMcEIfeLNdFMoFfRWA=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-63ld7aiYP6UxBifJWEzz87ldJyVnETUABZAYs5Qcsmc=' crossorigin='anonymous'></script>");
 #else
   page += F("<script src='https://code.jquery.com/jquery-3.3.1.slim.min.js' integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo' crossorigin='anonymous'></script>");
-  page += F("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js' integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49' crossorigin='anonymous'></script>");
-  page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>");
+  page += F("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js' integrity='sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut' crossorigin='anonymous'></script>");
+  page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js' integrity='sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k' crossorigin='anonymous'></script>");
 #endif
   page += F("</body>");
   page += F("</html>");
@@ -388,15 +389,78 @@ String get_live_page() {
 
   page += get_top_page(1);
 
+  page += F("<div aria-live='polite' aria-atomic='true' style='position: relative; min-height: 0px;'>");
+  page += F("<div class='toast' style='position: absolute; top: 0; right: 0;'>");
+  page += F("<div class='toast-header'>");
+  page += F("<strong class='mr-auto'>Remote Display</strong>");
+  page += F("<button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>");
+  page += F("<span aria-hidden='true'>&times;</span>");
+  page += F("</button>");
+  page += F("</div>");
+  page += F("<div class='toast-body'>");
+  page += F("<canvas id='screen' height='64' width='128'>");
+  page += F("Sorry, your browser does not support canvas.");
+  page += F("</canvas><br><small>");
   page += F("<a id='zoom1' href='#' role='button'>1x</a> ");
   page += F("<a id='zoom2' href='#' role='button'>2x</a> ");
   page += F("<a id='zoom4' href='#' role='button'>4x</a> ");
-  page += F("<a id='invert' href='#' role='button'>Invert</a><p></p>");
-  page += F("<canvas id='screen' height='64' width='128'>");
-  page += F("Sorry, your browser does not support canvas.");
-  page += F("</canvas>");
-  page += F("<div id='myDiv'>");
+  page += F("<a id='invert' href='#' role='button'>Invert</a></small>");
   page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='btn-group btn-group-toggle' data-toggle='buttons'>");
+  for (unsigned int i = 1; i <= BANKS; i++) {
+    page += F("<label class='btn btn-outline-primary'>");
+    page += F("<input type='radio' name='options' autocomplete='off' id='bank");
+    page += String(i) + F("'>") + String(i);
+    page += F("</label>");
+  }
+  page += F("</div>");
+  page += F("<p></p>");
+  
+  page += F("<div class='btn-group'>");
+  page += F("<button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
+  page += F("MIDI Clock</button>");
+  page += F("<div class='dropdown-menu'>");
+  page += F("<a id='clock-master' class='dropdown-item' href='#'>Master</a>");
+  page += F("<a id='clock-slave'  class='dropdown-item' href='#'>Slave</a>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='btn-group'>");
+  page += F("<button type='button' class='btn btn-outline-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
+  page += F("Time Signature</button>");
+  page += F("<div class='dropdown-menu'>");
+  page += F("<a class='dropdown-item' href='#'>4/4 Common Time</a>");
+  page += F("<a class='dropdown-item' href='#'>3/4 Waltz Time</a>");
+  page += F("<a class='dropdown-item' href='#'>2/4 March Time</a>");
+  page += F("<a class='dropdown-item' href='#'>3/8</a>");
+  page += F("<a class='dropdown-item' href='#'>6/8</a>");
+  page += F("<a class='dropdown-item' href='#'>9/8</a>");
+  page += F("<a class='dropdown-item' href='#'>12/8</a>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='btn-group'>");
+  page += F("<button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
+  page += F("MTC</button>");
+  page += F("<div class='dropdown-menu'>");
+  page += F("<a id='mtc-master' class='dropdown-item' href='#'>Master</a>");
+  page += F("<a id='mtc-slave' class='dropdown-item' href='#'>Slave</a>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<p></p>");
+  
+  page += F("<div>");
+  page += F("<h1 id='mtc'></h1>");
+  page += F("</div>");
+  page += F("<p></p>");
+
+  page += F("<button id='start' type='button' class='btn btn-outline-primary'>Start</button>");
+  page += F("<button id='stop' type='button' class='btn btn-outline-primary'>Stop</button>");
+  page += F("<button id='continue' type='button' class='btn btn-outline-primary'>Continue</button>");
+  page += F("<button id='tap' type='button' class='btn btn-outline-primary'>Tap</button>");
 
   page += F("<script>");
   page += F("var invert = 0;");
@@ -425,32 +489,54 @@ String get_live_page() {
   page += F("console.log('WebSocket connection closed');");
   page += F("};");
 
-  page += F("var a1 = document.getElementById('invert');");
-  page += F("a1.onclick = function() { if (invert == 0 ) invert = 1; else invert = 0; return false; };");
-  page += F("var a2 = document.getElementById('zoom1');");
-  page += F("a2.onclick = function() {");
-  page += F("zoom = 1;");
+  for (unsigned int i = 1; i <= BANKS; i++) {
+    page += F("document.getElementById('bank");
+    page += String(i) + F("').onchange = function() {");
+    page += F("con.send('bank");
+    page += String(i) + F("');");
+    page += F("return false; };");
+  }
+
+  page += F("function resizeScreen(z) {");
+  page += F("zoom = z;");
   page += F("var canvas=document.getElementById('screen');");
   page += F("var context=canvas.getContext('2d');");
   page += F("context.canvas.width = 128*zoom;");
   page += F("context.canvas.height = 64*zoom;");
+  page += F("};");
+
+  page += F("document.getElementById('invert').onclick = function() {");
+  page += F("if (invert == 0 ) invert = 1; else invert = 0; return false; };");
+  page += F("document.getElementById('zoom1').onclick = function() { resizeScreen(1); return false; };");
+  page += F("document.getElementById('zoom2').onclick = function() { resizeScreen(2); return false; };");
+  page += F("document.getElementById('zoom4').onclick = function() { resizeScreen(4); return false; };");
+  
+  page += F("document.getElementById('clock-master').onclick = function() {");
+  page += F("con.send('clock-master');");
   page += F("return false; };");
-  page += F("var a3 = document.getElementById('zoom2');");
-  page += F("a3.onclick = function() {");
-  page += F("zoom = 2;");
-  page += F("var canvas=document.getElementById('screen');");
-  page += F("var context=canvas.getContext('2d');");
-  page += F("context.canvas.width = 128*zoom;");
-  page += F("context.canvas.height = 64*zoom;");
+  page += F("document.getElementById('clock-slave').onclick = function() {");
+  page += F("con.send('clock-slave');");
   page += F("return false; };");
-  page += F("var a4 = document.getElementById('zoom4');");
-  page += F("a4.onclick = function() {");
-  page += F("zoom = 4;");
-  page += F("var canvas=document.getElementById('screen');");
-  page += F("var context=canvas.getContext('2d');");
-  page += F("context.canvas.width = 128*zoom;");
-  page += F("context.canvas.height = 64*zoom;");
+  page += F("document.getElementById('mtc-master').onclick = function() {");
+  page += F("con.send('mtc-master');");
   page += F("return false; };");
+  page += F("document.getElementById('mtc-slave').onclick = function() {");
+  page += F("con.send('mtc-slave');");
+  page += F("return false; };");
+  
+  page += F("document.getElementById('start').onclick = function() {");
+  page += F("con.send('start');");
+  page += F("return false; };");
+  page += F("document.getElementById('stop').onclick = function() {");
+  page += F("con.send('stop');");
+  page += F("return false; };");
+  page += F("document.getElementById('continue').onclick = function() {");
+  page += F("con.send('continue');");
+  page += F("return false; };");
+  page += F("document.getElementById('tap').onclick = function() {");
+  page += F("con.send('tap');");
+  page += F("return false; };");
+
 
   page += F("if (!!window.EventSource) {");
   page += F("var source = new EventSource('/events');");
@@ -466,8 +552,8 @@ String get_live_page() {
   page += F("console.log('Event: ', e.data);");
   page += F("}, false);");
   page += F("source.addEventListener('mtc', function(e) {");
-  page += F("var myDiv = document.getElementById('myDiv');");
-	page += F("myDiv.innerHTML = e.data;");
+  page += F("var mtc = document.getElementById('mtc');");
+	page += F("mtc.innerHTML = e.data;");
   page += F("}, false);");
   page += F("source.addEventListener('screen', function(e) {");
   page += F("}, false);");
@@ -1520,6 +1606,34 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       if(info->opcode == WS_TEXT){
         data[len] = 0;
         DPRINT("%s\n", (char*)data);
+        if      (strcmp((const char *)data, "start") == 0)
+          mtc_start();
+        else if (strcmp((const char *)data, "stop") == 0)
+          mtc_stop();
+        else if (strcmp((const char *)data, "continue") == 0)
+          mtc_continue();
+        else if (strcmp((const char *)data, "tap") == 0)
+          mtc_tap();
+        else if (strcmp((const char *)data, "clock-master") == 0) {
+          MTC.setMode(MidiTimeCode::SynchroClockMaster);
+          bpm = (bpm == 0) ? 120 : bpm;
+          MTC.setBpm(bpm);
+          currentMidiTimeCode = PED_MIDI_CLOCK_MASTER;
+        }
+        else if (strcmp((const char *)data, "clock-slave") == 0) {
+          MTC.setMode(MidiTimeCode::SynchroClockSlave);
+          currentMidiTimeCode = PED_MIDI_CLOCK_SLAVE;
+          bpm = 0;
+        }
+        else if (strcmp((const char *)data, "mtc-master") == 0) {
+          MTC.setMode(MidiTimeCode::SynchroMTCMaster);
+          MTC.sendPosition(0, 0, 0, 0);
+          currentMidiTimeCode = PED_MTC_MASTER_24;
+        }
+        else if (strcmp((const char *)data, "mtc-slave") == 0) {
+          MTC.setMode(MidiTimeCode::SynchroMTCSlave);
+          currentMidiTimeCode = PED_MTC_SLAVE;
+        } 
       } else {
         for(size_t i=0; i < info->len; i++){
           DPRINT("%02x ", data[i]);
