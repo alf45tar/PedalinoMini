@@ -32,6 +32,11 @@ void ota_begin(const char *hostname) {
   ArduinoOTA.begin();
 
   ArduinoOTA.onStart([]() {
+    blynk_disconnect();
+    webSocket.enable(false);
+    webSocket.textAll("OTA Update Started");
+    webSocket.closeAll();
+
     display.clear();
     display.setFont(ArialMT_Plain_10);
     display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);

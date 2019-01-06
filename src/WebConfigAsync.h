@@ -389,8 +389,8 @@ String get_live_page() {
 
   page += get_top_page(1);
 
-  page += F("<div aria-live='polite' aria-atomic='true' style='position: relative; min-height: 0px;'>");
-  page += F("<div class='toast' style='position: absolute; top: 0; right: 0;'>");
+  page += F("<div aria-live='polite' aria-atomic='true' style='position: relative;'>");
+  page += F("<div id='remotedisplay' class='toast' style='position: absolute; top: 0; right: 0;' data-autohide='false'>");
   page += F("<div class='toast-header'>");
   page += F("<strong class='mr-auto'>Remote Display</strong>");
   page += F("<button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>");
@@ -409,6 +409,10 @@ String get_live_page() {
   page += F("</div>");
   page += F("</div>");
 
+  page += F("<div id='live'>");
+  page += F("<a id='showremotedisplay' href='#' role='button'>Remote Display</a>");
+  page += F("<p></p>");
+  page += F("<small>Bank</small><br>");
   page += F("<div class='btn-group btn-group-toggle' data-toggle='buttons'>");
   for (unsigned int i = 1; i <= BANKS; i++) {
     page += F("<label class='btn btn-outline-primary'>");
@@ -432,13 +436,13 @@ String get_live_page() {
   page += F("<button type='button' class='btn btn-outline-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
   page += F("Time Signature</button>");
   page += F("<div class='dropdown-menu'>");
-  page += F("<a class='dropdown-item' href='#'>4/4 Common Time</a>");
-  page += F("<a class='dropdown-item' href='#'>3/4 Waltz Time</a>");
-  page += F("<a class='dropdown-item' href='#'>2/4 March Time</a>");
-  page += F("<a class='dropdown-item' href='#'>3/8</a>");
-  page += F("<a class='dropdown-item' href='#'>6/8</a>");
-  page += F("<a class='dropdown-item' href='#'>9/8</a>");
-  page += F("<a class='dropdown-item' href='#'>12/8</a>");
+  page += F("<a id='4_4' class='dropdown-item' href='#'>4/4 Common Time</a>");
+  page += F("<a id='3_4' class='dropdown-item' href='#'>3/4 Waltz Time</a>");
+  page += F("<a id='2_4' class='dropdown-item' href='#'>2/4 March Time</a>");
+  page += F("<a id='3_8' class='dropdown-item' href='#'>3/8</a>");
+  page += F("<a id='6_8' class='dropdown-item' href='#'>6/8</a>");
+  page += F("<a id='9_8' class='dropdown-item' href='#'>9/8</a>");
+  page += F("<a id='12_8' class='dropdown-item' href='#'>12/8</a>");
   page += F("</div>");
   page += F("</div>");
 
@@ -453,6 +457,9 @@ String get_live_page() {
   page += F("<p></p>");
   
   page += F("<div>");
+  page += F("<h1 id='bpm'></h1> bpm");
+  page += F("<h1 id='timesignature'></h1>");
+  page += F("<h1 id='beat'></h1>");
   page += F("<h1 id='mtc'></h1>");
   page += F("</div>");
   page += F("<p></p>");
@@ -461,14 +468,18 @@ String get_live_page() {
   page += F("<button id='stop' type='button' class='btn btn-outline-primary'>Stop</button>");
   page += F("<button id='continue' type='button' class='btn btn-outline-primary'>Continue</button>");
   page += F("<button id='tap' type='button' class='btn btn-outline-primary'>Tap</button>");
+  page += F("</div>");
 
   page += F("<script>");
+  page += F("var isplaying = 0;");
   page += F("var invert = 0;");
   page += F("var zoom = 1;");
   page += F("var con = new WebSocket('ws://' + location.hostname + ':80/ws');");
   page += F("con.binaryType = 'arraybuffer';");
   page += F("con.onopen = function () {");
-  page += F("console.log('WebSocket connection open');");  
+  page += F("console.log('WebSocket connection open');");
+  page += F("$('#live').find('input, button, submit, textarea, select').removeAttr('disabled');");
+  page += F("$('#live').find('a').removeClass('disablehyper').unbind('click');");
   page += F("};");
   page += F("con.onerror = function (error) {");
   page += F("console.log('WebSocket Error ', error);");
@@ -487,6 +498,8 @@ String get_live_page() {
   page += F("};");
   page += F("con.onclose = function () {");
   page += F("console.log('WebSocket connection closed');");
+  page += F("$('#live').find('input, button, submit, textarea, select').attr('disabled', 'disabled');");
+  page += F("$('#live').find('a').addClass('disablehyper').click(function (e) { e.preventDefault(); });");
   page += F("};");
 
   for (unsigned int i = 1; i <= BANKS; i++) {
@@ -496,6 +509,10 @@ String get_live_page() {
     page += String(i) + F("');");
     page += F("return false; };");
   }
+
+  page += F("document.getElementById('showremotedisplay').onclick = function() {");
+  page += F("$('#remotedisplay').toast('show');");
+  page += F("return false; };");
 
   page += F("function resizeScreen(z) {");
   page += F("zoom = z;");
@@ -522,6 +539,28 @@ String get_live_page() {
   page += F("return false; };");
   page += F("document.getElementById('mtc-slave').onclick = function() {");
   page += F("con.send('mtc-slave');");
+  page += F("return false; };");
+  
+  page += F("document.getElementById('4_4').onclick = function() {");
+  page += F("con.send('4/4');");
+  page += F("return false; };");
+  page += F("document.getElementById('3_4').onclick = function() {");
+  page += F("con.send('3/4');");
+  page += F("return false; };");
+  page += F("document.getElementById('2_4').onclick = function() {");
+  page += F("con.send('2/4');");
+  page += F("return false; };");
+  page += F("document.getElementById('3_8').onclick = function() {");
+  page += F("con.send('3/8');");
+  page += F("return false; };");
+  page += F("document.getElementById('6_8').onclick = function() {");
+  page += F("con.send('6/8');");
+  page += F("return false; };");
+  page += F("document.getElementById('9_8').onclick = function() {");
+  page += F("con.send('9/8');");
+  page += F("return false; };");
+  page += F("document.getElementById('12_8').onclick = function() {");
+  page += F("con.send('12/8');");
   page += F("return false; };");
   
   page += F("document.getElementById('start').onclick = function() {");
@@ -551,10 +590,19 @@ String get_live_page() {
   page += F("source.addEventListener('message', function(e) {");
   page += F("console.log('Event: ', e.data);");
   page += F("}, false);");
-  page += F("source.addEventListener('mtc', function(e) {");
-  page += F("var mtc = document.getElementById('mtc');");
-	page += F("mtc.innerHTML = e.data;");
+  page += F("source.addEventListener('play', function(e) { isplaying = e.data; }, false);");
+  page += F("source.addEventListener('timesignature', function(e) {");
+  page += F("document.getElementById('timesignature').innerHTML = e.data;");
   page += F("}, false);");
+  page += F("source.addEventListener('bpm', function(e) {");
+  page += F("document.getElementById('bpm').innerHTML = e.data;");
+  page += F("}, false);");
+  page += F("source.addEventListener('beat', function(e) {");
+  page += F("document.getElementById('beat').innerHTML = e.data;");
+  page += F("}, false);");
+  page += F("source.addEventListener('mtc', function(e) {");
+  page += F("document.getElementById('mtc').innerHTML = e.data;");
+	page += F("}, false);");
   page += F("source.addEventListener('screen', function(e) {");
   page += F("}, false);");
   page += F("}");
@@ -1504,6 +1552,9 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
   if (!index) {
     // Disconnect, not to interfere with OTA process
     blynk_disconnect();
+    webSocket.enable(false);
+    webSocket.textAll("Web Update Started");
+    webSocket.closeAll();
 
     DPRINT("Update Start: %s\n", filename.c_str());
     display_ui_update_disable();
@@ -1588,6 +1639,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
     DPRINT("ws[%s][%u] connect\n", server->url(), client->id());
     //client->printf("Hello Client %u :)", client->id());
     //client->ping();
+    client->keepAlivePeriod(1);
   } else if(type == WS_EVT_DISCONNECT){
     //client disconnected
     DPRINT("ws[%s][%u] disconnect: %u\n", server->url(), client->id());
@@ -1633,6 +1685,39 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         else if (strcmp((const char *)data, "mtc-slave") == 0) {
           MTC.setMode(MidiTimeCode::SynchroMTCSlave);
           currentMidiTimeCode = PED_MTC_SLAVE;
+        }
+        else if (strcmp((const char *)data, "4/4") == 0) {
+          timeSignature = PED_TIMESIGNATURE_4_4;
+          MTC.setBeat(4);
+        }
+        else if (strcmp((const char *)data, "3/4") == 0) {
+          timeSignature = PED_TIMESIGNATURE_3_4;
+          MTC.setBeat(3);
+        }
+        else if (strcmp((const char *)data, "2/4") == 0) {
+          timeSignature = PED_TIMESIGNATURE_2_4;
+          MTC.setBeat(2);
+        }
+        else if (strcmp((const char *)data, "3/8") == 0) {
+          timeSignature = PED_TIMESIGNATURE_3_8;
+          MTC.setBeat(3);
+        }
+        else if (strcmp((const char *)data, "6/8") == 0) {
+          timeSignature = PED_TIMESIGNATURE_6_8;
+          MTC.setBeat(3);
+        }
+        else if (strcmp((const char *)data, "9/8") == 0) {
+          timeSignature = PED_TIMESIGNATURE_9_8;
+          MTC.setBeat(3);
+        }
+        else if (strcmp((const char *)data, "12/8") == 0) {
+          timeSignature = PED_TIMESIGNATURE_12_8;
+          MTC.setBeat(3);
+        }
+        else {
+          byte b;
+          if (sscanf((const char *)data, "bank%d", &b) == 1)
+            currentBank = constrain(b - 1, 0, BANKS);
         } 
       } else {
         for(size_t i=0; i < info->len; i++){
@@ -1725,7 +1810,7 @@ void http_setup() {
   // Setup a 10Hz timer
   _timer2 = timerBegin(1, 80, true);
   timerAttachInterrupt(_timer2, &onTimer2_isr, true);
-  timerAlarmWrite(_timer2, 1000000/5, true);
+  timerAlarmWrite(_timer2, 1000000/10, true);
   timerAlarmEnable(_timer2);
 }
 

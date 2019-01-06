@@ -533,10 +533,27 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     */
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(block);
-    display->drawString( 68 + x, 16 + x, String(0));
-    display->drawString( 88 + x, 16 + x, String(0));
-    display->drawString(108 + x, 16 + x, String(0));
-    display->drawString(128 + x, 16 + x, String(0));
+    switch (timeSignature) {
+      case PED_TIMESIGNATURE_2_4:
+        display->drawString( 68 + x, 16 + x, String(0));
+        display->drawString( 88 + x, 16 + x, String(0));
+        break;
+      case PED_TIMESIGNATURE_4_4:
+        display->drawString( 68 + x, 16 + x, String(0));
+        display->drawString( 88 + x, 16 + x, String(0));
+        display->drawString(108 + x, 16 + x, String(0));
+        display->drawString(128 + x, 16 + x, String(0));
+        break;
+      case PED_TIMESIGNATURE_3_4:
+      case PED_TIMESIGNATURE_3_8:
+      case PED_TIMESIGNATURE_6_8:
+      case PED_TIMESIGNATURE_9_8:
+      case PED_TIMESIGNATURE_12_8:
+        display->drawString( 68 + x, 16 + x, String(0));
+        display->drawString( 88 + x, 16 + x, String(0));
+        display->drawString(108 + x, 16 + x, String(0));
+        break;
+    }
     switch (MTC.getBeat()) {
       case 0:
         if (MTC.isPlaying())
@@ -584,11 +601,49 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     ui.enableAutoTransition();
   }
   
+  events.send(MTC.isPlaying() ? "1" : "0", "play");
+  
+  if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
+      MTC.getMode() == MidiTimeCode::SynchroClockSlave)  {
+    char buf[4];
+    events.send("", "mtc");
+    sprintf(buf, "%3d", bpm);
+    events.send(buf, "bpm");
+    sprintf(buf, "%d", MTC.getBeat() + 1);
+    events.send(buf, "beat");
+    switch (timeSignature) {
+      case PED_TIMESIGNATURE_2_4:
+        events.send("2/4", "timesignature");
+        break;
+      case PED_TIMESIGNATURE_4_4:
+        events.send("4/4", "timesignature");
+        break;
+      case PED_TIMESIGNATURE_3_4:
+        events.send("3/4", "timesignature");
+        break;
+      case PED_TIMESIGNATURE_3_8:
+        events.send("3/8", "timesignature");
+        break;
+      case PED_TIMESIGNATURE_6_8:
+        events.send("6/8", "timesignature");
+        break;
+      case PED_TIMESIGNATURE_9_8:
+        events.send("9/8", "timesignature");
+        break;
+      case PED_TIMESIGNATURE_12_8:
+        events.send("12/8", "timesignature");
+        break;
+    }
+  }
+
   if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
       MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
     char buf[12];
     sprintf(buf, "%02d:%02d:%02d:%02d", MTC.getHours(), MTC.getMinutes(), MTC.getSeconds(), MTC.getFrames());
     events.send(buf, "mtc");
+    events.send("", "bpm");
+    events.send("", "beat");
+    events.send("", "timesignature");
   }
 }
 
