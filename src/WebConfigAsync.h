@@ -37,6 +37,7 @@ ESP8266HTTPUpdateServer httpUpdater;
 AsyncWebServer          httpServer(80);
 AsyncWebSocket          webSocket("/ws");
 AsyncEventSource        events("/events");    // EventSource is single direction, text-only protocol.
+AsyncWebSocketMessageBuffer *buffer = NULL;
 
 extern const uint8_t bootstrap_min_css_start[]        asm("_binary_data_bootstrap_min_css_gz_start");
 extern const uint8_t bootstrap_min_css_end[]          asm("_binary_data_bootstrap_min_css_gz_end");
@@ -46,6 +47,11 @@ extern const uint8_t jquery_3_3_1_slim_min_js_start[] asm("_binary_data_jquery_3
 extern const uint8_t jquery_3_3_1_slim_min_js_end[]   asm("_binary_data_jquery_3_3_1_slim_min_js_gz_end");
 extern const uint8_t popper_min_js_start[]            asm("_binary_data_popper_min_js_gz_start");
 extern const uint8_t popper_min_js_end[]              asm("_binary_data_popper_min_js_gz_end");
+extern const uint8_t logo_png_start[]                 asm("_binary_data_logo_png_start");
+extern const uint8_t logo_png_end[]                   asm("_binary_data_logo_png_end");
+extern const uint8_t floating_labels_css_start[]      asm("_binary_data_floating_labels_css_gz_start");
+extern const uint8_t floating_labels_css_end[]        asm("_binary_data_floating_labels_css_gz_end");
+
 
 #define FAVICON_ICO_GZ_LEN  621
 const uint8_t favicon_ico_gz[] PROGMEM = {
@@ -106,7 +112,7 @@ String  uiprofile = "1";
 String  uibank    = "1";
 
 
-String get_top_page(byte p = 0) {
+String get_top_page(int p = 0) {
 
   String page = "";
 
@@ -127,15 +133,17 @@ String get_top_page(byte p = 0) {
     page += theme;
     page += F("/bootstrap.min.css' crossorigin='anonymous'>");
   }
+  if (p == -1) page += F("<link rel='stylesheet' href='/css/floating-labels.css'>");
   page += F("</head>");
 
   page += F("<body>");
+  if (p >= 0) {
   page += F("<p></p>");
   page += F("<div class='container-fluid'>");
 
   page += F("<nav class='navbar navbar-expand navbar-light bg-light'>");
   page += F("<a class='navbar-brand' href='/'>");
-  page += F("<img src='/favicon.ico' width='30' height='30' class='d-inline-block align-top' alt=''>Pedalino&trade;</a>");
+  page += F("<img src='/logo.png' width='30' height='30' class='d-inline-block align-top' alt=''>Pedalino&trade;</a>");
   page += F("<button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarNavDropdown' aria-controls='navbarNavDropdown' aria-expanded='false' aria-label='Toggle navigation'>");
   page += F("<span class='navbar-toggler-icon'></span>");
   page += F("</button>");
@@ -162,6 +170,7 @@ String get_top_page(byte p = 0) {
   page += F("<a class='nav-link' href='/options'>Options</a>");
   page += F("</li>");
   page += F("</ul>");
+  }
   if (p > 1) {
     page += F("<form class='form-inline my-2 my-lg-0'>");
     //page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
@@ -219,6 +228,43 @@ String get_footer_page() {
 #endif
   page += F("</body>");
   page += F("</html>");
+
+  return page;
+}
+
+String get_login_page() {
+
+  String page = "";
+
+  page += get_top_page(-1);
+  
+  page += F("<form class='form-signin'>");
+  page += F("<div class='text-center mb-4'>");
+  page += F("<img class='mb-4' src='/logo.png' alt='' width='64' height='64'>");
+  page += F("<h1 class='h3 mb-3 font-weight-normal'>PedalinoMini&trade;</h1>");
+  page += F("<p>Smart wireless MIDI foot controller <a href='https://github.com/alf45tar/PedalinoMini'>More info</a></p>");
+  page += F("</div>");
+
+  page += F("<div class='form-label-group'>");
+  page += F("<input type='text' id='username' class='form-control' placeholder='Username' required='' autofocus=''>");
+  page += F("<label for='username'>Username</label>");
+  page += F("</div>");
+
+  page += F("<div class='form-label-group'>");
+  page += F("<input type='password' id='password' class='form-control' placeholder='Password' required=''>");
+  page += F("<label for='password'>Password</label>");
+  page += F("</div>");
+
+  page += F("<div class='checkbox mb-3'>");
+  page += F("<label>");
+  page += F("<input type='checkbox' value='remember-me'> Remember me");
+  page += F("</label>");
+  page += F("</div>");
+  page += F("<button class='btn btn-lg btn-primary btn-block' type='submit'>Sign in</button>");
+  page += F("<p class='mt-5 mb-3 text-muted text-center'>© 2018-2019</p>");
+  page += F("</form>");
+
+  page += get_footer_page();
 
   return page;
 }
@@ -474,19 +520,24 @@ String get_live_page() {
   page += F("var isplaying = 0;");
   page += F("var invert = 0;");
   page += F("var zoom = 1;");
-  page += F("var con = new WebSocket('ws://' + location.hostname + ':80/ws');");
+  page += F("var con;");
+  page += F("var source;");
+  
+  page += F("function webSocketConnect() {");
+  page += F("con = new WebSocket('ws://' + location.hostname + ':80/ws');");
   page += F("con.binaryType = 'arraybuffer';");
   page += F("con.onopen = function () {");
-  page += F("console.log('WebSocket connection open');");
+  page += F("console.log('WebSocket to Pedalino open');");
   page += F("$('#live').find('input, button, submit, textarea, select').removeAttr('disabled');");
   page += F("$('#live').find('a').removeClass('disablehyper').unbind('click');");
   page += F("};");
   page += F("con.onerror = function (error) {");
-  page += F("console.log('WebSocket Error ', error);");
+  page += F("console.log('WebSocket to Pedalino error ', error);");
   page += F("};");
   page += F("con.onmessage = function (e) {");
   page += F("var data = e.data;");
   page += F("var dv = new DataView(data);");
+  //page += F("if (dv.buffer.byteLength != 1024) return;");
   page += F("var canvas=document.getElementById('screen');");
   page += F("var context=canvas.getContext('2d');");
   page += F("var x=0; y=0;");
@@ -497,88 +548,23 @@ String get_live_page() {
   page += F("    } else {(invert == 0) ? context.fillRect(x*zoom,y*zoom,zoom,zoom) : context.clearRect(x*zoom,y*zoom,zoom,zoom);}");
   page += F("};");
   page += F("con.onclose = function () {");
-  page += F("console.log('WebSocket connection closed');");
+  page += F("console.log('WebSocket to Pedalino closed');");
   page += F("$('#live').find('input, button, submit, textarea, select').attr('disabled', 'disabled');");
   page += F("$('#live').find('a').addClass('disablehyper').click(function (e) { e.preventDefault(); });");
   page += F("};");
-
-  for (unsigned int i = 1; i <= BANKS; i++) {
-    page += F("document.getElementById('bank");
-    page += String(i) + F("').onchange = function() {");
-    page += F("con.send('bank");
-    page += String(i) + F("');");
-    page += F("return false; };");
-  }
-
-  page += F("document.getElementById('showremotedisplay').onclick = function() {");
-  page += F("$('#remotedisplay').toast('show');");
-  page += F("return false; };");
-
-  page += F("function resizeScreen(z) {");
-  page += F("zoom = z;");
-  page += F("var canvas=document.getElementById('screen');");
-  page += F("var context=canvas.getContext('2d');");
-  page += F("context.canvas.width = 128*zoom;");
-  page += F("context.canvas.height = 64*zoom;");
+  page += F("setInterval(keepAliveConnection, 1000);");
   page += F("};");
 
-  page += F("document.getElementById('invert').onclick = function() {");
-  page += F("if (invert == 0 ) invert = 1; else invert = 0; return false; };");
-  page += F("document.getElementById('zoom1').onclick = function() { resizeScreen(1); return false; };");
-  page += F("document.getElementById('zoom2').onclick = function() { resizeScreen(2); return false; };");
-  page += F("document.getElementById('zoom4').onclick = function() { resizeScreen(4); return false; };");
-  
-  page += F("document.getElementById('clock-master').onclick = function() {");
-  page += F("con.send('clock-master');");
-  page += F("return false; };");
-  page += F("document.getElementById('clock-slave').onclick = function() {");
-  page += F("con.send('clock-slave');");
-  page += F("return false; };");
-  page += F("document.getElementById('mtc-master').onclick = function() {");
-  page += F("con.send('mtc-master');");
-  page += F("return false; };");
-  page += F("document.getElementById('mtc-slave').onclick = function() {");
-  page += F("con.send('mtc-slave');");
-  page += F("return false; };");
-  
-  page += F("document.getElementById('4_4').onclick = function() {");
-  page += F("con.send('4/4');");
-  page += F("return false; };");
-  page += F("document.getElementById('3_4').onclick = function() {");
-  page += F("con.send('3/4');");
-  page += F("return false; };");
-  page += F("document.getElementById('2_4').onclick = function() {");
-  page += F("con.send('2/4');");
-  page += F("return false; };");
-  page += F("document.getElementById('3_8').onclick = function() {");
-  page += F("con.send('3/8');");
-  page += F("return false; };");
-  page += F("document.getElementById('6_8').onclick = function() {");
-  page += F("con.send('6/8');");
-  page += F("return false; };");
-  page += F("document.getElementById('9_8').onclick = function() {");
-  page += F("con.send('9/8');");
-  page += F("return false; };");
-  page += F("document.getElementById('12_8').onclick = function() {");
-  page += F("con.send('12/8');");
-  page += F("return false; };");
-  
-  page += F("document.getElementById('start').onclick = function() {");
-  page += F("con.send('start');");
-  page += F("return false; };");
-  page += F("document.getElementById('stop').onclick = function() {");
-  page += F("con.send('stop');");
-  page += F("return false; };");
-  page += F("document.getElementById('continue').onclick = function() {");
-  page += F("con.send('continue');");
-  page += F("return false; };");
-  page += F("document.getElementById('tap').onclick = function() {");
-  page += F("con.send('tap');");
-  page += F("return false; };");
+  page += F("function keepAliveConnection() {");
+  page += F("if (con.readyState == WebSocket.CLOSED) webSocketConnect();");
+  page += F("if (source.readyState == EventSource.CLOSED) eventSourceConnect();");
+  page += F("};");
 
+  page += F("webSocketConnect();");
 
+  page += F("function eventSourceConnect() {");
   page += F("if (!!window.EventSource) {");
-  page += F("var source = new EventSource('/events');");
+  page += F("source = new EventSource('/events');");
   page += F("source.addEventListener('open', function(e) {");
   page += F("console.log('Events Connected');");
   page += F("}, false);");
@@ -606,6 +592,97 @@ String get_live_page() {
   page += F("source.addEventListener('screen', function(e) {");
   page += F("}, false);");
   page += F("}");
+  page += F("}");
+
+  page += F("eventSourceConnect();");
+
+  page += F("function sendBinary(str) {");
+  page += F("if (con.readyState != WebSocket.OPEN || con.bufferedAmount > 0) return;");
+  page += F("var buffer = new ArrayBuffer(str.length+1);");
+  page += F("var view = new DataView(buffer);");
+  page += F("for (i=0; i<str.length; i++)");
+  page += F("  view.setUint8(i, str.charCodeAt(i));");
+  page += F("view.setUint8(str.length, 0);");
+  page += F("con.send(view);");
+  page += F("}");
+
+  page += F("document.getElementById('showremotedisplay').onclick = function() {");
+  page += F("$('#remotedisplay').toast('show');");
+  page += F("setInterval(requestRemoteDisplay, 100);");
+  page += F("return false; };");
+
+  page += F("function requestRemoteDisplay() {sendBinary('.');}");
+
+  page += F("function resizeScreen(z) {");
+  page += F("zoom = z;");
+  page += F("var canvas=document.getElementById('screen');");
+  page += F("var context=canvas.getContext('2d');");
+  page += F("context.canvas.width = 128*zoom;");
+  page += F("context.canvas.height = 64*zoom;");
+  page += F("};");
+
+  for (unsigned int i = 1; i <= BANKS; i++) {
+    page += F("document.getElementById('bank");
+    page += String(i) + F("').onchange = function() {");
+    page += F("sendBinary('bank");
+    page += String(i) + F("');");
+    page += F("return false; };");
+  }
+
+  page += F("document.getElementById('invert').onclick = function() {");
+  page += F("if (invert == 0 ) invert = 1; else invert = 0; return false; };");
+  page += F("document.getElementById('zoom1').onclick = function() { resizeScreen(1); return false; };");
+  page += F("document.getElementById('zoom2').onclick = function() { resizeScreen(2); return false; };");
+  page += F("document.getElementById('zoom4').onclick = function() { resizeScreen(4); return false; };");
+  
+  page += F("document.getElementById('clock-master').onclick = function() {");
+  page += F("sendBinary('clock-master');");
+  page += F("return false; };");
+  page += F("document.getElementById('clock-slave').onclick = function() {");
+  page += F("sendBinary('clock-slave');");
+  page += F("return false; };");
+  page += F("document.getElementById('mtc-master').onclick = function() {");
+  page += F("sendBinary('mtc-master');");
+  page += F("return false; };");
+  page += F("document.getElementById('mtc-slave').onclick = function() {");
+  page += F("sendBinary('mtc-slave');");
+  page += F("return false; };");
+  
+  page += F("document.getElementById('4_4').onclick = function() {");
+  page += F("sendBinary('4/4');");
+  page += F("return false; };");
+  page += F("document.getElementById('3_4').onclick = function() {");
+  page += F("sendBinary('3/4');");
+  page += F("return false; };");
+  page += F("document.getElementById('2_4').onclick = function() {");
+  page += F("sendBinary('2/4');");
+  page += F("return false; };");
+  page += F("document.getElementById('3_8').onclick = function() {");
+  page += F("sendBinary('3/8');");
+  page += F("return false; };");
+  page += F("document.getElementById('6_8').onclick = function() {");
+  page += F("sendBinary('6/8');");
+  page += F("return false; };");
+  page += F("document.getElementById('9_8').onclick = function() {");
+  page += F("sendBinary('9/8');");
+  page += F("return false; };");
+  page += F("document.getElementById('12_8').onclick = function() {");
+  page += F("sendBinary('12/8');");
+  page += F("return false; };");
+  
+  page += F("document.getElementById('start').onclick = function() {");
+  page += F("sendBinary('start');");
+  page += F("return false; };");
+  page += F("document.getElementById('stop').onclick = function() {");
+  page += F("sendBinary('stop');");
+  page += F("return false; };");
+  page += F("document.getElementById('continue').onclick = function() {");
+  page += F("sendBinary('continue');");
+  page += F("return false; };");
+  page += F("document.getElementById('tap').onclick = function() {");
+  page += F("sendBinary('tap');");
+  page += F("return false; };");
+
   page += F("</script>");
 
   page += get_footer_page();
@@ -814,7 +891,7 @@ String get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='col-1 text-center'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='autoCheck");
     page += String(i) + F("' name='autosensing") + String(i) + F("'");
     if (pedals[i-1].autoSensing) page += F(" checked");
@@ -931,7 +1008,7 @@ String get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='col-1 text-center'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='singleCheck");
     page += String(i) + F("' name='singlepress") + String(i) + F("'");
     if (pedals[i-1].pressMode == PED_PRESS_1   ||
@@ -945,7 +1022,7 @@ String get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='col-1 text-center'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='doubleCheck");
     page += String(i) + F("' name='doublepress") + String(i) + F("'");
     if (pedals[i-1].pressMode == PED_PRESS_2   ||
@@ -959,7 +1036,7 @@ String get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='col-1 text-center'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='longCheck");
     page += String(i) + F("' name='longpress") + String(i) + F("'");
     if (pedals[i-1].pressMode == PED_PRESS_L   ||
@@ -973,7 +1050,7 @@ String get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='col-1 text-center'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='polarityCheck");
     page += String(i) + F("' name='polarity") + String(i) + F("'");
     if (pedals[i-1].invertPolarity) page += F(" checked");
@@ -1072,7 +1149,7 @@ String get_interfaces_page() {
   page += F("<div class='form-row'>");
   for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='inCheck");
     page += String(i) + F("' name='in") + String(i) + F("'");
     if (interfaces[i-1].midiIn) page += F(" checked");
@@ -1086,7 +1163,7 @@ String get_interfaces_page() {
   page += F("<div class='form-row'>");
   for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='outCheck");
     page += String(i) + F("' name='out") + String(i) + F("'");
     if (interfaces[i-1].midiOut) page += F(" checked");
@@ -1100,7 +1177,7 @@ String get_interfaces_page() {
   page += F("<div class='form-row'>");
   for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='thruCheck");
     page += String(i) + F("' name='thru") + String(i) + F("'");
     if (interfaces[i-1].midiThru) page += F(" checked");
@@ -1114,7 +1191,7 @@ String get_interfaces_page() {
   page += F("<div class='form-row'>");
   for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='routingCheck");
     page += String(i) + F("' name='routing") + String(i) + F("'");
     if (interfaces[i-1].midiRouting) page += F(" checked");
@@ -1128,7 +1205,7 @@ String get_interfaces_page() {
   page += F("<div class='form-row'>");
   for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
-    page += F("<div class='custom-control custom-checkbox'>");
+    page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='clockCheck");
     page += String(i) + F("' name='clock") + String(i) + F("'");
     if (interfaces[i-1].midiClock) page += F(" checked");
@@ -1310,6 +1387,19 @@ void http_handle_bootstrap_file(AsyncWebServerRequest *request) {
     response->addHeader("Content-Encoding", "gzip");
     request->send(response);
    }
+  if (request->url() == "/logo.png") {
+    file = logo_png_start;
+    filesize = logo_png_end - logo_png_start;
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/png", file, filesize);
+    request->send(response);
+  }
+  if (request->url() == "/css/floating-labels.css") {
+    file = floating_labels_css_start;
+    filesize = floating_labels_css_end - floating_labels_css_start;
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", file, filesize);
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+  }
 #endif
 }
 #endif
@@ -1318,6 +1408,20 @@ void http_handle_favicon(AsyncWebServerRequest *request) {
   AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-icon", favicon_ico_gz, FAVICON_ICO_GZ_LEN);
   response->addHeader("Content-Encoding", "gzip");
   request->send(response);
+}
+
+void http_handle_login(AsyncWebServerRequest *request) {
+  request->send(200, "text/html", get_login_page());
+}
+
+void http_handle_post_login(AsyncWebServerRequest *request) {
+  if (request->hasArg("username")) {
+    if (request->arg("username") == String("admin")) 
+      if (request->hasArg("password")) 
+        if (request->arg("password") == host)
+          request->redirect("/");
+  }
+  request->send(200, "text/html", get_login_page());
 }
 
 void http_handle_globals(AsyncWebServerRequest *request) {
@@ -1634,15 +1738,20 @@ void http_handle_not_found(AsyncWebServerRequest *request) {
 }
 
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
+
+  static bool connected = false;
+
   if(type == WS_EVT_CONNECT){
     //client connected
     DPRINT("ws[%s][%u] connect\n", server->url(), client->id());
     //client->printf("Hello Client %u :)", client->id());
     //client->ping();
     client->keepAlivePeriod(1);
+    connected = true;
   } else if(type == WS_EVT_DISCONNECT){
     //client disconnected
     DPRINT("ws[%s][%u] disconnect: %u\n", server->url(), client->id());
+    connected = false;
   } else if(type == WS_EVT_ERROR){
     //error was received from the other end
     DPRINT("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
@@ -1658,7 +1767,18 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       if(info->opcode == WS_TEXT){
         data[len] = 0;
         DPRINT("%s\n", (char*)data);
-        if      (strcmp((const char *)data, "start") == 0)
+      } else {
+        for(size_t i=0; i < info->len; i++){
+          DPRINT("%02x ", data[i]);
+        }
+        DPRINT("\n");
+        if (strcmp((const char *)data, ".") == 0) {
+          //AsyncWebSocketMessageBuffer *buffer = webSocket.makeBuffer(128*64);
+          //memcpy(buffer->get(), display.buffer, 128*64);
+          //if (connected && buffer) {client->binary(buffer); delete buffer; buffer = NULL;}
+          //client->binary(display.buffer, 128*64);
+        }   
+        else if (strcmp((const char *)data, "start") == 0)
           mtc_start();
         else if (strcmp((const char *)data, "stop") == 0)
           mtc_stop();
@@ -1718,17 +1838,14 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
           byte b;
           if (sscanf((const char *)data, "bank%d", &b) == 1)
             currentBank = constrain(b - 1, 0, BANKS);
-        } 
-      } else {
-        for(size_t i=0; i < info->len; i++){
-          DPRINT("%02x ", data[i]);
         }
-        DPRINT("\n");
       }
+      /*
       if(info->opcode == WS_TEXT)
         client->text("I got your text message");
       else
         client->binary("I got your binary message");
+      */
     } else {
       //message is comprised of multiple frames or the frame is split into multiple packets
       if(info->index == 0){
@@ -1752,10 +1869,12 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         DPRINT("ws[%s][%u] frame[%u] end[%llu]\n", server->url(), client->id(), info->num, info->len);
         if(info->final){
           DPRINT("ws[%s][%u] %s-message end\n", server->url(), client->id(), (info->message_opcode == WS_TEXT)?"text":"binary");
+          /*
           if(info->message_opcode == WS_TEXT)
             client->text("I got your text message");
           else
             client->binary("I got your binary message");
+          */
         }
       }
     }
@@ -1783,6 +1902,8 @@ void http_setup() {
 #ifdef WEBCONFIG
   httpServer.on("/",                        http_handle_root);
   httpServer.on("/favicon.ico", HTTP_GET,   http_handle_favicon);
+  httpServer.on("/login",       HTTP_GET,   http_handle_login);
+  httpServer.on("/login",       HTTP_POST,  http_handle_post_login);
   httpServer.on("/live",        HTTP_GET,   http_handle_live);
   httpServer.on("/live",        HTTP_POST,  http_handle_post_live);
   httpServer.on("/banks",       HTTP_GET,   http_handle_banks);
@@ -1793,6 +1914,8 @@ void http_setup() {
   httpServer.on("/interfaces",  HTTP_POST,  http_handle_post_interfaces);
   httpServer.on("/options",     HTTP_GET,   http_handle_options);
   httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
+  httpServer.on("/logo.png",    HTTP_GET,   http_handle_bootstrap_file);
+  httpServer.on("/css/floating-labels.css", http_handle_bootstrap_file);
 
 #ifdef BOOTSTRAP_LOCAL
   httpServer.on("/css/bootstrap.min.css",        http_handle_bootstrap_file);
@@ -1823,6 +1946,12 @@ void http_run() {
     portEXIT_CRITICAL(&_timer2Mux);
 
     webSocket.binaryAll(display.buffer, 128*64);
+/*
+    if (!buffer) {
+      buffer = webSocket.makeBuffer(128*64);
+      memcpy(buffer->get(), display.buffer, 128*64);
+    }
+    */
   }
 }
 

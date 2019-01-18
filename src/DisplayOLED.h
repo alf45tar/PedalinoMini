@@ -404,12 +404,22 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
-  if (millis() < endMillis2 &&
-      pedals[lastUsedPedal].lastUpdate[0] > pedals[lastUsedSwitch].lastUpdate[0] &&
-      pedals[lastUsedPedal].lastUpdate[0] > pedals[lastUsedSwitch].lastUpdate[1]) {
+  bool bar;
+
+  bar = millis() < endMillis2;
+  if (bar) {
+    bar = lastUsedPedal  >= 0 && lastUsedPedal  < PEDALS &&
+          lastUsedSwitch >= 0 && lastUsedSwitch < PEDALS;
+    if (bar)
+      bar = pedals[lastUsedPedal].lastUpdate[0] > pedals[lastUsedSwitch].lastUpdate[0] &&
+            pedals[lastUsedPedal].lastUpdate[0] > pedals[lastUsedSwitch].lastUpdate[1];
+    else
+      bar = lastUsedSwitch == 0xFF;
+  }
+  if (bar) {
     byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
     display->drawProgressBar(4, 54, 120, 8, p);
-    }
+  }
   else { 
     display->drawLine(0, 51, 127, 51);
 
