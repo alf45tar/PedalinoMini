@@ -778,8 +778,5 @@ void display_ui_update_enable()
 
 void display_update(bool force = false)
 {
-  if (uiUpdate) {
-    //if (millis() < endMillis2) ui.switchToFrame(0);
-    int remainingTimeBudget = ui.update();
-  }
+  if (uiUpdate) ui.update();
 }

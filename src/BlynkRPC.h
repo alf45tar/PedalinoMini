@@ -12,6 +12,7 @@
 #ifdef NOBLYNK
 inline String blynk_get_token() { return String("                                "); }
 inline String blynk_set_token(String token) { return token; }
+inline void blynk_setup();
 inline bool blynk_cloud_connected() {}
 inline void blynk_config() {}
 inline void blynk_connect() {}
@@ -20,6 +21,7 @@ inline void blynk_run() {}
 inline void blynk_refresh() {}
 #else
 
+#define BLYNK_RETRY_CONNECTION    60      // If fail retry Blynk Cloud connection after 60 seconds
 //#define BLYNK_NO_BUILTIN                // Disable built-in analog & digital pin operations
 //#define BLYNK_NO_FLOAT                  // Disable float operations
 
@@ -37,6 +39,7 @@ inline void blynk_refresh() {}
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
+#include <esp32-hal-timer.h>
 #endif
 
 #define BLYNK_PROFILE               V1
@@ -86,6 +89,7 @@ inline void blynk_refresh() {}
 
 #define BLYNK_AUTHTOKEN_LEN          32
 
+bool blynkEnabled = false;
 char blynkAuthToken[BLYNK_AUTHTOKEN_LEN+1] = { 0 }; // all elements 0;
 
 WidgetLCD  blynkLCD(V0);
@@ -98,6 +102,41 @@ bool auto_reconnect(String ssid = "", String password = "");
 bool smart_config();
 bool ap_connect(String ssid = "", String password = "");
 String translateEncryptionType(wifi_auth_mode_t);
+
+hw_timer_t   *_timer3 = NULL;
+portMUX_TYPE  _timer3Mux = portMUX_INITIALIZER_UNLOCKED;
+volatile int  _interruptCounter3 = 0;
+
+void IRAM_ATTR onTimer3_isr()
+{
+  portENTER_CRITICAL_ISR(&_timer3Mux);
+  _interruptCounter3++;
+  portEXIT_CRITICAL_ISR(&_timer3Mux);
+}
+
+void blynk_setup()
+{
+  // Setup a 10Hz timer
+  _timer3 = timerBegin(2, 80, true);
+  timerAttachInterrupt(_timer3, &onTimer3_isr, true);
+  timerAlarmWrite(_timer3, 1000000/1, true);
+  timerAlarmEnable(_timer3);
+}
+
+void blynk_enable()
+{
+  blynkEnabled = true;
+}
+
+void blynk_disable()
+{
+  blynkEnabled = false;
+}
+
+bool blynk_enabled()
+{
+  return blynkEnabled;
+}
 
 String blynk_get_token()
 {
@@ -119,10 +158,14 @@ bool blynk_cloud_connected()
 
 void blynk_connect()
 {
+  static unsigned long lastFail = 0;
+
+  if (!blynkEnabled || (lastFail > 0) && (millis() - lastFail < BLYNK_RETRY_CONNECTION*1000)) return;
+
   // Connect to Blynk Cloud
   if (WiFi.getMode() != WIFI_AP && strlen(blynkAuthToken) == BLYNK_AUTHTOKEN_LEN) {
     Blynk.config(blynkAuthToken);
-    Blynk.connect();
+    lastFail = Blynk.connect() ? 0 : millis();
   }
 }
 
@@ -135,10 +178,23 @@ void blynk_disconnect()
 
 inline void blynk_run()
 {
-  if (Blynk.connected())
-    Blynk.run();
-  else if (WiFi.isConnected())
-    blynk_connect();
+  if (_interruptCounter3 > 0) {
+
+    portENTER_CRITICAL(&_timer3Mux);
+    _interruptCounter3 = 0;
+    portEXIT_CRITICAL(&_timer3Mux);
+
+    if (!blynkEnabled) return;
+
+    unsigned long a = micros();
+    if (Blynk.connected()) {
+      Blynk.run();
+    } 
+    else if (WiFi.isConnected())
+      blynk_connect();
+    unsigned long b = micros();
+    DPRINT("%d ", b-a);
+  }
 }
 
 void blynk_refresh_bank()

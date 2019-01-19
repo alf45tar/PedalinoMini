@@ -189,6 +189,7 @@ void setup()
   autosensing_setup();
   controller_setup();
   mtc_setup();
+  blynk_setup();
 }
 
 

@@ -16,6 +16,7 @@ inline void http_run() {};
 
 #include <StreamString.h>
 #include <FS.h>
+#include <SPIFFS.h>
 
 #ifdef ARDUINO_ARCH_ESP8266
 #include <ESP8266WiFi.h>
@@ -39,6 +40,7 @@ AsyncWebSocket          webSocket("/ws");
 AsyncEventSource        events("/events");    // EventSource is single direction, text-only protocol.
 AsyncWebSocketMessageBuffer *buffer = NULL;
 
+#ifdef COMPONENT_EMBED_TXTFILES
 extern const uint8_t bootstrap_min_css_start[]        asm("_binary_data_bootstrap_min_css_gz_start");
 extern const uint8_t bootstrap_min_css_end[]          asm("_binary_data_bootstrap_min_css_gz_end");
 extern const uint8_t bootstrap_min_js_start[]         asm("_binary_data_bootstrap_min_js_gz_start");
@@ -51,7 +53,7 @@ extern const uint8_t logo_png_start[]                 asm("_binary_data_logo_png
 extern const uint8_t logo_png_end[]                   asm("_binary_data_logo_png_end");
 extern const uint8_t floating_labels_css_start[]      asm("_binary_data_floating_labels_css_gz_start");
 extern const uint8_t floating_labels_css_end[]        asm("_binary_data_floating_labels_css_gz_end");
-
+#endif
 
 #define FAVICON_ICO_GZ_LEN  621
 const uint8_t favicon_ico_gz[] PROGMEM = {
@@ -100,6 +102,9 @@ const uint8_t favicon_ico_gz[] PROGMEM = {
 
 #ifdef WEBCONFIG
 
+void    blynk_enable();
+void    blynk_disable();
+bool    blynk_enabled();
 String  blynk_get_token();
 String  blynk_set_token(String);
 bool    blynk_cloud_connected();
@@ -1306,6 +1311,26 @@ String get_options_page() {
 
 #ifdef BLYNK
   page += F("<div class='form-row'>");
+  page += F("<label for='blynk' class='col-2 col-form-label'>Blynk Cloud</label>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='blynkCloud' name='blynkcloud'");
+  if (blynk_enabled()) page += F(" checked");
+  page += F(">");
+  page += F("<label class='custom-control-label' for='blynkCloud'>Enable/disable connection to Blynk Cloud</label>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='w-100'></div>");
+  page += F("<div class='col-2'>");
+  page += F("</div>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
+  page += F("<p>If Blynk Cloud connection is disabled the app cannot connect to Pedalino.</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<p></p>");
+  page += F("<div class='form-row'>");
   page += F("<label for='authtoken' class='col-2 col-form-label'>Blynk Auth Token</label>");
   page += F("<div class='col-10'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='authtoken' name='blynkauthtoken' placeholder='Blynk Auth Token is 32 characters long. Copy and paste from email.' value='");
@@ -1340,22 +1365,7 @@ String get_options_page() {
 
 void http_handle_bootstrap_file(AsyncWebServerRequest *request) {
 
-#ifdef ARDUINO_ARCH_ESP8266
-  if (request->url() == "/css/bootstrap.min.css") {
-    request->send(SPIFFS, "bootstrap.min.css.gz", "text/css");
-  }
-  if (request->url() == "/js/jquery-3.3.1.slim.min.js") {
-    request->send(SPIFFS, "jquery-3.3.1.slim.min.js.gz", "application/javascript");
-  }
-  if (request->url() == "/js/popper.min.js") {
-    request->send(SPIFFS, "popper.min.js.gz", "application/javascript");
-  }
-  if (request->url() == "/js/bootstrap.min.js") {
-    request->send(SPIFFS, "bootstrap.min.js.gz", "application/javascript");
-   }
-#endif
-
-#ifdef ARDUINO_ARCH_ESP32
+#ifdef COMPONENT_EMBED_TXTFILES
   const uint8_t *file = NULL;
   size_t filesize = 0;
 
@@ -1400,7 +1410,7 @@ void http_handle_bootstrap_file(AsyncWebServerRequest *request) {
     response->addHeader("Content-Encoding", "gzip");
     request->send(response);
   }
-#endif
+#endif  // COMPONENT_EMBED_TXTFILES
 }
 #endif
 
@@ -1584,14 +1594,28 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
 }
 
 void http_handle_post_options(AsyncWebServerRequest *request) {
+
+  const String checked("on");
   
   http_handle_globals(request);
 
-  if (host != request->arg("mdnsdevicename")) {
+  if (request->arg("mdnsdevicename") != host) {
     host = request->arg("mdnsdevicename");
     eeprom_update_device_name(host);
     delay(1000);
     ESP.restart();
+    alert = "Saved";
+  }
+
+  if (request->arg("blynkcloud") == checked) {
+    blynk_enable();
+    blynk_connect();
+    blynk_refresh();
+    alert = "Saved";
+  }
+  else {
+    blynk_disconnect();
+    blynk_disable();
     alert = "Saved";
   }
 
@@ -1894,14 +1918,16 @@ void IRAM_ATTR onTimer2_isr()
 
 void http_setup() {
 
+#ifdef WEBCONFIG
   webSocket.onEvent(onWsEvent);
   httpServer.addHandler(&webSocket);
   //events.setAuthentication("user", "pass");
   httpServer.addHandler(&events);
+  SPIFFS.begin();
+  httpServer.serveStatic("/", SPIFFS, "/");
 
-#ifdef WEBCONFIG
   httpServer.on("/",                        http_handle_root);
-  httpServer.on("/favicon.ico", HTTP_GET,   http_handle_favicon);
+  //httpServer.on("/favicon.ico", HTTP_GET,   http_handle_favicon);
   httpServer.on("/login",       HTTP_GET,   http_handle_login);
   httpServer.on("/login",       HTTP_POST,  http_handle_post_login);
   httpServer.on("/live",        HTTP_GET,   http_handle_live);
@@ -1915,15 +1941,17 @@ void http_setup() {
   httpServer.on("/options",     HTTP_GET,   http_handle_options);
   httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
   httpServer.on("/logo.png",    HTTP_GET,   http_handle_bootstrap_file);
-  httpServer.on("/css/floating-labels.css", http_handle_bootstrap_file);
+  //httpServer.on("/css/floating-labels.css", http_handle_bootstrap_file);
 
 #ifdef BOOTSTRAP_LOCAL
+/*
   httpServer.on("/css/bootstrap.min.css",        http_handle_bootstrap_file);
   httpServer.on("/js/jquery-3.3.1.slim.min.js",  http_handle_bootstrap_file);
   httpServer.on("/js/popper.min.js",             http_handle_bootstrap_file);
   httpServer.on("/js/bootstrap.min.js",          http_handle_bootstrap_file);
+*/
 #endif  // BOOTSTRAP_LOCAL
-#endif  // WEBCONFIG
+
   httpServer.on("/update",      HTTP_GET,   http_handle_update);
   httpServer.on("/update",      HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);
   httpServer.onNotFound(http_handle_not_found);
@@ -1935,9 +1963,10 @@ void http_setup() {
   timerAttachInterrupt(_timer2, &onTimer2_isr, true);
   timerAlarmWrite(_timer2, 1000000/10, true);
   timerAlarmEnable(_timer2);
+#endif  // WEBCONFIG
 }
 
-void http_run() {
+inline void http_run() {
 
   if (_interruptCounter2 > 0) {
 
