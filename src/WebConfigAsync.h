@@ -320,7 +320,10 @@ String get_root_page() {
   page += F("<dt>Chip ID</dt><dd>");
   page += getChipId();
   page += F("</dd>");
-  page += F("<dt>Chip Speed</dt><dd>");
+  page += F("<dt>CPU Frequency</dt><dd>");
+  page += getCpuFreqMhz();
+  page += F(" MHz</dd>");
+  page += F("<dt>Flash Chip Frequency</dt><dd>");
   page += ESP.getFlashChipSpeed() / 1000000;
   page += F(" MHz</dd>");
   page += F("<dt>IDE Flash Size</dt><dd>");
@@ -1775,7 +1778,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
     DPRINT("ws[%s][%u] connect\n", server->url(), client->id());
     //client->printf("Hello Client %u :)", client->id());
     //client->ping();
-    client->keepAlivePeriod(1);
+    //client->keepAlivePeriod(1);
     connected = true;
   } else if(type == WS_EVT_DISCONNECT){
     //client disconnected

@@ -321,4 +321,20 @@ String getChipId() {
 String host(getChipId());
 String wifiSoftAP("Pedalino" + getChipId());
 
+#include <soc/rtc.h>
+
+uint32_t getCpuFreqMhz() {
+#ifdef ARDUINO_ARCH_ESP32
+  //return (rtc_clk_cpu_freq_get() * 80);
+  rtc_cpu_freq_config_t config;
+  rtc_clk_cpu_freq_get_config(&config);
+  return config.freq_mhz;
+#endif
+
+#ifdef ARDUINO_ARCH_ESP8266
+  return ESP.getCpuFreqMHz();
+#endif
+
+  return 0;
+}
 #endif // _PEDALINO_H
