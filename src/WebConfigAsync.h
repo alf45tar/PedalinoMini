@@ -334,6 +334,11 @@ String get_root_page() {
   page += F("<dt>Free Heap Size</dt><dd>");
   page += ESP.getFreeHeap() / 1024;
   page += F(" kB</dd>");
+  page += F("<dt>SPIFFS Used/Total</dt><dd>");
+  page += SPIFFS.usedBytes() / 1024;
+  page += F("/");
+  page += SPIFFS.totalBytes() / 1024;
+  page += F(" kB</dd>");
   page += F("<dt>SDK Version</dt><dd>");
   page += ESP.getSdkVersion();
   page += F("</dd>");
