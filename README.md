@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/alf45tar/PedalinoMini.svg?branch=master)](https://travis-ci.org/alf45tar/PedalinoMini)
 
-[![](https://github.com/alf45tar/PedalinoMini/blob/master/images/youtube-video.png)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
+[![](https://github.com/alf45tar/PedalinoMini/blob/master/images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
 
 # PedalinoMini™
 
