@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/alf45tar/PedalinoMini.svg?branch=master)](https://travis-ci.org/alf45tar/PedalinoMini)
 
+[![](https://github.com/alf45tar/PedalinoMini/blob/master/images/youtube-video.png)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
+
 # PedalinoMini™
 
 Open source wireless MIDI foot controller for guitarists and more.
