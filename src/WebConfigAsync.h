@@ -1587,6 +1587,8 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     pedals[i].expMax = a.toInt();
   }
   eeprom_update();
+  autosensing_setup();
+  controller_setup();
   blynk_refresh();
   alert = "Saved";
   request->send(200, "text/html", get_pedals_page());

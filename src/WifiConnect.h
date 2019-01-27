@@ -19,6 +19,7 @@
 #ifdef ARDUINO_ARCH_ESP32
 #include <WiFi.h>
 #include <WiFiClient.h>
+#include <WiFiAP.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <esp_wps.h>
@@ -447,8 +448,7 @@ bool smart_config()
   }
   display_progress_bar_update(1, 1);
   
-  if (WiFi.smartConfigDone())
-  {
+  if (WiFi.smartConfigDone()) {
     // Wait for WiFi to connect to AP
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
@@ -476,8 +476,8 @@ bool smart_config()
   }
 }
 
-bool wps_config() {
-
+bool wps_config()
+{
   wpsStatus = 0;
 
   WPS.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
@@ -498,10 +498,7 @@ bool wps_config() {
   }
   display_progress_bar_update(1, 1);
 
-  //ESP_ERROR_CHECK(esp_wifi_wps_disable());
-
-  if (wpsStatus == 1)
-  {
+  if (wpsStatus == 1) {
     // Wait for WiFi to connect to AP
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
@@ -514,9 +511,10 @@ bool wps_config() {
 
     save_wifi_credentials(WiFi.SSID(), WiFi.psk());
   }
-  else
+  else {
+    //ESP_ERROR_CHECK(esp_wifi_wps_disable());
     DPRINT("WPS timeout\n");
-
+  }
   return WiFi.isConnected();
 }
 

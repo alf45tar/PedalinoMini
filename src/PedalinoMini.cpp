@@ -167,12 +167,6 @@ void setup()
   serial_midi_connect();              // On receiving MIDI data callbacks setup
   DPRINT("Serial MIDI started\n");
 
-#ifdef BLE
-  // BLE MIDI service advertising
-  ble_midi_start_service();
-  DPRINT("BLE MIDI service advertising started");
-#endif
-
 #ifdef WIFI
   // Write SSID/password to flash only if currently used values do not match what is already stored in flash
   WiFi.persistent(false);
@@ -184,6 +178,12 @@ void setup()
   // Initialize the telnet server of RemoteDebug
   Debug.begin(host);              // Initiaze the telnet server
   Debug.setResetCmdEnabled(true); // Enable the reset command
+#endif
+
+#ifdef BLE
+  // BLE MIDI service advertising
+  ble_midi_start_service();
+  DPRINT("BLE MIDI service advertising started");
 #endif
 
   autosensing_setup();
