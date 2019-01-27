@@ -11,7 +11,7 @@
 #include <EEPROM.h>
 
 #define SIGNATURE "Pedalino(TM)"
-#define EEPROM_VERSION  4                 // Increment each time you change the eeprom structure
+#define EEPROM_VERSION  5                 // Increment each time you change the eeprom structure
 #define EEPROM_SIZE     4096
 
 extern String theme;
@@ -40,7 +40,7 @@ void eeprom_init()
 
 #ifdef ARDUINO_ARCH_ESP32
   if (!EEPROM.begin(EEPROM_SIZE)) {
-    DPRINT("Failed to initialise %d bytes for EEPROM\n", EEPROM.length());
+    DPRINT("Failed to initialise %d bytes for EEPROM\n", EEPROM_SIZE);
     DPRINT("Restarting...\n");
     delay(1000);
     ESP.restart();
@@ -136,43 +136,43 @@ void load_factory_default()
       switch (b % 4)
       {
         case 0:
-          banks[b][p] = {PED_PROGRAM_CHANGE,     // MIDI message
-                         (byte)(b / 4 + 1),      // MIDI channel
-                         (byte)(b / 4 * 16 + p), // MIDI code
-                         127,
-                         0,
-                         65
-                      };
+          banks[b][p].pedalName[0] = 0;
+          banks[b][p].midiMessage  = PED_PROGRAM_CHANGE;
+          banks[b][p].midiChannel  = (byte)(b / 4 + 1);
+          banks[b][p].midiCode     = (byte)(b / 4 * 16 + p);
+          banks[b][p].midiValue1   = 127;
+          banks[b][p].midiValue2   = 0;
+          banks[b][p].midiValue3   = 65;
           break;
 
         case 1:
-          banks[b][p] = {PED_CONTROL_CHANGE,     // MIDI message
-                         (byte)(b / 4 + 1),      // MIDI channel
-                         (byte)(b / 4 * 16 + p), // MIDI code
-                         127,
-                         0,
-                         65
-                      };
+          banks[b][p].pedalName[0] = 0;
+          banks[b][p].midiMessage  = PED_CONTROL_CHANGE;
+          banks[b][p].midiChannel  = (byte)(b / 4 + 1);
+          banks[b][p].midiCode     = (byte)(b / 4 * 16 + p);
+          banks[b][p].midiValue1   = 127;
+          banks[b][p].midiValue2   = 0;
+          banks[b][p].midiValue3   = 65;
           break;
 
         case 2:
-          banks[b][p] = {PED_NOTE_ON_OFF,             // MIDI message
-                         (byte)(b / 4 + 1),           // MIDI channel
-                         (byte)(b / 4 * 16 + p + 24), // MIDI code
-                         127,
-                         0,
-                         65
-                      };
+          banks[b][p].pedalName[0] = 0;
+          banks[b][p].midiMessage  = PED_NOTE_ON_OFF;
+          banks[b][p].midiChannel  = (byte)(b / 4 + 1);
+          banks[b][p].midiCode     = (byte)(b / 4 * 16 + p);
+          banks[b][p].midiValue1   = 127;
+          banks[b][p].midiValue2   = 0;
+          banks[b][p].midiValue3   = 65;
           break;
 
         case 3:
-          banks[b][p] = {PED_PITCH_BEND,         // MIDI message
-                         (byte)(b / 4 + 1),      // MIDI channel
-                         (byte)(b / 4 * 16 + p), // MIDI code
-                         127,
-                         0,
-                         65
-                      };
+          banks[b][p].pedalName[0] = 0;
+          banks[b][p].midiMessage  = PED_PITCH_BEND;
+          banks[b][p].midiChannel  = (byte)(b / 4 + 1);
+          banks[b][p].midiCode     = (byte)(b / 4 * 16 + p);
+          banks[b][p].midiValue1   = 127;
+          banks[b][p].midiValue2   = 0;
+          banks[b][p].midiValue3   = 65;
           break;
       }
 
@@ -191,31 +191,6 @@ void load_factory_default()
                  millis(),       // last time switch 2 status changed
                  nullptr, nullptr, nullptr, nullptr, nullptr
                 };
-
-  /*
-    pedals[7].function  = PED_START;
-    pedals[7].mode      = PED_MOMENTARY1;
-    pedals[8].function  = PED_STOP;
-    pedals[8].mode      = PED_MOMENTARY1;
-    pedals[9].function  = PED_CONTINUE;
-    pedals[9].mode      = PED_MOMENTARY1;
-    pedals[10].function = PED_TAP;
-    pedals[10].mode     = PED_MOMENTARY1;
-    pedals[11].function = PED_BANK_PLUS;
-    pedals[11].mode     = PED_MOMENTARY2;
-    pedals[12].function = PED_MENU;
-    pedals[12].mode     = PED_MOMENTARY3;
-  */
-  /*
-    pedals[11].mode = PED_MOMENTARY2;
-    pedals[12].mode = PED_MOMENTARY3;
-  */
-#ifdef ARDUINO_ARCH_ESP32
-  pedals[0].function = PED_BANK_PLUS;
-  pedals[0].mode     = PED_MOMENTARY3;
-  pedals[5].function = PED_MIDI;
-  pedals[5].mode = PED_ANALOG;
-#endif
 
   for (byte i = 0; i < INTERFACES; i++) 
     {
@@ -393,7 +368,7 @@ void eeprom_update()
   offset += 10;
 
   // Jump to profile
-  offset += currentProfile * EEPROM.length() / PROFILES;
+  offset += currentProfile * EEPROM_SIZE / PROFILES;
 
   EEPROM.put(offset, SIGNATURE);
   offset += sizeof(SIGNATURE);
@@ -403,6 +378,10 @@ void eeprom_update()
   for (byte b = 0; b < BANKS; b++)
     for (byte p = 0; p < PEDALS; p++)
     {
+      for (byte i = 0; i <= MAXPEDALNAME; i++)
+        EEPROM.put(offset + i, 0);
+      eeprom_writeString(offset, banks[b][p].pedalName);
+      offset += MAXPEDALNAME + 2;
       EEPROM.put(offset, banks[b][p].midiMessage);
       offset += sizeof(byte);
       EEPROM.put(offset, banks[b][p].midiChannel);
@@ -537,7 +516,7 @@ void eeprom_read()
   offset += 10;
 
   // Jump to profile
-  offset += currentProfile * EEPROM.length() / PROFILES;
+  offset += currentProfile * EEPROM_SIZE / PROFILES;
 
   EEPROM.get(offset, signature);
   offset += sizeof(SIGNATURE);
@@ -550,6 +529,10 @@ void eeprom_read()
   for (byte b = 0; b < BANKS; b++)
     for (byte p = 0; p < PEDALS; p++)
     {
+      String name = eeprom_readString(offset);
+      strncpy(banks[b][p].pedalName, name.c_str(), MAXPEDALNAME + 1);
+      banks[b][p].pedalName[MAXPEDALNAME] = 0;
+      offset += MAXPEDALNAME + 2;
       EEPROM.get(offset, banks[b][p].midiMessage);
       offset += sizeof(byte);
       EEPROM.get(offset, banks[b][p].midiChannel);

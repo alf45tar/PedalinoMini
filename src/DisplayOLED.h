@@ -404,19 +404,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
-  bool bar;
-
-  bar = millis() < endMillis2;
-  if (bar) {
-    bar = lastUsedPedal  >= 0 && lastUsedPedal  < PEDALS &&
-          lastUsedSwitch >= 0 && lastUsedSwitch < PEDALS;
-    if (bar)
-      bar = pedals[lastUsedPedal].lastUpdate[0] > pedals[lastUsedSwitch].lastUpdate[0] &&
-            pedals[lastUsedPedal].lastUpdate[0] > pedals[lastUsedSwitch].lastUpdate[1];
-    else
-      bar = lastUsedSwitch == 0xFF;
-  }
-  if (bar) {
+  if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2) {
     byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
     display->drawProgressBar(4, 54, 120, 8, p);
   }
@@ -455,8 +443,9 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   if (millis() < endMillis2) {
     ui.disableAutoTransition();
     ui.switchToFrame(0);
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
-    switch (m1) {
+    if (banks[currentBank][lastUsed].pedalName[0] == 0) {
+      display->setTextAlignment(TEXT_ALIGN_CENTER);
+      switch (m1) {
         case midi::NoteOn:
         case midi::NoteOff:
           drawRect(display, 64-22, 15, 64+24, 15+23);
@@ -495,10 +484,16 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           display->drawString(84 + x, 14 + y, String(m2));  
           break;
       }
-    display->setFont(ArialMT_Plain_10);
-    display->drawString(18 + x, 39 + y, String("Channel"));
-    display->setFont(ArialMT_Plain_16);
-    display->drawString(18 + x, 22 + y, String(m4));
+      display->setFont(ArialMT_Plain_10);
+      display->drawString(18 + x, 39 + y, String("Channel"));
+      display->setFont(ArialMT_Plain_16);
+      display->drawString(18 + x, 22 + y, String(m4));
+    }
+    else {
+      display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+      display->setFont(ArialMT_Plain_24);
+      display->drawString(64, 32, String(banks[currentBank][lastUsed].pedalName)); 
+    }    
   }  
   else if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
            MTC.getMode() == MidiTimeCode::SynchroClockSlave) {

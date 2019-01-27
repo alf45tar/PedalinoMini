@@ -21,10 +21,12 @@
 #include <WiFiClient.h>
 #include <ESPmDNS.h>
 #include <Update.h>
+#include <esp_wps.h>
 #endif
 
 #define WIFI_CONNECT_TIMEOUT    15
-#define SMART_CONFIG_TIMEOUT    30
+#define SMART_CONFIG_TIMEOUT    15
+#define WPS_TIMEOUT             15
 
 #ifdef ARDUINO_ARCH_ESP8266
 #define WIFI_LED       2      // Onboard LED on GPIO2 is shared with Serial1 TX
@@ -51,6 +53,15 @@ void save_wifi_credentials(String ssid, String password)
 }
 
 #ifdef ARDUINO_ARCH_ESP32
+
+static esp_wps_config_t WPS;
+int                     wpsStatus = 0;
+
+#ifndef PIN2STR
+#define PIN2STR(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5], (a)[6], (a)[7]
+#define PINSTR "%c%c%c%c%c%c%c%c"
+#endif
+
 String translateEncryptionType(wifi_auth_mode_t encryptionType) {
 
   switch (encryptionType) {
@@ -122,10 +133,10 @@ void start_services() {
 #endif
 
       http_setup();
-      DPRINTLN("HTTP server started");
-      DPRINTLN("Connect to http://pedalino.local/update for firmware update");
+      DPRINT("HTTP server started\n");
+      DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
 #ifdef WEBCONFIG
-      DPRINTLN("Connect to http://pedalino.local for configuration");
+      DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
 #endif
 
 #ifdef ARDUINO_ARCH_ESP8266
@@ -155,7 +166,7 @@ void start_services() {
 }
 
 
-void WiFiEvent(WiFiEvent_t event) {
+void WiFiEvent(WiFiEvent_t event, system_event_info_t info) {
 
   IPAddress localMask;
 
@@ -336,6 +347,33 @@ void WiFiEvent(WiFiEvent_t event) {
       DPRINT("SYSTEM_EVENT_AP_PROBEREQRECVED\n");
       break;
 
+    case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
+      DPRINT("SYSTEM_EVENT_STA_WPS_ER_SUCCESS\n");
+      wpsStatus = 1;
+      ESP_ERROR_CHECK(esp_wifi_wps_disable());
+      DPRINT("WPS successfull\n");
+      WiFi.begin();
+      break;
+
+    case SYSTEM_EVENT_STA_WPS_ER_FAILED:
+      DPRINT("SYSTEM_EVENT_STA_WPS_ER_FAILED\n");
+      wpsStatus = -1;
+      ESP_ERROR_CHECK(esp_wifi_wps_disable());
+      DPRINT("WPS failed\n");
+      break;
+
+    case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
+      DPRINT("SYSTEM_EVENT_STA_WPS_ER_TIMEOUT\n");
+      wpsStatus = -2;
+      ESP_ERROR_CHECK(esp_wifi_wps_disable());
+      DPRINT("WPS timeout\n");
+      break;
+
+    case SYSTEM_EVENT_STA_WPS_ER_PIN:
+      DPRINT("SYSTEM_EVENT_STA_WPS_ER_PIN\n");
+      DPRINT("WPS_PIN = "PINSTR, PIN2STR(info.sta_er_pin.pin_code));
+      break;
+
     default:
       DPRINT("Event: %d\n", event);
       break;
@@ -355,7 +393,7 @@ void ap_mode_start()
 {
   WIFI_LED_OFF();
 
-  //WiFi.disconnect();  // mandatory after the unsuccessful try to connect to an AP
+  WiFi.disconnect();  // mandatory after the unsuccessful try to connect to an AP
                       // and before setting up the softAP
 
   WiFi.mode(WIFI_AP_STA);
@@ -438,6 +476,50 @@ bool smart_config()
   }
 }
 
+bool wps_config() {
+
+  wpsStatus = 0;
+
+  WPS.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
+  WPS.wps_type = WPS_TYPE_PBC;
+  strcpy(WPS.factory_info.manufacturer, "ESPRESSIF");
+  strcpy(WPS.factory_info.model_number, "ESP32");
+  strcpy(WPS.factory_info.model_name,   "Pedalino(TM)");
+  strcpy(WPS.factory_info.device_name,  "PedalinoMini");
+  
+  ESP_ERROR_CHECK(esp_wifi_wps_enable(&WPS));
+  ESP_ERROR_CHECK(esp_wifi_wps_start(0));
+  
+  DPRINT("WPS started\n");
+  display_progress_bar_title("Press WPS button on AP");
+  for (int i = 0; i < 10*WPS_TIMEOUT && wpsStatus == 0; i++) {
+    display_progress_bar_update(i, 10*WPS_TIMEOUT-1);
+    delay(100);
+  }
+  display_progress_bar_update(1, 1);
+
+  //ESP_ERROR_CHECK(esp_wifi_wps_disable());
+
+  if (wpsStatus == 1)
+  {
+    // Wait for WiFi to connect to AP
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+    }
+    wifiSSID = WiFi.SSID();
+    wifiPassword = WiFi.psk();
+
+    DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
+    DPRINT("Password    : %s\n", WiFi.psk().c_str());
+
+    save_wifi_credentials(WiFi.SSID(), WiFi.psk());
+  }
+  else
+    DPRINT("WPS timeout\n");
+
+  return WiFi.isConnected();
+}
+
 //bool ap_connect(String ssid = "", String password = "")
 bool ap_connect(String ssid, String password)
 {
@@ -492,6 +574,9 @@ void wifi_connect()
 {
   if (!auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
     smart_config();            // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+  
+  if (!WiFi.isConnected())
+    wps_config();               // WPS_TIMEOUT seconds to receive WPS parameters and connect
 
   if (!WiFi.isConnected())
     ap_mode_start();           // switch to AP mode until next reboot

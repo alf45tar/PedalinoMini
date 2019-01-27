@@ -122,8 +122,6 @@ void autosensing_setup()
   int ring_max;
   Bounce debouncer;
 
-  return;
-
   DPRINT("Pedal autosensing...\n");
 
   for (byte p = 0; p < PEDALS; p++) {
@@ -189,7 +187,7 @@ void autosensing_setup()
       }
     }
     else {
-      DPRINT("Pedal %2d   autosensing disabled", p + 1);
+      DPRINT("Pedal %2d   autosensing disabled\n", p + 1);
     }
   }
   DPRINT("\n");
@@ -436,6 +434,7 @@ void refresh_switch_1_midi(byte i, bool send)
     pedals[i].pedalValue[1] = pedals[i].pedalValue[0];
     pedals[i].lastUpdate[1] = pedals[i].lastUpdate[0];
     lastUsedSwitch = i;
+    lastUsed = i;
   }
   else {
     if (state1) {                                                             // pin state changed
@@ -471,6 +470,7 @@ void refresh_switch_1_midi(byte i, bool send)
       pedals[i].pedalValue[0] = value;
       pedals[i].lastUpdate[0] = millis();
       lastUsedSwitch = i;
+      lastUsed = i;
     }
     if (state2) {                                                             // pin state changed
       input = pedals[i].debouncer[1]->read();                                 // reads the updated pin state
@@ -497,6 +497,7 @@ void refresh_switch_1_midi(byte i, bool send)
       pedals[i].pedalValue[1] = value;
       pedals[i].lastUpdate[1] = millis();
       lastUsedSwitch = i;
+      lastUsed = i;
     }
   }
 }
@@ -550,6 +551,7 @@ void refresh_switch_12L_midi(byte i, bool send)
             break;
         }                    
         lastUsedSwitch = i;
+        lastUsed = i;
         break;
 
       case MD_UISwitch::KEY_DPRESS:
@@ -601,6 +603,7 @@ void refresh_switch_12L_midi(byte i, bool send)
             break;
         }
         lastUsedSwitch = i;
+        lastUsed = i;
         break;
 
       case MD_UISwitch::KEY_RPTPRESS:
@@ -861,6 +864,7 @@ void refresh_analog(byte i, bool send)
         pedals[i].pedalValue[0] = value;
         pedals[i].lastUpdate[0] = millis();
         lastUsedPedal = i;
+        lastUsed = i;
         break;
       case PED_BPM_PLUS:
       case PED_BPM_MINUS:
@@ -928,6 +932,7 @@ void controller_setup()
 
   lastUsedSwitch = 0xFF;
   lastUsedPedal  = 0xFF;
+  lastUsed       = 0xFF;
 
   DPRINT("MIDI Interface ");
   switch (currentInterface) {
@@ -1112,7 +1117,10 @@ void controller_setup()
           pedals[i].analogPedal->enableEdgeSnap();                            // ensures that values at the edges of the spectrum can be easily reached when sleep is enabled
           analogReadResolution(ADC_RESOLUTION_BITS);
           analogSetPinAttenuation(PIN_A(i), ADC_11db);
-          if (lastUsedPedal == 0xFF) lastUsedPedal = i;
+          if (lastUsedPedal == 0xFF) {
+            lastUsedPedal = i;
+            lastUsed = i;
+          }
         }
         DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
         break;

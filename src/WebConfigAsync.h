@@ -280,12 +280,12 @@ String get_root_page() {
 
   page += get_top_page();
 
-  page += F("<h4 class='display-4'>Smart wireless MIDI foot controller</h4>");
+  page += F("<h4 class='display-4'>Wireless MIDI foot controller</h4>");
   page += F("<p></p>");
 
   page += F("<div class='row'>");
 
-  page += F("<div class='col-3'>");
+  page += F("<div class='col-6 col-sm-3'>");
   page += F("<h3>Product</h3>");
   page += F("<dt>Model</dt><dd>");
   page += String(MODEL);
@@ -301,7 +301,7 @@ String get_root_page() {
   page += F("</dd>");
   page += F("</div>");
 
-  page += F("<div class='col-3'>");
+  page += F("<div class='col-6 col-sm-3'>");
   page += F("<h3>Hardware</h3>");
   page += F("<dt>Chip</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
@@ -334,13 +334,16 @@ String get_root_page() {
   page += ESP.getFlashChipRealSize() / (1024 * 1024);
   page += F(" MB</dd>");
 #endif
-  page += F("<dt>Free Heap Size</dt><dd>");
-  page += ESP.getFreeHeap() / 1024;
-  page += F(" kB</dd>");
   page += F("<dt>SPIFFS Used/Total</dt><dd>");
   page += SPIFFS.usedBytes() / 1024;
   page += F("/");
   page += SPIFFS.totalBytes() / 1024;
+  page += F(" kB</dd>");
+  page += F("<dt>EEPROM Size</dt><dd>");
+  page += EEPROM_SIZE / 1024;
+  page += F(" kB</dd>");
+  page += F("<dt>Free Heap Size</dt><dd>");
+  page += ESP.getFreeHeap() / 1024;
   page += F(" kB</dd>");
   page += F("<dt>SDK Version</dt><dd>");
   page += ESP.getSdkVersion();
@@ -350,7 +353,7 @@ String get_root_page() {
   //page += F("</dd>");
   page += F("</div>");
 
-  page += F("<div class='col-3'>");
+  page += F("<div class='col-6  col-sm-3'>");
   if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA) {
   page += F("<h3>Wireless STA</h3>");
   page += F("<dt>SSID</dt><dd>");
@@ -395,7 +398,7 @@ String get_root_page() {
   }
   page += F("</div>");
 
-  page += F("<div class='col-3'>");
+  page += F("<div class='col-6 col-sm-3'>");
   page += F("<h3>Network</h3>");
   page += F("<dt>Hostname</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
@@ -727,6 +730,9 @@ String get_banks_page() {
   page += F("<span class='badge badge-primary'>Pedal</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
+  page += F("<span class='badge badge-primary'>Name</span>");
+  page += F("</div>");
+  page += F("<div class='col-2'>");
   page += F("<span class='badge badge-primary'>MIDI Message</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
@@ -735,13 +741,13 @@ String get_banks_page() {
   page += F("<div class='col-2'>");
   page += F("<span class='badge badge-primary'>MIDI Code/Note</span>");
   page += F("</div>");
-  page += F("<div class='col-2'>");
+  page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>MIDI Value 1</span>");
   page += F("</div>");
-  page += F("<div class='col-2'>");
+  page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>MIDI Value 2</span>");
   page += F("</div>");
-  page += F("<div class='col-2'>");
+  page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>MIDI Value 3</span>");
   page += F("</div>");
   page += F("</div>");
@@ -753,6 +759,14 @@ String get_banks_page() {
     page += F("<div class='col-1 mb-3 text-center'>");
     page += String(i);
     page += F("</div>");
+
+    page += F("<div class='col-2'>");
+    page += F("<input type='text' class='form-control form-control-sm' name='name");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXPEDALNAME) + F("' value='");
+    page += String(banks[b-1][i-1].pedalName);
+    page += F("'></div>");
 
     page += F("<div class='col-2'>");
     page += F("<select class='custom-select custom-select-sm' name='message");
@@ -813,21 +827,21 @@ String get_banks_page() {
     page += String(banks[b-1][i-1].midiCode);
     page += F("'></div>");
 
-    page += F("<div class='col-2'>");
+    page += F("<div class='col-1'>");
     page += F("<input type='number' class='form-control form-control-sm' name='value1");
     page += String(i);
     page += F("' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiValue1);
     page += F("'></div>");
 
-    page += F("<div class='col-2'>");
+    page += F("<div class='col-1'>");
     page += F("<input type='number' class='form-control form-control-sm' name='value2");
     page += String(i);
     page += F("' min='0' max='127' value='");
     page += String(banks[b-1][i-1].midiValue2);
     page += F("'></div>");
 
-    page += F("<div class='col-2'>");
+    page += F("<div class='col-1'>");
     page += F("<input type='number' class='form-control form-control-sm' name='value3");
     page += String(i);
     page += F("' min='0' max='127' value='");
@@ -1507,6 +1521,10 @@ void http_handle_post_banks(AsyncWebServerRequest *request) {
   const byte b = constrain(uibank.toInt() - 1, 0, BANKS);
   
   for (unsigned int i = 0; i < PEDALS; i++) {
+    a = request->arg(String("name") + String(i+1));
+    strncpy(banks[b][i].pedalName, a.c_str(), MAXPEDALNAME+1);
+    banks[b][i].pedalName[MAXPEDALNAME] = 0;
+
     a = request->arg(String("message") + String(i+1));
     banks[b][i].midiMessage = a.toInt();
 

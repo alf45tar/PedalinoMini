@@ -26,6 +26,7 @@ const byte pinA[] = {2};
 
 #ifdef ARDUINO_ARCH_ESP32
 #define PEDALS             6
+#define MAXPEDALNAME      10
 // https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 // GPIOs 34 to 39 are GPIs – input only pins.
 // These pins don’t have internal pull-ups or pull-down resistors. 
@@ -132,6 +133,7 @@ typedef uint8_t   byte;
 #define CALIBRATION_DURATION   8000       // milliseconds
 
 struct bank {
+  char                   pedalName[MAXPEDALNAME+1];
   byte                   midiMessage;     /* 0 = Program Change,
                                              1 = Control Code
                                              2 = Note On/Note Off
@@ -223,6 +225,7 @@ byte  currentPedal            = 0;
 byte  currentInterface        = PED_USBMIDI;
 byte  lastUsedSwitch          = 0xFF;
 byte  lastUsedPedal           = 0xFF;
+byte  lastUsed                = 0xFF;   // Pedal or switch
 bool  selectBank              = true;
 byte  currentMidiTimeCode     = PED_MTC_NONE;
 byte  timeSignature           = PED_TIMESIGNATURE_4_4;
