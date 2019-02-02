@@ -322,7 +322,7 @@ String getChipId() {
 }
 
 String host(getChipId());
-String wifiSoftAP("Pedalino" + getChipId());
+String wifiSoftAP("Pedalino-" + getChipId());
 
 #include <soc/rtc.h>
 

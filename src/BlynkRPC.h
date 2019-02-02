@@ -22,8 +22,8 @@ inline void blynk_refresh() {}
 #else
 
 #define BLYNK_RETRY_CONNECTION    60      // If fail retry Blynk Cloud connection after 60 seconds
-//#define BLYNK_NO_BUILTIN                // Disable built-in analog & digital pin operations
-//#define BLYNK_NO_FLOAT                  // Disable float operations
+#define BLYNK_NO_BUILTIN                  // Disable built-in analog & digital pin operations
+#define BLYNK_NO_FLOAT                    // Disable float operations
 
 #ifdef SERIALDEBUG
 #define BLYNK_PRINT SERIALDEBUG           // Defines the object that is used for printing
@@ -116,7 +116,7 @@ void IRAM_ATTR onTimer3_isr()
 
 void blynk_setup()
 {
-  // Setup a 10Hz timer
+  // Setup a 1Hz timer
   _timer3 = timerBegin(2, 80, true);
   timerAttachInterrupt(_timer3, &onTimer3_isr, true);
   timerAlarmWrite(_timer3, 1000000/1, true);

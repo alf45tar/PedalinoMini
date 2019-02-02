@@ -90,6 +90,8 @@
 
 void setup()
 {
+  bool apmode = false;
+
   pinMode(WIFI_LED, OUTPUT);
 
 #ifdef ARDUINO_ARCH_ESP32
@@ -142,8 +144,8 @@ void setup()
   }
   //display_clear();
   if ((digitalRead(PIN_D(0)) == HIGH) && (duration > 100 && duration < 8500)) {
-    DPRINT("\nSerial passthrough mode for ESP firmware update and monitor\n");
-
+    DPRINT("\nSkip connection to last AP and/or SmartConfig/WPS setup\n");
+    apmode = true;
   } else if ((digitalRead(PIN_D(0)) == LOW) && (duration >= 8500)) {
     DPRINT("\nReset EEPROM to factory default\n");
     lcdSetCursor(0, 1);
@@ -171,7 +173,10 @@ void setup()
   // Write SSID/password to flash only if currently used values do not match what is already stored in flash
   WiFi.persistent(false);
   WiFi.onEvent(WiFiEvent);
-  wifi_connect();
+  if (apmode)
+    ap_mode_start();
+  else 
+    wifi_connect();
 #endif
 
 #ifdef PEDALINO_TELNET_DEBUG

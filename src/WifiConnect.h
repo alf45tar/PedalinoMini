@@ -86,89 +86,104 @@ String translateEncryptionType(wifi_auth_mode_t encryptionType) {
 }
 #endif
 
-void start_services() {
+void stop_services()
+{
+#ifdef ARDUINO_ARCH_ESP8266
+  httpServer.stop();
+  ipMIDI.stop();
+  oscUDP.stop();
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+  MDNS.end();
+  ArduinoOTA.end();
+  ipMIDI.stop();
+  oscUDP.stop();
+#endif
+}
+
+void start_services()
+{
+  stop_services();
 
 #ifdef ARDUINO_ARCH_ESP8266
-      // Start LLMNR (Link-Local Multicast Name Resolution) responder
-      LLMNR.begin(host.c_str());
-      DPRINT("LLMNR responder started\n");
+  // Start LLMNR (Link-Local Multicast Name Resolution) responder
+  LLMNR.begin(host.c_str());
+  DPRINT("LLMNR responder started\n");
 
-      // Start mDNS (Multicast DNS) responder (ping pedalino.local)
-      if (MDNS.begin(host.c_str())) {
-        DPRINTLN("mDNS responder started");
-        // service name is lower case
-        // ESP8266 only: do not add '_' to service name and protocol
-        MDNS.addService("apple-midi", "udp", 5004);
-        MDNS.addService("osc",        "udp", oscLocalPort);
-        MDNS.addService("http",       "tcp", 80);
+  // Start mDNS (Multicast DNS) responder (ping pedalino.local)
+  if (MDNS.begin(host.c_str())) {
+    DPRINTLN("mDNS responder started");
+    // service name is lower case
+    // ESP8266 only: do not add '_' to service name and protocol
+    MDNS.addService("apple-midi", "udp", 5004);
+    MDNS.addService("osc",        "udp", oscLocalPort);
+    MDNS.addService("http",       "tcp", 80);
 #ifdef PEDALINO_TELNET_DEBUG
-        MDNS.addService("telnet",     "tcp", 23);
+    MDNS.addService("telnet",     "tcp", 23);
 #endif
-      }
+  }
 #endif  //  ARDUINO_ARCH_ESP8266
 
 #ifdef ARDUINO_ARCH_ESP32
-      // Start mDNS (Multicast DNS) responder (ping pedalino.local)
-      if (WiFi.getMode() == WIFI_STA) {
-        if (MDNS.begin(host.c_str())) {
-          DPRINTLN("mDNS responder started");
-          // service name is lower case
-          // service name and protocol starts with an '_' e.g. '_udp'
-          MDNS.addService("_apple-midi", "_udp", 5004);
-          MDNS.addService("_osc",        "_udp", oscLocalPort);
-          MDNS.addService("_http",       "_tcp", 80);
+  // Start mDNS (Multicast DNS) responder
+  if (MDNS.begin(host.c_str())) {
+    DPRINTLN("mDNS responder started");
+    // service name is lower case
+    // service name and protocol starts with an '_' e.g. '_udp'
+    MDNS.addService("_apple-midi", "_udp", 5004);
+    MDNS.addService("_osc",        "_udp", oscLocalPort);
+    MDNS.addService("_http",       "_tcp", 80);
 #ifdef PEDALINO_TELNET_DEBUG
-          MDNS.addService("_telnet",     "_tcp", 23);
+    MDNS.addService("_telnet",     "_tcp", 23);
 #endif
-        }
-      }
+  }
 #endif  //  ARDUINO_ARCH_ESP32
 
-      // OTA update init
-      ota_begin(host.c_str());
-      DPRINT("OTA update started\n");
+  // OTA update init
+  ota_begin(host.c_str());
+  DPRINT("OTA update started\n");
 
 #ifdef ARDUINO_ARCH_ESP8266
-      // Start firmawre update via HTTP (connect to http://pedalino.local/update)
-      httpUpdater.setup(&httpServer);
+  // Start firmawre update via HTTP (connect to http://pedalino.local/update)
+  httpUpdater.setup(&httpServer);
 #endif
 
-      http_setup();
-      DPRINT("HTTP server started\n");
-      DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
+  http_setup();
+  DPRINT("HTTP server started\n");
+  DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
 #ifdef WEBCONFIG
-      DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
+  DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
 #endif
 
 #ifdef ARDUINO_ARCH_ESP8266
-      ipMIDI.beginMulticast(WiFi.localIP(), ipMIDImulticast, ipMIDIdestPort);
+  ipMIDI.beginMulticast(WiFi.localIP(), ipMIDImulticast, ipMIDIdestPort);
 #endif
 #ifdef ARDUINO_ARCH_ESP32
-      ipMIDI.beginMulticast(ipMIDImulticast, ipMIDIdestPort);
+  ipMIDI.beginMulticast(ipMIDImulticast, ipMIDIdestPort);
 #endif
-      DPRINT("ipMIDI server started\n");
+  DPRINT("ipMIDI server started\n");
 
-      // RTP-MDI
-      apple_midi_start();
-      DPRINT("RTP-MIDI started\n");
+  // RTP-MDI
+  apple_midi_start();
+  DPRINT("RTP-MIDI started\n");
 
-      // Calculate the broadcast address of local WiFi to broadcast OSC messages
-      oscRemoteIp = WiFi.localIP();
-      IPAddress localMask = WiFi.subnetMask();
-      for (int i = 0; i < 4; i++)
-        oscRemoteIp[i] |= (localMask[i] ^ B11111111);
+  // Calculate the broadcast address of local WiFi to broadcast OSC messages
+  oscRemoteIp = WiFi.localIP();
+  IPAddress localMask = WiFi.subnetMask();
+  for (int i = 0; i < 4; i++)
+    oscRemoteIp[i] |= (localMask[i] ^ B11111111);
 
-      // Set incoming OSC messages port
-      oscUDP.begin(oscLocalPort);
-      DPRINT("OSC server started\n");
+  // Set incoming OSC messages port
+  oscUDP.begin(oscLocalPort);
+  DPRINT("OSC server started\n");
 
-      // Connect to Blynk Cloud
-      blynk_connect();
+  // Connect to Blynk Cloud
+  blynk_connect();
 }
 
 
-void WiFiEvent(WiFiEvent_t event, system_event_info_t info) {
-
+void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
+{
   IPAddress localMask;
 
   /*
@@ -218,9 +233,7 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info) {
 
     case WIFI_EVENT_STAMODE_DISCONNECTED:
       DPRINTLN("WIFI_EVENT_STAMODE_DISCONNECTED");
-      httpServer.stop();
-      ipMIDI.stop();
-      oscUDP.stop();
+      stop_services();
       break;
 
     case WIFI_EVENT_SOFTAPMODE_STACONNECTED:
@@ -302,17 +315,12 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info) {
 
     case SYSTEM_EVENT_STA_LOST_IP:
       DPRINT("SYSTEM_EVENT_STA_LOST_IP\n");
-      MDNS.end();
-      ipMIDI.stop();
-      oscUDP.stop();
+      stop_services();
       break;
 
     case SYSTEM_EVENT_STA_DISCONNECTED:
       DPRINT("SYSTEM_EVENT_STA_DISCONNECTED\n");
-      MDNS.end();
-      ArduinoOTA.end();
-      ipMIDI.stop();
-      oscUDP.stop();
+      stop_services();
       break;
 
     case SYSTEM_EVENT_AP_START:
@@ -329,7 +337,7 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info) {
       DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
       DPRINT("Channel     : %d\n", WiFi.channel());
       DPRINT("Connect to %s wireless network with no password\n", wifiSoftAP.c_str());
-      //start_services();
+      start_services();
       break;
 
     case SYSTEM_EVENT_AP_STOP:
@@ -397,7 +405,7 @@ void ap_mode_start()
   WiFi.disconnect();  // mandatory after the unsuccessful try to connect to an AP
                       // and before setting up the softAP
 
-  WiFi.mode(WIFI_AP_STA);
+  WiFi.mode(WIFI_AP);
   
   if (WiFi.softAP(wifiSoftAP.c_str())) {
     DPRINT("AP %s started\n", wifiSoftAP.c_str());
