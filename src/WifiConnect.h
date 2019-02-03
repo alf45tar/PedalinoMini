@@ -404,8 +404,8 @@ void ap_mode_start()
 
   WiFi.mode(WIFI_AP);
   
-  if (WiFi.softAP(wifiSoftAP.c_str())) {
-    DPRINT("AP %s started\n", wifiSoftAP.c_str());
+  if (WiFi.softAP(wifiSoftAP.c_str(), host.c_str())) {
+    DPRINT("AP %s started with password %s\n", wifiSoftAP.c_str(), host.c_str());
     // Setup the DNS server redirecting all the domains to the apIP
     //dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     //dnsServer.start(53, "*", apIP);

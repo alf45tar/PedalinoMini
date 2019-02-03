@@ -124,14 +124,14 @@ void setup()
 
   eeprom_init();
 
-  // Reset to factory default if RIGHT key is pressed and hold for alt least 8 seconds at power on
-  // Enter serial passthrough mode if RIGHT key is pressed adn hold for less than 8 seconds at power on
-  pinMode(PIN_D(0), INPUT_PULLUP);
+  // Reset to factory default if BOOT key is pressed and hold for alt least 8 seconds at power on
+  // Enter AP mode if BOOT key is pressed and hold for less than 8 seconds at power on
+  pinMode(GPIO_NUM_0, INPUT_PULLUP);
   unsigned long milliStart = millis();
   unsigned long duration = 0;
   lcdClear();
-  if (digitalRead(PIN_D(0)) == LOW) display_progress_bar_title("Factory reset");
-  while ((digitalRead(PIN_D(0)) == LOW) && (duration < 8500)) {
+  if (digitalRead(GPIO_NUM_0) == LOW) display_progress_bar_title("Factory reset");
+  while ((digitalRead(GPIO_NUM_0) == LOW) && (duration < 8500)) {
     DPRINT("#");
     lcdSetCursor(duration / 500, 0);
     lcdPrint("#");
@@ -143,10 +143,10 @@ void setup()
     duration = millis() - milliStart;
   }
   //display_clear();
-  if ((digitalRead(PIN_D(0)) == HIGH) && (duration > 100 && duration < 8500)) {
+  if ((digitalRead(GPIO_NUM_0) == HIGH) && (duration > 100 && duration < 8500)) {
     DPRINT("\nSkip connection to last AP and/or SmartConfig/WPS setup\n");
     apmode = true;
-  } else if ((digitalRead(PIN_D(0)) == LOW) && (duration >= 8500)) {
+  } else if ((digitalRead(GPIO_NUM_0) == LOW) && (duration >= 8500)) {
     DPRINT("\nReset EEPROM to factory default\n");
     lcdSetCursor(0, 1);
     lcdPrint("Factory default ");
