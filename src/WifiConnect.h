@@ -360,7 +360,6 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_SUCCESS\n");
       wpsStatus = 1;
       ESP_ERROR_CHECK(esp_wifi_wps_disable());
-      DPRINT("WPS successfull\n");
       WiFi.begin();
       break;
 
@@ -368,14 +367,12 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_FAILED\n");
       wpsStatus = -1;
       ESP_ERROR_CHECK(esp_wifi_wps_disable());
-      DPRINT("WPS failed\n");
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_TIMEOUT\n");
       wpsStatus = -2;
       ESP_ERROR_CHECK(esp_wifi_wps_disable());
-      DPRINT("WPS timeout\n");
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_PIN:
@@ -488,6 +485,9 @@ bool wps_config()
 {
   wpsStatus = 0;
 
+  WiFi.disconnect();
+  WiFi.mode(WIFI_STA);
+
   WPS.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
   WPS.wps_type = WPS_TYPE_PBC;
   strcpy(WPS.factory_info.manufacturer, "ESPRESSIF");
@@ -508,16 +508,27 @@ bool wps_config()
 
   if (wpsStatus == 1) {
     // Wait for WiFi to connect to AP
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
+    display_progress_bar_title2("Connecting to", WiFi.SSID());
+    for (byte i = 0; i < WIFI_CONNECT_TIMEOUT * 2 && !WiFi.isConnected(); i++) {
+      display_progress_bar_update(i, WIFI_CONNECT_TIMEOUT*2-1);
+      status_blink();
+      delay(100);
+      status_blink();
+      delay(300);
     }
-    wifiSSID = WiFi.SSID();
-    wifiPassword = WiFi.psk();
+    display_progress_bar_update(1, 1);
 
-    DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
-    DPRINT("Password    : %s\n", WiFi.psk().c_str());
+    WiFi.isConnected() ? WIFI_LED_ON() : WIFI_LED_OFF();
 
-    save_wifi_credentials(WiFi.SSID(), WiFi.psk());
+    if (WiFi.isConnected()) {
+      wifiSSID = WiFi.SSID();
+      wifiPassword = WiFi.psk();
+
+      DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
+      DPRINT("Password    : %s\n", WiFi.psk().c_str());
+
+      save_wifi_credentials(WiFi.SSID(), WiFi.psk());
+    }  
   }
   else {
     //ESP_ERROR_CHECK(esp_wifi_wps_disable());
@@ -579,10 +590,10 @@ bool auto_reconnect(String ssid, String password)
 void wifi_connect()
 {
   if (!auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
-    smart_config();            // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+    wps_config();              // WPS_TIMEOUT seconds to receive WPS parameters and connect
   
   if (!WiFi.isConnected())
-    wps_config();               // WPS_TIMEOUT seconds to receive WPS parameters and connect
+    smart_config();            // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
 
   if (!WiFi.isConnected())
     ap_mode_start();           // switch to AP mode until next reboot
