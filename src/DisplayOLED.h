@@ -8,8 +8,20 @@
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
+#ifdef TTGO_T_EIGHT
+#include "SH1106Wire.h"
+#define OLED_I2C_ADDRESS  0x3c
+#define OLED_I2C_SDA      21
+#define OLED_I2C_SCL      22
+#else
 #include <SSD1306Wire.h>
+#define OLED_I2C_ADDRESS  0x3c
+#define OLED_I2C_SDA      SDA
+#define OLED_I2C_SCL      SCL
+#endif
 #include <OLEDDisplayUi.h>
+
+#include <Battery.h>
 
 #ifdef ARDUINO_ARCH_ESP8266
 #include <ESP8266WiFi.h>
@@ -21,10 +33,21 @@
 #include <ESPAsyncWebServer.h>
 #endif
 
-#define OLED_I2C_ADDRESS  0x3c
-#define OLED_I2C_SDA      SDA
-#define OLED_I2C_SCL      SCL
+// Initialize the OLED display using Wire library
+#ifdef TTGO_T_EIGHT
+SH1106Wire    display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
+#else
+SSD1306Wire   display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
+#endif
+OLEDDisplayUi ui(&display);
+bool          uiUpdate = true;
 
+Battery bat(3000, 4200, GPIO_NUM_34);
+
+bool blynk_cloud_connected();
+extern bool             appleMidiConnected;
+extern AsyncWebSocket   webSocket;
+extern AsyncEventSource events;
 
 #define WIFI_LOGO_WIDTH   78
 #define WIFI_LOGO_HEIGHT  64
@@ -325,15 +348,22 @@ const uint8_t block[] PROGMEM = {
 0xFE, 0xFF, 0x01, 0x01, 0x00, 0x02, 0xF9, 0x7F, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xFD, 0xFF, 0x02, 0xF9, 0x7F, 0x02, 0x01, 0x00, 0x02, 0xFE, 0xFF, 0x01, // 50
 };
 
-// Initialize the OLED display using Wire library
-SSD1306Wire   display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
-OLEDDisplayUi ui(&display);
-bool          uiUpdate = true;
+// Font generated or edited with the glyphEditor
+const uint8_t block10x10[] PROGMEM = {
+0x0A, // Width: 10
+0x0A, // Height: 10
+0x30, // First char: 48
+0x03, // Number of chars: 3
+// Jump Table:
+0x00, 0x00, 0x14, 0x0A, // 48
+0x00, 0x14, 0x14, 0x0A, // 49
+0x00, 0x28, 0x14, 0x0A, // 50
+// Font Data:
+0xFE, 0x01, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0xFE, 0x01, // 48
+0xFE, 0x01, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x31, 0x02, 0x31, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0xFE, 0x01, // 49
+0xFE, 0x01, 0x01, 0x02, 0xFD, 0x02, 0xFD, 0x02, 0xFD, 0x02, 0xFD, 0x02, 0xFD, 0x02, 0xFD, 0x02, 0x01, 0x02, 0xFE, 0x01, // 50
+};
 
-bool blynk_cloud_connected();
-extern bool             appleMidiConnected;
-extern AsyncWebSocket   webSocket;
-extern AsyncEventSource events;
 
 void display_clear()
 {
@@ -369,8 +399,11 @@ void display_progress_bar_update(unsigned int progress, unsigned int total)
 
 void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
+  static uint16_t voltage = bat.voltage();
+  static uint8_t  level   = bat.level(voltage);
+
 #ifdef WIFI
-  static int signal;
+  static int      signal  = WiFi.RSSI();
 
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->setFont(wifiSignal);
@@ -393,13 +426,100 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   if (blynk_cloud_connected()) display->drawString(36, 0, String(1));
   else display->drawString(36, 0, String(0));
 
-  display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  display->setFont(batteryIndicator);
-  display->drawString(128, 0, String((millis()>>10)%4));
+  if (millis() < endMillis2) {
+    if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
+        MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
+      display->setFont(ArialMT_Plain_10);
+      display->setTextAlignment(TEXT_ALIGN_CENTER);
+      display->drawString(64, 0, String(bpm) + "BPM");
+      display->setTextAlignment(TEXT_ALIGN_RIGHT);
+      display->setFont(block10x10);
+      switch (timeSignature) {
+        case PED_TIMESIGNATURE_2_4:
+          display->drawString( 98, 0, String(0));
+          display->drawString(108, 0, String(0));
+          break;
+        case PED_TIMESIGNATURE_4_4:
+          display->drawString( 98, 0, String(0));
+          display->drawString(108, 0, String(0));
+          display->drawString(118, 0, String(0));
+          display->drawString(128, 0, String(0));
+          break;
+        case PED_TIMESIGNATURE_3_4:
+        case PED_TIMESIGNATURE_3_8:
+        case PED_TIMESIGNATURE_6_8:
+        case PED_TIMESIGNATURE_9_8:
+        case PED_TIMESIGNATURE_12_8:
+          display->drawString( 98, 0, String(0));
+          display->drawString(108, 0, String(0));
+          display->drawString(118, 0, String(0));
+          break;
+      }
+      switch (MTC.getBeat()) {
+        case 0:
+          if (MTC.isPlaying())
+            display->drawString(98, 0, String(2));
+          else
+            display->drawString(98, 0, String(1));
+          break;
+        case 1:
+          if (MTC.isPlaying())
+            display->drawString(108, 0, String(2));
+          else
+            display->drawString(108, 0, String(1));
+          break;
+        case 2:
+          if (MTC.isPlaying())
+            display->drawString(118, 0, String(2));
+          else
+            display->drawString(118, 0, String(1));
+          break;
+        case 3:
+          if (MTC.isPlaying())
+            display->drawString(128, 0, String(2));
+          else
+            display->drawString(128, 0, String(1));
+          break;
+      }
+    }
+    else if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
+             MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
+      char buf[12];
+      sprintf(buf, "%02d:%02d:%02d:%02d", MTC.getHours(), MTC.getMinutes(), MTC.getSeconds(), MTC.getFrames());
+      display->setFont(ArialMT_Plain_10);
+      display->setTextAlignment(TEXT_ALIGN_RIGHT);
+      display->drawString(128, 0, buf);
+    }    
+  }
+  else {
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->setFont(profileSign);
+    display->drawString(64 + 10*currentProfile, 0, String(currentProfile));
 
-  display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->setFont(profileSign);
-  display->drawString(64 + 10*currentProfile, 0, String(currentProfile));
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->setFont(batteryIndicator);
+    voltage = (199*voltage + bat.voltage()) / 200;
+    level   = (199*level + bat.level(voltage)) / 200;
+    /*
+    if      (level == 100) display->drawString(128, 0, String((millis() >> 10) % 4));
+    else if (level >   70) display->drawString(128, 0, String(3));
+    else if (level >   40) display->drawString(128, 0, String(2));
+    else if (level >   10) display->drawString(128, 0, String(1));
+    else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
+    else display->drawString(128, 0, String(4));
+    */
+    if      (voltage > 3700) display->drawString(128, 0, String((millis() >> 10) % 4));
+    else if (voltage > 3600) display->drawString(128, 0, String(3));
+    else if (voltage > 3300) display->drawString(128, 0, String(2));
+    else if (voltage > 3100) display->drawString(128, 0, String(1));
+    else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
+    else display->drawString(128, 0, String(4));
+
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->setFont(ArialMT_Plain_10);
+    display->drawString(90, 0, String(voltage/10));
+    display->drawString(106, 0, String(level));
+  }  
 }
 
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
@@ -427,6 +547,10 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     if (interfaces[PED_OSC].midiIn) display->drawString(128, 54, String(3));
     else display->drawString(128, 54, String(0));
 #endif
+
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->setFont(ArialMT_Plain_10);
+    display->drawString(50, 54, String(ESP.getFreeHeap() / 1024));
   }
 }
 
@@ -759,6 +883,8 @@ void display_init()
   ui.init();
 
   display.flipScreenVertically();
+
+  bat.begin(3300, 2, &sigmoidal);
 }
 
 void display_ui_update_disable()
