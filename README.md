@@ -50,7 +50,11 @@ The shortest bill of materials ever: an ESP32 board and a OLED display. That's i
 
   - Any ESP32 board supported by [Arduino core for ESP32 WiFi chip](https://github.com/espressif/arduino-esp32)
     - Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
-  - OLED I2C 0.96" display 128x64 pixels SSD1306 based
+  - OLED I2C 0.96" display 128x64 pixels SSD1306/SH1106 based
+
+Not enough short?
+
+  - An all-in-one [TTGO T-Eight ESP32](http://www.lilygo.cn/claprod_view.aspx?TypeId=21&Id=987&FId=t28:21:28) with a bigger OLED display (1.3"), 4MB PSRAM and lithium battery interface
 
 ## PedalinoMini™ Breadboard Prototype example
 
