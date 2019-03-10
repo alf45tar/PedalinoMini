@@ -334,6 +334,11 @@ String get_root_page() {
   page += ESP.getFlashChipRealSize() / (1024 * 1024);
   page += F(" MB</dd>");
 #endif
+  page += F("<dt>SPIRAM Free/Total</dt><dd>");
+  page += ESP.getFreePsram() / 1024;
+  page += F("/");
+  page += ESP.getPsramSize() / 1024;
+  page += F(" kB</dd>");
   page += F("<dt>SPIFFS Used/Total</dt><dd>");
   page += SPIFFS.usedBytes() / 1024;
   page += F("/");

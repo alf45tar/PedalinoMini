@@ -514,11 +514,13 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     else if (voltage > 3100) display->drawString(128, 0, String(1));
     else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
     else display->drawString(128, 0, String(4));
-
+    
+    /*
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(ArialMT_Plain_10);
     display->drawString(90, 0, String(voltage/10));
     display->drawString(106, 0, String(level));
+    */
   }  
 }
 
@@ -548,9 +550,11 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     else display->drawString(128, 54, String(0));
 #endif
 
+    /*
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     display->setFont(ArialMT_Plain_10);
     display->drawString(50, 54, String(ESP.getFreeHeap() / 1024));
+    */
   }
 }
 

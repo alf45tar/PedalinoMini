@@ -22,6 +22,7 @@
 #define PEDALS             1
 const byte pinD[] = {2};
 const byte pinA[] = {2};
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_0
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32
@@ -32,6 +33,12 @@ const byte pinA[] = {2};
 // These pins don’t have internal pull-ups or pull-down resistors. 
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
+
+#ifdef TTGO_T_EIGHT
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_35
+#else
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_0
+#endif
 #endif
 
 #define PIN_D(x)          pinD[x]
