@@ -303,6 +303,9 @@ String get_root_page() {
 
   page += F("<div class='col-6 col-sm-3'>");
   page += F("<h3>Hardware</h3>");
+  page += F("<dt>Board</dt><dd>");
+  page += ARDUINO_BOARD;
+  page += F("</dd>");
   page += F("<dt>Chip</dt><dd>");
 #ifdef ARDUINO_ARCH_ESP8266
   page += String("ESP8266");
