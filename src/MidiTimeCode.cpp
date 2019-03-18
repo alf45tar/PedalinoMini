@@ -295,10 +295,10 @@ void MidiTimeCode::decodMTCQuarterFrame(byte MTCData)
       byte s = (b[3] & 0x03) << 4 | b[2];
       byte f = (b[1] & 0x01) << 4 | b[0];
 
-      if (h > 23)  h = 23;
-      if (m > 59)  m = 59;
-      if (s > 59)  s = 59;
-      if (f > 30)  f = 30;
+      if (h > 23)  h = 0;
+      if (m > 59)  m = 0;
+      if (s > 59)  s = 0;
+      if (f > 30)  f = 0;
 
       setPlayhead(h, m, s, f);
       for (i = 0; i < 8; i++)
@@ -391,7 +391,7 @@ void MidiTimeCode::updatePlayhead()
   mPlayhead.frames  %= 24;
   mPlayhead.seconds %= 60;
   mPlayhead.minutes %= 60;
-  mPlayhead.hours   %= 100;
+  mPlayhead.hours   %= 24;
 }
 
 void MidiTimeCode::resetPlayhead()

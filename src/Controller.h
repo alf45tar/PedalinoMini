@@ -1068,7 +1068,8 @@ void controller_setup()
                 break;
             }
             pedals[i].footSwitch[p]->begin();
-            pedals[i].footSwitch[p]->setDebounceTime(DEBOUNCE_INTERVAL);
+            //pedals[i].footSwitch[p]->setDebounceTime(DEBOUNCE_INTERVAL);
+            pedals[i].footSwitch[p]->setPressTime(100);
             if (pedals[i].function == PED_MIDI) {
               switch (pedals[i].pressMode) {
                 case PED_PRESS_1:
@@ -1129,7 +1130,8 @@ void controller_setup()
         pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt, ARRAY_SIZE(kt));
         DPRINT("   Pin A%d", PIN_A(i));
         pedals[i].footSwitch[0]->begin();
-        pedals[i].footSwitch[0]->setDebounceTime(DEBOUNCE_INTERVAL);
+        //pedals[i].footSwitch[0]->setDebounceTime(DEBOUNCE_INTERVAL);
+        pedals[i].footSwitch[0]->setPressTime(100);
         if (pedals[i].function == PED_MIDI) {
           switch (pedals[i].pressMode) {
             case PED_PRESS_1:
