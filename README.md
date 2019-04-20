@@ -83,3 +83,26 @@ MIDI Clock|MIDI Time Code
 ![WEB Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-interfaces.png "Screen 4")
 
 ![WEB Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-options.png "Screen 5")
+
+## <a name="wifi"></a>How to connect PedalinoMini to a WiFi network
+
+AppleMIDI, ipMIDI and Open Sound Control (OSC) protocol requires a network connection. PedalinoMini support IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).
+
+PedalinoMini implements Smart Config technology via [Espressif’s ESP-TOUCH protocol](https://www.espressif.com/en/products/software/esp-touch/overview) to help users connect embedded devices to a WiFi network through simple configuration on a smartphone.
+
+Tested apps for configure SSID and password are:
+
+- [ESP8266 SmartConfig](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch) for Android
+
+- [SmartConfig](https://itunes.apple.com/us/app/smartconfig/id1233975749?platform=iphone&preserveScrollPosition=true#platform/iphone) for iOS
+
+Boot procedure
+
+- On power on Pedalino will try to connect to the last know access point
+- If it cannot connect to the last used access point within 15 seconds it enters into Smart Config mode
+- Start one of the tested apps to configure SSID and password
+- If it doesn't receive any SSID and password during the next 15 seconds it enters into WPS mode
+- Press WPS button on your WiFi router
+- If it doesn't receive any SSID and password during the next 15 seconds it switch to AP mode
+- In AP mode Pedalino create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
+- Reboot Pedalino to restart the procedure.

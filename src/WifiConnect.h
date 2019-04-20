@@ -531,7 +531,6 @@ bool wps_config()
     }  
   }
   else {
-    //ESP_ERROR_CHECK(esp_wifi_wps_disable());
     DPRINT("WPS timeout\n");
   }
   return WiFi.isConnected();
@@ -589,14 +588,16 @@ bool auto_reconnect(String ssid, String password)
 
 void wifi_connect()
 {
-  if (!auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
-    wps_config();              // WPS_TIMEOUT seconds to receive WPS parameters and connect
-  
-  if (!WiFi.isConnected())
-    smart_config();            // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+  auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
 
   if (!WiFi.isConnected())
-    ap_mode_start();           // switch to AP mode until next reboot
+    smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+
+  if (!WiFi.isConnected())
+    wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
+
+  if (!WiFi.isConnected())
+    ap_mode_start();          // switch to AP mode until next reboot
 }
 
 #endif  // WIFI
