@@ -96,7 +96,7 @@ Tested apps for configure SSID and password are:
 
 - [Espressif Esptouch](https://itunes.apple.com/us/app/espressif-esptouch/id1071176700?mt=8) for iOS
 
-Boot procedure
+### Boot procedure
 
 - On power on Pedalino will try to connect to the last know access point
 - If it cannot connect to the last used access point within 15 seconds it enters into Smart Config mode
@@ -104,5 +104,5 @@ Boot procedure
 - If it doesn't receive any SSID and password during the next 15 seconds it enters into WPS mode
 - Press WPS button on your WiFi router
 - If it doesn't receive any SSID and password during the next 15 seconds it switch to AP mode
-- In AP mode Pedalino create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
+- In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
 - Reboot Pedalino to restart the procedure.
