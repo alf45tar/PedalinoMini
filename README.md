@@ -84,17 +84,17 @@ MIDI Clock|MIDI Time Code
 
 ![WEB Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-options.png "Screen 5")
 
-## <a name="wifi"></a>How to connect PedalinoMini to a WiFi network
+## <a name="wifi"></a>How to connect PedalinoMini™ to a WiFi network
 
-AppleMIDI, ipMIDI and Open Sound Control (OSC) protocol requires a network connection. PedalinoMini support IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).
+AppleMIDI, ipMIDI and Open Sound Control (OSC) protocol requires a network connection. PedalinoMini™ support IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).
 
-PedalinoMini implements Smart Config technology via [Espressif’s ESP-TOUCH protocol](https://www.espressif.com/en/products/software/esp-touch/overview) to help users connect embedded devices to a WiFi network through simple configuration on a smartphone.
+PedalinoMini™ implements Smart Config technology via [Espressif’s ESP-TOUCH protocol](https://www.espressif.com/en/products/software/esp-touch/overview) to help users connect embedded devices to a WiFi network through simple configuration on a smartphone.
 
 Tested apps for configure SSID and password are:
 
 - [ESP8266 SmartConfig](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch) for Android
 
-- [SmartConfig](https://itunes.apple.com/us/app/smartconfig/id1233975749?platform=iphone&preserveScrollPosition=true#platform/iphone) for iOS
+- [Espressif Esptouch](https://itunes.apple.com/us/app/espressif-esptouch/id1071176700?mt=8) for iOS
 
 Boot procedure
 
