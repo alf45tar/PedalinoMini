@@ -93,11 +93,13 @@ PedalinoMini™ implements Wi-Fi Protected Setup (WPS) and Smart Config technolo
 - [ESP8266 SmartConfig](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch) for Android
 - [Espressif Esptouch](https://itunes.apple.com/us/app/espressif-esptouch/id1071176700?mt=8) for iOS
 
+If the WiFi network is not available PedalinoMini™ will create an hotspot WiFi network for you. Connect all your device to it.
+
 ### Boot procedure
 
 - On power on Pedalino will try to connect to the last know access point
 - If it cannot connect to the last used access point within 15 seconds it enters into Smart Config mode
-- Start one of the tested apps to configure SSID and password
+- Start one of the suggested apps to configure SSID and password
 - If it doesn't receive any SSID and password during the next 15 seconds it enters into WPS mode
 - Press WPS button on your WiFi router
 - If it doesn't receive any SSID and password during the next 15 seconds it switch to AP mode
