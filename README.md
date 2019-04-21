@@ -106,3 +106,11 @@ Tested apps for configure SSID and password are:
 - If it doesn't receive any SSID and password during the next 15 seconds it switch to AP mode
 - In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
 - Reboot Pedalino to restart the procedure.
+
+## How to reset PedalinoMini™ to factory default
+
+### TTGO T-Eight ESP32 procedure
+
+- Press and hold navigation CENTER button
+- Press and release POWER button
+- Release CENTER button when PedalinoMini™ reboot (after about 10 seconds)
