@@ -104,19 +104,24 @@ If the WiFi network is not available PedalinoMini™ will create an hotspot for 
 - In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
 - Reboot Pedalino to restart the procedure.
 
-## How to reset PedalinoMini™ to factory default
+
+## How to start PedalinoMini™ in AP mode (skipping last know access point, SmartConfig and WPS)
+
+See [How to reset PedalinoMini™ to factory default](factory-default)
+
+## How to start PedalinoMini™ with a specific profile
+
+### TTGO T-Eight ESP32 procedure
+
+- Press and hold navigation LEFT button for profile A and navigation RIGHT button for profile C
+- Press and release POWER button
+- Release LEFT or RIGHT button when the WiFi/Bluetooth logo disappear
+
+## <a name="factory-default"></a>How to reset PedalinoMini™ to factory default
 
 ### TTGO T-Eight ESP32 procedure
 
 - Press and hold navigation CENTER button
 - Press and release POWER button
 - Release CENTER button when PedalinoMini™ reboot (after about 10 seconds)
-- If you release CENTER button before reboot PedalinoMini™ will start with profile A
-
-## How to start PedalinoMini™ with a specific profile
-
-### TTGO T-Eight ESP32 procedure
-
-- Press and hold navigation LEFT button for profile B and navigation RIGHT button for profile C
-- Press and release POWER button
-- Release LEFT or RIGHT button when the WiFi/Bluetooth logo disappear
+- If you release CENTER button before reboot PedalinoMini™ will start in AP mode
