@@ -84,7 +84,7 @@ MIDI Clock|MIDI Time Code
 
 ![WEB Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-options.png "Screen 5")
 
-## <a name="wifi"></a>How to connect PedalinoMini™ to a WiFi network
+## How to connect PedalinoMini™ to a WiFi network
 
 PedalinoMini™ supports IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).
 
@@ -107,17 +107,17 @@ If the WiFi network is not available PedalinoMini™ will create an hotspot for 
 
 ## How to start PedalinoMini™ in AP mode (skipping last know access point, SmartConfig and WPS)
 
-See [How to reset PedalinoMini™ to factory default](factory-default)
+See [How to reset PedalinoMini™ to factory default](https://github.com/alf45tar/PedalinoMini/blob/master/README.md#how-to-reset-pedalinomini-to-factory-default)
 
 ## How to start PedalinoMini™ with a specific profile
 
 ### TTGO T-Eight ESP32 procedure
 
-- Press and hold navigation LEFT button for profile A and navigation RIGHT button for profile C
+- Press and hold navigation LEFT button for profile A or navigation RIGHT button for profile C
 - Press and release POWER button
 - Release LEFT or RIGHT button when the WiFi/Bluetooth logo disappear
 
-## <a name="factory-default"></a>How to reset PedalinoMini™ to factory default
+## How to reset PedalinoMini™ to factory default
 
 ### TTGO T-Eight ESP32 procedure
 
