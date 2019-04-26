@@ -158,6 +158,7 @@ void setup()
     //ESP.reset();
   }
 
+#ifdef TTGO_T_EIGHT
   pinMode(PROFILE_A_PIN, INPUT_PULLUP);
   if (digitalRead(PROFILE_A_PIN) == LOW) {
     currentProfile = 0;
@@ -168,6 +169,7 @@ void setup()
     currentProfile = 2;
     eeprom_update_current_profile(currentProfile);
   }
+#endif
   eeprom_read();
 
 #ifdef ARDUINO_ARCH_ESP8266
