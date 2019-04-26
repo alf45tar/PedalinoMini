@@ -93,7 +93,7 @@ PedalinoMini™ implements Wi-Fi Protected Setup (WPS) and Smart Config technolo
 - [ESP8266 SmartConfig](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch) for Android
 - [Espressif Esptouch](https://itunes.apple.com/us/app/espressif-esptouch/id1071176700?mt=8) for iOS
 
-If the WiFi network is not available PedalinoMini™ will create an hotspot WiFi network for you. Connect all your device to it.
+If the WiFi network is not available PedalinoMini™ will create an hotspot for you. Connect all your device to it.
 
 - On power on Pedalino will try to connect to the last know access point
 - If it cannot connect to the last used access point within 15 seconds it enters into Smart Config mode
@@ -111,3 +111,12 @@ If the WiFi network is not available PedalinoMini™ will create an hotspot WiFi
 - Press and hold navigation CENTER button
 - Press and release POWER button
 - Release CENTER button when PedalinoMini™ reboot (after about 10 seconds)
+- If you release CENTER button before reboot PedalinoMini™ will start with profile A
+
+## How to start PedalinoMini™ with a specific profile
+
+### TTGO T-Eight ESP32 procedure
+
+- Press and hold navigation LEFT button for profile B and navigation RIGHT button for profile C
+- Press and release POWER button
+- Release LEFT or RIGHT button when the WiFi/Bluetooth logo disappear
