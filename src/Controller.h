@@ -122,6 +122,8 @@ void autosensing_setup()
   int ring_max;
   Bounce debouncer;
 
+  return;
+
   DPRINT("Pedal autosensing...\n");
 
   for (byte p = 0; p < PEDALS; p++) {
@@ -174,7 +176,7 @@ void autosensing_setup()
         if (tip == LOW) pedals[p].invertPolarity = true; // switch normally closed
         DPRINT(" MOMENTARY");
         if (pedals[p].invertPolarity) DPRINT(" POLARITY-");
-        DPRINTLN("");
+        DPRINT("\n");
       }
       else if (ring > 0) {
         // analog
@@ -208,7 +210,7 @@ unsigned int map_analog(byte p, unsigned int value)
     case PED_LINEAR:
       break;
     case PED_LOG:
-      value = round(log(value + 1) * 147.61);             // y=log(x+1)/log(1023)*1023
+      value = round(1023*log(value+1)/log(1024));
       break;
     case PED_ANTILOG:
       value = round((exp(value / 511.5) - 1) * 160.12);   // y=[e^(2*x/1023)-1]/[e^2-1]*1023
@@ -301,7 +303,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     case PED_NOTE_ON_OFF:
 
       if (on_off && value > 0) {
-        DPRINT("     NOTE ON     Note %d     Velocity %d     Channel %d\n", code, value, channel);
+        DPRINT("NOTE ON.....Note %3d.....Velocity %3d.....Channel %2d\n", code, value, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendNoteOn(code, value, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendNoteOn(code, value, channel);
         AppleMidiSendNoteOn(code, value, channel);
@@ -311,7 +313,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         screen_info(midi::NoteOn, code, value, channel);
       }
       else {
-        DPRINT("     NOTE OFF    Note %d     Velocity %d     Channel %d\n", code, value, channel);
+        DPRINT("NOTE OFF....Note %3d......Velocity %3d.....Channel %2d\n", code, value, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendNoteOff(code, value, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendNoteOff(code, value, channel);
         AppleMidiSendNoteOff(code, value, channel);
@@ -325,7 +327,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     case PED_CONTROL_CHANGE:
 
       if (on_off) {
-        DPRINT("     CONTROL CHANGE     Code %d     Value %d     Channel %d\n", code, value, channel);
+        DPRINT("CONTROL CHANGE.....Code %3d......Value %3d.....Channel %2d\n", code, value, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(code, value, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(code, value, channel);
         AppleMidiSendControlChange(code, value, channel);
@@ -341,7 +343,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     case PED_PROGRAM_CHANGE_DEC:
 
       if (on_off) {
-        DPRINT("     PROGRAM CHANGE     Program %d     Channel %d", code, channel);
+        DPRINT("PROGRAM CHANGE.....Program %3d.....Channel %2d\n", code, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendProgramChange(code, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendProgramChange(code, channel);
         AppleMidiSendProgramChange(code, channel);
@@ -356,7 +358,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
 
       if (on_off) {
         int bend = map(value, 0, MIDI_RESOLUTION-1, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX);
-        DPRINT("     PITCH BEND     Value %d     Channel %d", bend, channel);
+        DPRINT("PITCH BEND.....Value %5d.....Channel %2d\n", bend, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendPitchBend(bend, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendPitchBend(bend, channel);
         AppleMidiSendPitchBend(bend, channel);
@@ -372,7 +374,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
 
       if (on_off) {
         // MSB
-        DPRINT("     CONTROL CHANGE     Code %d     Value %d     Channel %d\n", midi::BankSelect, code, channel);
+        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect, code, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect, code, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect, code, channel);
         AppleMidiSendControlChange(midi::BankSelect, code, channel);
@@ -381,7 +383,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         OSCSendControlChange(midi::BankSelect, code, channel);
         screen_info(midi::ControlChange, midi::BankSelect, code, channel);
         // LSB
-        DPRINT("     CONTROL CHANGE     Code %d     Value %d     Channel %d\n", midi::BankSelect+32, value, channel);
+        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect+32, value, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect+32, value, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect+32, value, channel);
         AppleMidiSendControlChange(midi::BankSelect+32, value, channel);
@@ -410,7 +412,7 @@ void refresh_switch_1_midi(byte i, bool send)
     if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;        // invert the value
     value = map_digital(i, input);                                            // apply the digital map function to the value
 
-    DPRINT("\nPedal %2d   input %d output %d", i + 1, input, value);
+    DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
 
     b = (currentBank + 2) % BANKS;
     bank_update(b, i);
@@ -442,7 +444,7 @@ void refresh_switch_1_midi(byte i, bool send)
       if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;      // invert the value
       value = map_digital(i, input);                                          // apply the digital map function to the value
 
-      DPRINT("\nPedal %2d   input %d output %d", i + 1, input, value);
+      DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
 
       b = currentBank;
       switch (value) {
@@ -477,7 +479,7 @@ void refresh_switch_1_midi(byte i, bool send)
       if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;      // invert the value
       value = map_digital(i, input);                                          // apply the digital map function to the value
 
-      DPRINT("\nPedal %2d   input %d output %d", i + 1, input, value);
+      DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
 
       b = (currentBank + 1) % BANKS;
       bank_update(b, i);
@@ -531,7 +533,7 @@ void refresh_switch_12L_midi(byte i, bool send)
 
       case MD_UISwitch::KEY_PRESS:
 
-        DPRINT("\nPedal %2d   SINGLE PRESS ", i + 1);
+        DPRINT("Pedal %2d   SINGLE PRESS \n", i + 1);
         switch (banks[b][i].midiMessage) {
           case PED_BANK_SELECT_INC:
           case PED_BANK_SELECT_DEC:
@@ -556,7 +558,7 @@ void refresh_switch_12L_midi(byte i, bool send)
 
       case MD_UISwitch::KEY_DPRESS:
 
-        DPRINT("\nPedal %2d   DOUBLE PRESS ", i + 1);
+        DPRINT("Pedal %2d   DOUBLE PRESS \n", i + 1);
         switch (banks[b][i].midiMessage) {
           case PED_BANK_SELECT_INC:
           case PED_BANK_SELECT_DEC:
@@ -577,7 +579,7 @@ void refresh_switch_12L_midi(byte i, bool send)
 
       case MD_UISwitch::KEY_LONGPRESS:
 
-        DPRINT("\nPedal %2d   LONG   PRESS ", i + 1);
+        DPRINT("Pedal %2d   LONG   PRESS \n", i + 1);
         switch (banks[b][i].midiMessage) {
           case PED_BANK_SELECT_INC:
           case PED_PROGRAM_CHANGE_INC:
@@ -833,6 +835,8 @@ void refresh_switch_12L(byte i)
 
 void refresh_analog(byte i, bool send)
 {
+  const unsigned int SAFE_ZONE = 2^ADC_RESOLUTION_BITS / 16;
+
   unsigned int input;
   unsigned int value;
 
@@ -840,14 +844,14 @@ void refresh_analog(byte i, bool send)
 
   input = analogRead(PIN_A(i));                             // read the raw analog input value
   if (pedals[i].autoSensing) {                              // continuos calibration
-    if (pedals[i].expZero > round(1.1 * input)) {
-      DPRINT("Pedal %2d calibration min %d\n", i + 1, round(1.1 * input));
+    if (pedals[i].expZero > (input + SAFE_ZONE)) {
+      DPRINT("Pedal %2d calibration min %d\n", i + 1, input);
     }
-    if (pedals[i].expMax < round(0.9 * input)) {
-      DPRINT("Pedal %2d calibration max %d\n", i + 1, round(0.9 * input));
+    if (pedals[i].expMax < (input - SAFE_ZONE)) {
+      DPRINT("Pedal %2d calibration max %d\n", i + 1, input);
     }
-    pedals[i].expZero = _min(pedals[i].expZero, round(1.1 * input));
-    pedals[i].expMax  = _max(pedals[i].expMax,  round(0.9 * input));
+    pedals[i].expZero = _min(pedals[i].expZero, input + SAFE_ZONE);
+    pedals[i].expMax  = _max(pedals[i].expMax,  input - SAFE_ZONE);
   }
   value = map_analog(i, input);                             // apply the digital map function to the value
   value = value >> (ADC_RESOLUTION_BITS - 7);               // map from ADC resolution to the 7-bit MIDI value [0, 127]
@@ -855,14 +859,14 @@ void refresh_analog(byte i, bool send)
   pedals[i].analogPedal->update(value);                     // update the responsive analog average
   if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
     value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
-    double velocity = (1.0 * (value - pedals[i].pedalValue[0])) / (millis() - pedals[i].lastUpdate[0]);
+    double velocity = (1000.0 * ((int)value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
     switch (pedals[i].function) {
       case PED_MIDI:
-        DPRINT("\nPedal %2d   input %d output %d velocity %.2f", i + 1, input, value, velocity);
+        DPRINT("Pedal %2d   input %d output %d velocity %.2f\n", i + 1, input, value, velocity);
         if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel);
         if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false);
         pedals[i].pedalValue[0] = value;
-        pedals[i].lastUpdate[0] = millis();
+        pedals[i].lastUpdate[0] = micros();
         lastUsedPedal = i;
         lastUsed = i;
         break;
@@ -1112,7 +1116,7 @@ void controller_setup()
         digitalWrite(PIN_D(i), HIGH);
         //if (pedals[i].function == PED_MIDI)
         {
-          pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
+          pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);   // sleep is enabled and the output value ignores small changes
           pedals[i].analogPedal->setActivityThreshold(6.0);
           pedals[i].analogPedal->setAnalogResolution(MIDI_RESOLUTION);        // 7-bit MIDI resolution
           pedals[i].analogPedal->enableEdgeSnap();                            // ensures that values at the edges of the spectrum can be easily reached when sleep is enabled
@@ -1174,7 +1178,7 @@ void controller_setup()
       case PED_JOG_WHEEL:
         break;
     }
-    DPRINT("\n");
+   DPRINT("\n");
   }
   for (byte i = 0; i < 100; i++)
     controller_run(false);            // to avoid spurious readings

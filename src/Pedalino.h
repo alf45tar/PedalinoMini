@@ -36,6 +36,9 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 
 #ifdef TTGO_T_EIGHT
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
+#define PROFILE_A_PIN         GPIO_NUM_39
+#define PROFILE_B_PIN         GPIO_NUM_38
+#define PROFILE_C_PIN         GPIO_NUM_37
 #else
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
 #endif

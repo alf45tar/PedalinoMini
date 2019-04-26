@@ -160,7 +160,7 @@ void blynk_connect()
 {
   static unsigned long lastFail = 0;
 
-  if (!blynkEnabled || (lastFail > 0) && (millis() - lastFail < BLYNK_RETRY_CONNECTION*1000)) return;
+  if (!blynkEnabled || ((lastFail > 0) && (millis() - lastFail < BLYNK_RETRY_CONNECTION*1000))) return;
 
   // Connect to Blynk Cloud
   if (WiFi.getMode() != WIFI_AP && strlen(blynkAuthToken) == BLYNK_AUTHTOKEN_LEN) {
@@ -186,14 +186,11 @@ inline void blynk_run()
 
     if (!blynkEnabled) return;
 
-    unsigned long a = micros();
     if (Blynk.connected()) {
       Blynk.run();
     } 
     else if (WiFi.isConnected())
       blynk_connect();
-    unsigned long b = micros();
-    DPRINT("%d ", b-a);
   }
 }
 

@@ -116,7 +116,7 @@ void setup()
   DPRINTLN("   |    |   \\  ___// /_/ | / __ \\|  |_|  |   |  (  <_> ) (  (     |    |/    Y    \\   )  )");
   DPRINTLN("   |____|    \\___  >____ |(____  /____/__|___|  /\\____/   \\  \\    |____|\\____|__  /  /  /");
   DPRINTLN("                 \\/     \\/     \\/             \\/           \\__\\                 \\/  /__/");
-  DPRINTLN("                                                                (c) 2018 alf45star");
+  DPRINTLN("                                                                (c) 2019 alf45star");
   DPRINTLN("                                                        https://github.com/alf45tar/Pedalino");
   DPRINT("\nHostname: %s\n", host.c_str());
 
@@ -156,6 +156,17 @@ void setup()
     eeprom_update();
     //ESP.eraseConfig();
     //ESP.reset();
+  }
+
+  pinMode(PROFILE_A_PIN, INPUT_PULLUP);
+  if (digitalRead(PROFILE_A_PIN) == LOW) {
+    currentProfile = 0;
+    eeprom_update_current_profile(currentProfile);
+  }
+  pinMode(PROFILE_C_PIN, INPUT_PULLUP);
+  if (digitalRead(PROFILE_C_PIN) == LOW) {
+    currentProfile = 2;
+    eeprom_update_current_profile(currentProfile);
   }
   eeprom_read();
 

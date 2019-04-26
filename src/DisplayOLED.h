@@ -402,33 +402,10 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   static uint16_t voltage = bat.voltage();
   static uint8_t  level   = bat.level(voltage);
 
-#ifdef WIFI
-  static int      signal  = WiFi.RSSI();
-
-  display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->setFont(wifiSignal);
-  signal = (4*signal + WiFi.RSSI()) / 5;
-  if      (signal < -90) display->drawString(0, 0, String(0));
-  else if (signal < -85) display->drawString(0, 0, String(1));
-  else if (signal < -80) display->drawString(0, 0, String(2));
-  else if (signal < -75) display->drawString(0, 0, String(3));
-  else if (signal < -70) display->drawString(0, 0, String(4));
-  else if (signal < -65) display->drawString(0, 0, String(5));
-  else if (signal < -60) display->drawString(0, 0, String(6));
-  else                   display->drawString(0, 0, String(7));
-#endif
-
-  display->setFont(bluetoothSign);
-  if (bleMidiConnected) display->drawString(24, 0, String(1));
-  else display->drawString(24, 0, String(0));
-
-  display->setFont(blynkSign);
-  if (blynk_cloud_connected()) display->drawString(36, 0, String(1));
-  else display->drawString(36, 0, String(0));
-
   if (millis() < endMillis2) {
     if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
         MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
+      /*
       display->setFont(ArialMT_Plain_10);
       display->setTextAlignment(TEXT_ALIGN_CENTER);
       display->drawString(64, 0, String(bpm) + "BPM");
@@ -481,6 +458,25 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
             display->drawString(128, 0, String(1));
           break;
       }
+      */
+      MTC.isPlaying() ? display->setColor(WHITE) : display->setColor(BLACK);
+      switch (timeSignature) {
+        case PED_TIMESIGNATURE_2_4:
+          display->fillRect(64 * MTC.getBeat(), 0, 64, 10);
+          break;
+        case PED_TIMESIGNATURE_4_4:
+          display->fillRect(32 * MTC.getBeat(), 0, 32, 10);
+          //display->setColor(INVERSE);
+          display->drawRect(32 * MTC.getBeat(), 0, 32, 10);
+          break;
+        case PED_TIMESIGNATURE_3_4:
+        case PED_TIMESIGNATURE_3_8:
+        case PED_TIMESIGNATURE_6_8:
+        case PED_TIMESIGNATURE_9_8:
+        case PED_TIMESIGNATURE_12_8:
+          display->fillRect(43 * MTC.getBeat(), 0, 42, 10);
+          break;
+      }
     }
     else if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
              MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
@@ -492,6 +488,29 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     }    
   }
   else {
+#ifdef WIFI
+    static int      signal  = WiFi.RSSI();
+
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->setFont(wifiSignal);
+    signal = (4*signal + WiFi.RSSI()) / 5;
+    if      (signal < -90) display->drawString(0, 0, String(0));
+    else if (signal < -85) display->drawString(0, 0, String(1));
+    else if (signal < -80) display->drawString(0, 0, String(2));
+    else if (signal < -75) display->drawString(0, 0, String(3));
+    else if (signal < -70) display->drawString(0, 0, String(4));
+    else if (signal < -65) display->drawString(0, 0, String(5));
+    else if (signal < -60) display->drawString(0, 0, String(6));
+    else                   display->drawString(0, 0, String(7));
+#endif
+
+    display->setFont(bluetoothSign);
+    if (bleMidiConnected) display->drawString(24, 0, String(1));
+    else display->drawString(24, 0, String(0));
+
+    display->setFont(blynkSign);
+    if (blynk_cloud_connected()) display->drawString(36, 0, String(1));
+    else display->drawString(36, 0, String(0));
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     display->setFont(profileSign);
     display->drawString(64 + 10*currentProfile, 0, String(currentProfile));

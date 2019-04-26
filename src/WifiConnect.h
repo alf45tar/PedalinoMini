@@ -377,7 +377,7 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 
     case SYSTEM_EVENT_STA_WPS_ER_PIN:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_PIN\n");
-      DPRINT("WPS_PIN = "PINSTR, PIN2STR(info.sta_er_pin.pin_code));
+      DPRINT("WPS_PIN = " PINSTR, PIN2STR(info.sta_er_pin.pin_code));
       break;
 
     default:
