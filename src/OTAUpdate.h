@@ -4,7 +4,7 @@
  *   |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> ) (  (     |    |/    Y    \   )  )
  *   |____|    \___  >____ |(____  /____/__|___|  /\____/   \  \    |____|\____|__  /  /  /
  *                 \/     \/     \/             \/           \__\                 \/  /__/
- *                                                                (c) 2018 alf45star
+ *                                                                (c) 2019 alf45star
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
@@ -33,10 +33,11 @@ void ota_begin(const char *hostname) {
 
   ArduinoOTA.onStart([]() {
     blynk_disconnect();
+#ifdef WEBCONFIG
     webSocket.enable(false);
     webSocket.textAll("OTA Update Started");
     webSocket.closeAll();
-
+#endif
     display.clear();
     display.setFont(ArialMT_Plain_10);
     display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);

@@ -4,7 +4,7 @@
  *   |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> ) (  (     |    |/    Y    \   )  )
  *   |____|    \___  >____ |(____  /____/__|___|  /\____/   \  \    |____|\____|__  /  /  /
  *                 \/     \/     \/             \/           \__\                 \/  /__/
- *                                                                (c) 2018 alf45star
+ *                                                                (c) 2019 alf45star
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
@@ -46,9 +46,10 @@ Battery bat(3000, 4200, GPIO_NUM_34);
 
 bool blynk_cloud_connected();
 extern bool             appleMidiConnected;
+#ifdef WEBCONFIG
 extern AsyncWebSocket   webSocket;
 extern AsyncEventSource events;
-
+#endif
 #define WIFI_LOGO_WIDTH   78
 #define WIFI_LOGO_HEIGHT  64
 
@@ -753,8 +754,9 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     ui.enableAutoTransition();
   }
   
+#ifdef WEBCONFIG
   events.send(MTC.isPlaying() ? "1" : "0", "play");
-  
+
   if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
       MTC.getMode() == MidiTimeCode::SynchroClockSlave)  {
     char buf[4];
@@ -797,6 +799,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     events.send("", "beat");
     events.send("", "timesignature");
   }
+#endif
 }
 
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)

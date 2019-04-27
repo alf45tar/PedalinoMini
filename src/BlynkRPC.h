@@ -4,7 +4,7 @@
  *   |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> ) (  (     |    |/    Y    \   )  )
  *   |____|    \___  >____ |(____  /____/__|___|  /\____/   \  \    |____|\____|__  /  /  /
  *                 \/     \/     \/             \/           \__\                 \/  /__/
- *                                                                (c) 2018 alf45star
+ *                                                                (c) 2019 alf45star
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
@@ -12,13 +12,17 @@
 #ifdef NOBLYNK
 inline String blynk_get_token() { return String("                                "); }
 inline String blynk_set_token(String token) { return token; }
-inline void blynk_setup();
+inline void blynk_setup() {}
+inline void blynk_enable() {}
+inline void blynk_disable() {}
 inline bool blynk_cloud_connected() {}
 inline void blynk_config() {}
 inline void blynk_connect() {}
 inline void blynk_disconnect() {}
 inline void blynk_run() {}
 inline void blynk_refresh() {}
+bool auto_reconnect(String ssid = "", String password = "");
+bool ap_connect(String ssid = "", String password = "");
 #else
 
 #define BLYNK_RETRY_CONNECTION    60      // If fail retry Blynk Cloud connection after 60 seconds

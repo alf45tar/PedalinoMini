@@ -4,11 +4,11 @@
  *   |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> ) (  (     |    |/    Y    \   )  )
  *   |____|    \___  >____ |(____  /____/__|___|  /\____/   \  \    |____|\____|__  /  /  /
  *                 \/     \/     \/             \/           \__\                 \/  /__/
- *                                                                (c) 2018 alf45star
+ *                                                                (c) 2019 alf45star
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
-String  theme     = "bootstrap";
+String theme = "bootstrap";
 
 #ifdef NOWIFI 
 inline void http_run() {};
@@ -36,9 +36,6 @@ ESP8266HTTPUpdateServer httpUpdater;
 #include <esp32-hal-timer.h>
 
 AsyncWebServer          httpServer(80);
-AsyncWebSocket          webSocket("/ws");
-AsyncEventSource        events("/events");    // EventSource is single direction, text-only protocol.
-AsyncWebSocketMessageBuffer *buffer = NULL;
 
 #ifdef COMPONENT_EMBED_TXTFILES
 extern const uint8_t bootstrap_min_css_start[]        asm("_binary_data_bootstrap_min_css_gz_start");
@@ -102,6 +99,10 @@ const uint8_t favicon_ico_gz[] PROGMEM = {
 
 #ifdef WEBCONFIG
 
+AsyncWebSocket               webSocket("/ws");
+AsyncEventSource             events("/events");    // EventSource is single direction, text-only protocol.
+AsyncWebSocketMessageBuffer *buffer = NULL;
+
 void    blynk_enable();
 void    blynk_disable();
 bool    blynk_enabled();
@@ -124,7 +125,7 @@ String get_top_page(int p = 0) {
   page += F("<!doctype html>");
   page += F("<html lang='en'>");
   page += F("<head>");
-  page += F("<title>Pedalino&trade;</title>");
+  page += F("<title>PedalinoMini&trade;</title>");
   page += F("<meta charset='utf-8'>");
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
@@ -455,262 +456,268 @@ String get_root_page() {
 
 String get_live_page() {
 
-  String page = "";
+  String page((char *)0);
 
+  page.reserve(12000);
   page += get_top_page(1);
 
-  page += F("<div aria-live='polite' aria-atomic='true' style='position: relative;'>");
-  page += F("<div id='remotedisplay' class='toast' style='position: absolute; top: 0; right: 0;' data-autohide='false'>");
-  page += F("<div class='toast-header'>");
-  page += F("<strong class='mr-auto'>Remote Display</strong>");
-  page += F("<button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>");
-  page += F("<span aria-hidden='true'>&times;</span>");
-  page += F("</button>");
-  page += F("</div>");
-  page += F("<div class='toast-body'>");
-  page += F("<canvas id='screen' height='64' width='128'>");
-  page += F("Sorry, your browser does not support canvas.");
-  page += F("</canvas><br><small>");
-  page += F("<a id='zoom1' href='#' role='button'>1x</a> ");
-  page += F("<a id='zoom2' href='#' role='button'>2x</a> ");
-  page += F("<a id='zoom4' href='#' role='button'>4x</a> ");
-  page += F("<a id='invert' href='#' role='button'>Invert</a></small>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
+  page += F("<div aria-live='polite' aria-atomic='true' style='position: relative;'>"
+            "<div id='remotedisplay' class='toast' style='position: absolute; top: 0; right: 0;' data-autohide='false'>"
+            "<div class='toast-header'>"
+            "<strong class='mr-auto'>Remote Display</strong>"
+            "<button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>"
+            "<span aria-hidden='true'>&times;</span>"
+            "</button>"
+            "</div>"
+            "<div class='toast-body'>"
+            "<canvas id='screen' height='64' width='128'>"
+            "Sorry, your browser does not support canvas."
+            "</canvas><br><small>"
+            "<a id='zoom1' href='#' role='button'>1x</a> "
+            "<a id='zoom2' href='#' role='button'>2x</a> "
+            "<a id='zoom4' href='#' role='button'>4x</a> "
+            "<a id='invert' href='#' role='button'>Invert</a></small>"
+            "</div>"
+            "</div>"
+            "</div>"
 
-  page += F("<div id='live'>");
-  page += F("<a id='showremotedisplay' href='#' role='button'>Remote Display</a>");
-  page += F("<p></p>");
-  page += F("<small>Bank</small><br>");
-  page += F("<div class='btn-group btn-group-toggle' data-toggle='buttons'>");
+            "<div id='live'>"
+            "<a id='showremotedisplay' href='#' role='button'>Remote Display</a>"
+            "<p></p>"
+            "<small>Bank</small><br>"
+            "<div class='btn-group btn-group-toggle' data-toggle='buttons'>");
   for (unsigned int i = 1; i <= BANKS; i++) {
-    page += F("<label class='btn btn-outline-primary'>");
-    page += F("<input type='radio' name='options' autocomplete='off' id='bank");
-    page += String(i) + F("'>") + String(i);
+    page += F("<label class='btn btn-outline-primary'>"
+              "<input type='radio' name='options' autocomplete='off' id='bank");
+    page += String(i);
+    page += F("'>");
+    page += String(i);
     page += F("</label>");
   }
-  page += F("</div>");
-  page += F("<p></p>");
+  page += F("</div>"
+            "<p></p>"
   
-  page += F("<div class='btn-group'>");
-  page += F("<button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
-  page += F("MIDI Clock</button>");
-  page += F("<div class='dropdown-menu'>");
-  page += F("<a id='clock-master' class='dropdown-item' href='#'>Master</a>");
-  page += F("<a id='clock-slave'  class='dropdown-item' href='#'>Slave</a>");
-  page += F("</div>");
-  page += F("</div>");
+            "<div class='btn-group'>"
+            "<button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
+            "MIDI Clock</button>"
+            "<div class='dropdown-menu'>"
+            "<a id='clock-master' class='dropdown-item' href='#'>Master</a>"
+            "<a id='clock-slave'  class='dropdown-item' href='#'>Slave</a>"
+            "</div>"
+            "</div>"
 
-  page += F("<div class='btn-group'>");
-  page += F("<button type='button' class='btn btn-outline-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
-  page += F("Time Signature</button>");
-  page += F("<div class='dropdown-menu'>");
-  page += F("<a id='4_4' class='dropdown-item' href='#'>4/4 Common Time</a>");
-  page += F("<a id='3_4' class='dropdown-item' href='#'>3/4 Waltz Time</a>");
-  page += F("<a id='2_4' class='dropdown-item' href='#'>2/4 March Time</a>");
-  page += F("<a id='3_8' class='dropdown-item' href='#'>3/8</a>");
-  page += F("<a id='6_8' class='dropdown-item' href='#'>6/8</a>");
-  page += F("<a id='9_8' class='dropdown-item' href='#'>9/8</a>");
-  page += F("<a id='12_8' class='dropdown-item' href='#'>12/8</a>");
-  page += F("</div>");
-  page += F("</div>");
+            "<div class='btn-group'>"
+            "<button type='button' class='btn btn-outline-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
+            "Time Signature</button>"
+            "<div class='dropdown-menu'>"
+            "<a id='4_4' class='dropdown-item' href='#'>4/4 Common Time</a>"
+            "<a id='3_4' class='dropdown-item' href='#'>3/4 Waltz Time</a>"
+            "<a id='2_4' class='dropdown-item' href='#'>2/4 March Time</a>"
+            "<a id='3_8' class='dropdown-item' href='#'>3/8</a>"
+            "<a id='6_8' class='dropdown-item' href='#'>6/8</a>"
+            "<a id='9_8' class='dropdown-item' href='#'>9/8</a>"
+            "<a id='12_8' class='dropdown-item' href='#'>12/8</a>"
+            "</div>"
+            "</div>"
 
-  page += F("<div class='btn-group'>");
-  page += F("<button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
-  page += F("MTC</button>");
-  page += F("<div class='dropdown-menu'>");
-  page += F("<a id='mtc-master' class='dropdown-item' href='#'>Master</a>");
-  page += F("<a id='mtc-slave' class='dropdown-item' href='#'>Slave</a>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("<p></p>");
+            "<div class='btn-group'>"
+            "<button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
+            "MTC</button>"
+            "<div class='dropdown-menu'>"
+            "<a id='mtc-master' class='dropdown-item' href='#'>Master</a>"
+            "<a id='mtc-slave' class='dropdown-item' href='#'>Slave</a>"
+            "</div>"
+            "</div>"
+            "<p></p>"
   
-  page += F("<div>");
-  page += F("<h1 id='bpm'></h1> bpm");
-  page += F("<h1 id='timesignature'></h1>");
-  page += F("<h1 id='beat'></h1>");
-  page += F("<h1 id='mtc'></h1>");
-  page += F("</div>");
-  page += F("<p></p>");
+            "<div>"
+            "<h1 id='bpm'></h1> bpm"
+            "<h1 id='timesignature'></h1>"
+            "<h1 id='beat'></h1>"
+            "<h1 id='mtc'></h1>"
+            "</div>"
+            "<p></p>"
 
-  page += F("<button id='start' type='button' class='btn btn-outline-primary'>Start</button>");
-  page += F("<button id='stop' type='button' class='btn btn-outline-primary'>Stop</button>");
-  page += F("<button id='continue' type='button' class='btn btn-outline-primary'>Continue</button>");
-  page += F("<button id='tap' type='button' class='btn btn-outline-primary'>Tap</button>");
-  page += F("</div>");
+            "<button id='start' type='button' class='btn btn-outline-primary'>Start</button>"
+            "<button id='stop' type='button' class='btn btn-outline-primary'>Stop</button>"
+            "<button id='continue' type='button' class='btn btn-outline-primary'>Continue</button>"
+            "<button id='tap' type='button' class='btn btn-outline-primary'>Tap</button>"
+            "</div>"
 
-  page += F("<script>");
-  page += F("var isplaying = 0;");
-  page += F("var invert = 0;");
-  page += F("var zoom = 1;");
-  page += F("var con;");
-  page += F("var source;");
+            "<script>"
+            "var isplaying = 0;"
+            "var invert = 0;"
+            "var zoom = 1;"
+            "var con;"
+            "var source;"
   
-  page += F("function webSocketConnect() {");
-  page += F("con = new WebSocket('ws://' + location.hostname + ':80/ws');");
-  page += F("con.binaryType = 'arraybuffer';");
-  page += F("con.onopen = function () {");
-  page += F("console.log('WebSocket to Pedalino open');");
-  page += F("$('#live').find('input, button, submit, textarea, select').removeAttr('disabled');");
-  page += F("$('#live').find('a').removeClass('disablehyper').unbind('click');");
-  page += F("};");
-  page += F("con.onerror = function (error) {");
-  page += F("console.log('WebSocket to Pedalino error ', error);");
-  page += F("};");
-  page += F("con.onmessage = function (e) {");
-  page += F("var data = e.data;");
-  page += F("var dv = new DataView(data);");
-  //page += F("if (dv.buffer.byteLength != 1024) return;");
-  page += F("var canvas=document.getElementById('screen');");
-  page += F("var context=canvas.getContext('2d');");
-  page += F("var x=0; y=0;");
-  page += F("for (y=0; y<64; y++)");
-  page += F("  for (x=0; x<128; x++)");
-  page += F("    if ((dv.getUint8(x+Math.floor(y/8)*128) & (1<<(y&7))) == 0){");
-  page += F("      (invert == 0) ? context.clearRect(x*zoom,y*zoom,zoom,zoom) : context.fillRect(x*zoom,y*zoom,zoom,zoom);");
-  page += F("    } else {(invert == 0) ? context.fillRect(x*zoom,y*zoom,zoom,zoom) : context.clearRect(x*zoom,y*zoom,zoom,zoom);}");
-  page += F("};");
-  page += F("con.onclose = function () {");
-  page += F("console.log('WebSocket to Pedalino closed');");
-  page += F("$('#live').find('input, button, submit, textarea, select').attr('disabled', 'disabled');");
-  page += F("$('#live').find('a').addClass('disablehyper').click(function (e) { e.preventDefault(); });");
-  page += F("};");
-  page += F("setInterval(keepAliveConnection, 1000);");
-  page += F("};");
+            "function webSocketConnect() {"
+            "con = new WebSocket('ws://' + location.hostname + ':80/ws');"
+            "con.binaryType = 'arraybuffer';"
+            "con.onopen = function () {"
+            "console.log('WebSocket to Pedalino open');"
+            "$('#live').find('input, button, submit, textarea, select').removeAttr('disabled');"
+            "$('#live').find('a').removeClass('disablehyper').unbind('click');"
+            "};"
+            "con.onerror = function (error) {"
+            "console.log('WebSocket to Pedalino error ', error);"
+            "};"
+            "con.onmessage = function (e) {"
+            "var data = e.data;"
+            "var dv = new DataView(data);"
+  //          "if (dv.buffer.byteLength != 1024) return;"
+            "var canvas=document.getElementById('screen');"
+            "var context=canvas.getContext('2d');"
+            "var x=0; y=0;"
+            "for (y=0; y<64; y++)"
+            "  for (x=0; x<128; x++)"
+            "    if ((dv.getUint8(x+Math.floor(y/8)*128) & (1<<(y&7))) == 0){"
+            "      (invert == 0) ? context.clearRect(x*zoom,y*zoom,zoom,zoom) : context.fillRect(x*zoom,y*zoom,zoom,zoom);"
+            "    } else {(invert == 0) ? context.fillRect(x*zoom,y*zoom,zoom,zoom) : context.clearRect(x*zoom,y*zoom,zoom,zoom);}"
+            "};"
+            "con.onclose = function () {"
+            "console.log('WebSocket to Pedalino closed');"
+            "$('#live').find('input, button, submit, textarea, select').attr('disabled', 'disabled');"
+            "$('#live').find('a').addClass('disablehyper').click(function (e) { e.preventDefault(); });"
+            "};"
+            "setInterval(keepAliveConnection, 1000);"
+            "};"
 
-  page += F("function keepAliveConnection() {");
-  page += F("if (con.readyState == WebSocket.CLOSED) webSocketConnect();");
-  page += F("if (source.readyState == EventSource.CLOSED) eventSourceConnect();");
-  page += F("};");
+            "function keepAliveConnection() {"
+            "if (con.readyState == WebSocket.CLOSED) webSocketConnect();"
+            "if (source.readyState == EventSource.CLOSED) eventSourceConnect();"
+            "};"
 
-  page += F("webSocketConnect();");
+            "webSocketConnect();"
 
-  page += F("function eventSourceConnect() {");
-  page += F("if (!!window.EventSource) {");
-  page += F("source = new EventSource('/events');");
-  page += F("source.addEventListener('open', function(e) {");
-  page += F("console.log('Events Connected');");
-  page += F("}, false);");
-  page += F("source.addEventListener('error', function(e) {");
-  page += F("if (e.target.readyState != EventSource.OPEN) {");
-  page += F("console.log('Events Disconnected');");
-  page += F("}");
-  page += F("}, false);");
-  page += F("source.addEventListener('message', function(e) {");
-  page += F("console.log('Event: ', e.data);");
-  page += F("}, false);");
-  page += F("source.addEventListener('play', function(e) { isplaying = e.data; }, false);");
-  page += F("source.addEventListener('timesignature', function(e) {");
-  page += F("document.getElementById('timesignature').innerHTML = e.data;");
-  page += F("}, false);");
-  page += F("source.addEventListener('bpm', function(e) {");
-  page += F("document.getElementById('bpm').innerHTML = e.data;");
-  page += F("}, false);");
-  page += F("source.addEventListener('beat', function(e) {");
-  page += F("document.getElementById('beat').innerHTML = e.data;");
-  page += F("}, false);");
-  page += F("source.addEventListener('mtc', function(e) {");
-  page += F("document.getElementById('mtc').innerHTML = e.data;");
-	page += F("}, false);");
-  page += F("source.addEventListener('screen', function(e) {");
-  page += F("}, false);");
-  page += F("}");
-  page += F("}");
+            "function eventSourceConnect() {"
+            "if (!!window.EventSource) {"
+            "source = new EventSource('/events');"
+            "source.addEventListener('open', function(e) {"
+            "console.log('Events Connected');"
+            "}, false);"
+            "source.addEventListener('error', function(e) {"
+            "if (e.target.readyState != EventSource.OPEN) {"
+            "console.log('Events Disconnected');"
+            "}"
+            "}, false);"
+            "source.addEventListener('message', function(e) {"
+            "console.log('Event: ', e.data);"
+            "}, false);"
+            "source.addEventListener('play', function(e) { isplaying = e.data; }, false);"
+            "source.addEventListener('timesignature', function(e) {"
+            "document.getElementById('timesignature').innerHTML = e.data;"
+            "}, false);"
+            "source.addEventListener('bpm', function(e) {"
+            "document.getElementById('bpm').innerHTML = e.data;"
+            "}, false);"
+            "source.addEventListener('beat', function(e) {"
+            "document.getElementById('beat').innerHTML = e.data;"
+            "}, false);"
+            "source.addEventListener('mtc', function(e) {"
+            "document.getElementById('mtc').innerHTML = e.data;"
+	          "}, false);"
+            "source.addEventListener('screen', function(e) {"
+            "}, false);"
+            "}"
+            "}"
 
-  page += F("eventSourceConnect();");
+            "eventSourceConnect();"
 
-  page += F("function sendBinary(str) {");
-  page += F("if (con.readyState != WebSocket.OPEN || con.bufferedAmount > 0) return;");
-  page += F("var buffer = new ArrayBuffer(str.length+1);");
-  page += F("var view = new DataView(buffer);");
-  page += F("for (i=0; i<str.length; i++)");
-  page += F("  view.setUint8(i, str.charCodeAt(i));");
-  page += F("view.setUint8(str.length, 0);");
-  page += F("con.send(view);");
-  page += F("}");
+            "function sendBinary(str) {"
+            "if (con.readyState != WebSocket.OPEN || con.bufferedAmount > 0) return;"
+            "var buffer = new ArrayBuffer(str.length+1);"
+            "var view = new DataView(buffer);"
+            "for (i=0; i<str.length; i++)"
+            "  view.setUint8(i, str.charCodeAt(i));"
+            "view.setUint8(str.length, 0);"
+            "con.send(view);"
+            "}"
 
-  page += F("document.getElementById('showremotedisplay').onclick = function() {");
-  page += F("$('#remotedisplay').toast('show');");
-  page += F("setInterval(requestRemoteDisplay, 100);");
-  page += F("return false; };");
+            "document.getElementById('showremotedisplay').onclick = function() {"
+            "$('#remotedisplay').toast('show');"
+            "setInterval(requestRemoteDisplay, 100);"
+            "return false; };"
 
-  page += F("function requestRemoteDisplay() {sendBinary('.');}");
+            "function requestRemoteDisplay() {sendBinary('.');}"
 
-  page += F("function resizeScreen(z) {");
-  page += F("zoom = z;");
-  page += F("var canvas=document.getElementById('screen');");
-  page += F("var context=canvas.getContext('2d');");
-  page += F("context.canvas.width = 128*zoom;");
-  page += F("context.canvas.height = 64*zoom;");
-  page += F("};");
+            "function resizeScreen(z) {"
+            "zoom = z;"
+            "var canvas=document.getElementById('screen');"
+            "var context=canvas.getContext('2d');"
+            "context.canvas.width = 128*zoom;"
+            "context.canvas.height = 64*zoom;"
+            "};");
 
   for (unsigned int i = 1; i <= BANKS; i++) {
     page += F("document.getElementById('bank");
-    page += String(i) + F("').onchange = function() {");
-    page += F("sendBinary('bank");
-    page += String(i) + F("');");
-    page += F("return false; };");
+    page += String(i);
+    page += F("').onchange = function() {"
+              "sendBinary('bank");
+    page += String(i);
+    page += F("');"
+              "return false; };");
   }
 
-  page += F("document.getElementById('invert').onclick = function() {");
-  page += F("if (invert == 0 ) invert = 1; else invert = 0; return false; };");
-  page += F("document.getElementById('zoom1').onclick = function() { resizeScreen(1); return false; };");
-  page += F("document.getElementById('zoom2').onclick = function() { resizeScreen(2); return false; };");
-  page += F("document.getElementById('zoom4').onclick = function() { resizeScreen(4); return false; };");
+  page += F("document.getElementById('invert').onclick = function() {"
+            "if (invert == 0 ) invert = 1; else invert = 0; return false; };"
+            "document.getElementById('zoom1').onclick = function() { resizeScreen(1); return false; };"
+            "document.getElementById('zoom2').onclick = function() { resizeScreen(2); return false; };"
+            "document.getElementById('zoom4').onclick = function() { resizeScreen(4); return false; };"
   
-  page += F("document.getElementById('clock-master').onclick = function() {");
-  page += F("sendBinary('clock-master');");
-  page += F("return false; };");
-  page += F("document.getElementById('clock-slave').onclick = function() {");
-  page += F("sendBinary('clock-slave');");
-  page += F("return false; };");
-  page += F("document.getElementById('mtc-master').onclick = function() {");
-  page += F("sendBinary('mtc-master');");
-  page += F("return false; };");
-  page += F("document.getElementById('mtc-slave').onclick = function() {");
-  page += F("sendBinary('mtc-slave');");
-  page += F("return false; };");
+            "document.getElementById('clock-master').onclick = function() {"
+            "sendBinary('clock-master');"
+            "return false; };"
+            "document.getElementById('clock-slave').onclick = function() {"
+            "sendBinary('clock-slave');"
+            "return false; };"
+            "document.getElementById('mtc-master').onclick = function() {"
+            "sendBinary('mtc-master');"
+            "return false; };"
+            "document.getElementById('mtc-slave').onclick = function() {"
+            "sendBinary('mtc-slave');"
+            "return false; };"
   
-  page += F("document.getElementById('4_4').onclick = function() {");
-  page += F("sendBinary('4/4');");
-  page += F("return false; };");
-  page += F("document.getElementById('3_4').onclick = function() {");
-  page += F("sendBinary('3/4');");
-  page += F("return false; };");
-  page += F("document.getElementById('2_4').onclick = function() {");
-  page += F("sendBinary('2/4');");
-  page += F("return false; };");
-  page += F("document.getElementById('3_8').onclick = function() {");
-  page += F("sendBinary('3/8');");
-  page += F("return false; };");
-  page += F("document.getElementById('6_8').onclick = function() {");
-  page += F("sendBinary('6/8');");
-  page += F("return false; };");
-  page += F("document.getElementById('9_8').onclick = function() {");
-  page += F("sendBinary('9/8');");
-  page += F("return false; };");
-  page += F("document.getElementById('12_8').onclick = function() {");
-  page += F("sendBinary('12/8');");
-  page += F("return false; };");
+            "document.getElementById('4_4').onclick = function() {"
+            "sendBinary('4/4');"
+            "return false; };"
+            "document.getElementById('3_4').onclick = function() {"
+            "sendBinary('3/4');"
+            "return false; };"
+            "document.getElementById('2_4').onclick = function() {"
+            "sendBinary('2/4');"
+            "return false; };"
+            "document.getElementById('3_8').onclick = function() {"
+            "sendBinary('3/8');"
+            "return false; };"
+            "document.getElementById('6_8').onclick = function() {"
+            "sendBinary('6/8');"
+            "return false; };"
+            "document.getElementById('9_8').onclick = function() {"
+            "sendBinary('9/8');"
+            "return false; };"
+            "document.getElementById('12_8').onclick = function() {"
+            "sendBinary('12/8');"
+            "return false; };"
   
-  page += F("document.getElementById('start').onclick = function() {");
-  page += F("sendBinary('start');");
-  page += F("return false; };");
-  page += F("document.getElementById('stop').onclick = function() {");
-  page += F("sendBinary('stop');");
-  page += F("return false; };");
-  page += F("document.getElementById('continue').onclick = function() {");
-  page += F("sendBinary('continue');");
-  page += F("return false; };");
-  page += F("document.getElementById('tap').onclick = function() {");
-  page += F("sendBinary('tap');");
-  page += F("return false; };");
+            "document.getElementById('start').onclick = function() {"
+            "sendBinary('start');"
+            "return false; };"
+            "document.getElementById('stop').onclick = function() {"
+            "sendBinary('stop');"
+            "return false; };"
+            "document.getElementById('continue').onclick = function() {"
+            "sendBinary('continue');"
+            "return false; };"
+            "document.getElementById('tap').onclick = function() {"
+            "sendBinary('tap');"
+            "return false; };"
 
-  page += F("</script>");
+            "</script>");
 
   page += get_footer_page();
 
+  DPRINT("/live %d bytes\n", page.length());
   return page;
 }
 
@@ -1667,136 +1674,6 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   request->send(200, "text/html", get_options_page());
 }
 
-#endif  // WEBCONFIG
-
-
-String get_update_page() {
-
-  String page = "";
-
-  page += get_top_page(5);
-
-  page += F("<p></p>");
-  page += "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
-
-  page += get_footer_page();
-
-  return page;
-}
-
- // handler for the /update form page
-
-void http_handle_update (AsyncWebServerRequest *request) {
-  if (request->hasArg("theme")) theme = request->arg("theme");
-  // The connection will be closed after completion of the response.
-  // The connection SHOULD NOT be considered `persistent'.
-  // Applications that do not support persistent connections MUST include the "close" connection option in every message.
-  //httpServer.sendHeader("Connection", "close");
-  if (!request->authenticate("admin", "password")) {
-			return request->requestAuthentication();
-	}
-  request->send(200, "text/html", get_update_page());
-}
-
-// handler for the /update form POST (once file upload finishes)
-
-void http_handle_update_file_upload_finish (AsyncWebServerRequest *request) {
-  AsyncWebServerResponse *response = request->beginResponse(200, "text/html", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/'>Update Success! Rebooting...\n");
-  response->addHeader("Connection", "close");
-  request->send(response);
-  delay(1000);
-  ESP.restart();
-}
-
-// handler for the file upload, get's the sketch bytes, and writes
-// them through the Update object
-
-void http_handle_update_file_upload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-
-  if (!index) {
-    // Disconnect, not to interfere with OTA process
-    blynk_disconnect();
-    webSocket.enable(false);
-    webSocket.textAll("Web Update Started");
-    webSocket.closeAll();
-
-    DPRINT("Update Start: %s\n", filename.c_str());
-    display_ui_update_disable();
-    display_progress_bar_title("HTTP Update");
-#ifdef ARDUINO_ARCH_ESP8266
-    Update.runAsync(true);
-    //size of max sketch rounded to a sector
-    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-    if (Update.begin(maxSketchSpace)) { //start with max available size
-#endif
-#ifdef ARDUINO_ARCH_ESP32
-    if (Update.begin()) {  //start with max available size
-#endif
-      DPRINT("Update start\n");
-      display_progress_bar_update(0, 100);
-    }
-    else {
-      StreamString str;
-      Update.printError(str);
-      DPRINT("Update start fail: %s", str.c_str());
-      display.clear();
-      display.setFont(ArialMT_Plain_10);
-      display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-      display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Update aborted");
-      display.display();
-      ESP.restart();
-    }
-  }
-    
-  if (!Update.hasError()) {
-    if (Update.write(data, len) == len) {
-      if (Update.size()) {
-        DPRINT("Progress: %5.1f%%\n", 100.0 * Update.progress() / Update.size());
-        display_progress_bar_update(Update.progress(), Update.size());
-      }
-    }  
-    else {
-      StreamString str;
-      Update.printError(str);
-      DPRINT("Update fail: %s", str.c_str());
-    }
-  }
-
-  if (final) {
-    display.clear();
-    display.setFont(ArialMT_Plain_10);
-    display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-    display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Restart");
-    display.display();
-    if (Update.end(true)) {
-      DPRINT("Update Success: %uB\n", index+len);
-    } else {
-      StreamString str;
-      Update.printError(str);
-      DPRINT("Update fail: %s", str.c_str());
-    }
-  }
-}
-
-void http_handle_not_found(AsyncWebServerRequest *request) {
-
-  String message = "File Not Found\n\n";
-
-  message += "URI: ";
-  message += request->url();
-  message += "\nMethod: ";
-  message += (request->method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += request->args();
-  message += "\n";
-
-  for (uint8_t i = 0; i < request->args(); i++) {
-    message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
-  }
-
-  request->send(404, "text/plain", message);
-}
-
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
 
   static bool connected = false;
@@ -1810,7 +1687,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
     connected = true;
   } else if(type == WS_EVT_DISCONNECT){
     //client disconnected
-    DPRINT("ws[%s][%u] disconnect: %u\n", server->url(), client->id());
+    DPRINT("ws[%s][%u] disconnect\n", server->url(), client->id());
     connected = false;
   } else if(type == WS_EVT_ERROR){
     //error was received from the other end
@@ -1895,7 +1772,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
           MTC.setBeat(3);
         }
         else {
-          byte b;
+          int b;
           if (sscanf((const char *)data, "bank%d", &b) == 1)
             currentBank = constrain(b - 1, 0, BANKS);
         }
@@ -1939,6 +1816,152 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
       }
     }
   }
+}
+
+#endif  // WEBCONFIG
+
+
+String get_update_page() {
+
+  String page = "";
+
+#ifdef WEBCONFIG
+  page += get_top_page(5);
+#else
+  page += F("<!doctype html>");
+  page += F("<html lang='en'>");
+  page += F("<head>");
+  page += F("<title>PedalinoMini&trade;</title>");
+  page += F("</head>");
+  page += F("<body>");
+#endif
+
+  page += F("<p></p>");
+  page += "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+
+#ifdef WEBCONFIG
+  page += get_footer_page();
+#else
+  page += F("</body>");
+  page += F("</html>");
+#endif
+
+  return page;
+}
+
+ // handler for the /update form page
+
+void http_handle_update (AsyncWebServerRequest *request) {
+  if (request->hasArg("theme")) theme = request->arg("theme");
+  // The connection will be closed after completion of the response.
+  // The connection SHOULD NOT be considered `persistent'.
+  // Applications that do not support persistent connections MUST include the "close" connection option in every message.
+  //httpServer.sendHeader("Connection", "close");
+  if (!request->authenticate("admin", "password")) {
+			return request->requestAuthentication();
+	}
+  request->send(200, "text/html", get_update_page());
+}
+
+// handler for the /update form POST (once file upload finishes)
+
+void http_handle_update_file_upload_finish (AsyncWebServerRequest *request) {
+  AsyncWebServerResponse *response = request->beginResponse(200, "text/html", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/'>Update Success! Rebooting...\n");
+  response->addHeader("Connection", "close");
+  request->send(response);
+  delay(1000);
+  ESP.restart();
+}
+
+// handler for the file upload, get's the sketch bytes, and writes
+// them through the Update object
+
+void http_handle_update_file_upload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+
+  if (!index) {
+    // Disconnect, not to interfere with OTA process
+    blynk_disconnect();
+#ifdef WEBCONFIG
+    webSocket.enable(false);
+    webSocket.textAll("Web Update Started");
+    webSocket.closeAll();
+#endif
+
+    DPRINT("Update Start: %s\n", filename.c_str());
+    display_ui_update_disable();
+    display_progress_bar_title("HTTP Update");
+#ifdef ARDUINO_ARCH_ESP8266
+    Update.runAsync(true);
+    //size of max sketch rounded to a sector
+    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+    if (Update.begin(maxSketchSpace)) { //start with max available size
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+    if (Update.begin()) {  //start with max available size
+#endif
+      DPRINT("Update start\n");
+      display_progress_bar_update(0, 100);
+    }
+    else {
+      StreamString str;
+      Update.printError(str);
+      DPRINT("Update start fail: %s", str.c_str());
+      display.clear();
+      display.setFont(ArialMT_Plain_10);
+      display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+      display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Update aborted");
+      display.display();
+      ESP.restart();
+    }
+  }
+    
+  if (!Update.hasError()) {
+    if (Update.write(data, len) == len) {
+      if (Update.size()) {
+        DPRINT("Progress: %5.1f%%\n", 100.0 * Update.progress() / Update.size());
+        display_progress_bar_update(Update.progress(), Update.size());
+      }
+    }  
+    else {
+      StreamString str;
+      Update.printError(str);
+      DPRINT("Update fail: %s", str.c_str());
+    }
+  }
+
+  if (final) {
+    display.clear();
+    display.setFont(ArialMT_Plain_10);
+    display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+    display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Restart");
+    display.display();
+    if (Update.end(true)) {
+      DPRINT("Update Success: %uB\n", index+len);
+    } else {
+      StreamString str;
+      Update.printError(str);
+      DPRINT("Update fail: %s", str.c_str());
+    }
+  }
+}
+
+void http_handle_not_found(AsyncWebServerRequest *request) {
+
+  String message = "File Not Found\n\n";
+
+  message += "URI: ";
+  message += request->url();
+  message += "\nMethod: ";
+  message += (request->method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += request->args();
+  message += "\n";
+
+  for (uint8_t i = 0; i < request->args(); i++) {
+    message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
+  }
+
+  request->send(404, "text/plain", message);
 }
 
 hw_timer_t   *_timer2 = NULL;
@@ -2010,7 +2033,9 @@ inline void http_run() {
     _interruptCounter2 = 0;
     portEXIT_CRITICAL(&_timer2Mux);
 
+#ifdef WEBCONFIG
     webSocket.binaryAll(display.buffer, 128*64);
+#endif
 /*
     if (!buffer) {
       buffer = webSocket.makeBuffer(128*64);

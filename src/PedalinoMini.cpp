@@ -4,7 +4,7 @@
  *   |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> ) (  (     |    |/    Y    \   )  )
  *   |____|    \___  >____ |(____  /____/__|___|  /\____/   \  \    |____|\____|__  /  /  /
  *                 \/     \/     \/             \/           \__\                 \/  /__/
- *                                                                (c) 2018 alf45star
+ *                                                                (c) 2019 alf45star
  *                                                        https://github.com/alf45tar/Pedalino
  */
 
@@ -21,6 +21,7 @@
 
 #ifdef NOWIFI
 #undef WIFI
+#define NOWEBCONFIG
 #else
 #define WIFI
 #endif
