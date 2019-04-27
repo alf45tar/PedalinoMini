@@ -104,6 +104,18 @@ If the WiFi network is not available PedalinoMini™ will create an hotspot for 
 - In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
 - Reboot Pedalino to restart the procedure.
 
+```
+void wifi_connect()
+{
+  auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
+  if (!WiFi.isConnected())
+    smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+  if (!WiFi.isConnected())
+    wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
+  if (!WiFi.isConnected())
+    ap_mode_start();          // switch to AP mode until next reboot
+}
+```
 
 ## How to start PedalinoMini™ in AP mode (skipping last know access point, SmartConfig and WPS)
 
