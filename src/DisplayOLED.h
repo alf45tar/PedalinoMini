@@ -836,6 +836,9 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
       display->drawString(128 + x, 36 + y, WiFi.localIP().toString());
       break;
+    case WIFI_MODE_MAX:
+    case WIFI_MODE_NULL:
+      break;
   }
 #endif
 }

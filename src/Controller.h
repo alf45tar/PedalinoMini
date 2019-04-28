@@ -108,6 +108,10 @@ void mtc_tap_continue()
     case MidiTimeCode::SynchroMTCMaster:
       mtc_continue();
       break;
+    case MidiTimeCode::SynchroNone:
+    case MidiTimeCode::SynchroClockSlave:
+    case MidiTimeCode::SynchroMTCSlave:
+      break;
   }
 }
 
@@ -611,6 +615,8 @@ void refresh_switch_12L_midi(byte i, bool send)
 
       case MD_UISwitch::KEY_RPTPRESS:
       case MD_UISwitch::KEY_NULL:
+      case MD_UISwitch::KEY_DOWN:
+      case MD_UISwitch::KEY_UP:
         break;
     }
     if (k1 == k2 && k1 != MD_UISwitch::KEY_NULL) j = -1;
@@ -803,6 +809,8 @@ void refresh_switch_12L(byte i)
         //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_ESC;
         break;
       case MD_UISwitch::KEY_PRESS:
+      case MD_UISwitch::KEY_DOWN:
+      case MD_UISwitch::KEY_UP:
         break;
     }
 
@@ -829,6 +837,8 @@ void refresh_switch_12L(byte i)
         //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_ESC;
         break;
       case MD_UISwitch::KEY_PRESS:
+      case MD_UISwitch::KEY_DOWN:
+      case MD_UISwitch::KEY_UP:
         break;
     }
 }

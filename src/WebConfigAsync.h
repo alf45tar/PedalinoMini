@@ -1677,7 +1677,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
 
-  static bool connected = false;
+  //static bool connected = false;
 
   if(type == WS_EVT_CONNECT){
     //client connected
@@ -1685,11 +1685,11 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
     //client->printf("Hello Client %u :)", client->id());
     //client->ping();
     //client->keepAlivePeriod(1);
-    connected = true;
+    //connected = true;
   } else if(type == WS_EVT_DISCONNECT){
     //client disconnected
     DPRINT("ws[%s][%u] disconnect\n", server->url(), client->id());
-    connected = false;
+    //connected = false;
   } else if(type == WS_EVT_ERROR){
     //error was received from the other end
     DPRINT("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
