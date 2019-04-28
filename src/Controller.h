@@ -7,8 +7,7 @@
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
                                                                                  (c) 2018-2019 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
- */                                                                             
-
+ */
 
 void screen_info(int, int, int, int);
 
