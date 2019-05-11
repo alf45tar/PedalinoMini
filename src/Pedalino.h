@@ -213,7 +213,7 @@ pedal     pedals[PEDALS];                         // Pedals Setup
 #ifdef PEDALINO_MINI
 interface interfaces[] = {
                            "USB MIDI   ", 0, 0, 0, 0, 0,    // Not present in PedalinoMini
-                           "Legacy MIDI", 0, 0, 0, 0, 0,    // Not present in PedalinoMini
+                           "Legacy MIDI", 1, 1, 0, 1, 0,
                            "RTP-MIDI   ", 1, 1, 0, 1, 0,
                            "ipMIDI     ", 1, 1, 0, 1, 0,
                            "BLE MIDI   ", 1, 1, 0, 1, 0,
@@ -253,7 +253,7 @@ String wifiPassword("");
 
 // Serial MIDI interface to comunicate with Arduino
 
-#define SERIALMIDI_BAUD_RATE  115200
+#define SERIALMIDI_BAUD_RATE  31250
 
 struct SerialMIDISettings : public midi::DefaultSettings
 {
@@ -265,16 +265,13 @@ struct SerialMIDISettings : public midi::DefaultSettings
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32
-#define SERIALMIDI_RX         16
-#define SERIALMIDI_TX         17
-HardwareSerial                SerialMIDI(2);
+#define SerialMIDI            Serial2
 #endif
 
 MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SerialMIDI, MIDI, SerialMIDISettings);
 
 #define USB_MIDI  MIDI
 #define DIN_MIDI  MIDI
-#define ESP_MIDI  MIDI
 
 // The keys value that works for most LCD Keypad Shield
 

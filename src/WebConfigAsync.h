@@ -1170,7 +1170,7 @@ String get_interfaces_page() {
 
   String page = "";
 #ifdef PEDALINO_MINI
-  const int firstInterface = 3;
+  const int firstInterface = 2;
 #else
   const int firstInterface = 1;
 #endif

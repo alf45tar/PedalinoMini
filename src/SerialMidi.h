@@ -15,6 +15,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 void OnSerialMidiNoteOn(byte channel, byte note, byte velocity)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendNoteOn(note, velocity, channel);
   ipMIDISendNoteOn(note, velocity, channel);
   AppleMidiSendNoteOn(note, velocity, channel);
@@ -23,6 +25,8 @@ void OnSerialMidiNoteOn(byte channel, byte note, byte velocity)
 
 void OnSerialMidiNoteOff(byte channel, byte note, byte velocity)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendNoteOff(note, velocity, channel);
   ipMIDISendNoteOff(note, velocity, channel);
   AppleMidiSendNoteOff(note, velocity, channel);
@@ -31,6 +35,8 @@ void OnSerialMidiNoteOff(byte channel, byte note, byte velocity)
 
 void OnSerialMidiAfterTouchPoly(byte channel, byte note, byte pressure)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendAfterTouchPoly(note, pressure, channel);
   ipMIDISendAfterTouchPoly(note, pressure, channel);
   AppleMidiSendAfterTouchPoly(note, pressure, channel);
@@ -39,6 +45,8 @@ void OnSerialMidiAfterTouchPoly(byte channel, byte note, byte pressure)
 
 void OnSerialMidiControlChange(byte channel, byte number, byte value)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendControlChange(number, value, channel);
   ipMIDISendControlChange(number, value, channel);
   AppleMidiSendControlChange(number, value, channel);
@@ -47,6 +55,8 @@ void OnSerialMidiControlChange(byte channel, byte number, byte value)
 
 void OnSerialMidiProgramChange(byte channel, byte number)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendProgramChange(number, channel);
   ipMIDISendProgramChange(number, channel);
   AppleMidiSendProgramChange(number, channel);
@@ -55,6 +65,8 @@ void OnSerialMidiProgramChange(byte channel, byte number)
 
 void OnSerialMidiAfterTouchChannel(byte channel, byte pressure)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendAfterTouch(pressure, channel);
   ipMIDISendAfterTouch(pressure, channel);
   AppleMidiSendAfterTouch(pressure, channel);
@@ -63,6 +75,8 @@ void OnSerialMidiAfterTouchChannel(byte channel, byte pressure)
 
 void OnSerialMidiPitchBend(byte channel, int bend)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendPitchBend(bend, channel);
   ipMIDISendPitchBend(bend, channel);
   AppleMidiSendPitchBend(bend, channel);
@@ -71,6 +85,8 @@ void OnSerialMidiPitchBend(byte channel, int bend)
 
 void OnSerialMidiSystemExclusive(byte* array, unsigned size)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendSystemExclusive(array, size);
   ipMIDISendSystemExclusive(array, size);
   AppleMidiSendSystemExclusive(array, size);
@@ -79,6 +95,8 @@ void OnSerialMidiSystemExclusive(byte* array, unsigned size)
 
 void OnSerialMidiTimeCodeQuarterFrame(byte data)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendTimeCodeQuarterFrame(data);
   ipMIDISendTimeCodeQuarterFrame(data);
   AppleMidiSendTimeCodeQuarterFrame(data);
@@ -87,6 +105,8 @@ void OnSerialMidiTimeCodeQuarterFrame(byte data)
 
 void OnSerialMidiSongPosition(unsigned int beats)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendSongPosition(beats);
   ipMIDISendSongPosition(beats);
   AppleMidiSendSongPosition(beats);
@@ -95,6 +115,8 @@ void OnSerialMidiSongPosition(unsigned int beats)
 
 void OnSerialMidiSongSelect(byte songnumber)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendSongSelect(songnumber);
   ipMIDISendSongSelect(songnumber);
   AppleMidiSendSongSelect(songnumber);
@@ -103,6 +125,8 @@ void OnSerialMidiSongSelect(byte songnumber)
 
 void OnSerialMidiTuneRequest(void)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendTuneRequest();
   ipMIDISendTuneRequest();
   AppleMidiSendTuneRequest();
@@ -111,6 +135,8 @@ void OnSerialMidiTuneRequest(void)
 
 void OnSerialMidiClock(void)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendClock();
   ipMIDISendClock();
   AppleMidiSendClock();
@@ -119,6 +145,8 @@ void OnSerialMidiClock(void)
 
 void OnSerialMidiStart(void)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendStart();
   ipMIDISendStart();
   AppleMidiSendStart();
@@ -127,6 +155,8 @@ void OnSerialMidiStart(void)
 
 void OnSerialMidiContinue(void)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendContinue();
   ipMIDISendContinue();
   AppleMidiSendContinue();
@@ -135,6 +165,8 @@ void OnSerialMidiContinue(void)
 
 void OnSerialMidiStop(void)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendStop();
   ipMIDISendStop();
   AppleMidiSendStop();
@@ -143,6 +175,8 @@ void OnSerialMidiStop(void)
 
 void OnSerialMidiActiveSensing(void)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+
   BLESendActiveSensing();
   ipMIDISendActiveSensing();
   AppleMidiSendActiveSensing();
@@ -151,6 +185,8 @@ void OnSerialMidiActiveSensing(void)
 
 void OnSerialMidiSystemReset(void)
 {
+  if (!interfaces[PED_DINMIDI].midiIn) return;
+  
   BLESendSystemReset();
   ipMIDISendSystemReset();
   AppleMidiSendSystemReset();

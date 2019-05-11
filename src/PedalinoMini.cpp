@@ -173,12 +173,7 @@ void setup()
 #endif
   eeprom_read();
 
-#ifdef ARDUINO_ARCH_ESP8266
   SerialMIDI.begin(SERIALMIDI_BAUD_RATE);
-#endif
-#ifdef ARDUINO_ARCH_ESP32
-  SerialMIDI.begin(SERIALMIDI_BAUD_RATE, SERIAL_8N1, SERIALMIDI_RX, SERIALMIDI_TX);
-#endif
 
   serial_midi_connect();              // On receiving MIDI data callbacks setup
   DPRINT("Serial MIDI started\n");

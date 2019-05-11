@@ -215,10 +215,10 @@ unsigned int map_analog(byte p, unsigned int value)
     case PED_LINEAR:
       break;
     case PED_LOG:
-      value = round(1023*log(value+1)/log(1024));
+      value = round((ADC_RESOLUTION-1)*log(value+1)/log(ADC_RESOLUTION));
       break;
     case PED_ANTILOG:
-      value = round((exp(value / 511.5) - 1) * 160.12);   // y=[e^(2*x/1023)-1]/[e^2-1]*1023
+      value = round((exp(3*value/(double)(ADC_RESOLUTION-1))-1)/(exp(3)-1)*(ADC_RESOLUTION-1));
       break;
   }
   return value;
