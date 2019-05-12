@@ -8,7 +8,7 @@ Open source wireless MIDI foot controller for guitarists and more.
 
 - Plug-and-play with any MIDI-compatible app on iOS 8 and above as well as OS X Yosemite and above.
 - High customizable using iOS or Android app
-- Bluetooth and WiFI MIDI interface
+- Bluetooth, WiFI and legacy MIDI interfaces
 - No extra drivers to connect Windows, macOS, iOS (iPad/iPhone) and Android
 - Bluetooth LE MIDI (iOS and macOS compatible)
 - Network MIDI (aka AppleMIDI or RTP-MIDI)
@@ -16,6 +16,7 @@ Open source wireless MIDI foot controller for guitarists and more.
 - Open Sound Control (OSC)
 - IEEE 802.11 b/g/n Wi-Fi 2.4 GHZ with WPA/WPA2 authentication
 - Bluetooth Low Energy 4.0
+- DIN MIDI IN and MIDI OUT connectors
 - MIDI routing
 - MIDI clock master and slave
 - MIDI Time Code (MTC) master and slave
@@ -55,6 +56,11 @@ The shortest bill of materials ever: an ESP32 board and a OLED display. That's i
 Not enough short?
 
   - An all-in-one [TTGO T-Eight ESP32](http://www.lilygo.cn/claprod_view.aspx?TypeId=21&Id=987&FId=t28:21:28) with a bigger OLED display (1.3"), 4MB PSRAM and lithium battery interface
+
+## PedalinoMini™ Schematic
+
+![Schematic](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-1_20190512185306.svg "Schematic")
+
 
 ## PedalinoMini™ Breadboard Prototype example
 
