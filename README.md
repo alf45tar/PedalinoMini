@@ -57,12 +57,12 @@ Not enough short?
 
   - An all-in-one [TTGO T-Eight ESP32](http://www.lilygo.cn/claprod_view.aspx?TypeId=21&Id=987&FId=t28:21:28) with a bigger OLED display (1.3"), 4MB PSRAM and lithium battery interface
 
-## PedalinoMini™ Schematic
+## Schematic
 
 ![Schematic](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-1_20190512185306.svg "Schematic")
 
 
-## PedalinoMini™ Breadboard Prototype example
+## Prototype example
 
 The breadboard shows the connection (4 wires only) between the ESP32 board and the OLED display. Momentary switches are just an example.
 
