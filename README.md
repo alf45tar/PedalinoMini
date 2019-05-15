@@ -59,14 +59,8 @@ Not enough short?
 
 ## Schematic
 
-![Schematic](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-1_20190512185306.svg "Schematic")
-
-
-## Prototype example
-
-The breadboard shows the connection (4 wires only) between the ESP32 board and the OLED display. Momentary switches are just an example.
-
-![Breadboard](https://github.com/alf45tar/PedalinoMini/blob/master/images/PedalinoMini_bb.png "Breadboard")
+![Schematic1](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-1.svg "Schematic1")
+![Schematic2](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-2.svg "Schematic2")
 
 ## OLED display screenshots
 
