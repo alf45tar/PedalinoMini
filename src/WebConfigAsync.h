@@ -1169,17 +1169,12 @@ String get_pedals_page() {
 String get_interfaces_page() {
 
   String page = "";
-#ifdef PEDALINO_MINI
-  const int firstInterface = 2;
-#else
-  const int firstInterface = 1;
-#endif
 
   page += get_top_page(4);
 
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
-  for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
+  for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<span class='badge badge-primary'>");
     page += interfaces[i-1].name + String("            ");
@@ -1190,7 +1185,7 @@ String get_interfaces_page() {
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
-  for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
+  for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='inCheck");
@@ -1204,7 +1199,7 @@ String get_interfaces_page() {
   }
   page += F("</div>");
   page += F("<div class='form-row'>");
-  for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
+  for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='outCheck");
@@ -1218,7 +1213,7 @@ String get_interfaces_page() {
   }
   page += F("</div>");
   page += F("<div class='form-row'>");
-  for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
+  for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='thruCheck");
@@ -1232,7 +1227,7 @@ String get_interfaces_page() {
   }
   page += F("</div>");
   page += F("<div class='form-row'>");
-  for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
+  for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='routingCheck");
@@ -1246,7 +1241,7 @@ String get_interfaces_page() {
   }
   page += F("</div>");
   page += F("<div class='form-row'>");
-  for (unsigned int i = firstInterface; i <= INTERFACES; i++) {
+  for (unsigned int i = 1; i <= INTERFACES; i++) {
     page += F("<div class='col-2'>");
     page += F("<div class='custom-control custom-switch'>");
     page += F("<input type='checkbox' class='custom-control-input' id='clockCheck");

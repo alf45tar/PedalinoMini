@@ -210,10 +210,10 @@ struct interface {
 bank      banks[BANKS][PEDALS];                   // Banks Setup
 pedal     pedals[PEDALS];                         // Pedals Setup
 
-#ifdef PEDALINO_MINI
+#ifdef ARDUINO_ARCH_ESP8266
 interface interfaces[] = {
-                           "USB MIDI   ", 0, 0, 0, 0, 0,    // Not present in PedalinoMini
-                           "Legacy MIDI", 1, 1, 0, 1, 0,
+                           "USB MIDI   ", 0, 0, 0, 0, 0,
+                           "Legacy MIDI", 0, 0, 0, 0, 0,
                            "RTP-MIDI   ", 1, 1, 0, 1, 0,
                            "ipMIDI     ", 1, 1, 0, 1, 0,
                            "BLE MIDI   ", 1, 1, 0, 1, 0,
@@ -253,25 +253,33 @@ String wifiPassword("");
 
 // Serial MIDI interface to comunicate with Arduino
 
-#define SERIALMIDI_BAUD_RATE  31250
+#define MIDI_BAUD_RATE                  31250
+#define HIGH_SPEED_SERIAL_BAUD_RATE     31250
 
-struct SerialMIDISettings : public midi::DefaultSettings
+struct HighSpeedMIDISettings : public midi::DefaultSettings
 {
-  static const long BaudRate = SERIALMIDI_BAUD_RATE;
+  static const long BaudRate = HIGH_SPEED_SERIAL_BAUD_RATE;
+  static const int8_t RxPin  = 18;
+  static const int8_t TxPin  = 19;
 };
 
 #ifdef ARDUINO_ARCH_ESP8266
-#define SerialMIDI            Serial
+#define SERIAL_MIDI_USB   Serial
+#define SERIAL_MIDI_DIN   Serial
 #endif
 
 #ifdef ARDUINO_ARCH_ESP32
-#define SerialMIDI            Serial2
+#define SERIAL_MIDI_USB   Serial1   // By default UART 1 uses the same pins as the flash memory
+#define SERIAL_MIDI_DIN   Serial2
 #endif
 
-MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SerialMIDI, MIDI, SerialMIDISettings);
+#ifdef SERIAL_MIDI_USB
+MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, HighSpeedMIDISettings);
+#endif
+#ifdef SERIAL_MIDI_DIN
+MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI);
+#endif
 
-#define USB_MIDI  MIDI
-#define DIN_MIDI  MIDI
 
 // The keys value that works for most LCD Keypad Shield
 

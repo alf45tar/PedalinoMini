@@ -173,10 +173,10 @@ void setup()
 #endif
   eeprom_read();
 
-  SerialMIDI.begin(SERIALMIDI_BAUD_RATE);
-
+  // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
   serial_midi_connect();              // On receiving MIDI data callbacks setup
-  DPRINT("Serial MIDI started\n");
+  DPRINT("USB MIDI started\n");
+  DPRINT("DIN MIDI started\n");
 
 #ifdef WIFI
   // Write SSID/password to flash only if currently used values do not match what is already stored in flash
@@ -250,9 +250,11 @@ void loop()
   // Check whether the input has changed since last time, if so, send the new value over MIDI
   controller_run();
 
-  // Listen to incoming messages from Arduino
-  if (MIDI.read())
-    DPRINTMIDI("Serial MIDI", MIDI.getType(), MIDI.getChannel(), MIDI.getData1(), MIDI.getData2());
+  // Listen to incoming messages
+  if (USB_MIDI.read())
+    DPRINTMIDI("USB MIDI", USB_MIDI.getType(), USB_MIDI.getChannel(), USB_MIDI.getData1(), USB_MIDI.getData2());
+  if (DIN_MIDI.read())
+    DPRINTMIDI("Serial MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
 
   // Listen to incoming AppleMIDI messages from WiFi
   rtpMIDI_listen();
