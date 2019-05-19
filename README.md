@@ -147,9 +147,15 @@ See [How to reset PedalinoMini™ to factory default](https://github.com/alf45ta
 
 ## How to reset PedalinoMini™ to factory default
 
+### DOIT ESP32 DevKit V1 procedure
+
+- Press and release EN button and immediately after press and hold BOOT button
+- When PedalinoMini™ reboot (after about 10 seconds) release BOOT button
+- PedalinoMini™ will start in AP mode if you release CENTER button before reboot
+
 ### TTGO T-Eight ESP32 procedure
 
 - Press and hold navigation CENTER button
 - Press and release POWER button
-- Release CENTER button when PedalinoMini™ reboot (after about 10 seconds)
-- If you release CENTER button before reboot PedalinoMini™ will start in AP mode
+- When PedalinoMini™ reboot (after about 10 seconds) release CENTER button 
+- PedalinoMini™ will start in AP mode if you release CENTER button before reboot
