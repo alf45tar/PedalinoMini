@@ -64,16 +64,6 @@ USB MIDI and DIN MIDI connection requires additional hardware.
 ![Schematic1](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-1.svg "Schematic1")
 ![Schematic2](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-2.svg "Schematic2")
 
-## OLED display screenshots
-
-Home screen|Device info|MIDI message
------|-----|-----
-![OLED Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-home.png "Screen 1")|![OLED Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-device.png "Screen 2")|![OLED Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi.png "Screen 3")
-
-MIDI Clock|MIDI Time Code
------|-----
-![OLED Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi-clock.png "Screen 4")|![OLED Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-mtc.png "Screen 5")
-
 ## USB MIDI
 
 The cheapest way to implement an USB MIDI connection is using an Arduino Uno R3 (or Mega) as USB-to-Serial converter with a USB class-compliant MIDI firmware for ATmega16U2.
@@ -87,6 +77,16 @@ Serial1 of ESP32 (re-mapped to pin 18 RX and 19 TX) is connected to Serial (pin 
 Arduino Uno is powered by the USB MIDI connection. 
 
 IMPORTANT: ESP32 board and Arduino Uno R3 must share GND.
+
+## OLED display screenshots
+
+Home screen|Device info|MIDI message
+-----|-----|-----
+![OLED Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-home.png "Screen 1")|![OLED Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-device.png "Screen 2")|![OLED Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi.png "Screen 3")
+
+MIDI Clock|MIDI Time Code
+-----|-----
+![OLED Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi-clock.png "Screen 4")|![OLED Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-mtc.png "Screen 5")
 
 ## WEB user interface
 
