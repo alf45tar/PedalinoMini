@@ -8,7 +8,7 @@ Open source wireless MIDI foot controller for guitarists and more.
 
 - Plug-and-play with any MIDI-compatible app on iOS 8 and above as well as OS X Yosemite and above.
 - High customizable using iOS or Android app
-- Bluetooth, WiFI and legacy MIDI interfaces
+- Bluetooth, WiFI, USB and legacy MIDI interfaces
 - No extra drivers to connect Windows, macOS, iOS (iPad/iPhone) and Android
 - Bluetooth LE MIDI (iOS and macOS compatible)
 - Network MIDI (aka AppleMIDI or RTP-MIDI)
@@ -56,6 +56,8 @@ The shortest bill of materials ever: an ESP32 board and a OLED display. That's i
 Not enough short?
 
   - An all-in-one [TTGO T-Eight ESP32](http://www.lilygo.cn/claprod_view.aspx?TypeId=21&Id=987&FId=t28:21:28) with a bigger OLED display (1.3"), 4MB PSRAM and lithium battery interface
+
+USB MIDI and DIN MIDI connection requires additional hardware.
 
 ## Schematic
 
@@ -137,3 +139,17 @@ See [How to reset PedalinoMini™ to factory default](https://github.com/alf45ta
 - Press and release POWER button
 - Release CENTER button when PedalinoMini™ reboot (after about 10 seconds)
 - If you release CENTER button before reboot PedalinoMini™ will start in AP mode
+
+## USB MIDI
+
+The cheapest way to implement an USB MIDI connection is using an Arduino Uno R3 (or Mega) as USB-to-Serial converter with a USB class-compliant MIDI firmware for ATmega16U2.
+
+Pedalino is tested with [mocoLUFA](https://github.com/kuwatay/mocolufa). mocoLUFA supports dual mode boot (USB-MIDI or Arduino-Serial) and high-speed mode (1 Mbps) even if we don't need them. More information can be obtained in the following [here](https://github.com/tttapa/MIDI_controller).
+
+No sketch is needed for ATmega328P. ATmega328P is disabled connecting RESET to GND.
+
+Serial1 of ESP32 (re-mapped to pin 18 RX and 19 TX) is connected to Serial (pin 0 and 1) of Arduino Uno R3. ESP32 is usually 5V tolerant.
+
+Arduino Uno is powered by the USB MIDI connection. 
+
+IMPORTANT: ESP32 board and Arduino Uno R3 must share GND.
