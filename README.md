@@ -74,6 +74,20 @@ MIDI Clock|MIDI Time Code
 -----|-----
 ![OLED Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi-clock.png "Screen 4")|![OLED Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-mtc.png "Screen 5")
 
+## USB MIDI
+
+The cheapest way to implement an USB MIDI connection is using an Arduino Uno R3 (or Mega) as USB-to-Serial converter with a USB class-compliant MIDI firmware for ATmega16U2.
+
+PedalinoMini™ is tested with [mocoLUFA](https://github.com/kuwatay/mocolufa). mocoLUFA supports dual mode boot (USB-MIDI or Arduino-Serial) and high-speed mode (1 Mbps) even if we don't need them. More information can be obtained [here](https://github.com/tttapa/MIDI_controller).
+
+No sketch is needed for ATmega328P. ATmega328P is disabled connecting RESET to GND.
+
+Serial1 of ESP32 (re-mapped to pin 18 RX and 19 TX) is connected to Serial (pin 0 and 1) of Arduino Uno R3. ESP32 is usually 5V tolerant.
+
+Arduino Uno is powered by the USB MIDI connection. 
+
+IMPORTANT: ESP32 board and Arduino Uno R3 must share GND.
+
 ## WEB user interface
 
 ![WEB Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-home.png "Screen 1")
@@ -139,17 +153,3 @@ See [How to reset PedalinoMini™ to factory default](https://github.com/alf45ta
 - Press and release POWER button
 - Release CENTER button when PedalinoMini™ reboot (after about 10 seconds)
 - If you release CENTER button before reboot PedalinoMini™ will start in AP mode
-
-## USB MIDI
-
-The cheapest way to implement an USB MIDI connection is using an Arduino Uno R3 (or Mega) as USB-to-Serial converter with a USB class-compliant MIDI firmware for ATmega16U2.
-
-Pedalino is tested with [mocoLUFA](https://github.com/kuwatay/mocolufa). mocoLUFA supports dual mode boot (USB-MIDI or Arduino-Serial) and high-speed mode (1 Mbps) even if we don't need them. More information can be obtained in the following [here](https://github.com/tttapa/MIDI_controller).
-
-No sketch is needed for ATmega328P. ATmega328P is disabled connecting RESET to GND.
-
-Serial1 of ESP32 (re-mapped to pin 18 RX and 19 TX) is connected to Serial (pin 0 and 1) of Arduino Uno R3. ESP32 is usually 5V tolerant.
-
-Arduino Uno is powered by the USB MIDI connection. 
-
-IMPORTANT: ESP32 board and Arduino Uno R3 must share GND.
