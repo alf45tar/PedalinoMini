@@ -64,7 +64,7 @@ USB MIDI and DIN MIDI connection requires additional hardware.
 ![Schematic1](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-1.svg "Schematic1")
 ![Schematic2](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-2.svg "Schematic2")
 
-## How to build an upload
+## How to build and upload
 
 [PlatformIO](https://platformio.org) is the recommended IDE for Pedalino build and upload.
 
