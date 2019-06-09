@@ -64,6 +64,20 @@ USB MIDI and DIN MIDI connection requires additional hardware.
 ![Schematic1](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-1.svg "Schematic1")
 ![Schematic2](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-2.svg "Schematic2")
 
+## How to build an upload
+
+[PlatformIO](https://platformio.org) is the recommended IDE for Pedalino build and upload.
+
+1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode)
+2. Run the following commands from View->Command Palette (Ctrl+Shift+P)
+    - Git: Clone  
+    - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
+    - PlaftormIO: Build
+    - PlatformIO: Upload
+    - PlatformIO: Upload File System image
+
+That's all folks.
+
 ## USB MIDI
 
 The cheapest way to implement an USB MIDI connection is using an Arduino Uno R3 (or Mega) as USB-to-Serial converter with a USB class-compliant MIDI firmware for ATmega16U2.
