@@ -74,7 +74,7 @@ USB MIDI and DIN MIDI connection requires additional hardware.
     - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
     - PlaftormIO: Build
     - PlatformIO: Upload
-    - PlatformIO: Upload File System image
+    - Run “Upload File System image” task in PlatformIO IDE or use PlatformIO Core (CLI) and 'platformio run --target uploadfs' command
 
 That's all folks.
 
