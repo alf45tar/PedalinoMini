@@ -1995,11 +1995,12 @@ void http_setup() {
   httpServer.on("/interfaces",  HTTP_POST,  http_handle_post_interfaces);
   httpServer.on("/options",     HTTP_GET,   http_handle_options);
   httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
-  httpServer.on("/logo.png",    HTTP_GET,   http_handle_bootstrap_file);
+  //httpServer.on("/logo.png",    HTTP_GET,  http_handle_bootstrap_file);
   //httpServer.on("/css/floating-labels.css", http_handle_bootstrap_file);
 
 #ifdef BOOTSTRAP_LOCAL
 /*
+  httpServer.on("/logo.png",    HTTP_GET,   http_handle_bootstrap_file);
   httpServer.on("/css/bootstrap.min.css",        http_handle_bootstrap_file);
   httpServer.on("/js/jquery-3.3.1.slim.min.js",  http_handle_bootstrap_file);
   httpServer.on("/js/popper.min.js",             http_handle_bootstrap_file);

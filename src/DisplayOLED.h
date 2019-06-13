@@ -516,7 +516,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     display->setFont(profileSign);
     display->drawString(64 + 10*currentProfile, 0, String(currentProfile));
-
+#ifdef SHOW_BATTERY
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(batteryIndicator);
     voltage = (199*voltage + bat.voltage()) / 200;
@@ -542,6 +542,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     display->drawString(90, 0, String(voltage/10));
     display->drawString(106, 0, String(level));
     */
+#endif
   }  
 }
 
