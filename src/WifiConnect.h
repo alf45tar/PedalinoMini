@@ -177,7 +177,7 @@ void start_services()
   // Set incoming OSC messages port
   oscUDP.begin(oscLocalPort);
   DPRINT("OSC server started\n");
-
+  
   // Connect to Blynk Cloud
   blynk_connect();
 }
@@ -396,14 +396,14 @@ void status_blink()
   WIFI_LED_OFF();
 }
 
-void ap_mode_start()
+bool ap_mode_start()
 {
   WIFI_LED_OFF();
 
   WiFi.disconnect();  // mandatory after the unsuccessful try to connect to an AP
                       // and before setting up the softAP
 
-  WiFi.mode(WIFI_AP);
+  WiFi.enableAP(true);
   
   if (WiFi.softAP(wifiSoftAP.c_str(), host.c_str())) {
     DPRINT("AP %s started with password %s\n", wifiSoftAP.c_str(), host.c_str());
@@ -411,9 +411,11 @@ void ap_mode_start()
     //dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     //dnsServer.start(53, "*", apIP);
     //start_services();
+    return true;
   }  
   else
     DPRINT("AP mode failed\n");
+    return false;
 }
 
 void ap_mode_stop()
@@ -436,9 +438,7 @@ bool smart_config()
 
   // Re-establish lost connection to the AP
   WiFi.setAutoReconnect(true);
-
-  // Automatically connect on power on to the last used access point
-  WiFi.setAutoConnect(true);
+  WiFi.setAutoConnect(false);
 
   // Waiting for SSID and password from from mobile app
   // SmartConfig works only in STA mode
@@ -537,7 +537,7 @@ bool wps_config()
   return WiFi.isConnected();
 }
 
-//bool ap_connect(String ssid = "", String password = "")
+
 bool ap_connect(String ssid, String password)
 {
   // Return 'true' if connected to the access point within WIFI_CONNECT_TIMEOUT seconds
@@ -548,8 +548,9 @@ bool ap_connect(String ssid, String password)
 
   if (ssid.length() == 0) return false;
 
-  WiFi.disconnect();
-  WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(true);
+  WiFi.enableAP(false);
+  WiFi.enableSTA(true);
   WiFi.begin(ssid.c_str(), password.c_str());
   display_progress_bar_title2("Connecting to", ssid);
   for (byte i = 0; i < WIFI_CONNECT_TIMEOUT * 2 && !WiFi.isConnected(); i++) {
@@ -566,13 +567,12 @@ bool ap_connect(String ssid, String password)
   return WiFi.isConnected();
 }
 
-//bool auto_reconnect(String ssid = "", String password = "")
 bool auto_reconnect(String ssid, String password)
 {
   // Return 'true' if connected to the (last used) access point within WIFI_CONNECT_TIMEOUT seconds
 
   if (ssid.length() == 0) {
-
+    
 #ifdef ARDUINO_ARCH_ESP8266
     ssid = WiFi.SSID();
     password = WiFi.psk();
@@ -583,22 +583,26 @@ bool auto_reconnect(String ssid, String password)
     password = wifiPassword;
 #endif
   }
-
   return (ssid.length() == 0) ? false : ap_connect(ssid, password);
 }
 
 void wifi_connect()
 {
-  auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
+  WiFi.persistent(false);
+  bool is_connected = auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
 
-  if (!WiFi.isConnected())
-    smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+  if (!is_connected)
+    is_connected = smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
 
-  if (!WiFi.isConnected())
-    wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
+  if (!is_connected)
+    is_connected = wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
 
-  if (!WiFi.isConnected())
-    ap_mode_start();          // switch to AP mode until next reboot
+  if (!is_connected) {
+    is_connected = ap_mode_start();          // switch to AP mode until next reboot
+    if(is_connected) {
+        DPRINTLN("Device ip-address is %s\n", WiFi.softAPIP().toString().c_str());
+    }
+  }
 }
 
 #endif  // WIFI
