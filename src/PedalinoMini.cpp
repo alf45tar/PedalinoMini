@@ -152,7 +152,7 @@ void setup()
     lcdSetCursor(0, 1);
     lcdPrint("Factory default ");
     delay(1000);
-    //eeprom_initialize_to_zero();
+    eeprom_initialize_to_zero();
     load_factory_default();
     eeprom_update();
     //ESP.eraseConfig();
