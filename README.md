@@ -80,17 +80,15 @@ That's all folks.
 
 ## USB MIDI
 
-The cheapest way to implement an USB MIDI connection is using an Arduino Uno R3 (or Mega) as USB-to-Serial converter with a USB class-compliant MIDI firmware for ATmega16U2.
+The cheapest and compact way to implement an USB MIDI connection is using an Arduino Pro Micro.
 
-PedalinoMini™ is tested with [mocoLUFA](https://github.com/kuwatay/mocolufa). mocoLUFA supports dual mode boot (USB-MIDI or Arduino-Serial) and high-speed mode (1 Mbps) even if we don't need them. More information can be obtained [here](https://github.com/tttapa/MIDI_controller).
+USB MIDI is implemented by [BlokasLabs/USBMIDI library](https://github.com/BlokasLabs/USBMIDI). Upload the [UsbMidiConverter](https://github.com/BlokasLabs/USBMIDI/blob/master/examples/UsbMidiConverter/UsbMidiConverter.ino) example into the Arduino Pro Micro.
 
-No sketch is needed for ATmega328P. ATmega328P is disabled connecting RESET to GND.
+Serial1 of ESP32 (re-mapped to pin 18 RX and 19 TX) is connected to Serial1 (pin 1 TX and pin 0 RX) of Arduino Pro Micro. Use a 3.3V Pro Micro board. A 5V Pro Micro board works too because the ESP32 is usually 5V tolerant.
 
-Serial1 of ESP32 (re-mapped to pin 18 RX and 19 TX) is connected to Serial (pin 0 and 1) of Arduino Uno R3. ESP32 is usually 5V tolerant.
+Arduino Pro Micro is powered by the USB MIDI connection. 
 
-Arduino Uno is powered by the USB MIDI connection. 
-
-IMPORTANT: ESP32 board and Arduino Uno R3 must share GND.
+IMPORTANT: ESP32 board and Arduino Pro Micro must share GND.
 
 ## OLED display screenshots
 
