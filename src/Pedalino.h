@@ -247,7 +247,7 @@ struct Serial1MIDISettings : public midi::DefaultSettings
 struct Serial2MIDISettings : public midi::DefaultSettings
 {
   static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = 2;
+  static const int8_t RxPin  = 15;
   static const int8_t TxPin  = 4;
 };
 
@@ -255,12 +255,7 @@ struct Serial2MIDISettings : public midi::DefaultSettings
 #define SERIAL_MIDI_DIN   Serial2
 
 MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, Serial1MIDISettings);
-
-#ifdef TTGO_T_EIGHT
 MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MIDISettings);
-#else
-MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI);
-#endif
 
 // The keys value that works for most LCD Keypad Shield
 

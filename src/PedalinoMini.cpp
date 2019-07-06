@@ -121,8 +121,6 @@ void setup()
 
   display_init();
 
-  eeprom_init();
-
   // Reset to factory default if BOOT key is pressed and hold for alt least 8 seconds at power on
   // Enter AP mode if BOOT key is pressed and hold for less than 8 seconds at power on
   pinMode(FACTORY_DEFAULT_PIN, INPUT_PULLUP);
@@ -153,8 +151,7 @@ void setup()
     eeprom_initialize_to_zero();
     load_factory_default();
     eeprom_update();
-    //ESP.eraseConfig();
-    //ESP.reset();
+    //ESP.restart();
   }
 
 #ifdef TTGO_T_EIGHT

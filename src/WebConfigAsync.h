@@ -273,9 +273,6 @@ String get_root_page() {
   page += F("/");
   page += SPIFFS.totalBytes() / 1024;
   page += F(" kB</dd>");
-  page += F("<dt>EEPROM Size</dt><dd>");
-  page += EEPROM_SIZE / 1024;
-  page += F(" kB</dd>");
   page += F("<dt>Free Heap Size</dt><dd>");
   page += ESP.getFreeHeap() / 1024;
   page += F(" kB</dd>");
@@ -1498,6 +1495,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   if (request->arg("blynkcloud") == checked) {
     blynk_enable();
+    eeprom_update_blynk_cloud_enable(true);
     //blynk_connect();
     //blynk_refresh();
     alert = "Saved";
@@ -1505,6 +1503,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   else {
     blynk_disconnect();
     blynk_disable();
+    eeprom_update_blynk_cloud_enable(false);
     alert = "Saved";
   }
 
@@ -1821,7 +1820,12 @@ void http_setup() {
   //events.setAuthentication("user", "pass");
   httpServer.addHandler(&events);
 #endif
-  SPIFFS.begin();
+  if (!SPIFFS.begin()) {
+      DPRINT("SPIFFS mount FAILED\n");
+  }
+  else {
+    DPRINT("SPIFFS mount OK\n");
+  }
   httpServer.serveStatic("/", SPIFFS, "/");
 
   httpServer.on("/",                        http_handle_root);

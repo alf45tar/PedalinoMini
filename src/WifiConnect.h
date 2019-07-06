@@ -207,16 +207,16 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       //IPAddress apIP(192, 168, 1, 1);
       //IPAddress netMsk(255, 255, 255, 0);
       //WiFi.softAPConfig(apIP, apIP, netMsk);
-      WiFi.softAPsetHostname(host.c_str());
+      //WiFi.softAPsetHostname(host.c_str());
       //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
       //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
-      DPRINT("AP SSID     : %s\n", wifiSoftAP.c_str());
-      //DPRINT("AP PSK      : \n");
-      DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
-      DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
-      DPRINT("Channel     : %d\n", WiFi.channel());
-      DPRINT("Connect to %s wireless network with no password\n", wifiSoftAP.c_str());
-      start_services();
+      //DPRINT("AP SSID     : %s\n", wifiSoftAP.c_str());
+      //DPRINT("AP PSK      : %s\n", host.c_str());
+      //DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
+      //DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
+      //DPRINT("Channel     : %d\n", WiFi.channel());
+      //DPRINT("Connect to %s wireless network with no password\n", wifiSoftAP.c_str());
+      //start_services();
       break;
 
     case SYSTEM_EVENT_AP_STOP:
@@ -287,7 +287,16 @@ void ap_mode_start()
     // Setup the DNS server redirecting all the domains to the apIP
     //dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     //dnsServer.start(53, "*", apIP);
-    //start_services();
+    WiFi.softAPsetHostname(host.c_str());
+    //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
+    //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
+    DPRINT("AP SSID     : %s\n", wifiSoftAP.c_str());
+    DPRINT("AP PSK      : %s\n", host.c_str());
+    DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
+    DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
+    DPRINT("Channel     : %d\n", WiFi.channel());
+    DPRINT("Connect to %s wireless network with no password\n", wifiSoftAP.c_str());
+    start_services();
   }  
   else
     DPRINT("AP mode failed\n");
@@ -296,6 +305,8 @@ void ap_mode_start()
 void ap_mode_stop()
 {
   WIFI_LED_OFF();
+  
+  stop_services();
 
   if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA) {
     if (WiFi.softAPdisconnect()) {
@@ -458,7 +469,8 @@ bool auto_reconnect(String ssid, String password)
 
 void wifi_connect()
 {
-  auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
+  if (auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
+    return;
 
   if (!WiFi.isConnected())
     smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
