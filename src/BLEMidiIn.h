@@ -10,6 +10,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  */
 
 #ifdef BLE
+#include <esp_bt.h>
 #include "BleMidi.h"
 
 void OnBleMidiConnected() {
@@ -240,6 +241,12 @@ void OnBleMidiReceiveReset(void)
 
 void ble_midi_start_service()
 {
+
+  // Release Bluetooth Classic memory
+  esp_bt_controller_disable();
+  esp_bt_controller_deinit();
+  esp_bt_mem_release(ESP_BT_MODE_CLASSIC_BT);
+
   // Create a session and wait for a remote host to connect to us
   BleMIDI.begin(host.c_str());
 

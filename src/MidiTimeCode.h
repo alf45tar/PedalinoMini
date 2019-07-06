@@ -16,8 +16,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _MIDI_CLOCK_MTC_H_
 #define _MIDI_CLOCK_MTC_H_
 
-#include <esp32-hal-timer.h>
 #include <Arduino.h>
+#include <Ticker.h>
 
 // TAP_NUM_READINGS doesn't mean we have to wait for this many samples
 // to change BPM, just that smoothing operates on this value.
@@ -95,8 +95,7 @@ class MidiTimeCode
     static void doSendMidiClock();
     static void doSendMTC();
 
-    static hw_timer_t                *mTimer;
-    static portMUX_TYPE               mTimerMux;
+    static Ticker                     mTimer;
     static volatile int               mInterruptCounter;
 
   private:

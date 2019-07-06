@@ -13,20 +13,13 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "BleMidi.h"
 #endif
 
-#ifdef ARDUINO_ARCH_ESP8266
-#define BLE_LED_OFF()
-#define BLE_LED_ON()
-#endif
-
-#ifdef ARDUINO_ARCH_ESP32
 #define BLE_LED         2
 #define BLE_LED_OFF()   digitalWrite(BLE_LED, LOW)
 #define BLE_LED_ON()    digitalWrite(BLE_LED, HIGH)
-#endif
 
 // Bluetooth LE MIDI interface
 
-#if defined(ARDUINO_ARCH_ESP32) && defined(BLE)
+#ifdef BLE
 BLEMIDI_CREATE_INSTANCE(BleMIDI);
 #endif
 

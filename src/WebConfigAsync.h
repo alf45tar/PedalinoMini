@@ -15,94 +15,24 @@ String theme = "bootstrap";
 inline void http_run() {};
 #else
 
-#include <StreamString.h>
-#include <FS.h>
-#include <SPIFFS.h>
-
-#ifdef ARDUINO_ARCH_ESP8266
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
-
-ESP8266WebServer        httpServer(80);
-ESP8266HTTPUpdateServer httpUpdater;
-#endif
-
-#ifdef ARDUINO_ARCH_ESP32
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <Update.h>
-#include <esp32-hal-timer.h>
+#include <StreamString.h>
+#include <FS.h>
+#include <SPIFFS.h>
 
 AsyncWebServer          httpServer(80);
 
-#ifdef COMPONENT_EMBED_TXTFILES
-extern const uint8_t bootstrap_min_css_start[]        asm("_binary_data_bootstrap_min_css_gz_start");
-extern const uint8_t bootstrap_min_css_end[]          asm("_binary_data_bootstrap_min_css_gz_end");
-extern const uint8_t bootstrap_min_js_start[]         asm("_binary_data_bootstrap_min_js_gz_start");
-extern const uint8_t bootstrap_min_js_end[]           asm("_binary_data_bootstrap_min_js_gz_end");
-extern const uint8_t jquery_3_3_1_slim_min_js_start[] asm("_binary_data_jquery_3_3_1_slim_min_js_gz_start");
-extern const uint8_t jquery_3_3_1_slim_min_js_end[]   asm("_binary_data_jquery_3_3_1_slim_min_js_gz_end");
-extern const uint8_t popper_min_js_start[]            asm("_binary_data_popper_min_js_gz_start");
-extern const uint8_t popper_min_js_end[]              asm("_binary_data_popper_min_js_gz_end");
-extern const uint8_t logo_png_start[]                 asm("_binary_data_logo_png_start");
-extern const uint8_t logo_png_end[]                   asm("_binary_data_logo_png_end");
-extern const uint8_t floating_labels_css_start[]      asm("_binary_data_floating_labels_css_gz_start");
-extern const uint8_t floating_labels_css_end[]        asm("_binary_data_floating_labels_css_gz_end");
-#endif
-
-#define FAVICON_ICO_GZ_LEN  621
-const uint8_t favicon_ico_gz[] PROGMEM = {
-  0x1f, 0x8b, 0x08, 0x08, 0x54, 0x41, 0x29, 0x5c, 0x02, 0x00, 0x66, 0x61, 0x76, 0x69, 0x63, 0x6f, 
-  0x6e, 0x2e, 0x69, 0x63, 0x6f, 0x00, 0xad, 0x53, 0x4d, 0x6f, 0x12, 0x61, 0x10, 0x7e, 0xf9, 0xd8, 
-  0x5d, 0x92, 0x26, 0xb4, 0xc2, 0x62, 0xb1, 0x58, 0x41, 0xd6, 0x76, 0xbf, 0x17, 0x58, 0x58, 0xc2, 
-  0x52, 0x16, 0x30, 0x42, 0x23, 0x85, 0xd4, 0x10, 0xd3, 0xa6, 0xd2, 0x83, 0x50, 0x35, 0xa0, 0x31, 
-  0x1e, 0x4b, 0x82, 0x72, 0xd1, 0x93, 0x89, 0x47, 0x7b, 0x31, 0x26, 0x5e, 0xd5, 0x83, 0xf1, 0xe6, 
-  0xc1, 0x98, 0x78, 0x31, 0x6a, 0xa2, 0x69, 0x1a, 0x13, 0x8d, 0x17, 0x7f, 0x83, 0xff, 0x40, 0x1f, 
-  0x16, 0xbc, 0x08, 0x45, 0x4d, 0x9c, 0xcd, 0x93, 0xd9, 0xbc, 0x33, 0xcf, 0xcc, 0xbc, 0xcf, 0xec, 
-  0x12, 0xe2, 0xc0, 0x33, 0x37, 0x37, 0xf0, 0x11, 0xd2, 0x71, 0x13, 0x72, 0x94, 0x10, 0x22, 0x00, 
-  0x38, 0xc2, 0xc9, 0xf0, 0xdc, 0x36, 0xc4, 0x38, 0xcd, 0xc6, 0x44, 0xa3, 0x28, 0xca, 0xf6, 0x6c, 
-  0x20, 0x40, 0x05, 0x02, 0x01, 0xda, 0xe5, 0x72, 0x11, 0x86, 0x61, 0xc8, 0x34, 0x73, 0xbb, 0xdd, 
-  0xa4, 0xbc, 0xba, 0x4a, 0x54, 0x55, 0x9d, 0x5d, 0xab, 0x56, 0xf3, 0xaa, 0xa6, 0xb1, 0x09, 0x5d, 
-  0xdf, 0xd2, 0x93, 0xc9, 0x4b, 0x08, 0x3b, 0x7d, 0x3e, 0xdf, 0x54, 0xbe, 0xc7, 0xe3, 0x21, 0x17, 
-  0x1a, 0x0d, 0x72, 0xa6, 0x54, 0xca, 0xf5, 0xfb, 0xfd, 0x6f, 0xd5, 0x5a, 0x6d, 0x1d, 0xfc, 0x3b, 
-  0xc9, 0x54, 0x6a, 0x6f, 0x50, 0x1e, 0x73, 0xfc, 0x91, 0x9f, 0xb3, 0x2c, 0x82, 0xbe, 0xb1, 0x7c, 
-  0xa1, 0x70, 0xa0, 0xc5, 0x62, 0x45, 0xf4, 0xfe, 0x6b, 0x3e, 0x4d, 0xd3, 0xc4, 0x30, 0x0c, 0x22, 
-  0x49, 0x92, 0x6c, 0xa4, 0xd3, 0x1f, 0x44, 0x49, 0x5a, 0x19, 0xf1, 0xef, 0x23, 0xec, 0xf2, 0xfb, 
-  0xfd, 0xff, 0xc2, 0xff, 0x28, 0x0d, 0xf9, 0xb7, 0xc1, 0x7f, 0x2c, 0x88, 0xa2, 0x2e, 0x2b, 0x8a, 
-  0x02, 0x1f, 0x3d, 0x11, 0x0e, 0x7b, 0x07, 0xab, 0x40, 0xfe, 0x74, 0xbe, 0x2c, 0x67, 0xc1, 0xbf, 
-  0x81, 0xf7, 0x2f, 0xc0, 0xbb, 0x11, 0xde, 0xa6, 0x0c, 0xe3, 0x79, 0x3c, 0x91, 0xd8, 0x08, 0x06, 
-  0x83, 0x1e, 0xd4, 0x3b, 0x94, 0xaf, 0xa8, 0x6a, 0x36, 0x12, 0x89, 0xf8, 0x78, 0x9e, 0x57, 0x80, 
-  0xb8, 0x20, 0x08, 0x3a, 0x6a, 0x9e, 0x86, 0x3e, 0xb7, 0x10, 0xdf, 0x87, 0xb6, 0x2d, 0x68, 0x46, 
-  0x45, 0xa3, 0x51, 0xe2, 0x70, 0x38, 0xc6, 0xf9, 0x8a, 0x62, 0xa2, 0x86, 0x82, 0x19, 0x6e, 0x02, 
-  0x7d, 0x5d, 0xd7, 0x77, 0x33, 0x99, 0x4c, 0xb9, 0xdd, 0x6e, 0xf7, 0x2b, 0x95, 0xca, 0xc3, 0xdd, 
-  0x6e, 0xf7, 0xab, 0x69, 0x9a, 0x62, 0xa9, 0x5c, 0x26, 0xf8, 0x3e, 0xc6, 0xf8, 0xb2, 0x2c, 0x67, 
-  0x30, 0x67, 0x13, 0xdc, 0xa7, 0xb1, 0x78, 0xfc, 0x22, 0xde, 0xb7, 0xd2, 0xe9, 0xf4, 0x5a, 0x63, 
-  0x7b, 0xfb, 0x55, 0xb1, 0x58, 0x3c, 0xdf, 0x6c, 0xb5, 0xae, 0xe0, 0x9c, 0xb5, 0xf2, 0x79, 0xe2, 
-  0x74, 0x3a, 0xc7, 0xf8, 0xd0, 0xdf, 0x44, 0xbf, 0xab, 0x19, 0xd3, 0xbc, 0x1b, 0x0e, 0x87, 0x23, 
-  0x3c, 0x0c, 0xf9, 0x1d, 0xcc, 0xfd, 0xe0, 0xf8, 0xe2, 0x62, 0x08, 0x77, 0x3b, 0xe9, 0x67, 0x59, 
-  0xea, 0xd8, 0xc2, 0xc2, 0xc4, 0xfb, 0x9f, 0x5a, 0x5a, 0xca, 0xb6, 0x3b, 0x9d, 0x6e, 0x6b, 0x67, 
-  0xe7, 0x19, 0x7a, 0xef, 0x61, 0x0f, 0x8f, 0x80, 0x7b, 0xa2, 0x28, 0xa6, 0x50, 0xa7, 0x09, 0x1d, 
-  0x9f, 0x20, 0xe7, 0x08, 0x34, 0x99, 0x74, 0xff, 0x7d, 0xec, 0x6b, 0x1d, 0x79, 0xc2, 0x4a, 0x2e, 
-  0x77, 0x4e, 0xd3, 0xb4, 0xf2, 0x32, 0xcf, 0x67, 0xa1, 0x61, 0x16, 0xb5, 0xae, 0x0d, 0xea, 0x63, 
-  0x8e, 0x0e, 0xda, 0xba, 0xe6, 0xe7, 0xe7, 0x6d, 0x3e, 0xfe, 0x99, 0x5f, 0xfc, 0x65, 0xc4, 0x3f, 
-  0x01, 0x07, 0xf8, 0x17, 0xae, 0xf7, 0x7a, 0xbd, 0x17, 0x1b, 0x9b, 0x9b, 0x9f, 0xd1, 0xfb, 0xcd, 
-  0x68, 0x87, 0x2f, 0xc1, 0xbd, 0x1c, 0x0a, 0x85, 0x66, 0x2c, 0xcb, 0xb2, 0xb9, 0x30, 0xdb, 0xe3, 
-  0x9b, 0x25, 0x51, 0x8e, 0x9b, 0x81, 0x2f, 0xa0, 0x77, 0x0d, 0xfb, 0x95, 0xea, 0xf5, 0xfa, 0x59, 
-  0xe8, 0x55, 0xc3, 0x3c, 0x26, 0x34, 0x55, 0x39, 0x8e, 0x63, 0x19, 0x9a, 0x76, 0x7a, 0xbd, 0x5e, 
-  0xf2, 0x3f, 0xed, 0xfb, 0x0f, 0x42, 0x5e, 0xff, 0x8e, 0x59, 0x80, 0x01, 0x5c, 0x87, 0x80, 0x19, 
-  0xe6, 0xbc, 0x47, 0xee, 0x4f, 0xac, 0x9d, 0x13, 0xe3, 0x7e, 0x04, 0x00, 0x00
-};
-#endif
-
-
 #ifdef WEBCONFIG
 
+#ifdef WEBSOCKET
 AsyncWebSocket               webSocket("/ws");
 AsyncEventSource             events("/events");    // EventSource is single direction, text-only protocol.
 AsyncWebSocketMessageBuffer *buffer = NULL;
+#endif
 
 void    blynk_enable();
 void    blynk_disable();
@@ -180,7 +110,12 @@ String get_top_page(int p = 0) {
   }
   if (p > 1) {
     page += F("<form class='form-inline my-2 my-lg-0'>");
-    //page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
+    page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
+    page += currentProfile == 1 ? F("<a class='btn btn-primary' href='?profile=2' role='button'>B</a>") : F("<a class='btn btn-outline-primary' href='?profile=2' role='button'>B</a>");
+    page += currentProfile == 2 ? F("<a class='btn btn-primary' href='?profile=3' role='button'>C</a>") : F("<a class='btn btn-outline-primary' href='?profile=3' role='button'>C</a>");
+
+    page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
+/*
     page += F("<div class='btn-group my-2 my-sm-0'>");
     page += F("<button type='button' class='btn btn-info'>Profile ");
     uiprofile = String(currentProfile + 1);
@@ -195,6 +130,7 @@ String get_top_page(int p = 0) {
     page += F("<a class='dropdown-item' href='?profile=3'>C</a>");
     page += F("</div>");
     page += F("</div>");
+*/
     page += F("</form>");
   }
   page += F("</div>");
@@ -309,37 +245,25 @@ String get_root_page() {
   page += ARDUINO_BOARD;
   page += F("</dd>");
   page += F("<dt>Chip</dt><dd>");
-#ifdef ARDUINO_ARCH_ESP8266
-  page += String("ESP8266");
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   page += String("ESP32");
-#endif
   page += F("</dd>");
-#ifdef ARDUINO_ARCH_ESP32
   page += F("<dt>Chip Revision</dt><dd>");
   page += ESP.getChipRevision();
   page += F("</dd>");
-#endif
   page += F("</dd>");
   page += F("<dt>Chip ID</dt><dd>");
   page += getChipId();
   page += F("</dd>");
   page += F("<dt>CPU Frequency</dt><dd>");
-  page += getCpuFreqMhz();
+  page += ESP.getCpuFreqMHz();
   page += F(" MHz</dd>");
   page += F("<dt>Flash Chip Frequency</dt><dd>");
   page += ESP.getFlashChipSpeed() / 1000000;
   page += F(" MHz</dd>");
-  page += F("<dt>IDE Flash Size</dt><dd>");
+  page += F("<dt>Flash Size</dt><dd>");
   page += ESP.getFlashChipSize() / (1024 * 1024);
   page += F(" MB</dd>");
-#ifdef ARDUINO_ARCH_ESP8266
-  page += F("<dt>Real Flash Size</dt><dd>");
-  page += ESP.getFlashChipRealSize() / (1024 * 1024);
-  page += F(" MB</dd>");
-#endif
-  page += F("<dt>SPIRAM Free/Total</dt><dd>");
+  page += F("<dt>PSRAM Free/Total</dt><dd>");
   page += ESP.getFreePsram() / 1024;
   page += F("/");
   page += ESP.getPsramSize() / 1024;
@@ -397,11 +321,9 @@ String get_root_page() {
   page += F("<dt>Channel</dt><dd>");
   page += String(WiFi.channel());
   page += F("</dd>");
-#ifdef ARDUINO_ARCH_ESP32  
   page += F("<dt>Hostname</dt><dd>");
   page += WiFi.softAPgetHostname();
   page += F("</dd>");
-#endif
   page += F("<dt>Connected Stations</dt><dd>");
   page += WiFi.softAPgetStationNum();
   page += F("</dd>");
@@ -411,12 +333,7 @@ String get_root_page() {
   page += F("<div class='col-6 col-sm-3'>");
   page += F("<h3>Network</h3>");
   page += F("<dt>Hostname</dt><dd>");
-#ifdef ARDUINO_ARCH_ESP8266
-  page += WiFi.hostname() + String(".local");
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   page += WiFi.getHostname() + String(".local");
-#endif
   page += F("</dd>");
   page += F("<dt>IP address</dt><dd>");
   page += WiFi.localIP().toString();
@@ -1394,65 +1311,6 @@ String get_options_page() {
   return page;
 }
 
-#ifdef BOOTSTRAP_LOCAL
-
-void http_handle_bootstrap_file(AsyncWebServerRequest *request) {
-
-#ifdef COMPONENT_EMBED_TXTFILES
-  const uint8_t *file = NULL;
-  size_t filesize = 0;
-
-  if (request->url() == "/css/bootstrap.min.css") {
-    file = bootstrap_min_css_start;
-    filesize = bootstrap_min_css_end - bootstrap_min_css_start;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", file, filesize);
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-  }
-  if (request->url() == "/js/jquery-3.3.1.slim.min.js") {
-    file = jquery_3_3_1_slim_min_js_start;
-    filesize = jquery_3_3_1_slim_min_js_end - jquery_3_3_1_slim_min_js_start;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "application/javascript", file, filesize);
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-  }
-  if (request->url() == "/js/popper.min.js") {
-    file = popper_min_js_start;
-    filesize = popper_min_js_end - popper_min_js_start;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "application/javascript", file, filesize);
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-  }
-  if (request->url() == "/js/bootstrap.min.js") {
-    file = bootstrap_min_js_start;
-    filesize = bootstrap_min_js_end - bootstrap_min_js_start;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "application/javascript", file, filesize);
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-   }
-  if (request->url() == "/logo.png") {
-    file = logo_png_start;
-    filesize = logo_png_end - logo_png_start;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/png", file, filesize);
-    request->send(response);
-  }
-  if (request->url() == "/css/floating-labels.css") {
-    file = floating_labels_css_start;
-    filesize = floating_labels_css_end - floating_labels_css_start;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", file, filesize);
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-  }
-#endif  // COMPONENT_EMBED_TXTFILES
-}
-#endif
-
-void http_handle_favicon(AsyncWebServerRequest *request) {
-  AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-icon", favicon_ico_gz, FAVICON_ICO_GZ_LEN);
-  response->addHeader("Content-Encoding", "gzip");
-  request->send(response);
-}
-
 void http_handle_login(AsyncWebServerRequest *request) {
   request->send(200, "text/html", get_login_page());
 }
@@ -1638,18 +1496,10 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   
   http_handle_globals(request);
 
-  if (request->arg("mdnsdevicename") != host) {
-    host = request->arg("mdnsdevicename");
-    eeprom_update_device_name(host);
-    delay(1000);
-    ESP.restart();
-    alert = "Saved";
-  }
-
   if (request->arg("blynkcloud") == checked) {
     blynk_enable();
-    blynk_connect();
-    blynk_refresh();
+    //blynk_connect();
+    //blynk_refresh();
     alert = "Saved";
   }
   else {
@@ -1662,14 +1512,23 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     blynk_disconnect();
     eeprom_update_blynk_auth_token(request->arg("blynkauthtoken"));
     blynk_set_token(request->arg("blynkauthtoken"));
-    blynk_connect();
-    blynk_refresh();
+    //blynk_connect();
+    //blynk_refresh();
     alert = "Saved";
   }
 
+  if (request->arg("mdnsdevicename") != host) {
+    host = request->arg("mdnsdevicename");
+    eeprom_update_device_name(host);
+    delay(1000);
+    ESP.restart();
+    alert = "Saved";
+  }
+  
   request->send(200, "text/html", get_options_page());
 }
 
+#ifdef WEBSOCKET
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
 
   //static bool connected = false;
@@ -1813,6 +1672,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
     }
   }
 }
+#endif  // NO_WEBSOCKET
 
 #endif  // WEBCONFIG
 
@@ -1877,7 +1737,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
   if (!index) {
     // Disconnect, not to interfere with OTA process
     blynk_disconnect();
-#ifdef WEBCONFIG
+#ifdef WEBSOCKET
     webSocket.enable(false);
     webSocket.textAll("Web Update Started");
     webSocket.closeAll();
@@ -1886,15 +1746,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
     DPRINT("Update Start: %s\n", filename.c_str());
     display_ui_update_disable();
     display_progress_bar_title("HTTP Update");
-#ifdef ARDUINO_ARCH_ESP8266
-    Update.runAsync(true);
-    //size of max sketch rounded to a sector
-    uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-    if (Update.begin(maxSketchSpace)) { //start with max available size
-#endif
-#ifdef ARDUINO_ARCH_ESP32
     if (Update.begin()) {  //start with max available size
-#endif
       DPRINT("Update start\n");
       display_progress_bar_update(0, 100);
     }
@@ -1960,29 +1812,19 @@ void http_handle_not_found(AsyncWebServerRequest *request) {
   request->send(404, "text/plain", message);
 }
 
-hw_timer_t   *_timer2 = NULL;
-portMUX_TYPE  _timer2Mux = portMUX_INITIALIZER_UNLOCKED;
-volatile int  _interruptCounter2 = 0;
-
-void IRAM_ATTR onTimer2_isr()
-{
-  portENTER_CRITICAL_ISR(&_timer2Mux);
-  _interruptCounter2++;
-  portEXIT_CRITICAL_ISR(&_timer2Mux);
-}
-
 void http_setup() {
 
 #ifdef WEBCONFIG
+#ifdef WEBSOCKET
   webSocket.onEvent(onWsEvent);
   httpServer.addHandler(&webSocket);
   //events.setAuthentication("user", "pass");
   httpServer.addHandler(&events);
+#endif
   SPIFFS.begin();
   httpServer.serveStatic("/", SPIFFS, "/");
 
   httpServer.on("/",                        http_handle_root);
-  //httpServer.on("/favicon.ico", HTTP_GET,   http_handle_favicon);
   httpServer.on("/login",       HTTP_GET,   http_handle_login);
   httpServer.on("/login",       HTTP_POST,  http_handle_post_login);
   httpServer.on("/live",        HTTP_GET,   http_handle_live);
@@ -1995,17 +1837,7 @@ void http_setup() {
   httpServer.on("/interfaces",  HTTP_POST,  http_handle_post_interfaces);
   httpServer.on("/options",     HTTP_GET,   http_handle_options);
   httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
-  httpServer.on("/logo.png",    HTTP_GET,   http_handle_bootstrap_file);
   //httpServer.on("/css/floating-labels.css", http_handle_bootstrap_file);
-
-#ifdef BOOTSTRAP_LOCAL
-/*
-  httpServer.on("/css/bootstrap.min.css",        http_handle_bootstrap_file);
-  httpServer.on("/js/jquery-3.3.1.slim.min.js",  http_handle_bootstrap_file);
-  httpServer.on("/js/popper.min.js",             http_handle_bootstrap_file);
-  httpServer.on("/js/bootstrap.min.js",          http_handle_bootstrap_file);
-*/
-#endif  // BOOTSTRAP_LOCAL
 
   httpServer.on("/update",      HTTP_GET,   http_handle_update);
   httpServer.on("/update",      HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);
@@ -2014,22 +1846,17 @@ void http_setup() {
   httpServer.begin();
 
   // Setup a 10Hz timer
-  _timer2 = timerBegin(1, 80, true);
-  timerAttachInterrupt(_timer2, &onTimer2_isr, true);
-  timerAlarmWrite(_timer2, 1000000/10, true);
-  timerAlarmEnable(_timer2);
+  Timer2Attach(100);
 #endif  // WEBCONFIG
 }
 
 inline void http_run() {
 
-  if (_interruptCounter2 > 0) {
+  if (interruptCounter2 > 0) {
 
-    portENTER_CRITICAL(&_timer2Mux);
-    _interruptCounter2 = 0;
-    portEXIT_CRITICAL(&_timer2Mux);
+    interruptCounter2 = 0;
 
-#ifdef WEBCONFIG
+#ifdef WEBSOCKET
     webSocket.binaryAll(display.buffer, 128*64);
 #endif
 /*

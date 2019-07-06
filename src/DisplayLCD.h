@@ -14,7 +14,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #define LCD_LINE1_PERSISTENCE   1500;
 
-#ifdef NOLCD
 #define lcdClear(...)
 #define lcdSetCursor(...)
 #define lcdPrint(...)
@@ -22,7 +21,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define lcdWrite(...)
 #define lcdCursor(...)
 #define lcdNoCursor(...)
-#else
+/*
 #define lcdClear(...)       lcd.clear( __VA_ARGS__ )
 #define lcdSetCursor(...)   lcd.setCursor( __VA_ARGS__ )
 #define lcdPrint(...)       lcd.print( __VA_ARGS__ )
@@ -30,7 +29,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define lcdWrite(...)       lcd.write( __VA_ARGS__ )
 #define lcdCursor(...)      lcd.cursor( __VA_ARGS__ )
 #define lcdNoCursor(...)    lcd.noCursor( __VA_ARGS__ )
-#endif
+*/
 
 bool powerPlug     = false;
 bool batteryLow    = false;

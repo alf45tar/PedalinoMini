@@ -21,18 +21,10 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define OLED_I2C_SCL      SCL
 #endif
 #include <OLEDDisplayUi.h>
-
 #include <Battery.h>
-
-#ifdef ARDUINO_ARCH_ESP8266
-#include <ESP8266WiFi.h>
-#endif
-
-#ifdef ARDUINO_ARCH_ESP32
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#endif
 
 // Initialize the OLED display using Wire library
 #ifdef TTGO_T_EIGHT
@@ -47,7 +39,7 @@ Battery bat(3000, 4200, GPIO_NUM_34);
 
 bool blynk_cloud_connected();
 extern bool             appleMidiConnected;
-#ifdef WEBCONFIG
+#ifdef WEBSOCKET
 extern AsyncWebSocket   webSocket;
 extern AsyncEventSource events;
 #endif
@@ -757,7 +749,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     ui.enableAutoTransition();
   }
   
-#ifdef WEBCONFIG
+#ifdef WEBSOCKET
   events.send(MTC.isPlaying() ? "1" : "0", "play");
 
   if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||

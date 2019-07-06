@@ -201,11 +201,6 @@ void load_factory_default()
       interfaces[i].midiRouting = PED_ENABLE;
       interfaces[i].midiClock   = PED_DISABLE;
     };
-
-#ifndef NOLCD
-  for (byte c = 0; c < IR_CUSTOM_CODES; c++)
-    ircustomcode[c] = 0xFFFFFE;
-#endif
 }
 
 //
@@ -447,18 +442,6 @@ void eeprom_update()
   DPRINT("[%4d]Current MTC:       %d\n", offset, currentMidiTimeCode);
   offset += sizeof(byte);
 
-#ifndef NOLCD
-  EEPROM.put(offset, backlight);
-  DPRINT("[%4d]Backlight:         %d\n", offset, backlight);
-  offset += sizeof(byte);
-
-  for (byte c = 0; c < IR_CUSTOM_CODES; c++)
-  {
-    EEPROM.put(offset, ircustomcode[c]);
-    offset += sizeof(unsigned long);
-  }
-#endif
-
 #ifdef ARDUINO_ARCH_ESP32
   eeprom_writeString(offset, wifiSSID);
   DPRINT("[%4d]SSID     : %s\n", offset, wifiSSID.c_str());
@@ -600,18 +583,6 @@ void eeprom_read()
   EEPROM.get(offset, currentMidiTimeCode);
   DPRINT("[%4d]Current MTC:       %d\n", offset, currentMidiTimeCode);
   offset += sizeof(byte);
-
-#ifndef NOLCD
-  EEPROM.get(offset, backlight);
-  DPRINT("[%4d]Backlight:         %d\n", backlight);
-  offset += sizeof(byte);
-
-  for (byte c = 0; c < IR_CUSTOM_CODES; c++)
-  {
-    EEPROM.get(offset, ircustomcode[c]);
-    offset += sizeof(unsigned long);
-  }
-#endif
 
 #if defined(ARDUINO_ARCH_ESP32) && defined(WIFI)
   wifiSSID = eeprom_readString(offset);

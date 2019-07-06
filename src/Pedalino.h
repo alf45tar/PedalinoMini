@@ -14,21 +14,14 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define MODEL     "PedalinoMini™"      
+#define MODEL           "PedalinoMini™"      
 #define INTERFACES        6
 #define PROFILES          3
 #define BANKS            10
+#define PEDALS            6
 
-#ifdef ARDUINO_ARCH_ESP8266
-#define PEDALS             1
-const byte pinD[] = {2};
-const byte pinA[] = {2};
-#define FACTORY_DEFAULT_PIN   GPIO_NUM_0
-#endif
+#define MAXPEDALNAME     10
 
-#ifdef ARDUINO_ARCH_ESP32
-#define PEDALS             6
-#define MAXPEDALNAME      10
 // https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 // GPIOs 34 to 39 are GPIs – input only pins.
 // These pins don’t have internal pull-ups or pull-down resistors. 
@@ -42,7 +35,6 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define PROFILE_C_PIN         GPIO_NUM_37
 #else
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
-#endif
 #endif
 
 #define PIN_D(x)          pinD[x]
@@ -210,16 +202,6 @@ struct interface {
 bank      banks[BANKS][PEDALS];                   // Banks Setup
 pedal     pedals[PEDALS];                         // Pedals Setup
 
-#ifdef ARDUINO_ARCH_ESP8266
-interface interfaces[] = {
-                           "USB MIDI   ", 0, 0, 0, 0, 0,
-                           "Legacy MIDI", 0, 0, 0, 0, 0,
-                           "RTP-MIDI   ", 1, 1, 0, 1, 0,
-                           "ipMIDI     ", 1, 1, 0, 1, 0,
-                           "BLE MIDI   ", 1, 1, 0, 1, 0,
-                           "OSC        ", 1, 1, 0, 1, 0
-                          };                       // Interfaces Setup
-#else
 interface interfaces[] = {
                            "USB MIDI   ", 1, 1, 0, 1, 0,
                            "Legacy MIDI", 1, 1, 0, 1, 0,
@@ -228,7 +210,6 @@ interface interfaces[] = {
                            "BLE MIDI   ", 1, 1, 0, 1, 0,
                            "OSC        ", 1, 1, 0, 1, 0
                           };                       // Interfaces Setup
-#endif
 
 byte  currentProfile          = 0;
 byte  currentBank             = 0;
@@ -254,32 +235,32 @@ String wifiPassword("");
 // Serial MIDI interface to comunicate with Arduino
 
 #define MIDI_BAUD_RATE                  31250
-#define HIGH_SPEED_SERIAL_BAUD_RATE     31250
+#define HIGH_SPEED_SERIAL_BAUD_RATE     1000000
 
-struct HighSpeedMIDISettings : public midi::DefaultSettings
+struct Serial1MIDISettings : public midi::DefaultSettings
 {
-  static const long BaudRate = HIGH_SPEED_SERIAL_BAUD_RATE;
+  static const long BaudRate = MIDI_BAUD_RATE;
   static const int8_t RxPin  = 18;
   static const int8_t TxPin  = 19;
 };
 
-#ifdef ARDUINO_ARCH_ESP8266
-#define SERIAL_MIDI_USB   Serial
-#define SERIAL_MIDI_DIN   Serial
-#endif
+struct Serial2MIDISettings : public midi::DefaultSettings
+{
+  static const long BaudRate = MIDI_BAUD_RATE;
+  static const int8_t RxPin  = 2;
+  static const int8_t TxPin  = 4;
+};
 
-#ifdef ARDUINO_ARCH_ESP32
-#define SERIAL_MIDI_USB   Serial1   // By default UART 1 uses the same pins as the flash memory
+#define SERIAL_MIDI_USB   Serial1
 #define SERIAL_MIDI_DIN   Serial2
-#endif
 
-#ifdef SERIAL_MIDI_USB
-MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, HighSpeedMIDISettings);
-#endif
-#ifdef SERIAL_MIDI_DIN
+MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, Serial1MIDISettings);
+
+#ifdef TTGO_T_EIGHT
+MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MIDISettings);
+#else
 MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI);
 #endif
-
 
 // The keys value that works for most LCD Keypad Shield
 
@@ -294,13 +275,7 @@ MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
 
 bool powersaver = false;
 
-#if defined(ARDUINO_ARCH_ESP8266) && defined(DEBUG_ESP_PORT)
-#define SERIALDEBUG       DEBUG_ESP_PORT
-#define DPRINT(...)       DEBUG_ESP_PORT.printf( __VA_ARGS__ )
-#define DPRINTLN(...)     { DEBUG_ESP_PORT.printf( __VA_ARGS__ ); DEBUG_ESP_PORT.println(); }
-#endif
-
-#if defined(ARDUINO_ARCH_ESP32) && defined(DEBUG_ESP_PORT)
+#ifdef DEBUG_ESP_PORT
 #include <esp_log.h>
 #define SERIALDEBUG       Serial
 #define LOG_TAG           "PedalinoESP"
@@ -327,12 +302,7 @@ RemoteDebug Debug;
 #endif
 
 String getChipId() {
-#ifdef ARDUINO_ARCH_ESP8266
-  String id(ESP.getChipId(), HEX);
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   String id((uint32_t)ESP.getEfuseMac(), HEX); // Low 4 bytes of MAC address (6 bytes)
-#endif
   id.toUpperCase();
   return id;
 }
@@ -340,20 +310,4 @@ String getChipId() {
 String host(getChipId());
 String wifiSoftAP("Pedalino-" + getChipId());
 
-#include <soc/rtc.h>
-
-uint32_t getCpuFreqMhz() {
-#ifdef ARDUINO_ARCH_ESP32
-  //return (rtc_clk_cpu_freq_get() * 80);
-  rtc_cpu_freq_config_t config;
-  rtc_clk_cpu_freq_get_config(&config);
-  return config.freq_mhz;
-#endif
-
-#ifdef ARDUINO_ARCH_ESP8266
-  return ESP.getCpuFreqMHz();
-#endif
-
-  return 0;
-}
 #endif // _PEDALINO_H

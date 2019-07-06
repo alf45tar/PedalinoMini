@@ -10,15 +10,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  */
 
 #ifdef WIFI
-
-#ifdef ARDUINO_ARCH_ESP8266
-#include <ESP8266WiFi.h>
-#endif
-
-#ifdef ARDUINO_ARCH_ESP32
 #include <WiFi.h>
-#endif
-
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
 #include <AppleMidi.h>
@@ -26,34 +18,27 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <OSCBundle.h>
 #include <OSCData.h>
 
-#endif  // WIFI
-
 // WiFi MIDI interface to comunicate with AppleMIDI/RTP-MDI devices
 
-#ifdef WIFI
 APPLEMIDI_CREATE_INSTANCE(WiFiUDP, AppleMIDI); // see definition in AppleMidi_Defs.h
-#endif
-
-bool          appleMidiConnected = false;
-unsigned long wifiLastOn         = 0;
 
 // ipMIDI
 
-#ifdef WIFI
 WiFiUDP                 ipMIDI;
 IPAddress               ipMIDImulticast(225, 0, 0, 37);
 unsigned int            ipMIDIdestPort = 21928;
-#endif
 
 // WiFi OSC comunication
 
-#ifdef WIFI
 WiFiUDP                 oscUDP;                  // A UDP instance to let us send and receive packets over UDP
 IPAddress               oscRemoteIp;             // remote IP of an external OSC device or broadcast address
 const unsigned int      oscRemotePort = 9000;    // remote port of an external OSC device
 const unsigned int      oscLocalPort = 8000;     // local port to listen for OSC packets (actually not used for sending)
 OSCMessage              oscMsg;
-#endif
+#endif  // WIFI
+
+bool                    appleMidiConnected = false;
+unsigned long           wifiLastOn         = 0;
 
 #ifdef NOWIFI
 #define AppleMidiSendNoteOn(...)
@@ -218,12 +203,7 @@ void ipMIDISendChannelMessage1(byte type, byte channel, byte data1)
 
   midiPacket[0] = (type & 0xf0) | ((channel - 1) & 0x0f);
   midiPacket[1] = data1;
-#ifdef ARDUINO_ARCH_ESP8266
-  ipMIDI.beginPacketMulticast(ipMIDImulticast, ipMIDIdestPort, WiFi.localIP());
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   ipMIDI.beginMulticastPacket();
-#endif
   ipMIDI.write(midiPacket, 2);
   ipMIDI.endPacket();
 }
@@ -237,12 +217,7 @@ void ipMIDISendChannelMessage2(byte type, byte channel, byte data1, byte data2)
   midiPacket[0] = (type & 0xf0) | ((channel - 1) & 0x0f);
   midiPacket[1] = data1;
   midiPacket[2] = data2;
-#ifdef ARDUINO_ARCH_ESP8266
-  ipMIDI.beginPacketMulticast(ipMIDImulticast, ipMIDIdestPort, WiFi.localIP());
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   ipMIDI.beginMulticastPacket();
-#endif
   ipMIDI.write(midiPacket, 3);
   ipMIDI.endPacket();
 }
@@ -255,12 +230,7 @@ void ipMIDISendSystemCommonMessage1(byte type, byte data1)
 
   midiPacket[0] = type;
   midiPacket[1] = data1;
-#ifdef ARDUINO_ARCH_ESP8266
-  ipMIDI.beginPacketMulticast(ipMIDImulticast, ipMIDIdestPort, WiFi.localIP());
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   ipMIDI.beginMulticastPacket();
-#endif
   ipMIDI.write(midiPacket, 2);
   ipMIDI.endPacket();
 }
@@ -274,12 +244,7 @@ void ipMIDISendSystemCommonMessage2(byte type, byte data1, byte data2)
   midiPacket[0] = type;
   midiPacket[1] = data1;
   midiPacket[2] = data2;
-#ifdef ARDUINO_ARCH_ESP8266
-  ipMIDI.beginPacketMulticast(ipMIDImulticast, ipMIDIdestPort, WiFi.localIP());
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   ipMIDI.beginMulticastPacket();
-#endif
   ipMIDI.write(midiPacket, 3);
   ipMIDI.endPacket();
 }
@@ -291,12 +256,7 @@ void ipMIDISendRealTimeMessage(byte type)
   if (!interfaces[PED_IPMIDI].midiOut) return;
 
   midiPacket[0] = type;
-#ifdef ARDUINO_ARCH_ESP8266
-  ipMIDI.beginPacketMulticast(ipMIDImulticast, ipMIDIdestPort, WiFi.localIP());
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   ipMIDI.beginMulticastPacket();
-#endif
   ipMIDI.write(midiPacket, 1);
   ipMIDI.endPacket();
 }

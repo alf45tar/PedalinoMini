@@ -22,8 +22,10 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifdef NOWIFI
 #undef WIFI
 #define NOWEBCONFIG
+#define NOBLYNK
 #else
 #define WIFI
+#define BOOTSTRAP_LOCAL
 #endif
 
 #ifdef NOBLE
@@ -45,19 +47,14 @@ __________           .___      .__  .__                 _____  .__       .__    
 #endif
 
 #include <Arduino.h>
-
-#ifdef ARDUINO_ARCH_ESP8266
-#undef BLE
-#define NOBLE
-#undef BOOTSTRAP_LOCAL
+#ifdef TTGO_T_EIGHT
+#include "esp32-hal-psram.h"
 #endif
 
-#ifdef ARDUINO_ARCH_ESP32
 #include <esp_log.h>
 #include <string>
-#endif
-
 #include "Pedalino.h"
+#include "TickerTimer.h"
 #include "Config.h"
 #include "UdpMidiOut.h"
 #include "BLEMidiOut.h"
@@ -68,11 +65,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "BlynkRPC.h"
 #include "DisplayLCD.h"
 #include "DisplayOLED.h"
-#ifdef ASYNC_WEB_SERVER
 #include "WebConfigAsync.h"
-#else
-#include "WebConfig.h"
-#endif
 #include "OTAUpdate.h"
 #include "WifiConnect.h"
 
@@ -100,16 +93,21 @@ void setup()
 #endif
 
 #if defined(ARDUINO_ARCH_ESP32) && defined(DEBUG_ESP_PORT)
-  esp_log_level_set("*",      ESP_LOG_ERROR);
+  //esp_log_level_set("*",      ESP_LOG_ERROR);
   //esp_log_level_set("wifi",   ESP_LOG_WARN);
   //esp_log_level_set("BLE*",   ESP_LOG_ERROR);
-  esp_log_level_set(LOG_TAG,  ESP_LOG_INFO);
+  //esp_log_level_set(LOG_TAG,  ESP_LOG_INFO);
 #endif
 
 #ifdef SERIALDEBUG
   SERIALDEBUG.begin(115200);
   SERIALDEBUG.setDebugOutput(true);   // enable diagnostic output and printf() output
 #endif
+
+  DPRINT("ChipRevision %d, CPU Freq %d MHz, SDK Version %s\n",ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getSdkVersion());
+  DPRINT("Flash Size %d, Flash Speed %d Hz\n",ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
+  DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
+  DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram()); 
 
   DPRINTLN("_________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___ ");
   DPRINTLN("\\______  \\ ____   __| _/____  |  | |__| ____   ____   /     \\ |__| ____ |__|   /  / \\__    ___/     \\   \\  \\ ");
@@ -197,7 +195,7 @@ void setup()
 #ifdef BLE
   // BLE MIDI service advertising
   ble_midi_start_service();
-  DPRINT("BLE MIDI service advertising started");
+  DPRINT("BLE MIDI service advertising started\n");
 #endif
 
   autosensing_setup();

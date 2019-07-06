@@ -9,38 +9,21 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-#ifdef ARDUINO_ARCH_ESP8266
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
-#include <ESP8266LLMNR.h>
-#include <ESP8266HTTPUpdateServer.h>
-#endif
 
-#ifdef ARDUINO_ARCH_ESP32
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiAP.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <esp_wps.h>
-#endif
 
 #define WIFI_CONNECT_TIMEOUT    15
 #define SMART_CONFIG_TIMEOUT    15
 #define WPS_TIMEOUT             15
 
-#ifdef ARDUINO_ARCH_ESP8266
-#define WIFI_LED       2      // Onboard LED on GPIO2 is shared with Serial1 TX
-#define WIFI_LED_OFF() digitalWrite(WIFI_LED, HIGH)
-#define WIFI_LED_ON()  digitalWrite(WIFI_LED, LOW)
-#endif
-
-#ifdef ARDUINO_ARCH_ESP32
 #define WIFI_LED        2
 #define WIFI_LED_OFF()  digitalWrite(WIFI_LED, LOW)
 #define WIFI_LED_ON()   digitalWrite(WIFI_LED, HIGH)
-#endif
 
 #ifdef WIFI
 
@@ -49,12 +32,8 @@ void blynk_connect();
 
 void save_wifi_credentials(String ssid, String password)
 {
-#ifdef ARDUINO_ARCH_ESP32
   eeprom_update();
-#endif
 }
-
-#ifdef ARDUINO_ARCH_ESP32
 
 static esp_wps_config_t WPS;
 int                     wpsStatus = 0;
@@ -85,47 +64,19 @@ String translateEncryptionType(wifi_auth_mode_t encryptionType) {
 
   return "";
 }
-#endif
 
 void stop_services()
 {
-#ifdef ARDUINO_ARCH_ESP8266
-  httpServer.stop();
-  ipMIDI.stop();
-  oscUDP.stop();
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   MDNS.end();
   ArduinoOTA.end();
   ipMIDI.stop();
   oscUDP.stop();
-#endif
 }
 
 void start_services()
 {
   stop_services();
 
-#ifdef ARDUINO_ARCH_ESP8266
-  // Start LLMNR (Link-Local Multicast Name Resolution) responder
-  LLMNR.begin(host.c_str());
-  DPRINT("LLMNR responder started\n");
-
-  // Start mDNS (Multicast DNS) responder (ping pedalino.local)
-  if (MDNS.begin(host.c_str())) {
-    DPRINTLN("mDNS responder started");
-    // service name is lower case
-    // ESP8266 only: do not add '_' to service name and protocol
-    MDNS.addService("apple-midi", "udp", 5004);
-    MDNS.addService("osc",        "udp", oscLocalPort);
-    MDNS.addService("http",       "tcp", 80);
-#ifdef PEDALINO_TELNET_DEBUG
-    MDNS.addService("telnet",     "tcp", 23);
-#endif
-  }
-#endif  //  ARDUINO_ARCH_ESP8266
-
-#ifdef ARDUINO_ARCH_ESP32
   // Start mDNS (Multicast DNS) responder
   if (MDNS.begin(host.c_str())) {
     DPRINTLN("mDNS responder started");
@@ -138,30 +89,19 @@ void start_services()
     MDNS.addService("_telnet",     "_tcp", 23);
 #endif
   }
-#endif  //  ARDUINO_ARCH_ESP32
 
   // OTA update init
   ota_begin(host.c_str());
   DPRINT("OTA update started\n");
 
-#ifdef ARDUINO_ARCH_ESP8266
-  // Start firmawre update via HTTP (connect to http://pedalino.local/update)
-  httpUpdater.setup(&httpServer);
-#endif
-
+#ifdef WEBCONFIG
   http_setup();
   DPRINT("HTTP server started\n");
   DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
-#ifdef WEBCONFIG
   DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
 #endif
 
-#ifdef ARDUINO_ARCH_ESP8266
-  ipMIDI.beginMulticast(WiFi.localIP(), ipMIDImulticast, ipMIDIdestPort);
-#endif
-#ifdef ARDUINO_ARCH_ESP32
   ipMIDI.beginMulticast(ipMIDImulticast, ipMIDIdestPort);
-#endif
   DPRINT("ipMIDI server started\n");
 
   // RTP-MDI
@@ -186,68 +126,6 @@ void start_services()
 void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 {
   IPAddress localMask;
-
-  /*
-      ESP8266 events
-
-    typedef enum WiFiEvent
-    {
-      WIFI_EVENT_STAMODE_CONNECTED = 0,
-      WIFI_EVENT_STAMODE_DISCONNECTED,
-      WIFI_EVENT_STAMODE_AUTHMODE_CHANGE,
-      WIFI_EVENT_STAMODE_GOT_IP,
-      WIFI_EVENT_STAMODE_DHCP_TIMEOUT,
-      WIFI_EVENT_SOFTAPMODE_STACONNECTED,
-      WIFI_EVENT_SOFTAPMODE_STADISCONNECTED,
-      WIFI_EVENT_SOFTAPMODE_PROBEREQRECVED,
-      WIFI_EVENT_MAX,
-      WIFI_EVENT_ANY = WIFI_EVENT_MAX,
-      WIFI_EVENT_MODE_CHANGE
-    } WiFiEvent_t;
-  */
-
-#ifdef ARDUINO_ARCH_ESP8266
-  switch (event) {
-    case WIFI_EVENT_STAMODE_CONNECTED:
-      uint8_t macAddr[6];
-      WiFi.macAddress(macAddr);
-      DPRINTLN("BSSID       : %s", WiFi.BSSIDstr().c_str());
-      DPRINTLN("RSSI        : %d dBm", WiFi.RSSI());
-      DPRINTLN("Channel     : %d", WiFi.channel());
-      DPRINTLN("STA         : %02X:%02X:%02X:%02X:%02X:%02X", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
-      WiFi.hostname(host);
-      break;
-
-    case WIFI_EVENT_STAMODE_GOT_IP:
-      DPRINTLN("Hostname    : %s", WiFi.hostname().c_str());
-      DPRINTLN("IP address  : %s", WiFi.localIP().toString().c_str());
-      DPRINTLN("Subnet mask : %s", WiFi.subnetMask().toString().c_str());
-      DPRINTLN("Gataway IP  : %s", WiFi.gatewayIP().toString().c_str());
-      DPRINTLN("DNS 1       : %s", WiFi.dnsIP(0).toString().c_str());
-      DPRINTLN("DNS 2       : %s", WiFi.dnsIP(1).toString().c_str());
-      start_services();
-      break;
-
-    case WIFI_EVENT_STAMODE_DHCP_TIMEOUT:
-      DPRINTLN("WIFI_EVENT_STAMODE_DHCP_TIMEOUT");
-      break;
-
-    case WIFI_EVENT_STAMODE_DISCONNECTED:
-      DPRINTLN("WIFI_EVENT_STAMODE_DISCONNECTED");
-      stop_services();
-      break;
-
-    case WIFI_EVENT_SOFTAPMODE_STACONNECTED:
-      break;
-
-    case WIFI_EVENT_SOFTAPMODE_STADISCONNECTED:
-      break;
-
-    default:
-      DPRINTLN("Event: %d", event);
-      break;
-  }
-#endif
 
   /*
       ESP32 events
@@ -278,7 +156,7 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     SYSTEM_EVENT_ETH_GOT_IP               < ESP32 ethernet got IP from connected AP
     SYSTEM_EVENT_MAX
   */
-#ifdef ARDUINO_ARCH_ESP32
+
   switch (event) {
     case SYSTEM_EVENT_STA_START:
       DPRINT("SYSTEM_EVENT_STA_START\n");
@@ -385,7 +263,6 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       DPRINT("Event: %d\n", event);
       break;
   }
-#endif
 }
 
 
@@ -572,16 +449,8 @@ bool auto_reconnect(String ssid, String password)
   // Return 'true' if connected to the (last used) access point within WIFI_CONNECT_TIMEOUT seconds
 
   if (ssid.length() == 0) {
-
-#ifdef ARDUINO_ARCH_ESP8266
-    ssid = WiFi.SSID();
-    password = WiFi.psk();
-#endif
-
-#ifdef ARDUINO_ARCH_ESP32
     ssid = wifiSSID;
     password = wifiPassword;
-#endif
   }
 
   return (ssid.length() == 0) ? false : ap_connect(ssid, password);
