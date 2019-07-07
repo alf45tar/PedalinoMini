@@ -23,8 +23,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <OLEDDisplayUi.h>
 #include <Battery.h>
 #include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
+
 
 // Initialize the OLED display using Wire library
 #ifdef TTGO_T_EIGHT
@@ -37,12 +36,7 @@ bool          uiUpdate = true;
 
 Battery bat(3000, 4200, GPIO_NUM_34);
 
-bool blynk_cloud_connected();
-extern bool             appleMidiConnected;
-#ifdef WEBSOCKET
-extern AsyncWebSocket   webSocket;
-extern AsyncEventSource events;
-#endif
+
 #define WIFI_LOGO_WIDTH   78
 #define WIFI_LOGO_HEIGHT  64
 
@@ -573,7 +567,7 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   }
 }
 
-void drawRect (OLEDDisplay *display, int16_t x0, int16_t y0, int16_t x1, int16_t y1)
+void drawRect(OLEDDisplay *display, int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 {
   display->drawLine(x0+1, y0,   x1-1, y0);
   display->drawLine(x1,   y0+1, x1,   y1-1);
@@ -864,20 +858,20 @@ void display_init()
   display.clear();
   display.drawXbm((display.getWidth() - WIFI_LOGO_WIDTH) / 2, (display.getHeight() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
   display.display();
-  delay(500);
+  delay(250);
 #endif
 
 #ifdef BLE
   display.clear();
   display.drawXbm((display.getWidth() - BLUETOOTH_LOGO_WIDTH) / 2, (display.getHeight() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
   display.display();
-  delay(500);
+  delay(250);
 #endif
 
- // The ESP is capable of rendering 60fps in 80Mhz mode
+  // The ESP is capable of rendering 60fps in 80Mhz mode
 	// but that won't give you much time for anything else
 	// run it in 160Mhz mode or just set it to 30 fps
-  ui.setTargetFPS(60);
+  ui.setTargetFPS(30);
 
 	// Customize the active and inactive symbol
   ui.setActiveSymbol(activeSymbol);

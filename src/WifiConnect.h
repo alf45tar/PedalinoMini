@@ -28,12 +28,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifdef WIFI
 
 void wifi_connect();
-void blynk_connect();
-
-void save_wifi_credentials(String ssid, String password)
-{
-  eeprom_update();
-}
 
 static esp_wps_config_t WPS;
 int                     wpsStatus = 0;
@@ -353,7 +347,7 @@ bool smart_config()
     DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
     DPRINT("Password    : %s\n", WiFi.psk().c_str());
 
-    save_wifi_credentials(WiFi.SSID(), WiFi.psk());
+    eeprom_update_wifi_credentils(WiFi.SSID(), WiFi.psk());
   }
   else
     DPRINT("SmartConfig timeout\n");
@@ -416,7 +410,7 @@ bool wps_config()
       DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
       DPRINT("Password    : %s\n", WiFi.psk().c_str());
 
-      save_wifi_credentials(WiFi.SSID(), WiFi.psk());
+      eeprom_update_wifi_credentils(WiFi.SSID(), WiFi.psk());
     }  
   }
   else {

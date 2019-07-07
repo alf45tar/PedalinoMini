@@ -15,7 +15,8 @@ inline String blynk_set_token(String token) { return token; }
 inline void blynk_setup() {}
 inline void blynk_enable() {}
 inline void blynk_disable() {}
-inline bool blynk_cloud_connected() {}
+inline bool blynk_enabled() { return false; }
+inline bool blynk_cloud_connected() { return false; }
 inline void blynk_config() {}
 inline void blynk_connect() {}
 inline void blynk_disconnect() {}

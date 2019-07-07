@@ -9,15 +9,6 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-extern String theme;
-
-void   blynk_enable();
-void   blynk_disable();
-bool   blynk_enabled();
-String blynk_get_token();
-String blynk_set_token(String);
-void   blynk_refresh();
-
 #include <Preferences.h>
 
 Preferences preferences;
@@ -127,7 +118,34 @@ void eeprom_update_device_name(String name)
   preferences.putString("Device Name", name);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("Device Name:       %s\n", name.c_str());
+  DPRINT("[NVS][Global][Device Name]: %s\n", name.c_str());
+}
+
+void eeprom_update_wifi_credentils(String ssid, String pass)
+{
+  char profile = 'A';
+
+  DPRINT("Updating NVS ... ");
+  switch (currentProfile) {
+    case 0:
+      preferences.begin("A", false);
+      profile = 'A';
+      break;
+    case 1:
+      preferences.begin("B", false);
+      profile = 'B';
+      break;
+    case 2:
+      preferences.begin("C", false);
+      profile = 'C';
+      break;
+  }
+  preferences.putString("SSID", ssid);
+  preferences.putString("Password", pass);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][%c][SSID]:     %s\n", profile, ssid.c_str());
+  DPRINT("[NVS][%c][Password]: %s\n", profile, pass.c_str());
 }
 
 void eeprom_update_current_profile(byte profile)
@@ -137,7 +155,7 @@ void eeprom_update_current_profile(byte profile)
   preferences.putUChar("Current Profile", currentProfile);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("Current Profile:  %d\n", currentProfile);
+  DPRINT("[NVS][Global][Current Profile]: %d\n", currentProfile);
 }
 
 void eeprom_update_blynk_cloud_enable(bool enable)
@@ -147,7 +165,7 @@ void eeprom_update_blynk_cloud_enable(bool enable)
   preferences.putBool("Blynk Cloud", enable);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("Blynk Cloud:      %d\n", enable);
+  DPRINT("[NVS][Global[Blynk Cloud]: %d\n", enable);
 }
 
 void eeprom_update_blynk_auth_token(String token)
@@ -157,7 +175,7 @@ void eeprom_update_blynk_auth_token(String token)
   preferences.putString("Blynk Token", token);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("Blynk Token:      %s\n", token.c_str());
+  DPRINT("[NVS][Global][Blynk Token]: %s\n", token.c_str());
 }
 
 void eeprom_update_theme(String theme)
@@ -167,7 +185,7 @@ void eeprom_update_theme(String theme)
   preferences.putString("Bootstrap Theme", theme);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("Bootstrap Theme:   %s\n", theme.c_str());
+  DPRINT("[NVS][Global][Bootstrap Theme]: %s\n", theme.c_str());
 }
 
 void eeprom_update()
@@ -244,6 +262,18 @@ void eeprom_read()
   preferences.end();
 
   DPRINT("done\n");
+
+  for (byte p = 0; p < PEDALS; p++) {
+    pedals[p].pedalValue[0] = 0;
+    pedals[p].pedalValue[1] = 0;
+    pedals[p].lastUpdate[0] = millis();
+    pedals[p].lastUpdate[1] = millis();
+    pedals[p].debouncer[0]  = nullptr;
+    pedals[p].debouncer[1]  = nullptr;
+    pedals[p].footSwitch[0] = nullptr;
+    pedals[p].footSwitch[1] = nullptr;
+    pedals[p].analogPedal   = nullptr;
+  };
   
   blynk_refresh();
 }

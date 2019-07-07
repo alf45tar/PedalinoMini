@@ -305,4 +305,24 @@ String getChipId() {
 String host(getChipId());
 String wifiSoftAP("Pedalino-" + getChipId());
 
+
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+
+extern String           theme;
+extern bool             appleMidiConnected;
+#ifdef WEBSOCKET
+extern AsyncWebSocket   webSocket;
+extern AsyncEventSource events;
+#endif
+
+void   blynk_enable();
+void   blynk_disable();
+bool   blynk_enabled();
+bool   blynk_cloud_connected();
+String blynk_get_token();
+String blynk_set_token(String);
+void   blynk_connect();
+void   blynk_refresh();
+
 #endif // _PEDALINO_H
