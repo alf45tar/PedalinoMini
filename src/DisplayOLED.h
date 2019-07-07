@@ -390,6 +390,64 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   static uint16_t voltage = bat.voltage();
   static uint8_t  level   = bat.level(voltage);
 
+  if ((millis() >= endMillis2) ||
+      (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
+#ifdef WIFI
+    static int      signal  = WiFi.RSSI();
+
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->setFont(wifiSignal);
+    signal = (4*signal + WiFi.RSSI()) / 5;
+    if      (signal < -90) display->drawString(0, 0, String(0));
+    else if (signal < -85) display->drawString(0, 0, String(1));
+    else if (signal < -80) display->drawString(0, 0, String(2));
+    else if (signal < -75) display->drawString(0, 0, String(3));
+    else if (signal < -70) display->drawString(0, 0, String(4));
+    else if (signal < -65) display->drawString(0, 0, String(5));
+    else if (signal < -60) display->drawString(0, 0, String(6));
+    else                   display->drawString(0, 0, String(7));
+#endif
+
+    display->setFont(bluetoothSign);
+    if (bleMidiConnected) display->drawString(24, 0, String(1));
+    else display->drawString(24, 0, String(0));
+
+    display->setFont(blynkSign);
+    if (blynk_cloud_connected()) display->drawString(36, 0, String(1));
+    else display->drawString(36, 0, String(0));
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->setFont(profileSign);
+    display->drawString(64 + 10*currentProfile, 0, String(currentProfile));
+
+#ifdef TTGO_T_EIGHT
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->setFont(batteryIndicator);
+    voltage = (199*voltage + bat.voltage()) / 200;
+    level   = (199*level + bat.level(voltage)) / 200;
+    /*
+    if      (level == 100) display->drawString(128, 0, String((millis() >> 10) % 4));
+    else if (level >   70) display->drawString(128, 0, String(3));
+    else if (level >   40) display->drawString(128, 0, String(2));
+    else if (level >   10) display->drawString(128, 0, String(1));
+    else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
+    else display->drawString(128, 0, String(4));
+    */
+    if      (voltage > 3700) display->drawString(128, 0, String((millis() >> 10) % 4));
+    else if (voltage > 3600) display->drawString(128, 0, String(3));
+    else if (voltage > 3300) display->drawString(128, 0, String(2));
+    else if (voltage > 3100) display->drawString(128, 0, String(1));
+    else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
+    else display->drawString(128, 0, String(4));
+    
+    /*
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->setFont(ArialMT_Plain_10);
+    display->drawString(90, 0, String(voltage/10));
+    display->drawString(106, 0, String(level));
+    */
+#endif
+  }
+
   if (millis() < endMillis2) {
     if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
         MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
@@ -473,64 +531,8 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
       display->setFont(ArialMT_Plain_10);
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
       display->drawString(128, 0, buf);
-    }    
+    }
   }
-  else {
-#ifdef WIFI
-    static int      signal  = WiFi.RSSI();
-
-    display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->setFont(wifiSignal);
-    signal = (4*signal + WiFi.RSSI()) / 5;
-    if      (signal < -90) display->drawString(0, 0, String(0));
-    else if (signal < -85) display->drawString(0, 0, String(1));
-    else if (signal < -80) display->drawString(0, 0, String(2));
-    else if (signal < -75) display->drawString(0, 0, String(3));
-    else if (signal < -70) display->drawString(0, 0, String(4));
-    else if (signal < -65) display->drawString(0, 0, String(5));
-    else if (signal < -60) display->drawString(0, 0, String(6));
-    else                   display->drawString(0, 0, String(7));
-#endif
-
-    display->setFont(bluetoothSign);
-    if (bleMidiConnected) display->drawString(24, 0, String(1));
-    else display->drawString(24, 0, String(0));
-
-    display->setFont(blynkSign);
-    if (blynk_cloud_connected()) display->drawString(36, 0, String(1));
-    else display->drawString(36, 0, String(0));
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
-    display->setFont(profileSign);
-    display->drawString(64 + 10*currentProfile, 0, String(currentProfile));
-
-#ifdef TTGO_T_EIGHT
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->setFont(batteryIndicator);
-    voltage = (199*voltage + bat.voltage()) / 200;
-    level   = (199*level + bat.level(voltage)) / 200;
-    /*
-    if      (level == 100) display->drawString(128, 0, String((millis() >> 10) % 4));
-    else if (level >   70) display->drawString(128, 0, String(3));
-    else if (level >   40) display->drawString(128, 0, String(2));
-    else if (level >   10) display->drawString(128, 0, String(1));
-    else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
-    else display->drawString(128, 0, String(4));
-    */
-    if      (voltage > 3700) display->drawString(128, 0, String((millis() >> 10) % 4));
-    else if (voltage > 3600) display->drawString(128, 0, String(3));
-    else if (voltage > 3300) display->drawString(128, 0, String(2));
-    else if (voltage > 3100) display->drawString(128, 0, String(1));
-    else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
-    else display->drawString(128, 0, String(4));
-    
-    /*
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->setFont(ArialMT_Plain_10);
-    display->drawString(90, 0, String(voltage/10));
-    display->drawString(106, 0, String(level));
-    */
-#endif
-  }  
 }
 
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
