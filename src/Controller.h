@@ -890,12 +890,25 @@ void refresh_analog(byte i, bool send)
   }
  }
 
+void controller_setup();
 
 //
 //  Refresh pedals
 //
 void controller_run(bool send = true)
 {
+  if (reloadProfile && send) {
+    eeprom_read(false);
+    DPRINT("Current Profile: %d\n", currentProfile);
+    wifi_connect();
+    autosensing_setup();
+    controller_setup();
+    mtc_setup();
+    delay(200);
+    reloadProfile = false;
+    return;
+  }
+
   for (byte i = 0; i < PEDALS; i++) {
     switch (pedals[i].mode) {
 

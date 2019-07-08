@@ -82,17 +82,28 @@ __________           .___      .__  .__                 _____  .__       .__    
 #endif
 
 
+void IRAM_ATTR onButtonLeft()
+{
+  if (reloadProfile) return;
+  currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
+  reloadProfile = true;
+}
+
+void IRAM_ATTR onButtonRight()
+{
+  if (reloadProfile) return;
+  currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
+  reloadProfile = true;
+}
+
 void setup()
 {
   bool apmode = false;
 
   pinMode(WIFI_LED, OUTPUT);
-
-#ifdef ARDUINO_ARCH_ESP32
   pinMode(BLE_LED, OUTPUT);
-#endif
 
-#if defined(ARDUINO_ARCH_ESP32) && defined(DEBUG_ESP_PORT)
+#ifdef DEBUG_ESP_PORT
   //esp_log_level_set("*",      ESP_LOG_ERROR);
   //esp_log_level_set("wifi",   ESP_LOG_WARN);
   //esp_log_level_set("BLE*",   ESP_LOG_ERROR);
@@ -148,9 +159,9 @@ void setup()
     lcdSetCursor(0, 1);
     lcdPrint("Factory default ");
     delay(1000);
-    eeprom_initialize_to_zero();
+    eeprom_initialize();
     load_factory_default();
-    eeprom_update();
+    eeprom_update_profile();
     //ESP.restart();
   }
 
@@ -199,6 +210,9 @@ void setup()
   controller_setup();
   mtc_setup();
   blynk_setup();
+
+  attachInterrupt(PROFILE_A_PIN, onButtonLeft, FALLING);
+  attachInterrupt(PROFILE_C_PIN, onButtonRight, FALLING);
 }
 
 

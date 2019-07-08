@@ -13,23 +13,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 Preferences preferences;
 
-void eeprom_initialize_to_zero()
-{
-  // Remove all preferences under the opened namespace
-  preferences.begin("Global", false);
-  preferences.clear();
-  preferences.end();
-  preferences.begin("A", false);
-  preferences.clear();
-  preferences.end();
-  preferences.begin("B", false);
-  preferences.clear();
-  preferences.end();
-  preferences.begin("C", false);
-  preferences.clear();
-  preferences.end();
-}
-
 //
 //  Load factory deafult value for banks, pedals and interfaces
 //
@@ -152,10 +135,10 @@ void eeprom_update_current_profile(byte profile)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
-  preferences.putUChar("Current Profile", currentProfile);
+  preferences.putUChar("Current Profile", profile);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("[NVS][Global][Current Profile]: %d\n", currentProfile);
+  DPRINT("[NVS][Global][Current Profile]: %d\n", profile);
 }
 
 void eeprom_update_blynk_cloud_enable(bool enable)
@@ -188,27 +171,22 @@ void eeprom_update_theme(String theme)
   DPRINT("[NVS][Global][Bootstrap Theme]: %s\n", theme.c_str());
 }
 
-void eeprom_update()
+void eeprom_update_profile(byte profile = currentProfile)
 {
-  DPRINT("Updating NVS ... ");
+  DPRINT("Updating NVS Profile ");
 
-  preferences.begin("Global", false);
-  preferences.putString("Device Name", host);
-  preferences.putString("Bootstrap Theme", theme);
-  preferences.putBool("Blynk Cloud", blynk_enabled());
-  preferences.putString("Blynk Token", blynk_get_token());
-  preferences.putUChar("Current Profile", currentProfile);
-  preferences.end();
-
-  switch (currentProfile) {
+  switch (profile) {
     case 0:
       preferences.begin("A", false);
+      DPRINT("A");
       break;
     case 1:
       preferences.begin("B", false);
+      DPRINT("B");
       break;
     case 2:
       preferences.begin("C", false);
+      DPRINT("C");
       break;
   }
   preferences.putBytes("Banks", &banks, sizeof(banks));
@@ -221,34 +199,39 @@ void eeprom_update()
   preferences.putString("Password", wifiPassword);
   preferences.end();
 
-  DPRINT("done\n");
+  DPRINT(" ... done\n");
 
   blynk_refresh();
 }
 
-void eeprom_read()
+void eeprom_read(bool global = true)
 {
-  load_factory_default();
-
   DPRINT("Reading NVS ... ");
+  
+  if (global) {
+    DPRINT("Global ... ");
+    preferences.begin("Global", true);
+    host  = preferences.getString("Device Name");
+    theme = preferences.getString("Bootstrap Theme");
+    preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
+    blynk_set_token(preferences.getString("Blynk Token"));
+    currentProfile = preferences.getUChar("Current Profile");
+    preferences.end();
+  }
 
-  preferences.begin("Global", true);
-  host  = preferences.getString("Device Name");
-  theme = preferences.getString("Bootstrap Theme");
-  preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
-  blynk_set_token(preferences.getString("Blynk Token"));
-  currentProfile = preferences.getUChar("Current Profile");
-  preferences.end();
-
+  DPRINT("Profile ");
   switch (currentProfile) {
     case 0:
       preferences.begin("A", true);
+      DPRINT("A");
       break;
     case 1:
       preferences.begin("B", true);
+      DPRINT("B");
       break;
     case 2:
       preferences.begin("C", true);
+      DPRINT("C");
       break;
   }
   preferences.getBytes("Banks", &banks, sizeof(banks));
@@ -261,7 +244,7 @@ void eeprom_read()
   wifiPassword        = preferences.getString("Password");
   preferences.end();
 
-  DPRINT("done\n");
+  DPRINT(" ... done\n");
 
   for (byte p = 0; p < PEDALS; p++) {
     pedals[p].pedalValue[0] = 0;
@@ -276,4 +259,28 @@ void eeprom_read()
   };
   
   blynk_refresh();
+}
+
+void eeprom_initialize()
+{
+  // Remove all preferences under the opened namespace
+  preferences.begin("Global", false);
+  preferences.clear();
+  preferences.end();
+  preferences.begin("A", false);
+  preferences.clear();
+  preferences.end();
+  preferences.begin("B", false);
+  preferences.clear();
+  preferences.end();
+  preferences.begin("C", false);
+  preferences.clear();
+  preferences.end();
+  eeprom_update_current_profile(0);
+  eeprom_update_device_name(host);
+  eeprom_update_theme(theme);
+  eeprom_update_blynk_cloud_enable(false);
+  eeprom_update_blynk_auth_token("");
+  for (byte p = 0; p < PROFILES; p++)
+    eeprom_update_profile(p);
 }

@@ -211,7 +211,8 @@ interface interfaces[] = {
                            "OSC        ", 1, 1, 0, 1, 0
                           };                       // Interfaces Setup
 
-byte  currentProfile          = 0;
+volatile byte currentProfile  = 0;
+volatile bool reloadProfile   = false;
 byte  currentBank             = 0;
 byte  currentPedal            = 0;
 byte  currentInterface        = PED_USBMIDI;
@@ -316,6 +317,7 @@ extern AsyncWebSocket   webSocket;
 extern AsyncEventSource events;
 #endif
 
+void   wifi_connect();
 void   blynk_enable();
 void   blynk_disable();
 bool   blynk_enabled();

@@ -1409,7 +1409,7 @@ void http_handle_post_banks(AsyncWebServerRequest *request) {
     a = request->arg(String("value3") + String(i+1));
     banks[b][i].midiValue3 = a.toInt();
   }
-  eeprom_update();
+  eeprom_update_profile();
   blynk_refresh();
   alert = "Saved";
   request->send(200, "text/html", get_banks_page());
@@ -1452,7 +1452,7 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     a = request->arg(String("max") + String(i+1));
     pedals[i].expMax = a.toInt();
   }
-  eeprom_update();
+  eeprom_update_profile();
   autosensing_setup();
   controller_setup();
   blynk_refresh();
@@ -1481,7 +1481,7 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
     a = request->arg(String("clock") + String(i+1));
     interfaces[i].midiClock = (a == checked) ? PED_ENABLE : PED_DISABLE;
   }
-  eeprom_update();
+  eeprom_update_profile();
   blynk_refresh();
   alert = "Saved";
   request->send(200, "text/html", get_interfaces_page());
