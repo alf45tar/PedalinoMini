@@ -94,7 +94,7 @@ void load_factory_default()
     };
 }
 
-void eeprom_update_device_name(String name)
+void eeprom_update_device_name(String name = host)
 {
   DPRINT("Updating NVS ...\n");
   preferences.begin("Global", false);
@@ -104,34 +104,19 @@ void eeprom_update_device_name(String name)
   DPRINT("[NVS][Global][Device Name]: %s\n", name.c_str());
 }
 
-void eeprom_update_wifi_credentils(String ssid, String pass)
+void eeprom_update_wifi_credentials(String ssid = "", String pass = "")
 {
-  char profile = 'A';
-
   DPRINT("Updating NVS ... ");
-  switch (currentProfile) {
-    case 0:
-      preferences.begin("A", false);
-      profile = 'A';
-      break;
-    case 1:
-      preferences.begin("B", false);
-      profile = 'B';
-      break;
-    case 2:
-      preferences.begin("C", false);
-      profile = 'C';
-      break;
-  }
+  preferences.begin("Global", false);
   preferences.putString("SSID", ssid);
   preferences.putString("Password", pass);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("[NVS][%c][SSID]:     %s\n", profile, ssid.c_str());
-  DPRINT("[NVS][%c][Password]: %s\n", profile, pass.c_str());
+  DPRINT("[NVS][Global][SSID]:     %s\n", ssid.c_str());
+  DPRINT("[NVS][Global][Password]: %s\n", pass.c_str());
 }
 
-void eeprom_update_current_profile(byte profile)
+void eeprom_update_current_profile(byte profile = currentProfile)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -141,7 +126,7 @@ void eeprom_update_current_profile(byte profile)
   DPRINT("[NVS][Global][Current Profile]: %d\n", profile);
 }
 
-void eeprom_update_blynk_cloud_enable(bool enable)
+void eeprom_update_blynk_cloud_enable(bool enable = true)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -151,7 +136,7 @@ void eeprom_update_blynk_cloud_enable(bool enable)
   DPRINT("[NVS][Global[Blynk Cloud]: %d\n", enable);
 }
 
-void eeprom_update_blynk_auth_token(String token)
+void eeprom_update_blynk_auth_token(String token = "")
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -161,7 +146,7 @@ void eeprom_update_blynk_auth_token(String token)
   DPRINT("[NVS][Global][Blynk Token]: %s\n", token.c_str());
 }
 
-void eeprom_update_theme(String theme)
+void eeprom_update_theme(String theme = "bootstrap")
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -193,7 +178,6 @@ void eeprom_update_profile(byte profile = currentProfile)
   preferences.putBytes("Pedals", &pedals, sizeof(pedals));
   preferences.putBytes("Interfaces", &interfaces, sizeof(interfaces));
   preferences.putUChar("Current Bank", currentBank);
-  preferences.putUChar("Current Interf", currentInterface);
   preferences.putUChar("Current MTC", currentMidiTimeCode);
   preferences.putString("SSID", wifiSSID);
   preferences.putString("Password", wifiPassword);
@@ -211,11 +195,13 @@ void eeprom_read(bool global = true)
   if (global) {
     DPRINT("Global ... ");
     preferences.begin("Global", true);
-    host  = preferences.getString("Device Name");
-    theme = preferences.getString("Bootstrap Theme");
+    host           = preferences.getString("Device Name");
+    wifiSSID       = preferences.getString("SSID");
+    wifiPassword   = preferences.getString("Password");
+    theme          = preferences.getString("Bootstrap Theme");
+    currentProfile = preferences.getUChar("Current Profile");
     preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
     blynk_set_token(preferences.getString("Blynk Token"));
-    currentProfile = preferences.getUChar("Current Profile");
     preferences.end();
   }
 
@@ -238,10 +224,7 @@ void eeprom_read(bool global = true)
   preferences.getBytes("Pedals", &pedals, sizeof(pedals));
   preferences.getBytes("Interfaces", &interfaces, sizeof(interfaces));
   currentBank         = preferences.getUChar("Current Bank");
-  currentInterface    = preferences.getUChar("Current Interf");
   currentMidiTimeCode = preferences.getUChar("Current MTC");
-  wifiSSID            = preferences.getString("SSID");
-  wifiPassword        = preferences.getString("Password");
   preferences.end();
 
   DPRINT(" ... done\n");
@@ -276,11 +259,13 @@ void eeprom_initialize()
   preferences.begin("C", false);
   preferences.clear();
   preferences.end();
+  eeprom_update_device_name();
+  eeprom_update_wifi_credentials();
+  eeprom_update_theme();
   eeprom_update_current_profile(0);
-  eeprom_update_device_name(host);
-  eeprom_update_theme(theme);
   eeprom_update_blynk_cloud_enable(false);
-  eeprom_update_blynk_auth_token("");
+  eeprom_update_blynk_auth_token();
+  load_factory_default();
   for (byte p = 0; p < PROFILES; p++)
     eeprom_update_profile(p);
 }

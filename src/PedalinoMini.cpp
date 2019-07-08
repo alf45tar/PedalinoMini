@@ -96,6 +96,12 @@ void IRAM_ATTR onButtonRight()
   reloadProfile = true;
 }
 
+void IRAM_ATTR onButtonCenter()
+{
+  if (saveProfile) return;
+  saveProfile = true;
+}
+
 void setup()
 {
   bool apmode = false;
@@ -160,8 +166,6 @@ void setup()
     lcdPrint("Factory default ");
     delay(1000);
     eeprom_initialize();
-    load_factory_default();
-    eeprom_update_profile();
     //ESP.restart();
   }
 
@@ -212,6 +216,7 @@ void setup()
   blynk_setup();
 
   attachInterrupt(PROFILE_A_PIN, onButtonLeft, FALLING);
+  attachInterrupt(PROFILE_B_PIN, onButtonCenter, FALLING);
   attachInterrupt(PROFILE_C_PIN, onButtonRight, FALLING);
 }
 

@@ -347,7 +347,7 @@ bool smart_config()
     DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
     DPRINT("Password    : %s\n", WiFi.psk().c_str());
 
-    eeprom_update_wifi_credentils(WiFi.SSID(), WiFi.psk());
+    eeprom_update_wifi_credentials(WiFi.SSID(), WiFi.psk());
   }
   else
     DPRINT("SmartConfig timeout\n");
@@ -410,7 +410,7 @@ bool wps_config()
       DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
       DPRINT("Password    : %s\n", WiFi.psk().c_str());
 
-      eeprom_update_wifi_credentils(WiFi.SSID(), WiFi.psk());
+      eeprom_update_wifi_credentials(WiFi.SSID(), WiFi.psk());
     }  
   }
   else {

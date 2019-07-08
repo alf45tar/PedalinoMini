@@ -213,6 +213,7 @@ interface interfaces[] = {
 
 volatile byte currentProfile  = 0;
 volatile bool reloadProfile   = false;
+volatile bool saveProfile     = false;
 byte  currentBank             = 0;
 byte  currentPedal            = 0;
 byte  currentInterface        = PED_USBMIDI;

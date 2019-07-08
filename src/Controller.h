@@ -897,10 +897,15 @@ void controller_setup();
 //
 void controller_run(bool send = true)
 {
+  if (saveProfile && send) {
+    eeprom_update_current_profile();
+    delay(200);
+    saveProfile = false;
+    return;
+  }
+
   if (reloadProfile && send) {
     eeprom_read(false);
-    DPRINT("Current Profile: %d\n", currentProfile);
-    wifi_connect();
     autosensing_setup();
     controller_setup();
     mtc_setup();
@@ -962,24 +967,6 @@ void controller_setup()
   lastUsedPedal  = 0xFF;
   lastUsed       = 0xFF;
 
-  DPRINT("MIDI Interface ");
-  switch (currentInterface) {
-    case PED_USBMIDI:
-      DPRINT("USB\n");
-      break;
-    case PED_DINMIDI:
-      DPRINT("DIN MIDI\n");
-      break;
-    case PED_RTPMIDI:
-      DPRINT("RTP-MIDI\n");
-      break;
-    case PED_IPMIDI:
-      DPRINT("ipMIDI\n");
-      break;
-    case PED_BLEMIDI:
-      DPRINT("Bluetooth\n");
-      break;
-  }
   DPRINT("Bank %2d\n", currentBank + 1);
 
   // Build new MIDI controllers setup
