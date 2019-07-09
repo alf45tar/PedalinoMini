@@ -212,7 +212,7 @@ interface interfaces[] = {
                           };                       // Interfaces Setup
 
 volatile byte currentProfile  = 0;
-volatile bool reloadProfile   = false;
+volatile bool reloadProfile   = true;
 volatile bool saveProfile     = false;
 byte  currentBank             = 0;
 byte  currentPedal            = 0;

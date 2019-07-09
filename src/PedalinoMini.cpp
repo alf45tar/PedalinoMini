@@ -181,7 +181,7 @@ void setup()
     eeprom_update_current_profile(currentProfile);
   }
 #endif
-  eeprom_read();
+  eeprom_read_global();
 
   // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
   serial_midi_connect();              // On receiving MIDI data callbacks setup
@@ -210,14 +210,12 @@ void setup()
   DPRINT("BLE MIDI service advertising started\n");
 #endif
 
-  autosensing_setup();
-  controller_setup();
-  mtc_setup();
   blynk_setup();
-
+  
   attachInterrupt(PROFILE_A_PIN, onButtonLeft, FALLING);
   attachInterrupt(PROFILE_B_PIN, onButtonCenter, FALLING);
   attachInterrupt(PROFILE_C_PIN, onButtonRight, FALLING);
+
 }
 
 

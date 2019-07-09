@@ -898,18 +898,20 @@ void controller_setup();
 void controller_run(bool send = true)
 {
   if (saveProfile && send) {
+    DPRINT("Saving profile ...\n");
     eeprom_update_current_profile();
-    delay(200);
+    delay(500);
     saveProfile = false;
     return;
   }
 
   if (reloadProfile && send) {
-    eeprom_read(false);
+    DPRINT("Loading profile ...\n");
+    eeprom_read_profile();
     autosensing_setup();
     controller_setup();
     mtc_setup();
-    delay(200);
+    delay(250);
     reloadProfile = false;
     return;
   }

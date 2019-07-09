@@ -1328,7 +1328,7 @@ void http_handle_globals(AsyncWebServerRequest *request) {
     uiprofile = request->arg("profile");
     currentProfile = constrain(uiprofile.toInt() - 1, 0, PROFILES - 1);
     eeprom_update_current_profile(currentProfile);
-    eeprom_read();
+    eeprom_read_profile();
   }
 
   if (request->hasArg("theme")) {

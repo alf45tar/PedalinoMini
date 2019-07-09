@@ -188,25 +188,25 @@ void eeprom_update_profile(byte profile = currentProfile)
   blynk_refresh();
 }
 
-void eeprom_read(bool global = true)
+void eeprom_read_global()
 {
-  DPRINT("Reading NVS ... ");
-  
-  if (global) {
-    DPRINT("Global ... ");
-    preferences.begin("Global", true);
-    host           = preferences.getString("Device Name");
-    wifiSSID       = preferences.getString("SSID");
-    wifiPassword   = preferences.getString("Password");
-    theme          = preferences.getString("Bootstrap Theme");
-    currentProfile = preferences.getUChar("Current Profile");
-    preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
-    blynk_set_token(preferences.getString("Blynk Token"));
-    preferences.end();
-  }
+  DPRINT("Reading NVS Global ... ");
+  preferences.begin("Global", true);
+  host           = preferences.getString("Device Name");
+  wifiSSID       = preferences.getString("SSID");
+  wifiPassword   = preferences.getString("Password");
+  theme          = preferences.getString("Bootstrap Theme");
+  currentProfile = preferences.getUChar("Current Profile");
+  preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
+  blynk_set_token(preferences.getString("Blynk Token"));
+  preferences.end();
+  DPRINT("done\n");
+}
 
-  DPRINT("Profile ");
-  switch (currentProfile) {
+void eeprom_read_profile(byte profile = currentProfile)
+{
+  DPRINT("Reading NVS Profile ");
+  switch (profile) {
     case 0:
       preferences.begin("A", true);
       DPRINT("A");
@@ -220,6 +220,7 @@ void eeprom_read(bool global = true)
       DPRINT("C");
       break;
   }
+  DPRINT(" ... ");
   preferences.getBytes("Banks", &banks, sizeof(banks));
   preferences.getBytes("Pedals", &pedals, sizeof(pedals));
   preferences.getBytes("Interfaces", &interfaces, sizeof(interfaces));
@@ -227,7 +228,7 @@ void eeprom_read(bool global = true)
   currentMidiTimeCode = preferences.getUChar("Current MTC");
   preferences.end();
 
-  DPRINT(" ... done\n");
+  DPRINT("done\n");
 
   for (byte p = 0; p < PEDALS; p++) {
     pedals[p].pedalValue[0] = 0;
