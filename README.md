@@ -142,6 +142,13 @@ void wifi_connect()
     ap_mode_start();          // switch to AP mode until next reboot
 }
 ```
+## How to switch profile
+
+#### TTGO T-Eight ESP32 procedure
+
+- Press navigation RIGHT button to move to the next profile
+- Press navigation LEFT button to move to the previous profile
+- Press navigation CENTER button to save the current profile selection
 
 ## How to start PedalinoMini™ in AP mode (skipping last know access point, SmartConfig and WPS)
 
@@ -149,7 +156,7 @@ See [How to reset PedalinoMini™ to factory default](https://github.com/alf45ta
 
 ## How to start PedalinoMini™ in WIFI mode only
 
-### TTGO T-Eight ESP32 procedure
+#### TTGO T-Eight ESP32 procedure
 
 - Press and hold navigation LEFT button
 - Press and release POWER button
@@ -157,7 +164,7 @@ See [How to reset PedalinoMini™ to factory default](https://github.com/alf45ta
 
 ## How to start PedalinoMini™ in BLE mode only
 
-### TTGO T-Eight ESP32 procedure
+#### TTGO T-Eight ESP32 procedure
 
 - Press and hold navigation RIGHT button
 - Press and release POWER button
@@ -165,13 +172,13 @@ See [How to reset PedalinoMini™ to factory default](https://github.com/alf45ta
 
 ## How to reset PedalinoMini™ to factory default
 
-### DOIT ESP32 DevKit V1 procedure
+#### DOIT ESP32 DevKit V1 procedure
 
 - Press and release EN button and immediately after press and hold BOOT button
 - When PedalinoMini™ reboot (after about 10 seconds) release BOOT button
 - PedalinoMini™ will start in AP mode if you release BOOT button before reboot
 
-### TTGO T-Eight ESP32 procedure
+#### TTGO T-Eight ESP32 procedure
 
 - Press and hold navigation CENTER button
 - Press and release POWER button
