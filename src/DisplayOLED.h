@@ -912,11 +912,6 @@ void display_init()
   // SLIDE_LEFT, SLIDE_RIGHT, SLIDE_UP, SLIDE_DOWN
   ui.setFrameAnimation(SLIDE_LEFT);
 
-#ifdef DIAGNOSTIC
-  // Disable automatic transition to next frame.
-  //ui.disableAutoTransition();
-#endif
-
   // Add frames
   ui.setFrames(frames, frameCount);
 

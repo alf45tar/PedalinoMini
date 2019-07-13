@@ -104,92 +104,92 @@ unsigned long           wifiLastOn         = 0;
 
 void AppleMidiSendNoteOn(byte note, byte velocity, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendNoteOn(note, velocity, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendNoteOn(note, velocity, channel);
 }
 
 void AppleMidiSendNoteOff(byte note, byte velocity, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendNoteOff(note, velocity, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendNoteOff(note, velocity, channel);
 }
 
 void AppleMidiSendAfterTouchPoly(byte note, byte pressure, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendPolyPressure(note, pressure, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendPolyPressure(note, pressure, channel);
 }
 
 void AppleMidiSendControlChange(byte number, byte value, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendControlChange(number, value, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendControlChange(number, value, channel);
 }
 
 void AppleMidiSendProgramChange(byte number, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendProgramChange(number, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendProgramChange(number, channel);
 }
 
 void AppleMidiSendAfterTouch(byte pressure, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendAfterTouch(pressure, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendAfterTouch(pressure, channel);
 }
 
 void AppleMidiSendPitchBend(int bend, byte channel)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendPitchBend(bend, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendPitchBend(bend, channel);
 }
 
 void AppleMidiSendSystemExclusive(const byte* array, unsigned size)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSysEx(array, size);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSysEx(array, size);
 }
 
 void AppleMidiSendTimeCodeQuarterFrame(byte data)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendTimeCodeQuarterFrame(data);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendTimeCodeQuarterFrame(data);
 }
 
 void AppleMidiSendSongPosition(unsigned int beats)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSongPosition(beats);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSongPosition(beats);
 }
 
 void AppleMidiSendSongSelect(byte songnumber)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSongSelect(songnumber);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSongSelect(songnumber);
 }
 
 void AppleMidiSendTuneRequest(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendTuneRequest();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendTuneRequest();
 }
 
 void AppleMidiSendClock(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendClock();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendClock();
 }
 
 void AppleMidiSendStart(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendStart();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendStart();
 }
 
 void AppleMidiSendContinue(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendContinue();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendContinue();
 }
 
 void AppleMidiSendStop(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendStop();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendStop();
 }
 
 void AppleMidiSendActiveSensing(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendActiveSensing();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendActiveSensing();
 }
 
 void AppleMidiSendSystemReset(void)
 {
-  if (interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendReset();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendReset();
 }
 
 
@@ -199,7 +199,7 @@ void ipMIDISendChannelMessage1(byte type, byte channel, byte data1)
 {
   byte midiPacket[2];
 
-  if (!interfaces[PED_IPMIDI].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
 
   midiPacket[0] = (type & 0xf0) | ((channel - 1) & 0x0f);
   midiPacket[1] = data1;
@@ -212,7 +212,7 @@ void ipMIDISendChannelMessage2(byte type, byte channel, byte data1, byte data2)
 {
   byte midiPacket[3];
 
-  if (!interfaces[PED_IPMIDI].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
 
   midiPacket[0] = (type & 0xf0) | ((channel - 1) & 0x0f);
   midiPacket[1] = data1;
@@ -226,7 +226,7 @@ void ipMIDISendSystemCommonMessage1(byte type, byte data1)
 {
   byte midiPacket[2];
 
-  if (!interfaces[PED_IPMIDI].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
 
   midiPacket[0] = type;
   midiPacket[1] = data1;
@@ -239,7 +239,7 @@ void ipMIDISendSystemCommonMessage2(byte type, byte data1, byte data2)
 {
   byte  midiPacket[3];
 
-  if (!interfaces[PED_IPMIDI].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
 
   midiPacket[0] = type;
   midiPacket[1] = data1;
@@ -253,7 +253,7 @@ void ipMIDISendRealTimeMessage(byte type)
 {
   byte midiPacket[1];
 
-  if (!interfaces[PED_IPMIDI].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
 
   midiPacket[0] = type;
   ipMIDI.beginMulticastPacket();
@@ -358,7 +358,7 @@ void ipMIDISendSystemReset(void)
 
 void OSCSendNoteOn(byte note, byte velocity, byte channel)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   String msg = "/pedalino/midi/note/";
   msg += note;
@@ -370,7 +370,7 @@ void OSCSendNoteOn(byte note, byte velocity, byte channel)
 
 void OSCSendNoteOff(byte note, byte velocity, byte channel)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   String msg = "/pedalino/midi/note/";
   msg += note;
@@ -382,7 +382,7 @@ void OSCSendNoteOff(byte note, byte velocity, byte channel)
 
 void OSCSendAfterTouchPoly(byte note, byte pressure, byte channel)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   String msg = "/pedalino/midi/aftertouchpoly/";
   msg += note;
@@ -394,7 +394,7 @@ void OSCSendAfterTouchPoly(byte note, byte pressure, byte channel)
 
 void OSCSendControlChange(byte number, byte value, byte channel)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   String msg = "/pedalino/midi/cc/";
   msg += number;
@@ -406,7 +406,7 @@ void OSCSendControlChange(byte number, byte value, byte channel)
 
 void OSCSendProgramChange(byte number, byte channel)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   String msg = "/pedalino/midi/pc/";
   msg += number;
@@ -418,7 +418,7 @@ void OSCSendProgramChange(byte number, byte channel)
 
 void OSCSendAfterTouch(byte pressure, byte channel)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   String msg = "/pedalino/midi/aftertouchchannel/";
   msg += channel;
@@ -430,7 +430,7 @@ void OSCSendAfterTouch(byte pressure, byte channel)
 
 void OSCSendPitchBend(int bend, byte channel)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   String msg = "/pedalino/midi/pitchbend/";
   msg += channel;
@@ -450,7 +450,7 @@ void OSCSendTimeCodeQuarterFrame(byte data)
 
 void OSCSendSongPosition(unsigned int beats)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   String msg = "/pedalino/midi/songpostion/";
   msg += beats;
@@ -462,7 +462,7 @@ void OSCSendSongPosition(unsigned int beats)
 
 void OSCSendSongSelect(byte songnumber)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   String msg = "/pedalino/midi/songselect/";
   msg += songnumber;
@@ -474,7 +474,7 @@ void OSCSendSongSelect(byte songnumber)
 
 void OSCSendTuneRequest(void)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   OSCMessage oscMsg("/pedalino/midi/tunerequest/");
   oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
@@ -488,7 +488,7 @@ void OSCSendClock(void)
 
 void OSCSendStart(void)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   OSCMessage oscMsg("/pedalino/midi/start/");
   oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
@@ -498,7 +498,7 @@ void OSCSendStart(void)
 
 void OSCSendContinue(void)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   OSCMessage oscMsg("/pedalino/midi/continue/");
   oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
@@ -508,7 +508,7 @@ void OSCSendContinue(void)
 
 void OSCSendStop(void)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   OSCMessage oscMsg("/pedalino/midi/stop/");
   oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
@@ -518,7 +518,7 @@ void OSCSendStop(void)
 
 void OSCSendActiveSensing(void)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   OSCMessage oscMsg("/pedalino/midi/activesensing/");
   oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
@@ -528,7 +528,7 @@ void OSCSendActiveSensing(void)
 
 void OSCSendSystemReset(void)
 {
-  if (!interfaces[PED_OSC].midiOut) return;
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
   OSCMessage oscMsg("/pedalino/midi/reset/");
   oscUDP.beginPacket(oscRemoteIp, oscRemotePort);

@@ -369,6 +369,8 @@ void OnAppleMidiReceiveReset(void)
 
 void apple_midi_start()
 {
+    if (!wifiEnabled) return;
+
   // Create a session and wait for a remote host to connect to us
   AppleMIDI.begin("Pedalino(TM)");
 
@@ -417,9 +419,10 @@ void OnOscControlChange(OSCMessage &msg)
 
 void oscUDP_listen() {
 
-  if (!interfaces[PED_OSC].midiIn) return;
-
+  if (!wifiEnabled) return;
   if (!WiFi.isConnected()) return;
+
+  if (!interfaces[PED_OSC].midiIn) return;
 
   int size = oscUDP.parsePacket();
 
@@ -438,6 +441,10 @@ void oscUDP_listen() {
 // Listen to incoming AppleMIDI messages from WiFi
 
 inline void rtpMIDI_listen() {
+
+  if (!wifiEnabled) return;
+  if (!WiFi.isConnected()) return;
+
   AppleMIDI.run();
 }
 
@@ -451,10 +458,11 @@ void ipMIDI_listen() {
   int  bend;
   unsigned int beats;
 
-  if (!interfaces[PED_IPMIDI].midiIn) return;
-
+  if (!wifiEnabled) return;
   if (!WiFi.isConnected()) return;
 
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+  
   ipMIDI.parsePacket();
 
   while (ipMIDI.available() > 0) {
