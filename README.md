@@ -147,13 +147,21 @@ void wifi_connect()
 
 See [How to reset PedalinoMini™ to factory default](https://github.com/alf45tar/PedalinoMini/blob/master/README.md#how-to-reset-pedalinomini-to-factory-default)
 
-## How to start PedalinoMini™ with a specific profile
+## How to start PedalinoMini™ in WIFI mode only
 
 ### TTGO T-Eight ESP32 procedure
 
-- Press and hold navigation LEFT button for profile A or navigation RIGHT button for profile C
+- Press and hold navigation LEFT button
 - Press and release POWER button
-- Release LEFT or RIGHT button when the WiFi/Bluetooth logo disappear
+- Release LEFT when the WiFi logo appear
+
+## How to start PedalinoMini™ in BLE mode only
+
+### TTGO T-Eight ESP32 procedure
+
+- Press and hold navigation RIGHT button
+- Press and release POWER button
+- Release RIGHT when the Bluetooth logo appear
 
 ## How to reset PedalinoMini™ to factory default
 

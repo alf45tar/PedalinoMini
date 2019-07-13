@@ -30,12 +30,14 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 
 #ifdef TTGO_T_EIGHT
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
-#define PROFILE_A_PIN         GPIO_NUM_39
-#define PROFILE_B_PIN         GPIO_NUM_38
-#define PROFILE_C_PIN         GPIO_NUM_37
 #else
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
 #endif
+#define BATTERY_PIN           GPIO_NUM_34
+
+#define RIGHT_PIN             GPIO_NUM_37
+#define CENTER_PIN            GPIO_NUM_38
+#define LEFT_PIN              GPIO_NUM_39
 
 #define PIN_D(x)          pinD[x]
 #define PIN_A(x)          pinA[x]
@@ -227,7 +229,16 @@ byte  timeSignature           = PED_TIMESIGNATURE_4_4;
 MidiTimeCode  MTC;
 unsigned int  bpm             = 120;
 
-byte  backlight               = 150;
+#ifdef WIFI
+bool  wifiEnabled             = true;
+#else
+bool  wifiEnabled             = false;
+#endif
+#ifdef BLE
+bool  bleEnabled              = true;
+#else
+bool  bleEnabled              = false;
+#endif
 bool  wifiConnected           = false;
 bool  bleConnected            = false;
 

@@ -52,6 +52,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #endif
 
 #include <esp_log.h>
+#include <esp_bt_main.h>
 #include <string>
 #include "Pedalino.h"
 #include "TickerTimer.h"
@@ -136,6 +137,54 @@ void setup()
   DPRINTLN("                                                                      https://github.com/alf45tar/PedalinoMini");
   DPRINT("\nHostname: %s\n", host.c_str());
 
+#ifdef TTGO_T_EIGHT
+  pinMode(LEFT_PIN, INPUT_PULLUP);
+  if (digitalRead(LEFT_PIN) == LOW) {
+    //currentProfile = 0;
+    //eeprom_update_current_profile(currentProfile);
+    bleEnabled = false;
+  }
+  pinMode(RIGHT_PIN, INPUT_PULLUP);
+  if (digitalRead(RIGHT_PIN) == LOW) {
+    //currentProfile = 2;
+    //eeprom_update_current_profile(currentProfile);
+    wifiEnabled = false;
+  }
+#endif
+
+#ifdef BLE
+  if (bleEnabled) {
+    // Release Bluetooth Classic memory
+    long before = ESP.getFreeHeap();
+    esp_bt_controller_disable();
+    esp_bt_controller_deinit();
+    esp_bt_mem_release(ESP_BT_MODE_CLASSIC_BT);
+    long after = ESP.getFreeHeap();
+    DPRINT("Bluetooth Classic disabled: %ld bytes released\n", after - before);
+  }
+  else {
+    // Release Bluetooth memory
+    long before = ESP.getFreeHeap();
+    esp_bluedroid_disable();
+    esp_bluedroid_deinit();
+    esp_bt_controller_disable();
+    esp_bt_controller_deinit();
+    esp_bt_mem_release(ESP_BT_MODE_BTDM);
+    long after = ESP.getFreeHeap();
+    DPRINT("Bluetooth disabled: %ld bytes released\n", after - before);
+  }
+#endif
+
+#ifdef WIFI
+  if (!wifiEnabled) {
+    // Release WiFi memory
+    long before = ESP.getFreeHeap();
+    WiFi.mode(WIFI_OFF);
+    long after = ESP.getFreeHeap();
+    DPRINT("WiFi disabled: %ld bytes released\n", after - before);
+  }
+#endif
+
   display_init();
 
   // Reset to factory default if BOOT key is pressed and hold for alt least 8 seconds at power on
@@ -169,18 +218,6 @@ void setup()
     //ESP.restart();
   }
 
-#ifdef TTGO_T_EIGHT
-  pinMode(PROFILE_A_PIN, INPUT_PULLUP);
-  if (digitalRead(PROFILE_A_PIN) == LOW) {
-    currentProfile = 0;
-    eeprom_update_current_profile(currentProfile);
-  }
-  pinMode(PROFILE_C_PIN, INPUT_PULLUP);
-  if (digitalRead(PROFILE_C_PIN) == LOW) {
-    currentProfile = 2;
-    eeprom_update_current_profile(currentProfile);
-  }
-#endif
   eeprom_read_global();
 
   // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
@@ -188,34 +225,37 @@ void setup()
   DPRINT("USB MIDI started\n");
   DPRINT("DIN MIDI started\n");
 
+#ifdef BLE
+  if (bleEnabled) {
+    // BLE MIDI service advertising
+    ble_midi_start_service();
+    DPRINT("BLE MIDI service advertising started\n");
+  }
+ #endif
+
 #ifdef WIFI
-  // Write SSID/password to flash only if currently used values do not match what is already stored in flash
-  WiFi.persistent(false);
-  WiFi.onEvent(WiFiEvent);
-  if (apmode)
-    ap_mode_start();
-  else 
-    wifi_connect();
-#endif
+  if (wifiEnabled) {
+    // Write SSID/password to flash only if currently used values do not match what is already stored in flash
+    WiFi.persistent(false);
+    WiFi.onEvent(WiFiEvent);
+    if (apmode)
+      ap_mode_start();
+    else 
+      wifi_connect();
+
+    blynk_setup();
 
 #ifdef PEDALINO_TELNET_DEBUG
-  // Initialize the telnet server of RemoteDebug
-  Debug.begin(host);              // Initiaze the telnet server
-  Debug.setResetCmdEnabled(true); // Enable the reset command
+    // Initialize the telnet server of RemoteDebug
+    Debug.begin(host);              // Initiaze the telnet server
+    Debug.setResetCmdEnabled(true); // Enable the reset command
+#endif
+  }
 #endif
 
-#ifdef BLE
-  // BLE MIDI service advertising
-  ble_midi_start_service();
-  DPRINT("BLE MIDI service advertising started\n");
-#endif
-
-  blynk_setup();
-  
-  attachInterrupt(PROFILE_A_PIN, onButtonLeft, FALLING);
-  attachInterrupt(PROFILE_B_PIN, onButtonCenter, FALLING);
-  attachInterrupt(PROFILE_C_PIN, onButtonRight, FALLING);
-
+  attachInterrupt(LEFT_PIN,   onButtonLeft,   FALLING);
+  attachInterrupt(CENTER_PIN, onButtonCenter, FALLING);
+  attachInterrupt(RIGHT_PIN,  onButtonRight,  FALLING);
 }
 
 
@@ -268,28 +308,30 @@ void loop()
   if (DIN_MIDI.read())
     DPRINTMIDI("Serial MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
 
-  // Listen to incoming AppleMIDI messages from WiFi
-  rtpMIDI_listen();
+  if (wifiEnabled) {
+    // Listen to incoming AppleMIDI messages from WiFi
+    rtpMIDI_listen();
 
-  // Listen to incoming ipMIDI messages from WiFi
-  ipMIDI_listen();
+    // Listen to incoming ipMIDI messages from WiFi
+    ipMIDI_listen();
 
-  // Listen to incoming OSC UDP messages from WiFi
-  oscUDP_listen();
+    // Listen to incoming OSC UDP messages from WiFi
+    oscUDP_listen();
+
+    http_run();
+
+    // Run OTA update service
+    ota_handle();
+
+    // Process Blynk messages
+    blynk_run();
+
+#ifdef PEDALINO_TELNET_DEBUG
+    // Remote debug over telnet
+    Debug.handle();
+#endif
+  }
 
   // Update display
   display_update();
-
-  http_run();
-
-  // Run OTA update service
-  ota_handle();
-
-  // Process Blynk messages
-  blynk_run();
-
-#ifdef PEDALINO_TELNET_DEBUG
-  // Remote debug over telnet
-  Debug.handle();
-#endif
 }

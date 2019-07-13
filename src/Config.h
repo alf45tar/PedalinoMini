@@ -205,6 +205,15 @@ void eeprom_read_global()
 
 void eeprom_read_profile(byte profile = currentProfile)
 {
+  // Delete previous setup
+  for (byte i = 0; i < PEDALS; i++) {
+    delete pedals[i].debouncer[0];
+    delete pedals[i].debouncer[1];
+    delete pedals[i].footSwitch[0];
+    delete pedals[i].footSwitch[1];
+    delete pedals[i].analogPedal;
+  }
+
   DPRINT("Reading NVS Profile ");
   switch (profile) {
     case 0:
@@ -230,16 +239,16 @@ void eeprom_read_profile(byte profile = currentProfile)
 
   DPRINT("done\n");
 
-  for (byte p = 0; p < PEDALS; p++) {
-    pedals[p].pedalValue[0] = 0;
-    pedals[p].pedalValue[1] = 0;
-    pedals[p].lastUpdate[0] = millis();
-    pedals[p].lastUpdate[1] = millis();
-    pedals[p].debouncer[0]  = nullptr;
-    pedals[p].debouncer[1]  = nullptr;
-    pedals[p].footSwitch[0] = nullptr;
-    pedals[p].footSwitch[1] = nullptr;
-    pedals[p].analogPedal   = nullptr;
+  for (byte i = 0; i < PEDALS; i++) {
+    pedals[i].pedalValue[0] = 0;
+    pedals[i].pedalValue[1] = 0;
+    pedals[i].lastUpdate[0] = millis();
+    pedals[i].lastUpdate[1] = millis();
+    pedals[i].debouncer[0]  = nullptr;
+    pedals[i].debouncer[1]  = nullptr;
+    pedals[i].footSwitch[0] = nullptr;
+    pedals[i].footSwitch[1] = nullptr;
+    pedals[i].analogPedal   = nullptr;
   };
   
   blynk_refresh();

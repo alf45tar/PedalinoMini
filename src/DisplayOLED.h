@@ -34,7 +34,7 @@ SSD1306Wire   display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 OLEDDisplayUi ui(&display);
 bool          uiUpdate = true;
 
-Battery bat(3000, 4200, GPIO_NUM_34);
+Battery bat(3000, 4200, BATTERY_PIN);
 
 
 #define WIFI_LOGO_WIDTH   78
@@ -393,19 +393,21 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   if ((millis() >= endMillis2) ||
       (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
 #ifdef WIFI
-    static int      signal  = WiFi.RSSI();
+    if (wifiEnabled) {
+      static int      signal  = WiFi.RSSI();
 
-    display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->setFont(wifiSignal);
-    signal = (4*signal + WiFi.RSSI()) / 5;
-    if      (signal < -90) display->drawString(0, 0, String(0));
-    else if (signal < -85) display->drawString(0, 0, String(1));
-    else if (signal < -80) display->drawString(0, 0, String(2));
-    else if (signal < -75) display->drawString(0, 0, String(3));
-    else if (signal < -70) display->drawString(0, 0, String(4));
-    else if (signal < -65) display->drawString(0, 0, String(5));
-    else if (signal < -60) display->drawString(0, 0, String(6));
-    else                   display->drawString(0, 0, String(7));
+      display->setTextAlignment(TEXT_ALIGN_LEFT);
+      display->setFont(wifiSignal);
+      signal = (4*signal + WiFi.RSSI()) / 5;
+      if      (signal < -90) display->drawString(0, 0, String(0));
+      else if (signal < -85) display->drawString(0, 0, String(1));
+      else if (signal < -80) display->drawString(0, 0, String(2));
+      else if (signal < -75) display->drawString(0, 0, String(3));
+      else if (signal < -70) display->drawString(0, 0, String(4));
+      else if (signal < -65) display->drawString(0, 0, String(5));
+      else if (signal < -60) display->drawString(0, 0, String(6));
+      else                   display->drawString(0, 0, String(7));
+    }
 #endif
 
     display->setFont(bluetoothSign);
@@ -438,13 +440,6 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     else if (voltage > 3100) display->drawString(128, 0, String(1));
     else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
     else display->drawString(128, 0, String(4));
-    
-    /*
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->setFont(ArialMT_Plain_10);
-    display->drawString(90, 0, String(voltage/10));
-    display->drawString(106, 0, String(level));
-    */
 #endif
   }
 
@@ -549,23 +544,19 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     display->drawString(0, 54, String("Bank " + String(currentBank+1)));
 
 #ifdef WIFI
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->setFont(midiIcons);
-    if(appleMidiConnected) display->drawString(84, 54, String(1));
-    else display->drawString(84, 54, String(0));
+    if (wifiEnabled) {
+      display->setTextAlignment(TEXT_ALIGN_RIGHT);
+      display->setFont(midiIcons);
+      if(appleMidiConnected) display->drawString(84, 54, String(1));
+      else display->drawString(84, 54, String(0));
 
-    if (interfaces[PED_IPMIDI].midiIn) display->drawString(106, 54, String(2));
-    else display->drawString(106, 54, String(0));
+      if (interfaces[PED_IPMIDI].midiIn) display->drawString(106, 54, String(2));
+      else display->drawString(106, 54, String(0));
 
-    if (interfaces[PED_OSC].midiIn) display->drawString(128, 54, String(3));
-    else display->drawString(128, 54, String(0));
+      if (interfaces[PED_OSC].midiIn) display->drawString(128, 54, String(3));
+      else display->drawString(128, 54, String(0));
+    }
 #endif
-
-    /*
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
-    display->setFont(ArialMT_Plain_10);
-    display->drawString(50, 54, String(ESP.getFreeHeap() / 1024));
-    */
   }
 }
 
@@ -835,15 +826,39 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 
 void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
-  display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->setFont(ArialMT_Plain_16);
-  display->drawString(64 + x, 16 + y, host);
-  display->drawString(64 + x, 36 + y, WiFi.localIP().toString());
+  static uint16_t voltage = bat.voltage();
+
+  if (MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2)
+    ui.switchToFrame(0);
+
+  voltage = (99*voltage + bat.voltage()) / 100;
+
+  display->setFont(ArialMT_Plain_10);
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->drawString(0 + x, 16 + y, "Free heap:");
+  display->setTextAlignment(TEXT_ALIGN_RIGHT);
+  display->drawString(128 + x, 16 + y, ESP.getFreeHeap()/1024 + String(" Kb"));
+
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->drawString(0 + x, 26 + y, "Battery voltage:");
+  display->setTextAlignment(TEXT_ALIGN_RIGHT);
+  display->drawString(128 + x, 26 + y, voltage + String(" mV"));
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->drawString(0 + x, 36 + y, "Running time:");
+  display->setTextAlignment(TEXT_ALIGN_RIGHT);
+  long sec = (millis() / 1000) % 60;
+  long min = (millis() / 1000 / 60) % 60;
+  long h   = (millis() / 1000 / 3600);
+  display->drawString(128 + x, 36 + y, h + String("h ") + min + String("m ") + sec + String("s"));
 }
 
 // This array keeps function pointers to all frames
 // frames are the single views that slide in
+#ifdef DIAGNOSTIC
+FrameCallback frames[] = { drawFrame1, drawFrame3 };
+#else
 FrameCallback frames[] = { drawFrame1, drawFrame2 };
+#endif
 int frameCount = sizeof(frames) / sizeof(FrameCallback);
 
 // Overlays are statically drawn on top of a frame
@@ -857,17 +872,21 @@ void display_init()
   display.setContrast(255);
 
 #ifdef WIFI
-  display.clear();
-  display.drawXbm((display.getWidth() - WIFI_LOGO_WIDTH) / 2, (display.getHeight() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
-  display.display();
-  delay(250);
+  if (wifiEnabled) {
+    display.clear();
+    display.drawXbm((display.getWidth() - WIFI_LOGO_WIDTH) / 2, (display.getHeight() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
+    display.display();
+    delay(500);
+  }
 #endif
 
 #ifdef BLE
-  display.clear();
-  display.drawXbm((display.getWidth() - BLUETOOTH_LOGO_WIDTH) / 2, (display.getHeight() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
-  display.display();
-  delay(250);
+  if (bleEnabled) {
+    display.clear();
+    display.drawXbm((display.getWidth() - BLUETOOTH_LOGO_WIDTH) / 2, (display.getHeight() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
+    display.display();
+    delay(500);
+  }
 #endif
 
   // The ESP is capable of rendering 60fps in 80Mhz mode
@@ -892,6 +911,11 @@ void display_init()
   // You can change the transition that is used
   // SLIDE_LEFT, SLIDE_RIGHT, SLIDE_UP, SLIDE_DOWN
   ui.setFrameAnimation(SLIDE_LEFT);
+
+#ifdef DIAGNOSTIC
+  // Disable automatic transition to next frame.
+  //ui.disableAutoTransition();
+#endif
 
   // Add frames
   ui.setFrames(frames, frameCount);

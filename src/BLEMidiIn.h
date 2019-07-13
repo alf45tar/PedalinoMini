@@ -9,9 +9,11 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#undef CLASSIC_BT_ENABLED
+
 #ifdef BLE
 #include <esp_bt.h>
-#include "BleMidi.h"
+#include <BleMidi.h>
 
 void OnBleMidiConnected() {
   bleMidiConnected = true;
@@ -241,12 +243,8 @@ void OnBleMidiReceiveReset(void)
 
 void ble_midi_start_service()
 {
-
-  // Release Bluetooth Classic memory
-  esp_bt_controller_disable();
-  esp_bt_controller_deinit();
-  esp_bt_mem_release(ESP_BT_MODE_CLASSIC_BT);
-
+  if (!bleEnabled) return;
+  
   // Create a session and wait for a remote host to connect to us
   BleMIDI.begin(host.c_str());
 

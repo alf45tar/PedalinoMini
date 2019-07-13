@@ -893,6 +893,21 @@ void refresh_analog(byte i, bool send)
 void controller_setup();
 
 //
+//  Delete controllers
+//
+void controller_delete()
+{
+  // Delete previous setup
+  for (byte i = 0; i < PEDALS; i++) {
+    delete pedals[i].debouncer[0];
+    delete pedals[i].debouncer[1];
+    delete pedals[i].footSwitch[0];
+    delete pedals[i].footSwitch[1];
+    delete pedals[i].analogPedal;
+  }
+}
+
+//
 //  Refresh pedals
 //
 void controller_run(bool send = true)
@@ -911,7 +926,7 @@ void controller_run(bool send = true)
     autosensing_setup();
     controller_setup();
     mtc_setup();
-    delay(250);
+    delay(200);
     reloadProfile = false;
     return;
   }
@@ -951,20 +966,12 @@ void controller_run(bool send = true)
   }
 }
 
+
 //
 //  Create new MIDI controllers setup
 //
 void controller_setup()
 {
-  // Delete previous setup
-  for (byte i = 0; i < PEDALS; i++) {
-    //delete pedals[i].debouncer[0];
-    //delete pedals[i].debouncer[1];
-    //delete pedals[i].footSwitch[0];
-    //delete pedals[i].footSwitch[1];
-    delete pedals[i].analogPedal;
-  }
-
   lastUsedSwitch = 0xFF;
   lastUsedPedal  = 0xFF;
   lastUsed       = 0xFF;
