@@ -261,6 +261,10 @@ void setup()
         eeprom_initialize();
         //ESP.restart();
       }
+      else
+        bootMode = PED_BOOT_NORMAL;
+      break;
+      
   }
   
   eeprom_read_global();
