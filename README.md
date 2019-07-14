@@ -164,7 +164,7 @@ To select a different mode:
 
 ## TTGO T-Eight ESP32
 
-THe following procedures are for TTGO T-Eight ESP32 only.
+The following procedures are for TTGO T-Eight ESP32 only.
 
 #### BLE mode only
 
