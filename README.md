@@ -142,45 +142,46 @@ void wifi_connect()
     ap_mode_start();          // switch to AP mode until next reboot
 }
 ```
-## How to switch profile
 
-#### TTGO T-Eight ESP32 procedure
+## Booting modes
 
-- Press navigation RIGHT button to move to the next profile
-- Press navigation LEFT button to move to the previous profile
-- Press navigation CENTER button to save the current profile selection
+PedalinoMini™ has 6 booting modes:
 
-## How to start PedalinoMini™ in AP mode (skipping last know access point, SmartConfig and WPS)
+1. Normal
+2. Bluetooth Only
+3. WiFi Only
+4. Access Point with Bluetooth
+5. Access Point without Bluetooth
+6. Reset to factory default
 
-See [How to reset PedalinoMini™ to factory default](https://github.com/alf45tar/PedalinoMini/blob/master/README.md#how-to-reset-pedalinomini-to-factory-default)
+Normal mode is selected if you don't press any button on boot.
 
-## How to start PedalinoMini™ in WIFI mode only
+To select a different mode:
 
-#### TTGO T-Eight ESP32 procedure
+- Press and release EN button (POWER button on TTGO T-Eight) and immediately after press and hold BOOT button (CENTER button on TTGO T-Eight)
+- Follow the istructions on display
 
-- Press and hold navigation LEFT button
-- Press and release POWER button
-- Release LEFT when the WiFi logo appear
 
-## How to start PedalinoMini™ in BLE mode only
+## TTGO T-Eight ESP32
 
-#### TTGO T-Eight ESP32 procedure
+THe following procedures are for TTGO T-Eight ESP32 only.
+
+#### BLE mode only
 
 - Press and hold navigation RIGHT button
 - Press and release POWER button
 - Release RIGHT when the Bluetooth logo appear
 
-## How to reset PedalinoMini™ to factory default
+#### WIFI mode only
 
-#### DOIT ESP32 DevKit V1 procedure
-
-- Press and release EN button and immediately after press and hold BOOT button
-- When PedalinoMini™ reboot (after about 10 seconds) release BOOT button
-- PedalinoMini™ will start in AP mode if you release BOOT button before reboot
-
-#### TTGO T-Eight ESP32 procedure
-
-- Press and hold navigation CENTER button
+- Press and hold navigation LEFT button
 - Press and release POWER button
-- When PedalinoMini™ reboot (after about 10 seconds) release CENTER button 
-- PedalinoMini™ will start in AP mode if you release CENTER button before reboot
+- Release LEFT when the WiFi logo appear
+
+#### How to switch profiles
+
+During normal operation
+
+- Press navigation RIGHT button to move to the next profile
+- Press navigation LEFT button to move to the previous profile
+- Press navigation CENTER button to save the current profile selection
