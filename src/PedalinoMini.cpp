@@ -105,8 +105,6 @@ void IRAM_ATTR onButtonCenter()
 
 void setup()
 {
-  bool apmode = false;
-
   pinMode(WIFI_LED, OUTPUT);
   pinMode(BLE_LED, OUTPUT);
 
@@ -187,18 +185,40 @@ void setup()
 
   display_init();
 
-  // Reset to factory default if BOOT key is pressed and hold for alt least 8 seconds at power on
-  // Enter AP mode if BOOT key is pressed and hold for less than 8 seconds at power on
+  // Reset to factory default if BOOT key is pressed and hold for alt least 12 seconds at power on
+  
   pinMode(FACTORY_DEFAULT_PIN, INPUT_PULLUP);
   unsigned long milliStart = millis();
   unsigned long duration = 0;
   lcdClear();
-  if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) display_progress_bar_title("Factory reset");
-  while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 8500)) {
+  bootMode = PED_BOOT_NORMAL;
+  if (digitalRead(FACTORY_DEFAULT_PIN) == LOW)
+    display_progress_bar_title2("Release button for", "Normal Boot");
+  while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 12000)) {
+    if (duration > 1000 && duration < 3000 && bootMode != PED_BOOT_BLE) {
+      bootMode = PED_BOOT_BLE;
+      display_progress_bar_title2("Release button for", "Bluetooth Only");
+    }
+    else if (duration > 3000 && duration < 5000 && bootMode != PED_BOOT_WIFI) {
+      bootMode = PED_BOOT_WIFI;
+      display_progress_bar_title2("Release button for", "WiFi Only");
+    }
+    else if (duration > 5000 && duration < 7000 && bootMode != PED_BOOT_AP) {
+      bootMode = PED_BOOT_AP;
+      display_progress_bar_title2("Release button for", "Access Point");
+    }
+    else if (duration > 7000 && duration < 9000 && bootMode != PED_BOOT_AP_NO_BLE) {
+      bootMode = PED_BOOT_AP_NO_BLE;
+      display_progress_bar_title2("Release button for", "AP without BLE");
+    }
+    else if (duration > 9000 && duration < 12000 && bootMode != PED_FACTORY_DEFAULT) {
+      bootMode = PED_FACTORY_DEFAULT;
+      display_progress_bar_title2("Hold button for", "Factory Default");
+    }
     DPRINT("#");
     lcdSetCursor(duration / 500, 0);
     lcdPrint("#");
-    display_progress_bar_update(duration, 8500);
+    display_progress_bar_update(duration, 12000);
     WIFI_LED_ON();
     delay(50);
     WIFI_LED_OFF();
@@ -206,18 +226,43 @@ void setup()
     duration = millis() - milliStart;
   }
   //display_clear();
-  if ((digitalRead(FACTORY_DEFAULT_PIN) == HIGH) && (duration > 100 && duration < 8500)) {
-    DPRINT("\nSkip connection to last AP and/or SmartConfig/WPS setup\n");
-    apmode = true;
-  } else if ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration >= 8500)) {
-    DPRINT("\nReset EEPROM to factory default\n");
-    lcdSetCursor(0, 1);
-    lcdPrint("Factory default ");
-    delay(1000);
-    eeprom_initialize();
-    //ESP.restart();
-  }
+  switch (bootMode) { 
+    case PED_BOOT_NORMAL:
+      break;
 
+    case PED_BOOT_BLE:
+#ifdef BLE
+      bleEnabled = true;
+#else
+      bleEnabled = false;
+#endif
+      wifiEnabled = false;    
+      break;
+
+    case PED_BOOT_WIFI:
+    case PED_BOOT_AP_NO_BLE:
+      bleEnabled = false;
+#ifdef WIFI
+      wifiEnabled = true;
+#else
+      wifiEnabled = false;
+#endif
+      break;
+
+    case PED_BOOT_AP:
+      break;
+
+    case PED_FACTORY_DEFAULT:
+      if (duration > 12000) {
+        DPRINT("\nReset EEPROM to factory default\n");
+        lcdSetCursor(0, 1);
+        lcdPrint("Factory default ");
+        delay(1000);
+        eeprom_initialize();
+        //ESP.restart();
+      }
+  }
+  
   eeprom_read_global();
 
   // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
@@ -235,11 +280,12 @@ void setup()
 
 #ifdef WIFI
   if (wifiEnabled) {
-    // Write SSID/password to flash only if currently used values do not match what is already stored in flash
     WiFi.persistent(false);
     WiFi.onEvent(WiFiEvent);
-    if (apmode)
+    if (bootMode == PED_BOOT_AP || bootMode == PED_BOOT_AP_NO_BLE) {
+      DPRINT("Skipped connection to last AP and/or SmartConfig/WPS setup\n");
       ap_mode_start();
+    }
     else 
       wifi_connect();
 
@@ -256,6 +302,8 @@ void setup()
   attachInterrupt(LEFT_PIN,   onButtonLeft,   FALLING);
   attachInterrupt(CENTER_PIN, onButtonCenter, FALLING);
   attachInterrupt(RIGHT_PIN,  onButtonRight,  FALLING);
+
+  DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
 }
 
 

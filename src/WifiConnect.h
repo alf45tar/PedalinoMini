@@ -289,7 +289,7 @@ void ap_mode_start()
     DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
     DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
     DPRINT("Channel     : %d\n", WiFi.channel());
-    DPRINT("Connect to %s wireless network with no password\n", wifiSoftAP.c_str());
+    DPRINT("Connect to %s wireless network with password %s\n", wifiSoftAP.c_str(), host.c_str());
     start_services();
   }  
   else

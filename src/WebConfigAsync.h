@@ -34,19 +34,11 @@ AsyncEventSource             events("/events");    // EventSource is single dire
 AsyncWebSocketMessageBuffer *buffer = NULL;
 #endif
 
-void    blynk_enable();
-void    blynk_disable();
-bool    blynk_enabled();
-String  blynk_get_token();
-String  blynk_set_token(String);
-bool    blynk_cloud_connected();
-void    blynk_connect();
-void    blynk_disconnect();
-void    blynk_refresh();
+String html((char *)0);
 
-String  alert     = "";
-String  uiprofile = "1";
-String  uibank    = "1";
+String alert     = "";
+String uiprofile = "1";
+String uibank    = "1";
 
 
 String get_top_page(int p = 0) {
@@ -371,9 +363,8 @@ String get_root_page() {
 
 String get_live_page() {
 
-  String page((char *)0);
+  String page = "";
 
-  page.reserve(12000);
   page += get_top_page(1);
 
   page += F("<div aria-live='polite' aria-atomic='true' style='position: relative;'>"
@@ -1308,6 +1299,62 @@ String get_options_page() {
   return page;
 }
 
+size_t get_banks_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  static bool rebuild = true;
+
+  if (rebuild) {
+    html = get_banks_page();
+    rebuild = false;
+  }
+  html.getBytes(buffer, maxLen, index);
+  size_t byteWritten = strlen((const char *)buffer);
+  rebuild = (byteWritten == 0);
+  return byteWritten;
+}
+
+size_t get_pedals_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  static bool rebuild = true;
+
+  if (rebuild) {
+    html = get_pedals_page();
+    rebuild = false;
+  }
+  html.getBytes(buffer, maxLen, index);
+  size_t byteWritten = strlen((const char *)buffer);
+  rebuild = (byteWritten == 0);
+  return byteWritten;
+}
+
+size_t get_interfaces_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  static bool rebuild = true;
+
+  if (rebuild) {
+    html = get_interfaces_page();
+    rebuild = false;
+  }
+  html.getBytes(buffer, maxLen, index);
+  size_t byteWritten = strlen((const char *)buffer);
+  rebuild = (byteWritten == 0);
+  return byteWritten;
+}
+
+size_t get_options_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  static bool rebuild = true;
+
+  if (rebuild) {
+    html = get_options_page();
+    rebuild = false;
+  }
+  html.getBytes(buffer, maxLen, index);
+  size_t byteWritten = strlen((const char *)buffer);
+  rebuild = (byteWritten == 0);
+  return byteWritten;
+}
+
 void http_handle_login(AsyncWebServerRequest *request) {
   request->send(200, "text/html", get_login_page());
 }
@@ -1350,22 +1397,35 @@ void http_handle_live(AsyncWebServerRequest *request) {
 void http_handle_banks(AsyncWebServerRequest *request) {
   http_handle_globals(request);
   if (request->hasArg("bank"))  uibank  = request->arg("bank");
-  request->send(200, "text/html", get_banks_page());
+  //request->send(200, "text/html", get_banks_page());
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_banks_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_pedals(AsyncWebServerRequest *request) {
+  
   http_handle_globals(request);
-  request->send(200, "text/html", get_pedals_page());
+  //request->send(200, "text/html", get_pedals_page());
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_pedals_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_interfaces(AsyncWebServerRequest *request) {
   http_handle_globals(request);
-  request->send(200, "text/html", get_interfaces_page());
+  //request->send(200, "text/html", get_interfaces_page());
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_interfaces_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_options(AsyncWebServerRequest *request) {
   http_handle_globals(request);
-  request->send(200, "text/html", get_options_page());
+  //request->send(200, "text/html", get_options_page());
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_post_live(AsyncWebServerRequest *request) {

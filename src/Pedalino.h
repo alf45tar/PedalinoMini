@@ -55,6 +55,13 @@ typedef uint8_t   byte;
 
 #include "MidiTimeCode.h"
 
+#define PED_BOOT_NORMAL         0
+#define PED_BOOT_BLE            1
+#define PED_BOOT_WIFI           2
+#define PED_BOOT_AP             3
+#define PED_BOOT_AP_NO_BLE      4
+#define PED_FACTORY_DEFAULT     5
+
 #define PED_PROGRAM_CHANGE      0
 #define PED_CONTROL_CHANGE      1
 #define PED_NOTE_ON_OFF         2
@@ -213,6 +220,7 @@ interface interfaces[] = {
                            "OSC        ", 1, 1, 0, 1, 0
                           };                       // Interfaces Setup
 
+byte bootMode                 = PED_BOOT_NORMAL;
 volatile byte currentProfile  = 0;
 volatile bool reloadProfile   = true;
 volatile bool saveProfile     = false;
@@ -337,6 +345,7 @@ bool   blynk_cloud_connected();
 String blynk_get_token();
 String blynk_set_token(String);
 void   blynk_connect();
+void   blynk_disconnect();
 void   blynk_refresh();
 
 #endif // _PEDALINO_H

@@ -855,7 +855,7 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 // This array keeps function pointers to all frames
 // frames are the single views that slide in
 #ifdef DIAGNOSTIC
-FrameCallback frames[] = { drawFrame1, drawFrame3 };
+FrameCallback frames[] = { drawFrame1, drawFrame2, drawFrame3 };
 #else
 FrameCallback frames[] = { drawFrame1, drawFrame2 };
 #endif
