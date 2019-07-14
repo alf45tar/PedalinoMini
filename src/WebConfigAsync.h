@@ -1886,7 +1886,12 @@ void http_setup() {
   else {
     DPRINT("SPIFFS mount OK\n");
   }
-  httpServer.serveStatic("/", SPIFFS, "/");
+  httpServer.serveStatic("/favicon.ico", SPIFFS, "/favicon.ico").setDefaultFile("/favicon.ico").setCacheControl("max-age=600");
+  httpServer.serveStatic("/logo.png", SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
+  httpServer.serveStatic("/css/bootstrap.min.css", SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/bootstrap.min.js", SPIFFS, "/js/bootstrap.min.js").setDefaultFile("/js/bootstrap.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/jquery-3.3.1.slim.min.js", SPIFFS, "/js/jquery-3.3.1.slim.min.js").setDefaultFile("/js/jquery-3.3.1.slim.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/popper.min.js", SPIFFS, "/js/popper.min.js").setDefaultFile("/js/popper.min.js").setCacheControl("max-age=600");
 
   httpServer.on("/",                        http_handle_root);
   httpServer.on("/login",       HTTP_GET,   http_handle_login);
