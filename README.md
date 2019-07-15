@@ -189,7 +189,7 @@ During normal operation
 ## Factory default configuration
 
 Pedal|Type|Name|Midi Message|Midi Channel|Midi Note/CC|Velocity
------|----|----|------------|------------
+-----|----|----|------------|------------|------------|--------
 1|Momentary|A|Note On/Off|1|C3 (60)|100
 2|Momentary|B|Note On/Off|1|D3 (62)|100
 3|Momentary|C|Note On/Off|1|E3 (64)|100
