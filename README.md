@@ -188,11 +188,11 @@ During normal operation
 
 ## Factory default configuration
 
-Pedal|Type|Name|Midi Message|Midi Channel|Midi Note/CC|Velocity
------|----|----|------------|------------|------------|--------
-1|Momentary|A|Note On/Off|1|C3 (60)|100
-2|Momentary|B|Note On/Off|1|D3 (62)|100
-3|Momentary|C|Note On/Off|1|E3 (64)|100
-4|Momentary|D|Note On/Off|1|F3 (65)|100
-5|Analog|E|Control Change|1|Effet Controller 1 (21)|0-127
-6|Analog|F|Control Change|1|Effet Controller 2 (22)|0-127
+Pedal|Type|Name|On Press|On Release|Midi Channel|Midi Note/CC
+-----|----|----|--------|----------|------------|------------
+1|Momentary|A|Note On|Note Off|1|C3 (60) Velocity 100
+2|Momentary|B|Note On|Note Off|1|D3 (62) Velocity 100
+3|Momentary|C|Note On|Note Off|1|E3 (64) Velocity 100
+4|Momentary|D|Note On|Note Off|1|F3 (65) Velocity 100
+5|Analog|E|Control Change||1|Effet Controller 1 (CC21) Value 0-127
+6|Analog|F|Control Change||1|Effet Controller 2 (CC22) Value 0-127
