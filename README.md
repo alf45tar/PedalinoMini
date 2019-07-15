@@ -190,22 +190,22 @@ During normal operation
 
 Profile A - Bank 1
 
-Pedal|Type|Name|On Press|On Release|Midi Channel|Midi Note/CC
------|----|----|--------|----------|------------|------------
-1|Momentary|A|Note On<br>Velocity 100|Note Off<br>Velocity 0|1|C3 (60)
-2|Momentary|B|Note On<br>Velocity 100|Note Off<br>Velocity 0|1|D3 (62)
-3|Momentary|C|Note On<br>Velocity 100|Note Off<br>Velocity 0|1|E3 (64)
-4|Momentary|D|Note On<br>Velocity 100|Note Off<br>Velocity 0|1|F3 (65)
-5|Analog|E|Control Change||1|Effect Controller 1<br>CC#12 Value 0-127
-6|Analog|F|Control Change||1|Effect Controller 2<br>CC#13 Value 0-127
+Pedal|Type|Name|On Press|On Release|Midi Channel
+-----|----|----|--------|----------|------------
+1|Momentary|A|Note On<br>C3 (60) Velocity 100|Note Off|1
+2|Momentary|B|Note On<br>D3 (62) Velocity 100|Note Off|1
+3|Momentary|C|Note On<br>E3 (64) Velocity 100|Note Off|1
+4|Momentary|D|Note On<br>F3 (65) Velocity 100|Note Off|1
+5|Analog|E|Control Change<br>CC#12 Value 0-127||1
+6|Analog|F|Control Change<br>CC#13 Value 0-127||1
 
 Profile A - Bank 2
 
-Pedal|Type|Name|On Press|On Release|Midi Channel|Midi CC
------|----|----|--------|----------|------------|------------
-1|Momentary|A|Control Change<br>Value 127|Control Change<br>Value 0|1|CC#20
-2|Momentary|B|Control Change<br>Value 127|Control Change<br>Value 0|1|CC#21
-3|Momentary|C|Control Change<br>Value 127|Control Change<br>Value 0|1|CC#22
-4|Momentary|D|Control Change<br>Value 127|Control Change<br>Value 0|1|CC#23
-5|Analog|E|Control Change||1|Effect Controller 1<br>CC#12 Value 0-127
-6|Analog|F|Control Change||1|Effect Controller 2<br>CC#13 Value 0-127
+Pedal|Type|Name|On Press|On Release|Midi Channel
+-----|----|----|--------|----------|------------
+1|Momentary|A|Control Change<br>CC#20 Value 127|Control Change<br>CC#20 Value 0|1
+2|Momentary|B|Control Change<br>CC#21 Value 127|Control Change<br>CC#21 Value 0|1
+3|Momentary|C|Control Change<br>CC#22 Value 127|Control Change<br>CC#22 Value 0|1
+4|Momentary|D|Control Change<br>CC#23 Value 127|Control Change<br>CC#23 Value 0|1
+5|Analog|E|Control Change<br>CC#12 Value 0-127||1
+6|Analog|F|Control Change<br>CC#13 Value 0-127||1
