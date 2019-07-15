@@ -181,13 +181,13 @@ struct pedal {
                                              6 = momentary 3
                                              7 = latch 2
                                              8 = ladder */
-  byte                   pressMode;       /* 0 = single click
-                                             1 = double click
-                                             2 = long click
+  byte                   pressMode;       /* 1 = single click
+                                             2 = double click
+                                             4 = long click
                                              3 = single and double click
-                                             4 = single and long click
-                                             5 = single, double and long click
-                                             6 = double and long click */
+                                             5 = single and long click
+                                             6 = double and long click
+                                             7 = single, double and long click */
   byte                   invertPolarity;
   byte                   mapFunction;
   int                    expZero;

@@ -45,7 +45,7 @@ void load_factory_default()
           banks[b][p].midiValue1   = 127;
           banks[b][p].midiValue2   = 0;
           banks[b][p].midiValue3   = 65;
-          break;
+          break; 
 
         case 2:
           banks[b][p].pedalName[0] = 0;
@@ -70,10 +70,10 @@ void load_factory_default()
 
   for (byte p = 0; p < PEDALS; p++)
     pedals[p] = {PED_MIDI,       // function
-                 1,              // autosensing disabled
+                 PED_ENABLE,     // autosensing
                  PED_MOMENTARY1, // mode
                  PED_PRESS_1,    // press mode
-                 0,              // invert polarity disabled
+                 PED_DISABLE,    // invert polarity
                  0,              // map function
                  ADC_RESOLUTION * 10 / 100,  // expression pedal zero
                  ADC_RESOLUTION * 90 / 100,  // expression pedal max
@@ -92,6 +92,144 @@ void load_factory_default()
       interfaces[i].midiRouting = PED_ENABLE;
       interfaces[i].midiClock   = PED_DISABLE;
     };
+
+  pedals[PEDALS-2] = {PED_MIDI,       // function
+                      PED_ENABLE,     // autosensing
+                      PED_ANALOG,     // mode
+                      PED_NONE,       // press mode
+                      PED_ENABLE,     // invert polarity
+                      0,              // map function
+                      ADC_RESOLUTION * 10 / 100,  // expression pedal zero
+                      ADC_RESOLUTION * 90 / 100,  // expression pedal max
+                      0,              // last state of switch 1
+                      0,              // last state of switch 2
+                      millis(),       // last time switch 1 status changed
+                      millis(),       // last time switch 2 status changed
+                      nullptr, nullptr, nullptr, nullptr, nullptr
+                      };
+
+  pedals[PEDALS-1] = {PED_MIDI,       // function
+                      PED_ENABLE,     // autosensing
+                      PED_ANALOG,     // mode
+                      PED_NONE,       // press mode
+                      PED_ENABLE,     // invert polarity
+                      0,              // map function
+                      ADC_RESOLUTION * 10 / 100,  // expression pedal zero
+                      ADC_RESOLUTION * 90 / 100,  // expression pedal max
+                      0,              // last state of switch 1
+                      0,              // last state of switch 2
+                      millis(),       // last time switch 1 status changed
+                      millis(),       // last time switch 2 status changed
+                      nullptr, nullptr, nullptr, nullptr, nullptr
+                      };
+
+  banks[0][0].pedalName[0] = 'A';
+  banks[0][0].pedalName[1] = 0;
+  banks[0][0].midiMessage  = PED_NOTE_ON_OFF;
+  banks[0][0].midiChannel  = 1;
+  banks[0][0].midiCode     = 60;  // C3
+  banks[0][0].midiValue1   = 100;
+  banks[0][0].midiValue2   = 0;
+  banks[0][0].midiValue3   = 0;
+
+  banks[0][1].pedalName[0] = 'B';
+  banks[0][1].pedalName[1] = 0;
+  banks[0][1].midiMessage  = PED_NOTE_ON_OFF;
+  banks[0][1].midiChannel  = 1;
+  banks[0][1].midiCode     = 62;  // D3
+  banks[0][1].midiValue1   = 100;
+  banks[0][1].midiValue2   = 0;
+  banks[0][1].midiValue3   = 0;
+
+  banks[0][2].pedalName[0] = 'C';
+  banks[0][2].pedalName[1] = 0;
+  banks[0][2].midiMessage  = PED_NOTE_ON_OFF;
+  banks[0][2].midiChannel  = 1;
+  banks[0][2].midiCode     = 64;  // E3
+  banks[0][2].midiValue1   = 100;
+  banks[0][2].midiValue2   = 0;
+  banks[0][2].midiValue3   = 0;
+
+  banks[0][3].pedalName[0] = 'D';
+  banks[0][3].pedalName[1] = 0;
+  banks[0][3].midiMessage  = PED_NOTE_ON_OFF;
+  banks[0][3].midiChannel  = 1;
+  banks[0][3].midiCode     = 65;  // F3
+  banks[0][3].midiValue1   = 100;
+  banks[0][3].midiValue2   = 0;
+  banks[0][3].midiValue3   = 0;
+
+  banks[0][4].pedalName[0] = 'E';
+  banks[0][4].pedalName[1] = 0;
+  banks[0][4].midiMessage  = PED_CONTROL_CHANGE;
+  banks[0][4].midiChannel  = 1;
+  banks[0][4].midiCode     = 12;  // Effect Controller 1
+  banks[0][4].midiValue1   = 0;
+  banks[0][4].midiValue2   = 0;
+  banks[0][4].midiValue3   = 0;
+
+  banks[0][5].pedalName[0] = 'F';
+  banks[0][5].pedalName[1] = 0;
+  banks[0][5].midiMessage  = PED_CONTROL_CHANGE;
+  banks[0][5].midiChannel  = 1;
+  banks[0][5].midiCode     = 13;  // Effect Controller 2
+  banks[0][5].midiValue1   = 0;
+  banks[0][5].midiValue2   = 0;
+  banks[0][5].midiValue3   = 0;
+
+  banks[1][0].pedalName[0] = 'A';
+  banks[1][0].pedalName[1] = 0;
+  banks[1][0].midiMessage  = PED_CONTROL_CHANGE;
+  banks[1][0].midiChannel  = 1;
+  banks[1][0].midiCode     = 20;  // Undefined
+  banks[1][0].midiValue1   = 127;
+  banks[1][0].midiValue2   = 0;
+  banks[1][0].midiValue3   = 0;
+
+  banks[1][1].pedalName[0] = 'B';
+  banks[1][1].pedalName[1] = 0;
+  banks[1][1].midiMessage  = PED_CONTROL_CHANGE;
+  banks[1][1].midiChannel  = 1;
+  banks[1][1].midiCode     = 21;  // Undefined
+  banks[1][1].midiValue1   = 127;
+  banks[1][1].midiValue2   = 0;
+  banks[1][1].midiValue3   = 0;
+
+  banks[1][2].pedalName[0] = 'C';
+  banks[1][2].pedalName[1] = 0;
+  banks[1][2].midiMessage  = PED_CONTROL_CHANGE;
+  banks[1][2].midiChannel  = 1;
+  banks[1][2].midiCode     = 22;  // Undefined
+  banks[1][2].midiValue1   = 127;
+  banks[1][2].midiValue2   = 0;
+  banks[1][2].midiValue3   = 0;
+
+  banks[1][3].pedalName[0] = 'D';
+  banks[1][3].pedalName[1] = 0;
+  banks[1][3].midiMessage  = PED_CONTROL_CHANGE;
+  banks[1][3].midiChannel  = 1;
+  banks[1][3].midiCode     = 23;  // Undefined
+  banks[1][3].midiValue1   = 127;
+  banks[1][3].midiValue2   = 0;
+  banks[1][3].midiValue3   = 0;
+
+  banks[1][4].pedalName[0] = 'E';
+  banks[1][4].pedalName[1] = 0;
+  banks[1][4].midiMessage  = PED_CONTROL_CHANGE;
+  banks[1][4].midiChannel  = 1;
+  banks[1][4].midiCode     = 12;  // Effect Controller 1
+  banks[1][4].midiValue1   = 0;
+  banks[1][4].midiValue2   = 0;
+  banks[1][4].midiValue3   = 0;
+
+  banks[1][5].pedalName[0] = 'F';
+  banks[1][5].pedalName[1] = 0;
+  banks[1][5].midiMessage  = PED_CONTROL_CHANGE;
+  banks[1][5].midiChannel  = 1;
+  banks[1][5].midiCode     = 13;  // Effect Controller 2
+  banks[1][5].midiValue1   = 0;
+  banks[1][5].midiValue2   = 0;
+  banks[1][5].midiValue3   = 0;
 }
 
 void eeprom_update_device_name(String name = host)
@@ -276,6 +414,9 @@ void eeprom_initialize()
   eeprom_update_blynk_cloud_enable(false);
   eeprom_update_blynk_auth_token();
   load_factory_default();
-  for (byte p = 0; p < PROFILES; p++)
+  for (byte p = 0; p < PROFILES; p++) {
+    currentBank = p;
     eeprom_update_profile(p);
+  }
+  currentBank = 1;
 }

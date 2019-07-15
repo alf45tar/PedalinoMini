@@ -331,16 +331,14 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
 
     case PED_CONTROL_CHANGE:
 
-      if (on_off) {
-        DPRINT("CONTROL CHANGE.....Code %3d......Value %3d.....Channel %2d\n", code, value, channel);
-        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(code, value, channel);
-        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(code, value, channel);
-        AppleMidiSendControlChange(code, value, channel);
-        ipMIDISendControlChange(code, value, channel);
-        BLESendControlChange(code, value, channel);
-        OSCSendControlChange(code, value, channel);
-        screen_info(midi::ControlChange, code, value, channel);
-      }
+      DPRINT("CONTROL CHANGE.....Code %3d......Value %3d.....Channel %2d\n", code, value, channel);
+      if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(code, value, channel);
+      if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(code, value, channel);
+      AppleMidiSendControlChange(code, value, channel);
+      ipMIDISendControlChange(code, value, channel);
+      BLESendControlChange(code, value, channel);
+      OSCSendControlChange(code, value, channel);
+      screen_info(midi::ControlChange, code, value, channel);
       break;
 
     case PED_PROGRAM_CHANGE:
