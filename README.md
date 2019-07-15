@@ -190,9 +190,9 @@ During normal operation
 
 Pedal|Type|Name|On Press|On Release|Midi Channel|Midi Note/CC
 -----|----|----|--------|----------|------------|------------
-1|Momentary|A|Note On|Note Off|1|C3 (60) Velocity 100
-2|Momentary|B|Note On|Note Off|1|D3 (62) Velocity 100
-3|Momentary|C|Note On|Note Off|1|E3 (64) Velocity 100
-4|Momentary|D|Note On|Note Off|1|F3 (65) Velocity 100
-5|Analog|E|Control Change||1|Effet Controller 1 (CC21) Value 0-127
-6|Analog|F|Control Change||1|Effet Controller 2 (CC22) Value 0-127
+1|Momentary|A|Note On|Note Off|1|C3 (60)<br>Velocity 100
+2|Momentary|B|Note On|Note Off|1|D3 (62)<br>Velocity 100
+3|Momentary|C|Note On|Note Off|1|E3 (64)<br>Velocity 100
+4|Momentary|D|Note On|Note Off|1|F3 (65)<br>Velocity 100
+5|Analog|E|Control Change||1|Effect Controller 1<br>CC21 Value 0-127
+6|Analog|F|Control Change||1|Effect Controller 2<br>CC22 Value 0-127
