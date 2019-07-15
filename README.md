@@ -188,7 +188,7 @@ During normal operation
 
 ## Factory default configuration
 
-Profile A - Bank 1
+#### Profile A - Bank 1
 
 Pedal|Type|Name|On Press|On Release|Midi Channel
 -----|----|----|--------|----------|------------
@@ -199,7 +199,7 @@ Pedal|Type|Name|On Press|On Release|Midi Channel
 5|Analog|E|Control Change<br>CC#12 Value 0-127||1
 6|Analog|F|Control Change<br>CC#13 Value 0-127||1
 
-Profile A - Bank 2
+#### Profile A - Bank 2
 
 Pedal|Type|Name|On Press|On Release|Midi Channel
 -----|----|----|--------|----------|------------
