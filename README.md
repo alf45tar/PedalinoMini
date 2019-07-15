@@ -185,3 +185,14 @@ During normal operation
 - Press navigation RIGHT button to move to the next profile
 - Press navigation LEFT button to move to the previous profile
 - Press navigation CENTER button to save the current profile selection
+
+## Factory default configuration
+
+Pedal|Type|Name|Midi Message|Midi Channel|Midi Note/CC|Velocity
+-----|----|----|------------|------------
+1|Momentary|A|Note On/Off|1|C3 (60)|100
+2|Momentary|B|Note On/Off|1|D3 (62)|100
+3|Momentary|C|Note On/Off|1|E3 (64)|100
+4|Momentary|D|Note On/Off|1|F3 (65)|100
+5|Analog|E|Control Change|1|Effet Controller 1 (21)|0-127
+6|Analog|F|Control Change|1|Effet Controller 2 (22)|0-127
