@@ -23,52 +23,7 @@ void load_factory_default()
   theme = "bootstrap";
   blynk_set_token("");
 
-  for (byte b = 0; b < BANKS; b++)
-    for (byte p = 0; p < PEDALS; p++)
-      switch (b % 4)
-      {
-        case 0:
-          banks[b][p].pedalName[0] = 0;
-          banks[b][p].midiMessage  = PED_PROGRAM_CHANGE;
-          banks[b][p].midiChannel  = (byte)(b / 4 + 1);
-          banks[b][p].midiCode     = (byte)(b / 4 * 16 + p);
-          banks[b][p].midiValue1   = 127;
-          banks[b][p].midiValue2   = 0;
-          banks[b][p].midiValue3   = 65;
-          break;
-
-        case 1:
-          banks[b][p].pedalName[0] = 0;
-          banks[b][p].midiMessage  = PED_CONTROL_CHANGE;
-          banks[b][p].midiChannel  = (byte)(b / 4 + 1);
-          banks[b][p].midiCode     = (byte)(b / 4 * 16 + p);
-          banks[b][p].midiValue1   = 127;
-          banks[b][p].midiValue2   = 0;
-          banks[b][p].midiValue3   = 65;
-          break; 
-
-        case 2:
-          banks[b][p].pedalName[0] = 0;
-          banks[b][p].midiMessage  = PED_NOTE_ON_OFF;
-          banks[b][p].midiChannel  = (byte)(b / 4 + 1);
-          banks[b][p].midiCode     = (byte)(b / 4 * 16 + p);
-          banks[b][p].midiValue1   = 127;
-          banks[b][p].midiValue2   = 0;
-          banks[b][p].midiValue3   = 65;
-          break;
-
-        case 3:
-          banks[b][p].pedalName[0] = 0;
-          banks[b][p].midiMessage  = PED_PITCH_BEND;
-          banks[b][p].midiChannel  = (byte)(b / 4 + 1);
-          banks[b][p].midiCode     = (byte)(b / 4 * 16 + p);
-          banks[b][p].midiValue1   = 127;
-          banks[b][p].midiValue2   = 0;
-          banks[b][p].midiValue3   = 65;
-          break;
-      }
-
-  for (byte p = 0; p < PEDALS; p++)
+  for (byte p = 0; p < PEDALS-2; p++)
     pedals[p] = {PED_MIDI,       // function
                  PED_ENABLE,     // autosensing
                  PED_MOMENTARY1, // mode
@@ -83,15 +38,6 @@ void load_factory_default()
                  millis(),       // last time switch 2 status changed
                  nullptr, nullptr, nullptr, nullptr, nullptr
                 };
-
-  for (byte i = 0; i < INTERFACES; i++) 
-    {
-      interfaces[i].midiIn      = PED_ENABLE;
-      interfaces[i].midiOut     = PED_ENABLE;
-      interfaces[i].midiThru    = PED_DISABLE;
-      interfaces[i].midiRouting = PED_ENABLE;
-      interfaces[i].midiClock   = PED_DISABLE;
-    };
 
   pedals[PEDALS-2] = {PED_MIDI,       // function
                       PED_ENABLE,     // autosensing
@@ -123,113 +69,124 @@ void load_factory_default()
                       nullptr, nullptr, nullptr, nullptr, nullptr
                       };
 
-  banks[0][0].pedalName[0] = 'A';
-  banks[0][0].pedalName[1] = 0;
-  banks[0][0].midiMessage  = PED_NOTE_ON_OFF;
-  banks[0][0].midiChannel  = 1;
-  banks[0][0].midiCode     = 60;  // C3
-  banks[0][0].midiValue1   = 100;
-  banks[0][0].midiValue2   = 0;
-  banks[0][0].midiValue3   = 0;
+  for (byte b = 0; b < BANKS; b = b + 2) {
+    banks[b][0].pedalName[0] = 'A';
+    banks[b][0].pedalName[1] = 0;
+    banks[b][0].midiMessage  = PED_NOTE_ON_OFF;
+    banks[b][0].midiChannel  = (b + 2) / 2;
+    banks[b][0].midiCode     = 60;  // C3
+    banks[b][0].midiValue1   = 100;
+    banks[b][0].midiValue2   = 0;
+    banks[b][0].midiValue3   = 0;
 
-  banks[0][1].pedalName[0] = 'B';
-  banks[0][1].pedalName[1] = 0;
-  banks[0][1].midiMessage  = PED_NOTE_ON_OFF;
-  banks[0][1].midiChannel  = 1;
-  banks[0][1].midiCode     = 62;  // D3
-  banks[0][1].midiValue1   = 100;
-  banks[0][1].midiValue2   = 0;
-  banks[0][1].midiValue3   = 0;
+    banks[b][1].pedalName[0] = 'B';
+    banks[b][1].pedalName[1] = 0;
+    banks[b][1].midiMessage  = PED_NOTE_ON_OFF;
+    banks[b][1].midiChannel  = (b + 2) / 2;
+    banks[b][1].midiCode     = 62;  // D3
+    banks[b][1].midiValue1   = 100;
+    banks[b][1].midiValue2   = 0;
+    banks[b][1].midiValue3   = 0;
 
-  banks[0][2].pedalName[0] = 'C';
-  banks[0][2].pedalName[1] = 0;
-  banks[0][2].midiMessage  = PED_NOTE_ON_OFF;
-  banks[0][2].midiChannel  = 1;
-  banks[0][2].midiCode     = 64;  // E3
-  banks[0][2].midiValue1   = 100;
-  banks[0][2].midiValue2   = 0;
-  banks[0][2].midiValue3   = 0;
+    banks[b][2].pedalName[0] = 'C';
+    banks[b][2].pedalName[1] = 0;
+    banks[b][2].midiMessage  = PED_NOTE_ON_OFF;
+    banks[b][2].midiChannel  = (b + 2) / 2;
+    banks[b][2].midiCode     = 64;  // E3
+    banks[b][2].midiValue1   = 100;
+    banks[b][2].midiValue2   = 0;
+    banks[b][2].midiValue3   = 0;
 
-  banks[0][3].pedalName[0] = 'D';
-  banks[0][3].pedalName[1] = 0;
-  banks[0][3].midiMessage  = PED_NOTE_ON_OFF;
-  banks[0][3].midiChannel  = 1;
-  banks[0][3].midiCode     = 65;  // F3
-  banks[0][3].midiValue1   = 100;
-  banks[0][3].midiValue2   = 0;
-  banks[0][3].midiValue3   = 0;
+    banks[b][3].pedalName[0] = 'D';
+    banks[b][3].pedalName[1] = 0;
+    banks[b][3].midiMessage  = PED_NOTE_ON_OFF;
+    banks[b][3].midiChannel  = (b + 2) / 2;
+    banks[b][3].midiCode     = 65;  // F3
+    banks[b][3].midiValue1   = 100;
+    banks[b][3].midiValue2   = 0;
+    banks[b][3].midiValue3   = 0;
 
-  banks[0][4].pedalName[0] = 'E';
-  banks[0][4].pedalName[1] = 0;
-  banks[0][4].midiMessage  = PED_CONTROL_CHANGE;
-  banks[0][4].midiChannel  = 1;
-  banks[0][4].midiCode     = 12;  // Effect Controller 1
-  banks[0][4].midiValue1   = 0;
-  banks[0][4].midiValue2   = 0;
-  banks[0][4].midiValue3   = 0;
+    banks[b][4].pedalName[0] = 'E';
+    banks[b][4].pedalName[1] = 0;
+    banks[b][4].midiMessage  = PED_CONTROL_CHANGE;
+    banks[b][4].midiChannel  = (b + 2) / 2;
+    banks[b][4].midiCode     = 12;  // Effect Controller 1
+    banks[b][4].midiValue1   = 0;
+    banks[b][4].midiValue2   = 0;
+    banks[b][4].midiValue3   = 0;
 
-  banks[0][5].pedalName[0] = 'F';
-  banks[0][5].pedalName[1] = 0;
-  banks[0][5].midiMessage  = PED_CONTROL_CHANGE;
-  banks[0][5].midiChannel  = 1;
-  banks[0][5].midiCode     = 13;  // Effect Controller 2
-  banks[0][5].midiValue1   = 0;
-  banks[0][5].midiValue2   = 0;
-  banks[0][5].midiValue3   = 0;
+    banks[b][5].pedalName[0] = 'F';
+    banks[b][5].pedalName[1] = 0;
+    banks[b][5].midiMessage  = PED_CONTROL_CHANGE;
+    banks[b][5].midiChannel  = (b + 2) / 2;
+    banks[b][5].midiCode     = 13;  // Effect Controller 2
+    banks[b][5].midiValue1   = 0;
+    banks[b][5].midiValue2   = 0;
+    banks[b][5].midiValue3   = 0;
 
-  banks[1][0].pedalName[0] = 'A';
-  banks[1][0].pedalName[1] = 0;
-  banks[1][0].midiMessage  = PED_CONTROL_CHANGE;
-  banks[1][0].midiChannel  = 1;
-  banks[1][0].midiCode     = 20;  // Undefined
-  banks[1][0].midiValue1   = 127;
-  banks[1][0].midiValue2   = 0;
-  banks[1][0].midiValue3   = 0;
+    banks[b+1][0].pedalName[0] = 'A';
+    banks[b+1][0].pedalName[1] = 0;
+    banks[b+1][0].midiMessage  = PED_CONTROL_CHANGE;
+    banks[b+1][0].midiChannel  = (b + 2) / 2;
+    banks[b+1][0].midiCode     = 20;  // Undefined
+    banks[b+1][0].midiValue1   = 127;
+    banks[b+1][0].midiValue2   = 0;
+    banks[b+1][0].midiValue3   = 0;
 
-  banks[1][1].pedalName[0] = 'B';
-  banks[1][1].pedalName[1] = 0;
-  banks[1][1].midiMessage  = PED_CONTROL_CHANGE;
-  banks[1][1].midiChannel  = 1;
-  banks[1][1].midiCode     = 21;  // Undefined
-  banks[1][1].midiValue1   = 127;
-  banks[1][1].midiValue2   = 0;
-  banks[1][1].midiValue3   = 0;
+    banks[b+1][1].pedalName[0] = 'B';
+    banks[b+1][1].pedalName[1] = 0;
+    banks[b+1][1].midiMessage  = PED_CONTROL_CHANGE;
+    banks[b+1][1].midiChannel  = (b + 2) / 2;
+    banks[b+1][1].midiCode     = 21;  // Undefined
+    banks[b+1][1].midiValue1   = 127;
+    banks[b+1][1].midiValue2   = 0;
+    banks[b+1][1].midiValue3   = 0;
 
-  banks[1][2].pedalName[0] = 'C';
-  banks[1][2].pedalName[1] = 0;
-  banks[1][2].midiMessage  = PED_CONTROL_CHANGE;
-  banks[1][2].midiChannel  = 1;
-  banks[1][2].midiCode     = 22;  // Undefined
-  banks[1][2].midiValue1   = 127;
-  banks[1][2].midiValue2   = 0;
-  banks[1][2].midiValue3   = 0;
+    banks[b+1][2].pedalName[0] = 'C';
+    banks[b+1][2].pedalName[1] = 0;
+    banks[b+1][2].midiMessage  = PED_CONTROL_CHANGE;
+    banks[b+1][2].midiChannel  = (b + 2) / 2;
+    banks[b+1][2].midiCode     = 22;  // Undefined
+    banks[b+1][2].midiValue1   = 127;
+    banks[b+1][2].midiValue2   = 0;
+    banks[b+1][2].midiValue3   = 0;
 
-  banks[1][3].pedalName[0] = 'D';
-  banks[1][3].pedalName[1] = 0;
-  banks[1][3].midiMessage  = PED_CONTROL_CHANGE;
-  banks[1][3].midiChannel  = 1;
-  banks[1][3].midiCode     = 23;  // Undefined
-  banks[1][3].midiValue1   = 127;
-  banks[1][3].midiValue2   = 0;
-  banks[1][3].midiValue3   = 0;
+    banks[b+1][3].pedalName[0] = 'D';
+    banks[b+1][3].pedalName[1] = 0;
+    banks[b+1][3].midiMessage  = PED_CONTROL_CHANGE;
+    banks[b+1][3].midiChannel  = (b + 2) / 2;
+    banks[b+1][3].midiCode     = 23;  // Undefined
+    banks[b+1][3].midiValue1   = 127;
+    banks[b+1][3].midiValue2   = 0;
+    banks[b+1][3].midiValue3   = 0;
 
-  banks[1][4].pedalName[0] = 'E';
-  banks[1][4].pedalName[1] = 0;
-  banks[1][4].midiMessage  = PED_CONTROL_CHANGE;
-  banks[1][4].midiChannel  = 1;
-  banks[1][4].midiCode     = 12;  // Effect Controller 1
-  banks[1][4].midiValue1   = 0;
-  banks[1][4].midiValue2   = 0;
-  banks[1][4].midiValue3   = 0;
+    banks[b+1][4].pedalName[0] = 'E';
+    banks[b+1][4].pedalName[1] = 0;
+    banks[b+1][4].midiMessage  = PED_CONTROL_CHANGE;
+    banks[b+1][4].midiChannel  = (b + 2) / 2;
+    banks[b+1][4].midiCode     = 12;  // Effect Controller 1
+    banks[b+1][4].midiValue1   = 0;
+    banks[b+1][4].midiValue2   = 0;
+    banks[b+1][4].midiValue3   = 0;
 
-  banks[1][5].pedalName[0] = 'F';
-  banks[1][5].pedalName[1] = 0;
-  banks[1][5].midiMessage  = PED_CONTROL_CHANGE;
-  banks[1][5].midiChannel  = 1;
-  banks[1][5].midiCode     = 13;  // Effect Controller 2
-  banks[1][5].midiValue1   = 0;
-  banks[1][5].midiValue2   = 0;
-  banks[1][5].midiValue3   = 0;
+    banks[b+1][5].pedalName[0] = 'F';
+    banks[b+1][5].pedalName[1] = 0;
+    banks[b+1][5].midiMessage  = PED_CONTROL_CHANGE;
+    banks[b+1][5].midiChannel  = (b + 2) / 2;
+    banks[b+1][5].midiCode     = 13;  // Effect Controller 2
+    banks[b+1][5].midiValue1   = 0;
+    banks[b+1][5].midiValue2   = 0;
+    banks[b+1][5].midiValue3   = 0;
+  }
+
+  for (byte i = 0; i < INTERFACES; i++) 
+    {
+      interfaces[i].midiIn      = PED_ENABLE;
+      interfaces[i].midiOut     = PED_ENABLE;
+      interfaces[i].midiThru    = PED_DISABLE;
+      interfaces[i].midiRouting = PED_ENABLE;
+      interfaces[i].midiClock   = PED_DISABLE;
+    };
 }
 
 void eeprom_update_device_name(String name = host)
