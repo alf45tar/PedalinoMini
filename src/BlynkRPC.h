@@ -95,15 +95,6 @@ WidgetLCD  blynkLCD(V0);
 String     ssid("");
 String     password("");
 
-void screen_update(bool);
-void eeprom_update_current_profile(byte);
-bool auto_reconnect(String ssid = "", String password = "");
-bool smart_config();
-bool ap_connect(String ssid = "", String password = "");
-#ifdef WIFI
-String translateEncryptionType(wifi_auth_mode_t);
-#endif
-
 
 void blynk_setup()
 {

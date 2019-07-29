@@ -348,4 +348,13 @@ void   blynk_connect();
 void   blynk_disconnect();
 void   blynk_refresh();
 
+void   screen_update(bool);
+void   eeprom_update_current_profile(byte);
+bool   auto_reconnect(String ssid = "", String password = "");
+bool   smart_config();
+bool   ap_connect(String ssid = "", String password = "");
+#ifdef WIFI
+String translateEncryptionType(wifi_auth_mode_t);
+#endif
+
 #endif // _PEDALINO_H

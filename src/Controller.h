@@ -994,6 +994,7 @@ void controller_setup()
       case PED_PREVIOUS:    DPRINT("PREVIOUS  "); break;
       case PED_BPM_PLUS:    DPRINT("BPM+      "); break;
       case PED_BPM_MINUS:   DPRINT("BPM-      "); break;
+      default:              DPRINT("          "); break;
     }
     DPRINT("   ");
     switch (pedals[i].mode) {
@@ -1005,6 +1006,7 @@ void controller_setup()
       case PED_ANALOG:      DPRINT("ANALOG    "); break;
       case PED_JOG_WHEEL:   DPRINT("JOG_WHEEL "); break;
       case PED_LADDER:      DPRINT("LADDER    "); break;
+      default:              DPRINT("          "); break;
     }
     DPRINT("   ");
     switch (pedals[i].pressMode) {
@@ -1015,6 +1017,7 @@ void controller_setup()
       case PED_PRESS_1_L:   DPRINT("PRESS_1_L  "); break;
       case PED_PRESS_1_2_L: DPRINT("PRESS_1_2_L"); break;
       case PED_PRESS_2_L:   DPRINT("PRESS_2_L  "); break;
+      default:              DPRINT("           "); break;
     }
     DPRINT("   ");
     switch (pedals[i].invertPolarity) {
