@@ -22,8 +22,6 @@ inline void blynk_connect() {}
 inline void blynk_disconnect() {}
 inline void blynk_run() {}
 inline void blynk_refresh() {}
-bool auto_reconnect(String ssid = "", String password = "");
-bool ap_connect(String ssid = "", String password = "");
 #else
 
 #define BLYNK_RETRY_CONNECTION    60      // If fail retry Blynk Cloud connection after 60 seconds
