@@ -185,6 +185,8 @@ void setup()
 
   display_init();
 
+  eeprom_init_or_erase();
+
   // Reset to factory default if BOOT key is pressed and hold for alt least 12 seconds at power on
   
   pinMode(FACTORY_DEFAULT_PIN, INPUT_PULLUP);

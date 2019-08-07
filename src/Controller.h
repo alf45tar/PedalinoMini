@@ -123,81 +123,69 @@ void autosensing_setup()
   int tip;    // tip connected to an input digital pin with internal pull-up resistor
   int ring;   // ring connected to an input analog pin
   /*        */// sleeve connected to GND
-  int ring_min;
-  int ring_max;
-  Bounce debouncer;
-
-  return;
-
+  
   DPRINT("Pedal autosensing...\n");
+  analogReadResolution(ADC_RESOLUTION_BITS);
 
   for (byte p = 0; p < PEDALS; p++) {
-    pinMode(PIN_D(p), INPUT_PULLUP);
     if (pedals[p].autoSensing) {
-      debouncer.attach(PIN_D(p));
-      debouncer.interval(DEBOUNCE_INTERVAL);
-      debouncer.update();
-      tip = debouncer.read();
 
-      DPRINT("Pedal %2d   Tip Pin %2d ", p + 1, PIN_D(p));
+      pinMode(PIN_D(p), INPUT_PULLUP);
+      pinMode(PIN_A(p), INPUT_PULLUP);
+      tip  = analogRead(PIN_D(p));
+      ring = analogRead(PIN_A(p));
+
+      DPRINT("Pedal %2d   Tip Pin %2d Value %4d    Ring Pin %2d Value %4d", p + 1, PIN_D(p), tip, PIN_A(p), ring);
+
       switch (tip) {
-        case LOW:
-          DPRINT("LOW ");
-          break;
-        case HIGH:
-          DPRINT("HIGH");
-          break;
-      }
-      DPRINT("    Ring Pin A %2d ", p);
-
-      ring_min = ADC_RESOLUTION;
-      ring_max = 0;
-      for (int i = 0; i < 10; i++) {
-        ring = analogRead(PIN_A(p));
-        ring_min = _min(ring, ring_min);
-        ring_max = _max(ring, ring_max);
-
-        DPRINT("%d ", ring);
-      }
-      if ((ring_max - ring_min) > 1) {
-        if (tip == LOW) {
+        case 0:
           // tip connected to GND
-          // switch between tip and ring normally closed
-          pedals[p].mode = PED_MOMENTARY1;
+          switch (ring) {
+            case 0:
+              // tip and ring connected to GND
+              // switch between tip and ring normally closed
+              pedals[p].mode = PED_MOMENTARY1;
+              pedals[p].pressMode = PED_PRESS_1;
+              pedals[p].invertPolarity = true;
+              DPRINT(" MOMENTARY POLARITY-");
+              break;
+            case ADC_RESOLUTION-1:
+              break;
+            default:
+              break;
+          }
+          break;
+        case ADC_RESOLUTION-1:
+          // tip not connected (pull up resistor)
+          switch (ring) {
+            case 0:
+              break;
+            case ADC_RESOLUTION-1:
+              // tip and ring not connected (pul up resitor)
+              // switch between tip and ring normally open
+              pedals[p].mode = PED_MOMENTARY1;
+              pedals[p].pressMode = PED_PRESS_1;
+              DPRINT(" MOMENTARY");
+              break;
+            default:
+              break;
+          }
+          break;
+        default:
+          // tip connected connected to a pot
+          pedals[p].mode = PED_ANALOG;
           pedals[p].invertPolarity = true;
-          DPRINT(" MOMENTARY POLARITY-\n");
-        }
-        else {
-          // not connected
-          pedals[p].mode = PED_MOMENTARY1;
-          pedals[p].invertPolarity = false;
-          DPRINT(" FLOATING PIN - NOT CONNECTED\n");
-        }
-      }
-      else if (ring <= 1) {
-        // ring connected to sleeve (GND)
-        // switch between tip and ring
-        pedals[p].mode = PED_MOMENTARY1;
-        if (tip == LOW) pedals[p].invertPolarity = true; // switch normally closed
-        DPRINT(" MOMENTARY");
-        if (pedals[p].invertPolarity) DPRINT(" POLARITY-");
-        DPRINT("\n");
-      }
-      else if (ring > 0) {
-        // analog
-        pedals[p].mode = PED_ANALOG;
-        pedals[p].invertPolarity = true;
-        // inititalize continuos calibration
-        pedals[p].expZero = ADC_RESOLUTION - 1;
-        pedals[p].expMax = 0;
-        DPRINT(" ANALOG POLARITY-\n");
+          // inititalize continuos calibration
+          pedals[p].expZero = ADC_RESOLUTION - 1;
+          pedals[p].expMax = 0;
+          DPRINT(" ANALOG POLARITY-");
       }
     }
     else {
-      DPRINT("Pedal %2d   autosensing disabled\n", p + 1);
+      DPRINT("Pedal %2d   autosensing disabled", p + 1);
     }
+  DPRINT("\n");  
   }
-  DPRINT("\n");
 }
 
 byte map_digital(byte p, byte value)
