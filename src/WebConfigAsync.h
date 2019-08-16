@@ -36,9 +36,10 @@ AsyncWebSocketMessageBuffer *buffer = NULL;
 
 String html((char *)0);
 
-String alert     = "";
-String uiprofile = "1";
-String uibank    = "1";
+String alert      = "";
+String uiprofile  = "1";
+String uibank     = "1";
+String uisequence = "1";
 
 
 String get_top_page(int p = 0) {
@@ -96,6 +97,10 @@ String get_top_page(int p = 0) {
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 5 ? F(" active'>") : F("'>"));
+  page += F("<a class='nav-link' href='/sequences'>Sequences</a>");
+  page += F("</li>");
+  page += F("<li class='nav-item");
+  page += (p == 6 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/options'>Options</a>");
   page += F("</li>");
   page += F("</ul>");
@@ -641,8 +646,9 @@ String get_banks_page() {
     page += F("' name='bank' value='");
     page += String(i) + F("'>") + String(i) + F("</button></form>");
   }
+
   page += F("</div>");
-  
+
   page += F("<p></p>");
 
   page += F("<form method='post'>");
@@ -660,7 +666,7 @@ String get_banks_page() {
   page += F("<span class='badge badge-primary'>MIDI Channel</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>MIDI Code/Note</span>");
+  page += F("<span class='badge badge-primary'>MIDI Code/Note/Sequence</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>MIDI Value 1</span>");
@@ -725,6 +731,10 @@ String get_banks_page() {
     page += String(PED_PROGRAM_CHANGE_DEC) + F("'");
     if (banks[b-1][i-1].midiMessage == PED_PROGRAM_CHANGE_DEC) page += F(" selected");
     page += F(">Program Change-</option>");
+    page += F("<option value='");
+    page += String(PED_SEQUENCE) + F("'");
+    if (banks[b-1][i-1].midiMessage == PED_SEQUENCE) page += F(" selected");
+    page += F(">Sequence</option>");
     page += F("</select>");
     page += F("</div>");
 
@@ -1173,6 +1183,147 @@ String get_interfaces_page() {
   return page;
 }
 
+String get_sequences_page() {
+
+  String page = "";
+  const byte s = constrain(uisequence.toInt(), 0, SEQUENCES);
+
+  page += get_top_page(5);
+
+  page += F("<div class='btn-group'>");
+  for (unsigned int i = 1; i <= SEQUENCES; i++) {
+    page += F("<form method='get'><button type='button submit' class='btn");
+    page += (uisequence == String(i) ? String(" btn-primary") : String(""));
+    page += F("' name='sequence' value='");
+    page += String(i) + F("'>") + String(i) + F("</button></form>");
+  }
+  page += F("</div>");
+  
+  page += F("<p></p>");
+
+  page += F("<form method='post'>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-1 text-center'>");
+  page += F("<span class='badge badge-primary'>Order</span>");
+  page += F("</div>");
+  page += F("<div class='col-2'>");
+  page += F("<span class='badge badge-primary'>MIDI Message</span>");
+  page += F("</div>");
+  page += F("<div class='col-2'>");
+  page += F("<span class='badge badge-primary'>MIDI Code/Note/Sequence</span>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>MIDI Value 1</span>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>MIDI Value 2</span>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>MIDI Value 3</span>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  for (unsigned int i = 1; i <= STEPS; i++) {
+    page += F("<div class='col-1 mb-3 text-center'>");
+    page += String(i);
+    page += F("</div>");
+
+    page += F("<div class='col-2'>");
+    page += F("<select class='custom-select custom-select-sm' name='message");
+    page += String(i);
+    page += F("'>");
+    page += F("<option value='");
+    page += String(PED_NONE) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_NONE) page += F(" selected");
+    page += F("></option>");
+    page += F("<option value='");
+    page += String(PED_PROGRAM_CHANGE) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_PROGRAM_CHANGE) page += F(" selected");
+    page += F(">Program Change</option>");
+    page += F("<option value='");
+    page += String(PED_CONTROL_CHANGE) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
+    page += F(">Control Change</option>");
+    page += F("<option value='");
+    page += String(PED_NOTE_ON_OFF) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_NOTE_ON_OFF) page += F(" selected");
+    page += F(">Note On/Off</option>");
+    page += F("<option value='");
+    page += String(PED_PITCH_BEND) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_PITCH_BEND) page += F(" selected");
+    page += F(">Pitch Bend</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_SELECT_INC) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_BANK_SELECT_INC) page += F(" selected");
+    page += F(">Bank Select+</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_SELECT_DEC) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_BANK_SELECT_DEC) page += F(" selected");
+    page += F(">Bank Select-</option>");
+    page += F("<option value='");
+    page += String(PED_PROGRAM_CHANGE_INC) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_PROGRAM_CHANGE_INC) page += F(" selected");
+    page += F(">Program Change+</option>");
+    page += F("<option value='");
+    page += String(PED_PROGRAM_CHANGE_DEC) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_PROGRAM_CHANGE_DEC) page += F(" selected");
+    page += F(">Program Change-</option>");
+    page += F("<option value='");
+    page += String(PED_SEQUENCE) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_SEQUENCE) page += F(" selected");
+    page += F(">Sequence</option>");
+    page += F("</select>");
+    page += F("</div>");
+
+    page += F("<div class='col-2'>");
+    page += F("<input type='number' class='form-control form-control-sm' name='code");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(sequences[s-1][i-1].midiCode);
+    page += F("'></div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<input type='number' class='form-control form-control-sm' name='value1");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(sequences[s-1][i-1].midiValue1);
+    page += F("'></div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<input type='number' class='form-control form-control-sm' name='value2");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(sequences[s-1][i-1].midiValue2);
+    page += F("'></div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<input type='number' class='form-control form-control-sm' name='value3");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(sequences[s-1][i-1].midiValue3);
+    page += F("'></div>");
+
+    page += F("<div class='w-100'></div>");
+  }
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-auto'>");
+  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
+
+  page += get_footer_page();
+
+  return page;
+}
+
 String get_options_page() {
 
   String        page = "";
@@ -1199,7 +1350,7 @@ String get_options_page() {
                                  "united",
                                  "yeti"};
 
-  page += get_top_page(5);
+  page += get_top_page(6);
 
   page += F("<form method='post'>");
 
@@ -1241,6 +1392,28 @@ String get_options_page() {
   page += F("<div class='col-10'>");
   page += F("<div class='shadow p-3 bg-white rounded'>");
   page += F("<p>Changing default theme require internet connection because themes are served via a CDN network. Only default 'bootstrap' theme has been stored into Pedalino flash memory.</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  page += F("<label for='sendOnBankSwitch' class='col-2 col-form-label'>Bank Switch</label>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='repeatOnBankSwitch' name='repeatonbankswitch'");
+  if (repeatOnBankSwitch) page += F(" checked");
+  page += F(">");
+  page += F("<label class='custom-control-label' for='repeatOnBankSwitch'>Send last MIDI message on bank switch</label>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='w-100'></div>");
+  page += F("<div class='col-2'>");
+  page += F("</div>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
+  page += F("<p>On bank switch repeat the last MIDI message that was sent for that bank.</p>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -1341,6 +1514,20 @@ size_t get_interfaces_page_chunked(uint8_t *buffer, size_t maxLen, size_t index)
   return byteWritten;
 }
 
+size_t get_sequences_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  static bool rebuild = true;
+
+  if (rebuild) {
+    html = get_sequences_page();
+    rebuild = false;
+  }
+  html.getBytes(buffer, maxLen, index);
+  size_t byteWritten = strlen((const char *)buffer);
+  rebuild = (byteWritten == 0);
+  return byteWritten;
+}
+
 size_t get_options_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
   static bool rebuild = true;
@@ -1416,6 +1603,15 @@ void http_handle_interfaces(AsyncWebServerRequest *request) {
   http_handle_globals(request);
   //request->send(200, "text/html", get_interfaces_page());
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_interfaces_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
+
+void http_handle_sequences(AsyncWebServerRequest *request) {
+  http_handle_globals(request);
+  if (request->hasArg("sequence"))  uisequence  = request->arg("sequence");
+  //request->send(200, "text/html", get_banks_page());
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_sequences_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
 }
@@ -1547,11 +1743,49 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
   request->send(200, "text/html", get_interfaces_page());
 }
 
+void http_handle_post_sequences(AsyncWebServerRequest *request) {
+  
+  String     a;
+  const byte s = constrain(uisequence.toInt() - 1, 0, SEQUENCES);
+  
+  for (unsigned int i = 0; i < STEPS; i++) {
+    a = request->arg(String("message") + String(i+1));
+    sequences[s][i].midiMessage = a.toInt();
+  
+    a = request->arg(String("code") + String(i+1));
+    sequences[s][i].midiCode = a.toInt();
+
+    a = request->arg(String("value1") + String(i+1));
+    sequences[s][i].midiValue1 = a.toInt();
+    
+    a = request->arg(String("value2") + String(i+1));
+    sequences[s][i].midiValue2 = a.toInt();
+
+    a = request->arg(String("value3") + String(i+1));
+    sequences[s][i].midiValue3 = a.toInt();
+  }
+  eeprom_update_profile();
+  blynk_refresh();
+  alert = "Saved";
+  request->send(200, "text/html", get_sequences_page());
+}
+
 void http_handle_post_options(AsyncWebServerRequest *request) {
 
   const String checked("on");
   
   http_handle_globals(request);
+
+  if (request->arg("repeatonbankswitch") == checked) {
+    repeatOnBankSwitch = true;
+    eeprom_update_repeat_on_bank_switch_enable(true);
+    alert = "Saved";
+  }
+  else {
+    repeatOnBankSwitch = false;
+    eeprom_update_repeat_on_bank_switch_enable(false);
+    alert = "Saved";
+  }
 
   if (request->arg("blynkcloud") == checked) {
     blynk_enable();
@@ -1902,6 +2136,8 @@ void http_setup() {
   httpServer.on("/banks",       HTTP_POST,  http_handle_post_banks);
   httpServer.on("/pedals",      HTTP_GET,   http_handle_pedals);
   httpServer.on("/pedals",      HTTP_POST,  http_handle_post_pedals);
+  httpServer.on("/sequences",   HTTP_GET,   http_handle_sequences);
+  httpServer.on("/sequences",   HTTP_POST,  http_handle_post_sequences);
   httpServer.on("/interfaces",  HTTP_GET,   http_handle_interfaces);
   httpServer.on("/interfaces",  HTTP_POST,  http_handle_post_interfaces);
   httpServer.on("/options",     HTTP_GET,   http_handle_options);

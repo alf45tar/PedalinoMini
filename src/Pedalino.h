@@ -19,6 +19,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define PROFILES          3
 #define BANKS            10
 #define PEDALS            6
+#define SEQUENCES        20
+#define STEPS            10   // number of steps for each sequence
 
 #define MAXPEDALNAME     10
 
@@ -62,14 +64,15 @@ typedef uint8_t   byte;
 #define PED_BOOT_AP_NO_BLE      4
 #define PED_FACTORY_DEFAULT     5
 
-#define PED_PROGRAM_CHANGE      0
-#define PED_CONTROL_CHANGE      1
-#define PED_NOTE_ON_OFF         2
-#define PED_PITCH_BEND          3
-#define PED_BANK_SELECT_INC     4
-#define PED_BANK_SELECT_DEC     5
-#define PED_PROGRAM_CHANGE_INC  6
-#define PED_PROGRAM_CHANGE_DEC  7
+#define PED_PROGRAM_CHANGE      1
+#define PED_CONTROL_CHANGE      2
+#define PED_NOTE_ON_OFF         3
+#define PED_PITCH_BEND          4
+#define PED_BANK_SELECT_INC     5
+#define PED_BANK_SELECT_DEC     6
+#define PED_PROGRAM_CHANGE_INC  7
+#define PED_PROGRAM_CHANGE_DEC  8
+#define PED_SEQUENCE            9
 
 #define PED_NONE                0
 #define PED_MOMENTARY1          1
@@ -146,14 +149,15 @@ typedef uint8_t   byte;
 
 struct bank {
   char                   pedalName[MAXPEDALNAME+1];
-  byte                   midiMessage;     /* 0 = Program Change,
-                                             1 = Control Code
-                                             2 = Note On/Note Off
-                                             3 = Pitch Bend 
-                                             4 = Bank Select+
-                                             5 = Bank Select-
-                                             6 = Program Change+
-                                             7 = Program Change- */
+  byte                   midiMessage;     /* 1 = Program Change,
+                                             2 = Control Code
+                                             3 = Note On/Note Off
+                                             4 = Pitch Bend 
+                                             5 = Bank Select+
+                                             6 = Bank Select-
+                                             7 = Program Change+
+                                             8 = Program Change-
+                                             9 = Sequence */
   byte                   midiChannel;     /* MIDI channel 1-16 */
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue1;      /* Single click */
@@ -208,8 +212,42 @@ struct interface {
   byte                   midiClock;       // 0 = disable, 1 = enable
 };
 
+struct sequence {
+  byte                   midiMessage;     /* 0 = None
+                                             1 = Program Change,
+                                             2 = Control Code
+                                             3 = Note On/Note Off
+                                             4 = Pitch Bend 
+                                             5 = Bank Select+
+                                             6 = Bank Select-
+                                             7 = Program Change+
+                                             8 = Program Change-
+                                             9 = Sequence */
+  byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
+  byte                   midiValue1;      /* Single click */
+  byte                   midiValue2;      /* Double click */
+  byte                   midiValue3;      /* Long click */
+};
+
+struct message {
+  byte                   midiMessage;     /* 0 = None
+                                             1 = Program Change,
+                                             2 = Control Code
+                                             3 = Note On/Note Off
+                                             4 = Pitch Bend 
+                                             5 = Bank Select+
+                                             6 = Bank Select-
+                                             7 = Program Change+
+                                             8 = Program Change-
+                                             9 = Sequence */
+  byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
+  byte                   midiValue;       /* Control Code value, Note velocity */
+  byte                   midiChannel;     /* MIDI channel 1-16 */
+};
+
 bank      banks[BANKS][PEDALS];                   // Banks Setup
 pedal     pedals[PEDALS];                         // Pedals Setup
+sequence  sequences[SEQUENCES][STEPS];            // Sequences Setup
 
 interface interfaces[] = {
                            "USB MIDI   ", 1, 1, 0, 1, 0,
@@ -219,6 +257,9 @@ interface interfaces[] = {
                            "BLE MIDI   ", 1, 1, 0, 1, 0,
                            "OSC        ", 1, 1, 0, 1, 0
                           };                       // Interfaces Setup
+
+bool      repeatOnBankSwitch = false;
+message   lastMIDIMessage[BANKS]; 
 
 byte bootMode                 = PED_BOOT_NORMAL;
 volatile byte currentProfile  = 0;

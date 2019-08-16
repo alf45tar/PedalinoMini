@@ -304,6 +304,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendNoteOn(code, value, channel);
         OSCSendNoteOn(code, value, channel);
         screen_info(midi::NoteOn, code, value, channel);
+        lastMIDIMessage[currentBank] = {PED_NOTE_ON_OFF, code, value, channel};
       }
       else {
         DPRINT("NOTE OFF....Note %3d......Velocity %3d.....Channel %2d\n", code, value, channel);
@@ -314,6 +315,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendNoteOff(code, value, channel);
         OSCSendNoteOff(code, value, channel);
         screen_info(midi::NoteOff, code, value, channel);
+        lastMIDIMessage[currentBank] = {PED_NOTE_ON_OFF, code, value, channel};
       }
       break;
 
@@ -327,6 +329,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
       BLESendControlChange(code, value, channel);
       OSCSendControlChange(code, value, channel);
       screen_info(midi::ControlChange, code, value, channel);
+      lastMIDIMessage[currentBank] = {PED_CONTROL_CHANGE, code, value, channel};
       break;
 
     case PED_PROGRAM_CHANGE:
@@ -342,6 +345,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendProgramChange(code, channel);
         OSCSendProgramChange(code, channel);
         screen_info(midi::ProgramChange, code, 0, channel);
+        lastMIDIMessage[currentBank] = {PED_PROGRAM_CHANGE, code, 0, channel};
       }
       break;
 
@@ -695,6 +699,11 @@ void refresh_switch_12L(byte i)
             currentBank = 0;
             break;
         }
+        if (repeatOnBankSwitch)
+          midi_send(lastMIDIMessage[currentBank].midiMessage,
+                    lastMIDIMessage[currentBank].midiCode,
+                    lastMIDIMessage[currentBank].midiValue, 
+                    lastMIDIMessage[currentBank].midiChannel);
         break;
 
       case PED_BANK_MINUS:
@@ -710,6 +719,11 @@ void refresh_switch_12L(byte i)
             currentBank = BANKS - 1;
             break;
         }
+        if (repeatOnBankSwitch)
+          midi_send(lastMIDIMessage[currentBank].midiMessage,
+                    lastMIDIMessage[currentBank].midiCode,
+                    lastMIDIMessage[currentBank].midiValue, 
+                    lastMIDIMessage[currentBank].midiChannel);
         break;
 
       case PED_START:

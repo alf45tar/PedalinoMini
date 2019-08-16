@@ -188,6 +188,16 @@ void load_factory_default()
       interfaces[i].midiRouting = PED_ENABLE;
       interfaces[i].midiClock   = PED_DISABLE;
     };
+
+  for (byte s = 0; s < SEQUENCES; s++) {
+    for (byte t = 0; t < STEPS; t++) {
+      sequences[s][t].midiMessage  = PED_NONE;
+      sequences[s][t].midiCode     = 0;
+      sequences[s][t].midiValue1   = 0;
+      sequences[s][t].midiValue2   = 0;
+      sequences[s][t].midiValue3   = 0;
+    }
+  }
 }
 
 void eeprom_update_device_name(String name = host)
@@ -220,6 +230,16 @@ void eeprom_update_current_profile(byte profile = currentProfile)
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global][Current Profile]: %d\n", profile);
+}
+
+void eeprom_update_repeat_on_bank_switch_enable(bool enable = true)
+{
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putBool("Bank Switch", enable);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global[Bank Switch]: %d\n", enable);
 }
 
 void eeprom_update_blynk_cloud_enable(bool enable = true)
@@ -273,6 +293,7 @@ void eeprom_update_profile(byte profile = currentProfile)
   preferences.putBytes("Banks", &banks, sizeof(banks));
   preferences.putBytes("Pedals", &pedals, sizeof(pedals));
   preferences.putBytes("Interfaces", &interfaces, sizeof(interfaces));
+  preferences.putBytes("Sequences", &sequences, sizeof(sequences));
   preferences.putUChar("Current Bank", currentBank);
   preferences.putUChar("Current MTC", currentMidiTimeCode);
   preferences.putString("SSID", wifiSSID);
@@ -293,6 +314,7 @@ void eeprom_read_global()
   wifiPassword   = preferences.getString("Password");
   theme          = preferences.getString("Bootstrap Theme");
   currentProfile = preferences.getUChar("Current Profile");
+  repeatOnBankSwitch = preferences.getBool("Bank Switch");
   preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
   blynk_set_token(preferences.getString("Blynk Token"));
   preferences.end();
@@ -329,6 +351,7 @@ void eeprom_read_profile(byte profile = currentProfile)
   preferences.getBytes("Banks", &banks, sizeof(banks));
   preferences.getBytes("Pedals", &pedals, sizeof(pedals));
   preferences.getBytes("Interfaces", &interfaces, sizeof(interfaces));
+  preferences.getBytes("Sequences", &sequences, sizeof(sequences));
   currentBank         = preferences.getUChar("Current Bank");
   currentMidiTimeCode = preferences.getUChar("Current MTC");
   preferences.end();
@@ -369,6 +392,7 @@ void eeprom_initialize()
   eeprom_update_wifi_credentials();
   eeprom_update_theme();
   eeprom_update_current_profile(0);
+  eeprom_update_repeat_on_bank_switch_enable(false);
   eeprom_update_blynk_cloud_enable(false);
   eeprom_update_blynk_auth_token();
   load_factory_default();
@@ -381,6 +405,7 @@ void eeprom_initialize()
 
 void eeprom_init_or_erase()
 {
+  load_factory_default();
   esp_err_t err = nvs_flash_init();
   if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
       // NVS partition was truncated and needs to be erased
