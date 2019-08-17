@@ -293,6 +293,9 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
 {
   switch (message) {
 
+    case PED_NONE:
+      break;
+
     case PED_NOTE_ON_OFF:
 
       if (on_off && value > 0) {
@@ -387,6 +390,15 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         OSCSendControlChange(midi::BankSelect+32, value, channel);
         screen_info(midi::ControlChange, midi::BankSelect+32, value, channel);
       }
+      break;
+    
+    case PED_SEQUENCE:
+      code = constrain(code, 1, SEQUENCES);
+      DPRINT("SEQUENCE START.....Number %2d.....Channel %2d\n", code, channel);
+      for (byte s = 0; s < STEPS; s++)
+        midi_send(sequences[code-1][s].midiMessage, sequences[code-1][s].midiCode, sequences[code-1][s].midiValue1, channel, on_off);
+      DPRINT("SEQUENCE STOP......Number %2d.....Channel %2d\n", code, channel);
+      lastMIDIMessage[currentBank] = {PED_SEQUENCE, code, value, channel};
       break;
   }
 }
