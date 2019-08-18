@@ -34,17 +34,16 @@ AsyncEventSource             events("/events");    // EventSource is single dire
 AsyncWebSocketMessageBuffer *buffer = NULL;
 #endif
 
-String html((char *)0);
-
+String page       = "";
 String alert      = "";
 String uiprofile  = "1";
 String uibank     = "1";
 String uisequence = "1";
 
 
-String get_top_page(int p = 0) {
+void get_top_page(int p = 0) {
 
-  String page = "";
+  page = "";
 
   page += F("<!doctype html>");
   page += F("<html lang='en'>");
@@ -145,13 +144,10 @@ String get_top_page(int p = 0) {
   }
 
   page += F("<p></p>");
-
-  return page;
 }
 
-String get_footer_page() {
+void get_footer_page() {
 
-  String page = "";
   //page += F("<nav class='navbar align-items-end navbar-light bg-light'>");
   //page += F("<a class='navbar-text' href='https://github.com/alf45tar/PedalinoMini'>https://github.com/alf45tar/PedalinoMini</a>");
   //page += F("</nav>");
@@ -168,15 +164,11 @@ String get_footer_page() {
 #endif
   page += F("</body>");
   page += F("</html>");
-
-  return page;
 }
 
-String get_login_page() {
+void get_login_page() {
 
-  String page = "";
-
-  page += get_top_page(-1);
+  get_top_page(-1);
   
   page += F("<form class='form-signin'>");
   page += F("<div class='text-center mb-4'>");
@@ -204,16 +196,12 @@ String get_login_page() {
   page += F("<p class='mt-5 mb-3 text-muted text-center'>© 2018-2019</p>");
   page += F("</form>");
 
-  page += get_footer_page();
-
-  return page;
+  get_footer_page();
 }
 
-String get_root_page() {
+void get_root_page() {
 
-  String page = "";
-
-  page += get_top_page();
+  get_top_page();
 
   page += F("<h4 class='display-4'>Wireless MIDI foot controller</h4>");
   page += F("<p></p>");
@@ -361,16 +349,12 @@ String get_root_page() {
   page += F("</div>");
 
   page += F("</div>");
-  page += get_footer_page();
-
-  return page;
+  get_footer_page();
 }
 
-String get_live_page() {
+void get_live_page() {
 
-  String page = "";
-
-  page += get_top_page(1);
+  get_top_page(1);
 
   page += F("<div aria-live='polite' aria-atomic='true' style='position: relative;'>"
             "<div id='remotedisplay' class='toast' style='position: absolute; top: 0; right: 0;' data-autohide='false'>"
@@ -626,18 +610,16 @@ String get_live_page() {
 
             "</script>");
 
-  page += get_footer_page();
+  get_footer_page();
 
   DPRINT("/live %d bytes\n", page.length());
-  return page;
 }
 
-String get_banks_page() {
+void get_banks_page() {
 
-  String page = "";
   const byte b = constrain(uibank.toInt(), 0, BANKS);
 
-  page += get_top_page(2);
+  get_top_page(2);
 
   page += F("<div class='btn-group'>");
   for (unsigned int i = 1; i <= BANKS; i++) {
@@ -792,16 +774,12 @@ String get_banks_page() {
   page += F("</div>");
   page += F("</form>");
 
-  page += get_footer_page();
-
-  return page;
+  get_footer_page();
 }
 
-String get_pedals_page() {
+void get_pedals_page() {
 
-  String page = "";
-
-  page += get_top_page(3);
+  get_top_page(3);
 
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
@@ -1076,16 +1054,12 @@ String get_pedals_page() {
   page += F("</div>");
   page += F("</form>");
 
-  page += get_footer_page();
-
-  return page;
+  get_footer_page();
 }
 
-String get_interfaces_page() {
+void get_interfaces_page() {
 
-  String page = "";
-
-  page += get_top_page(4);
+  get_top_page(4);
 
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
@@ -1178,17 +1152,14 @@ String get_interfaces_page() {
   page += F("</div>");
   page += F("</form>");
 
-  page += get_footer_page();
-
-  return page;
+  get_footer_page();
 }
 
-String get_sequences_page() {
+void get_sequences_page() {
 
-  String page = "";
   const byte s = constrain(uisequence.toInt(), 0, SEQUENCES);
-
-  page += get_top_page(5);
+  
+  get_top_page(5);
 
   page += F("<div class='btn-group'>");
   for (unsigned int i = 1; i <= SEQUENCES; i++) {
@@ -1335,14 +1306,11 @@ String get_sequences_page() {
   page += F("</div>");
   page += F("</form>");
 
-  page += get_footer_page();
-
-  return page;
+  get_footer_page();
 }
 
-String get_options_page() {
+void get_options_page() {
 
-  String        page = "";
   const String  bootswatch[] = { "bootstrap",
                                  "cerulean",
                                  "cosmo",
@@ -1365,8 +1333,8 @@ String get_options_page() {
                                  "superhero",
                                  "united",
                                  "yeti"};
-
-  page += get_top_page(6);
+  
+  get_top_page(6);
 
   page += F("<form method='post'>");
 
@@ -1483,9 +1451,39 @@ String get_options_page() {
 
   page += F("</form>");
 
-  page += get_footer_page();
+  get_footer_page();
+}
 
-  return page;
+size_t get_root_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  static bool rebuild = true;
+
+  if (rebuild) {
+    get_root_page();
+    DPRINT("HTML page lenght: %d\n", page.length());
+    rebuild = false;
+  }
+  page.getBytes(buffer, maxLen, index);
+  size_t byteWritten = strlen((const char *)buffer);
+  rebuild = (byteWritten == 0);
+  if (rebuild) page = "";
+  return byteWritten;
+}
+
+size_t get_live_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  static bool rebuild = true;
+
+  if (rebuild) {
+    get_live_page();
+    DPRINT("HTML page lenght: %d\n", page.length());
+    rebuild = false;
+  }
+  page.getBytes(buffer, maxLen, index);
+  size_t byteWritten = strlen((const char *)buffer);
+  rebuild = (byteWritten == 0);
+  if (rebuild) page = "";
+  return byteWritten;
 }
 
 size_t get_banks_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
@@ -1493,14 +1491,14 @@ size_t get_banks_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   static bool rebuild = true;
 
   if (rebuild) {
-    html = get_banks_page();
-    DPRINT("HTML page lenght: %d\n", html.length());
+    get_banks_page();
+    DPRINT("HTML page lenght: %d\n", page.length());
     rebuild = false;
   }
-  html.getBytes(buffer, maxLen, index);
+  page.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
-  if (rebuild) html = "";
+  if (rebuild) page = "";
   return byteWritten;
 }
 
@@ -1509,14 +1507,14 @@ size_t get_pedals_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   static bool rebuild = true;
 
   if (rebuild) {
-    html = get_pedals_page();
-    DPRINT("HTML page lenght: %d\n", html.length());
+    get_pedals_page();
+    DPRINT("HTML page lenght: %d\n", page.length());
     rebuild = false;
   }
-  html.getBytes(buffer, maxLen, index);
+  page.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
-  if (rebuild) html = "";
+  if (rebuild) page = "";
   return byteWritten;
 }
 
@@ -1525,14 +1523,14 @@ size_t get_interfaces_page_chunked(uint8_t *buffer, size_t maxLen, size_t index)
   static bool rebuild = true;
 
   if (rebuild) {
-    html = get_interfaces_page();
-    DPRINT("HTML page lenght: %d\n", html.length());
+    get_interfaces_page();
+    DPRINT("HTML page lenght: %d\n", page.length());
     rebuild = false;
   }
-  html.getBytes(buffer, maxLen, index);
+  page.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
-  if (rebuild) html = "";
+  if (rebuild) page = "";
   return byteWritten;
 }
 
@@ -1541,14 +1539,14 @@ size_t get_sequences_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) 
   static bool rebuild = true;
 
   if (rebuild) {
-    html = get_sequences_page();
-    DPRINT("HTML page lenght: %d\n", html.length());
+    get_sequences_page();
+    DPRINT("HTML page lenght: %d\n", page.length());
     rebuild = false;
   }
-  html.getBytes(buffer, maxLen, index);
+  page.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
-  if (rebuild) html = "";
+  if (rebuild) page = "";
   return byteWritten;
 }
 
@@ -1557,19 +1555,20 @@ size_t get_options_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   static bool rebuild = true;
 
   if (rebuild) {
-    html = get_options_page();
-    DPRINT("HTML page lenght: %d\n", html.length());
+    get_options_page();
+    DPRINT("HTML page lenght: %d\n", page.length());
     rebuild = false;
   }
-  html.getBytes(buffer, maxLen, index);
+  page.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
-  if (rebuild) html = "";
+  if (rebuild) page = "";
   return byteWritten;
 }
 
 void http_handle_login(AsyncWebServerRequest *request) {
-  request->send(200, "text/html", get_login_page());
+  get_login_page();
+  request->send(200, "text/html", page);
 }
 
 void http_handle_post_login(AsyncWebServerRequest *request) {
@@ -1579,7 +1578,8 @@ void http_handle_post_login(AsyncWebServerRequest *request) {
         if (request->arg("password") == host)
           request->redirect("/");
   }
-  request->send(200, "text/html", get_login_page());
+  get_login_page();
+  request->send(200, "text/html", page);
 }
 
 void http_handle_globals(AsyncWebServerRequest *request) {
@@ -1599,12 +1599,20 @@ void http_handle_globals(AsyncWebServerRequest *request) {
 
 void http_handle_root(AsyncWebServerRequest *request) {
   http_handle_globals(request);
-  request->send(200, "text/html", get_root_page());
+  //get_root_page();
+  //request->send(200, "text/html", page);
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_root_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_live(AsyncWebServerRequest *request) {
   http_handle_globals(request);
-  request->send(200, "text/html", get_live_page());
+  //get_live_page();
+  //request->send(200, "text/html", page);
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_live_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_banks(AsyncWebServerRequest *request) {
@@ -1617,7 +1625,6 @@ void http_handle_banks(AsyncWebServerRequest *request) {
 }
 
 void http_handle_pedals(AsyncWebServerRequest *request) {
-  
   http_handle_globals(request);
   //request->send(200, "text/html", get_pedals_page());
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_pedals_page_chunked);
@@ -1659,7 +1666,11 @@ void http_handle_post_live(AsyncWebServerRequest *request) {
 
   blynk_refresh();
   alert = "Saved";
-  request->send(200, "text/html", get_live_page());
+  //get_live_page();
+  //request->send(200, "text/html", page);
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_live_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 
@@ -1694,7 +1705,11 @@ void http_handle_post_banks(AsyncWebServerRequest *request) {
   eeprom_update_profile();
   blynk_refresh();
   alert = "Saved";
-  request->send(200, "text/html", get_banks_page());
+  //get_banks_page();
+  //request->send(200, "text/html", page);
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_banks_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_post_pedals(AsyncWebServerRequest *request) {
@@ -1739,7 +1754,11 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
   controller_setup();
   blynk_refresh();
   alert = "Saved";
-  request->send(200, "text/html", get_pedals_page());
+  //get_pedals_page();
+  //request->send(200, "text/html", page);
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_pedals_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_post_interfaces(AsyncWebServerRequest *request) {
@@ -1766,7 +1785,11 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
   eeprom_update_profile();
   blynk_refresh();
   alert = "Saved";
-  request->send(200, "text/html", get_interfaces_page());
+  //get_interfaces_page();
+  //request->send(200, "text/html", page);
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_interfaces_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_post_sequences(AsyncWebServerRequest *request) {
@@ -1796,7 +1819,11 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
   eeprom_update_profile();
   blynk_refresh();
   alert = "Saved";
-  request->send(200, "text/html", get_sequences_page());
+  //get_sequences_page();
+  //request->send(200, "text/html", page);
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_sequences_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 void http_handle_post_options(AsyncWebServerRequest *request) {
@@ -1846,8 +1873,11 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     ESP.restart();
     alert = "Saved";
   }
-  
-  request->send(200, "text/html", get_options_page());
+  //get_options_page();
+  //request->send(200, "text/html", page);
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
 }
 
 #ifdef WEBSOCKET
@@ -1999,12 +2029,10 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 #endif  // WEBCONFIG
 
 
-String get_update_page() {
-
-  String page = "";
+void get_update_page() {
 
 #ifdef WEBCONFIG
-  page += get_top_page(5);
+  get_top_page(5);
 #else
   page += F("<!doctype html>");
   page += F("<html lang='en'>");
@@ -2018,13 +2046,11 @@ String get_update_page() {
   page += "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
 
 #ifdef WEBCONFIG
-  page += get_footer_page();
+  get_footer_page();
 #else
   page += F("</body>");
   page += F("</html>");
 #endif
-
-  return page;
 }
 
  // handler for the /update form page
@@ -2038,7 +2064,8 @@ void http_handle_update (AsyncWebServerRequest *request) {
   if (!request->authenticate("admin", "password")) {
 			return request->requestAuthentication();
 	}
-  request->send(200, "text/html", get_update_page());
+  get_update_page();
+  request->send(200, "text/html", page);
 }
 
 // handler for the /update form POST (once file upload finishes)

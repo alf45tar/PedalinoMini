@@ -246,7 +246,7 @@ struct message {
   byte                   midiChannel;     /* MIDI channel 1-16 */
 };
 
-#ifdef BOARD_HAS_PSRAM
+#ifdef __BOARD_HAS_PSRAM__
 bank**      banks;
 pedal*      pedals;
 sequence**  sequences;
