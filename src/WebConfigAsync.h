@@ -1478,11 +1478,13 @@ size_t get_banks_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
   if (rebuild) {
     html = get_banks_page();
+    DPRINT("HTML page lenght: %d\n", html.length());
     rebuild = false;
   }
   html.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
+  if (rebuild) html = "";
   return byteWritten;
 }
 
@@ -1492,11 +1494,13 @@ size_t get_pedals_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
   if (rebuild) {
     html = get_pedals_page();
+    DPRINT("HTML page lenght: %d\n", html.length());
     rebuild = false;
   }
   html.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
+  if (rebuild) html = "";
   return byteWritten;
 }
 
@@ -1506,11 +1510,13 @@ size_t get_interfaces_page_chunked(uint8_t *buffer, size_t maxLen, size_t index)
 
   if (rebuild) {
     html = get_interfaces_page();
+    DPRINT("HTML page lenght: %d\n", html.length());
     rebuild = false;
   }
   html.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
+  if (rebuild) html = "";
   return byteWritten;
 }
 
@@ -1520,11 +1526,13 @@ size_t get_sequences_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) 
 
   if (rebuild) {
     html = get_sequences_page();
+    DPRINT("HTML page lenght: %d\n", html.length());
     rebuild = false;
   }
   html.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
+  if (rebuild) html = "";
   return byteWritten;
 }
 
@@ -1534,11 +1542,13 @@ size_t get_options_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
   if (rebuild) {
     html = get_options_page();
+    DPRINT("HTML page lenght: %d\n", html.length());
     rebuild = false;
   }
   html.getBytes(buffer, maxLen, index);
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
+  if (rebuild) html = "";
   return byteWritten;
 }
 

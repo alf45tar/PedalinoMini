@@ -394,10 +394,15 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     
     case PED_SEQUENCE:
       code = constrain(code, 1, SEQUENCES);
-      DPRINT("SEQUENCE START.....Number %2d.....Channel %2d\n", code, channel);
+      DPRINT("=======================================================\n");
+      DPRINT("SEQUENCE.....Number %2d.....Channel %2d\n", code, channel);
+      DPRINT("-------------------------------------------------------\n");
       for (byte s = 0; s < STEPS; s++)
-        midi_send(sequences[code-1][s].midiMessage, sequences[code-1][s].midiCode, sequences[code-1][s].midiValue1, channel, on_off);
-      DPRINT("SEQUENCE STOP......Number %2d.....Channel %2d\n", code, channel);
+        if (on_off)
+          midi_send(sequences[code-1][s].midiMessage, sequences[code-1][s].midiCode, sequences[code-1][s].midiValue1, channel, on_off);
+        else
+          midi_send(sequences[code-1][s].midiMessage, sequences[code-1][s].midiCode, sequences[code-1][s].midiValue2, channel, on_off);
+      DPRINT("=======================================================\n");
       lastMIDIMessage[currentBank] = {PED_SEQUENCE, code, value, channel};
       break;
   }
