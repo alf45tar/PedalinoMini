@@ -192,6 +192,7 @@ void load_factory_default()
   for (byte s = 0; s < SEQUENCES; s++) {
     for (byte t = 0; t < STEPS; t++) {
       sequences[s][t].midiMessage  = PED_NONE;
+      sequences[s][t].midiChannel  = 1;
       sequences[s][t].midiCode     = 0;
       sequences[s][t].midiValue1   = 0;
       sequences[s][t].midiValue2   = 0;

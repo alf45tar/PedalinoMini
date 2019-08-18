@@ -393,15 +393,17 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
       break;
     
     case PED_SEQUENCE:
-      code = constrain(code, 1, SEQUENCES);
+      channel = constrain(channel, 1, SEQUENCES);
       DPRINT("=======================================================\n");
-      DPRINT("SEQUENCE.....Number %2d.....Channel %2d\n", code, channel);
+      DPRINT("SEQUENCE.....Number %2d\n", channel);
       DPRINT("-------------------------------------------------------\n");
       for (byte s = 0; s < STEPS; s++)
-        if (on_off)
-          midi_send(sequences[code-1][s].midiMessage, sequences[code-1][s].midiCode, sequences[code-1][s].midiValue1, channel, on_off);
+        if (sequences[channel-1][s].midiMessage == PED_CONTROL_CHANGE)
+          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, value, sequences[channel-1][s].midiChannel, on_off);
+        else if (on_off) 
+          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue1, sequences[channel-1][s].midiChannel, on_off);
         else
-          midi_send(sequences[code-1][s].midiMessage, sequences[code-1][s].midiCode, sequences[code-1][s].midiValue2, channel, on_off);
+          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue2, sequences[channel-1][s].midiChannel, on_off);
       DPRINT("=======================================================\n");
       lastMIDIMessage[currentBank] = {PED_SEQUENCE, code, value, channel};
       break;

@@ -19,7 +19,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define PROFILES          3
 #define BANKS            10
 #define PEDALS            6
-#define SEQUENCES        20
+#define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
 
 #define MAXPEDALNAME     10
@@ -223,6 +223,7 @@ struct sequence {
                                              7 = Program Change+
                                              8 = Program Change-
                                              9 = Sequence */
+  byte                   midiChannel;     /* MIDI channel 1-16 */
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue1;      /* Single click */
   byte                   midiValue2;      /* Double click */
@@ -245,9 +246,17 @@ struct message {
   byte                   midiChannel;     /* MIDI channel 1-16 */
 };
 
+#ifdef BOARD_HAS_PSRAM
+bank**      banks;
+pedal*      pedals;
+sequence**  sequences;
+message*    lastMIDIMessage;
+#else
 bank      banks[BANKS][PEDALS];                   // Banks Setup
 pedal     pedals[PEDALS];                         // Pedals Setup
 sequence  sequences[SEQUENCES][STEPS];            // Sequences Setup
+message   lastMIDIMessage[BANKS]; 
+#endif
 
 interface interfaces[] = {
                            "USB MIDI   ", 1, 1, 0, 1, 0,
@@ -259,7 +268,6 @@ interface interfaces[] = {
                           };                       // Interfaces Setup
 
 bool      repeatOnBankSwitch = false;
-message   lastMIDIMessage[BANKS]; 
 
 byte bootMode                 = PED_BOOT_NORMAL;
 volatile byte currentProfile  = 0;

@@ -666,7 +666,7 @@ String get_banks_page() {
   page += F("<span class='badge badge-primary'>MIDI Channel</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>MIDI Code/Note/Sequence</span>");
+  page += F("<span class='badge badge-primary'>MIDI Code/Note</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>MIDI Value 1</span>");
@@ -1209,8 +1209,11 @@ String get_sequences_page() {
   page += F("<div class='col-2'>");
   page += F("<span class='badge badge-primary'>MIDI Message</span>");
   page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("<span class='badge badge-primary'>MIDI Channel</span>");
+  page += F("</div>");
   page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>MIDI Code/Note/Sequence</span>");
+  page += F("<span class='badge badge-primary'>MIDI Code/Note</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("<span class='badge badge-primary'>MIDI Value 1</span>");
@@ -1278,6 +1281,19 @@ String get_sequences_page() {
     page += F("</select>");
     page += F("</div>");
 
+    page += F("<div class='col-1'>");
+    page += F("<select class='custom-select custom-select-sm' name='channel");
+    page += String(i) + F("'>");
+    for (unsigned int c = 1; c <= 16; c++) {
+      page += F("<option value='");
+      page += String(c) + F("'");
+      if (sequences[s-1][i-1].midiChannel == c) page += F(" selected");
+      page += F(">");
+      page += String(c) + F("</option>");
+    }
+    page += F("</select>");
+    page += F("</div>");
+    
     page += F("<div class='col-2'>");
     page += F("<input type='number' class='form-control form-control-sm' name='code");
     page += String(i);
@@ -1759,6 +1775,9 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
   const byte s = constrain(uisequence.toInt() - 1, 0, SEQUENCES);
   
   for (unsigned int i = 0; i < STEPS; i++) {
+    a = request->arg(String("channel") + String(i+1));
+    sequences[s][i].midiChannel = a.toInt();
+
     a = request->arg(String("message") + String(i+1));
     sequences[s][i].midiMessage = a.toInt();
   
