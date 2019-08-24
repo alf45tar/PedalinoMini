@@ -15,6 +15,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <WiFiAP.h>
 #include <ESPmDNS.h>
 #include <Update.h>
+#include <esp_wifi.h>
 #include <esp_wps.h>
 
 #define WIFI_CONNECT_TIMEOUT    15
@@ -232,20 +233,21 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_SUCCESS\n");
       wpsStatus = 1;
-      ESP_ERROR_CHECK(esp_wifi_wps_disable());
-      WiFi.begin();
+      if (WiFi.getMode() == WIFI_STA) ESP_ERROR_CHECK(esp_wifi_wps_disable());
+      //WiFi.begin();
+      ESP_ERROR_CHECK(esp_wifi_connect());
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_FAILED:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_FAILED\n");
       wpsStatus = -1;
-      ESP_ERROR_CHECK(esp_wifi_wps_disable());
+      if (WiFi.getMode() == WIFI_STA) ESP_ERROR_CHECK(esp_wifi_wps_disable());
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_TIMEOUT\n");
       wpsStatus = -2;
-      ESP_ERROR_CHECK(esp_wifi_wps_disable());
+      if (WiFi.getMode() == WIFI_STA) ESP_ERROR_CHECK(esp_wifi_wps_disable());
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_PIN:
