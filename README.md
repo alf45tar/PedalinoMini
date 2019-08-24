@@ -65,6 +65,8 @@ USB MIDI and DIN MIDI connection requires additional hardware.
 ![Schematic1](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-1.svg "Schematic1")
 ![Schematic2](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-2.svg "Schematic2")
 
+Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins will be floating. A floating pin can trigger unexpected MIDI events. As alternative you can disable the not used pedals via web interface.
+
 ## How to build and upload
 
 [PlatformIO](https://platformio.org) 4.0 is the recommended IDE for Pedalino build and upload.
@@ -160,7 +162,7 @@ Normal mode is selected if you don't press any button on boot.
 To select a different mode:
 
 - Press and release EN button (POWER button on TTGO T-Eight) and immediately after press and hold BOOT button (CENTER button on TTGO T-Eight)
-- Follow the istructions on display
+- Follow the istructions on display. Keep it pressed until the progress bar reach the end to reset to factory default. If you release the button before the progress bar reach the end PedalinoMini™ will start in one of the supported boot mode.
 
 
 ## TTGO T-Eight ESP32
