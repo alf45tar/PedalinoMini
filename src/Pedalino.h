@@ -267,7 +267,9 @@ interface interfaces[] = {
                            "OSC        ", 1, 1, 0, 1, 0
                           };                       // Interfaces Setup
 
-bool      repeatOnBankSwitch = false;
+bool  tapDanceMode            = false;
+bool  repeatOnBankSwitch      = false;
+bool  tapDanceBank            = true;
 
 byte bootMode                 = PED_BOOT_NORMAL;
 volatile byte currentProfile  = 0;

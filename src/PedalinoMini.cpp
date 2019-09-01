@@ -105,6 +105,8 @@ void IRAM_ATTR onButtonCenter()
 
 void setup()
 {
+  //esp_spiram_add_to_heapalloc();
+
   pinMode(WIFI_LED, OUTPUT);
   pinMode(BLE_LED, OUTPUT);
 

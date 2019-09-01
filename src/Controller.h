@@ -421,6 +421,7 @@ void refresh_switch_1_midi(byte i, bool send)
   state2 = false;
   if (pedals[i].debouncer[0] != nullptr) state1 = pedals[i].debouncer[0]->update();
   if (pedals[i].debouncer[1] != nullptr) state2 = pedals[i].debouncer[1]->update();
+
   if (state1 && state2) {                                                     // pin state changed
     input = pedals[i].debouncer[0]->read();                                   // reads the updated pin state
     if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;        // invert the value
@@ -460,6 +461,21 @@ void refresh_switch_1_midi(byte i, bool send)
 
       DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
 
+      if (tapDanceMode && tapDanceBank && value == LOW && send) {
+        currentBank = constrain(i, 0, BANKS - 1);
+        screen_info(midi::InvalidType, currentBank+1, 0, 0);
+        pedals[i].pedalValue[0] = value;
+        pedals[i].lastUpdate[0] = millis();
+        lastUsedSwitch = i;
+        lastUsed = i;
+        DPRINT("Bank %d\n", currentBank + 1);
+        return;
+      }
+      if (tapDanceMode && tapDanceBank && value == HIGH && send) {
+        tapDanceBank = false;
+        return;
+      }
+
       b = currentBank;
       switch (value) {
         case LOW:   // LOW = pressed
@@ -473,6 +489,7 @@ void refresh_switch_1_midi(byte i, bool send)
           break;
         case HIGH:  // HIGH = release
           if (send) {
+            tapDanceBank = true;
             bool latch = pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2;
             bank_update(banks[b][i].midiMessage, b, i, latch);
             midi_send(banks[b][i].midiMessage,
@@ -865,10 +882,10 @@ void refresh_switch_12L(byte i)
 
 void refresh_analog(byte i, bool send)
 {
-  const unsigned int SAFE_ZONE = 2^ADC_RESOLUTION_BITS / 16;
+  const int SAFE_ZONE = ADC_RESOLUTION / 20;                // 5% of margin at both end of the scale
 
-  unsigned int input;
-  unsigned int value;
+  int input;
+  int value;
 
   if (pedals[i].analogPedal == nullptr) return;             // sanity check
 
@@ -882,10 +899,14 @@ void refresh_analog(byte i, bool send)
     }
     pedals[i].expZero = _min(pedals[i].expZero, input + SAFE_ZONE);
     pedals[i].expMax  = _max(pedals[i].expMax,  input - SAFE_ZONE);
+    //DPRINT("%d -> [%d, %d]\n", input, pedals[i].expZero, pedals[i].expMax);
   }
-  value = map_analog(i, input);                             // apply the digital map function to the value
-  value = value >> (ADC_RESOLUTION_BITS - 7);               // map from ADC resolution to the 7-bit MIDI value [0, 127]
-  if (pedals[i].invertPolarity) value = MIDI_RESOLUTION - 1 - value;   // invert the scale
+  value = map_analog(i, input);                             // expand to [0, 1023] and apply the map function
+  value = map(value,                                        // map from [0, 1023] to [min, max] MIDI value
+              0,
+              ADC_RESOLUTION - 1,
+              pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
+              pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
   pedals[i].analogPedal->update(value);                     // update the responsive analog average
   if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
     value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
@@ -1158,10 +1179,8 @@ void controller_setup()
         digitalWrite(PIN_D(i), HIGH);
         //if (pedals[i].function == PED_MIDI)
         {
-          pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);   // sleep is enabled and the output value ignores small changes
-          pedals[i].analogPedal->setActivityThreshold(6.0);
+          pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), false);
           pedals[i].analogPedal->setAnalogResolution(MIDI_RESOLUTION);        // 7-bit MIDI resolution
-          pedals[i].analogPedal->enableEdgeSnap();                            // ensures that values at the edges of the spectrum can be easily reached when sleep is enabled
           analogReadResolution(ADC_RESOLUTION_BITS);
           analogSetPinAttenuation(PIN_A(i), ADC_11db);
           if (lastUsedPedal == 0xFF) {

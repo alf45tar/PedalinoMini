@@ -1383,6 +1383,28 @@ void get_options_page() {
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
+  page += F("<label for='tapDanceMode' class='col-2 col-form-label'>Tap Dance Mode</label>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='tapDanceMode' name='tapdancemode'");
+  if (tapDanceMode) page += F(" checked");
+  page += F(">");
+  page += F("<label class='custom-control-label' for='tapDanceMode'>One press for bank followed by one press for MIDI event</label>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='w-100'></div>");
+  page += F("<div class='col-2'>");
+  page += F("</div>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
+  page += F("<p>The first press of pedal X switch to bank X, the second press of any pedal send the MIDI event.</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
   page += F("<label for='sendOnBankSwitch' class='col-2 col-form-label'>Bank Switch</label>");
   page += F("<div class='col-10'>");
   page += F("<div class='custom-control custom-switch'>");
@@ -1832,29 +1854,23 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   
   http_handle_globals(request);
 
-  if (request->arg("repeatonbankswitch") == checked) {
-    repeatOnBankSwitch = true;
-    eeprom_update_repeat_on_bank_switch_enable(true);
-    alert = "Saved";
-  }
-  else {
-    repeatOnBankSwitch = false;
-    eeprom_update_repeat_on_bank_switch_enable(false);
-    alert = "Saved";
-  }
+  tapDanceMode = (request->arg("tapdancemode") == checked);
+  eeprom_update_tap_dance(tapDanceMode);
+  tapDanceBank = true;
+  
+  repeatOnBankSwitch = (request->arg("repeatonbankswitch") == checked);
+  eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
 
   if (request->arg("blynkcloud") == checked) {
     blynk_enable();
     eeprom_update_blynk_cloud_enable(true);
     //blynk_connect();
     //blynk_refresh();
-    alert = "Saved";
   }
   else {
     blynk_disconnect();
     blynk_disable();
     eeprom_update_blynk_cloud_enable(false);
-    alert = "Saved";
   }
 
   if (request->arg("blynkauthtoken")) {
@@ -1863,7 +1879,6 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     blynk_set_token(request->arg("blynkauthtoken"));
     //blynk_connect();
     //blynk_refresh();
-    alert = "Saved";
   }
 
   if (request->arg("mdnsdevicename") != host) {
@@ -1871,8 +1886,9 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     eeprom_update_device_name(host);
     delay(1000);
     ESP.restart();
-    alert = "Saved";
   }
+
+  alert = "Saved";
   //get_options_page();
   //request->send(200, "text/html", page);
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);

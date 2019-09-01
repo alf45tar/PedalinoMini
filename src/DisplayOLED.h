@@ -541,7 +541,20 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(ArialMT_Plain_10);
-    display->drawString(0, 54, String("Bank " + String(currentBank+1)));
+    if (tapDanceMode && tapDanceBank) {
+      display->setColor(BLACK);
+      display->fillRect(0, 54, 40, 63);
+      display->setColor(WHITE);
+    }
+    else {
+      display->fillRect(0, 54, 40, 63);
+      display->setColor(BLACK);
+    }
+    if (currentBank < 9)
+      display->drawString(0, 53, String("Bank 0" + String(currentBank+1)));
+    else
+      display->drawString(0, 53, String("Bank " + String(currentBank+1)));
+    display->setColor(WHITE);
 
 #ifdef WIFI
     if (wifiEnabled) {
@@ -576,6 +589,13 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     if (banks[currentBank][lastUsed].pedalName[0] == 0) {
       display->setTextAlignment(TEXT_ALIGN_CENTER);
       switch (m1) {
+        case midi::InvalidType:
+           drawRect(display, 64-22, 15, 64+24, 15+23);
+          display->setFont(ArialMT_Plain_10);
+          display->drawString( 64 + x, 39 + y, String("Bank"));
+          display->setFont(ArialMT_Plain_24);
+          display->drawString( 64 + x, 14 + y, String(m2));
+          break;
         case midi::NoteOn:
         case midi::NoteOff:
           drawRect(display, 64-22, 15, 64+24, 15+23);
@@ -614,17 +634,31 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           display->drawString(84 + x, 14 + y, String(m2));  
           break;
       }
-      display->setFont(ArialMT_Plain_10);
-      display->drawString(18 + x, 39 + y, String("Channel"));
-      display->setFont(ArialMT_Plain_16);
-      display->drawString(18 + x, 22 + y, String(m4));
+      if (m1 != midi::InvalidType) {
+        display->setFont(ArialMT_Plain_10);
+        display->drawString(18 + x, 39 + y, String("Channel"));
+        display->setFont(ArialMT_Plain_16);
+        display->drawString(18 + x, 22 + y, String(m4));
+      }
     }
-    else {
-      display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-      display->setFont(ArialMT_Plain_24);
-      display->drawString(64, 32, String(banks[currentBank][lastUsed].pedalName)); 
-    }    
-  }  
+    else {  
+      switch (m1) {
+        case midi::InvalidType:
+          drawRect(display, 64-22, 15, 64+24, 15+23);
+          display->setTextAlignment(TEXT_ALIGN_CENTER);
+          display->setFont(ArialMT_Plain_10);
+          display->drawString( 64 + x, 39 + y, String("Bank"));
+          display->setFont(ArialMT_Plain_24);
+          display->drawString( 64 + x, 14 + y, String(m2));
+          break;
+        default:
+          display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+          display->setFont(ArialMT_Plain_24);
+          display->drawString(64, 32, String(banks[currentBank][lastUsed].pedalName)); 
+          break;
+      }    
+    }
+  }
   else if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
            MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
     display->setFont(ArialMT_Plain_24);
