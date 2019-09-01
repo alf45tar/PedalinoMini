@@ -902,14 +902,14 @@ void refresh_analog(byte i, bool send)
     //DPRINT("%d -> [%d, %d]\n", input, pedals[i].expZero, pedals[i].expMax);
   }
   value = map_analog(i, input);                             // expand to [0, 1023] and apply the map function
-  value = map(value,                                        // map from [0, 1023] to [min, max] MIDI value
+  pedals[i].analogPedal->update(value);                     // update the responsive analog average
+  if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
+    value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
+    value = map(value,                                      // map from [0, 1023] to [min, max] MIDI value
               0,
               ADC_RESOLUTION - 1,
               pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
               pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
-  pedals[i].analogPedal->update(value);                     // update the responsive analog average
-  if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
-    value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
     double velocity = (1000.0 * ((int)value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
     switch (pedals[i].function) {
       case PED_MIDI:
@@ -1179,8 +1179,9 @@ void controller_setup()
         digitalWrite(PIN_D(i), HIGH);
         //if (pedals[i].function == PED_MIDI)
         {
-          pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), false);
-          pedals[i].analogPedal->setAnalogResolution(MIDI_RESOLUTION);        // 7-bit MIDI resolution
+          pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
+          //pedals[i].analogPedal->setAnalogResolution(ADC_RESOLUTION_BITS);
+          pedals[i].analogPedal->enableEdgeSnap();
           analogReadResolution(ADC_RESOLUTION_BITS);
           analogSetPinAttenuation(PIN_A(i), ADC_11db);
           if (lastUsedPedal == 0xFF) {
