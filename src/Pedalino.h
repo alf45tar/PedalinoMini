@@ -67,12 +67,16 @@ typedef uint8_t   byte;
 #define PED_PROGRAM_CHANGE      1
 #define PED_CONTROL_CHANGE      2
 #define PED_NOTE_ON_OFF         3
-#define PED_PITCH_BEND          4
-#define PED_BANK_SELECT_INC     5
-#define PED_BANK_SELECT_DEC     6
-#define PED_PROGRAM_CHANGE_INC  7
-#define PED_PROGRAM_CHANGE_DEC  8
-#define PED_SEQUENCE            9
+#define PED_BANK_SELECT_INC     4
+#define PED_BANK_SELECT_DEC     5
+#define PED_PROGRAM_CHANGE_INC  6
+#define PED_PROGRAM_CHANGE_DEC  7
+#define PED_PITCH_BEND          8
+#define PED_CHANNEL_PRESSURE    9
+#define PED_MIDI_START          10
+#define PED_MIDI_STOP           11
+#define PED_MIDI_CONTINUE       12
+#define PED_SEQUENCE            20
 
 #define PED_NONE                0
 #define PED_MOMENTARY1          1

@@ -32,7 +32,7 @@ Open source wireless MIDI foot controller for guitarists and more.
 - 16 sequences of 10 steps each
 - Each port can connect 1 expression pedal or up to 5 foot switches for a maximum of 30 foot switches.
 - MIDI output via AppleMIDI (also known as RTP-MIDI) or ipMIDI via Wi-Fi
-- Send the following MIDI events: Program Change, Control Code, Note On/Off, Pitch Bend, Bank Select or a sequence of the previous messages
+- Send almost every MIDI messages: Program Change, Control Code, Note On/Off, Channel Pressure, Pitch Bend, Bank Select, Start, Stop, Continue or a sequence of the previous messages
 - MIDI channel, MIDI note, MIDI control code, MIDI program change can be configured by each pedal and by each bank
 - Switch debouncing and analog noise suppression without decreasing responsiveness
 - Invert polarity via software

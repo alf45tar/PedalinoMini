@@ -351,21 +351,6 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         lastMIDIMessage[currentBank] = {PED_PROGRAM_CHANGE, code, 0, channel};
       }
       break;
-
-    case PED_PITCH_BEND:
-
-      if (on_off) {
-        int bend = map(value, 0, MIDI_RESOLUTION-1, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX);
-        DPRINT("PITCH BEND.....Value %5d.....Channel %2d\n", bend, channel);
-        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendPitchBend(bend, channel);
-        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendPitchBend(bend, channel);
-        AppleMidiSendPitchBend(bend, channel);
-        ipMIDISendPitchBend(bend, channel);
-        BLESendPitchBend(bend, channel);
-        OSCSendPitchBend(bend, channel);
-        screen_info(midi::PitchBend, bend, 0, channel);
-      }
-      break;
     
     case PED_BANK_SELECT_INC:
     case PED_BANK_SELECT_DEC:
@@ -389,6 +374,77 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendControlChange(midi::BankSelect+32, value, channel);
         OSCSendControlChange(midi::BankSelect+32, value, channel);
         screen_info(midi::ControlChange, midi::BankSelect+32, value, channel);
+      }
+      break;
+
+    case PED_PITCH_BEND:
+
+      if (on_off) {
+        int bend = map(value, 0, MIDI_RESOLUTION-1, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX);
+        DPRINT("PITCH BEND.....Value %5d.....Channel %2d\n", bend, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendPitchBend(bend, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendPitchBend(bend, channel);
+        AppleMidiSendPitchBend(bend, channel);
+        ipMIDISendPitchBend(bend, channel);
+        BLESendPitchBend(bend, channel);
+        OSCSendPitchBend(bend, channel);
+        screen_info(midi::PitchBend, bend, 0, channel);
+      }
+      break;
+    
+    case PED_CHANNEL_PRESSURE:
+
+      if (on_off) {
+        DPRINT("CHANNEL PRESSURE.....Channel %2d\n", channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendAfterTouch(value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendAfterTouch(value, channel);
+        AppleMidiSendAfterTouch(value, channel);
+        ipMIDISendAfterTouch(value, channel);
+        BLESendAfterTouch(value, channel);
+        OSCSendAfterTouch(value, channel);
+        screen_info(midi::AfterTouchChannel, 0, value, channel);
+      }
+      break;
+
+    case PED_MIDI_START:
+
+      if (on_off) {
+        DPRINT("START.....\n");
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendRealTime(midi::Start);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendRealTime(midi::Start);
+        AppleMidiSendStart();
+        ipMIDISendStart();
+        BLESendStart();
+        OSCSendStart();
+        screen_info(midi::Start, 0, 0, 0);
+      }
+      break;
+    
+    case PED_MIDI_STOP:
+
+      if (on_off) {
+        DPRINT("STOP.....\n");
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendRealTime(midi::Stop);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendRealTime(midi::Stop);
+        AppleMidiSendStop();
+        ipMIDISendStop();
+        BLESendStop();
+        OSCSendStop();
+        screen_info(midi::Stop, 0, 0, 0);
+      }
+      break;
+
+    case PED_MIDI_CONTINUE:
+
+      if (on_off) {
+        DPRINT("CONTINUE.....\n");
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendRealTime(midi::Continue);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendRealTime(midi::Continue);
+        AppleMidiSendContinue();
+        ipMIDISendContinue();
+        BLESendContinue();
+        OSCSendContinue();
+        screen_info(midi::Continue, 0, 0, 0);
       }
       break;
     
@@ -1080,6 +1136,19 @@ void controller_setup()
       case PED_PITCH_BEND:
         DPRINT("PITCH_BEND        ");
         break;
+      case PED_CHANNEL_PRESSURE:
+        DPRINT("CHANNEL PRESSURE  ");
+        break;
+      case PED_MIDI_START:
+        DPRINT("MIDI START        ");
+        break;
+      case PED_MIDI_STOP:
+        DPRINT("MIDI STOP         ");
+        break;
+      case PED_MIDI_CONTINUE:
+        DPRINT("MIDI CONTINUE     ");
+        break;
+      
     }
     DPRINT("   Channel %2d", banks[currentBank][i].midiChannel);
 
