@@ -164,6 +164,14 @@ To select a different mode:
 - Press and release EN button (POWER button on TTGO T-Eight) and immediately after press and hold BOOT button (CENTER button on TTGO T-Eight)
 - Follow the istructions on display. Keep it pressed until the progress bar reach the end to reset to factory default. If you release the button before the progress bar reach the end PedalinoMini™ will start in one of the supported boot mode.
 
+## Display mode
+
+On start the live performance display is selected. On live performace mode the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
+
+Pressing BOOT button (CENTER button on TTGO T-Eight) you can switch to scrolling pages where configuration parameters (the device name, the IP address etc.) are displayed.
+
+Press BOOT button (CENTER button on TTGO T-Eight) again to return in live performance display mode.
+
 
 ## TTGO T-Eight ESP32
 
@@ -187,7 +195,6 @@ During normal operation
 
 - Press navigation RIGHT button to move to the next profile
 - Press navigation LEFT button to move to the previous profile
-- Press navigation CENTER button to save the current profile selection
 
 ## Factory default configuration
 
