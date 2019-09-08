@@ -26,7 +26,7 @@ void load_factory_default()
 
   for (byte p = 0; p < PEDALS-2; p++)
     pedals[p] = {PED_MIDI,       // function
-                 PED_ENABLE,     // autosensing
+                 PED_DISABLE,    // autosensing
                  PED_MOMENTARY1, // mode
                  PED_PRESS_1,    // press mode
                  PED_DISABLE,    // invert polarity
@@ -41,7 +41,7 @@ void load_factory_default()
                 };
 
   pedals[PEDALS-2] = {PED_MIDI,       // function
-                      PED_ENABLE,     // autosensing
+                      PED_DISABLE,    // autosensing
                       PED_ANALOG,     // mode
                       PED_NONE,       // press mode
                       PED_ENABLE,     // invert polarity
@@ -56,7 +56,7 @@ void load_factory_default()
                       };
 
   pedals[PEDALS-1] = {PED_MIDI,       // function
-                      PED_ENABLE,     // autosensing
+                      PED_DISABLE,    // autosensing
                       PED_ANALOG,     // mode
                       PED_NONE,       // press mode
                       PED_ENABLE,     // invert polarity
@@ -400,8 +400,10 @@ void eeprom_read_profile(byte profile = currentProfile)
     pedals[i].footSwitch[0] = nullptr;
     pedals[i].footSwitch[1] = nullptr;
     pedals[i].analogPedal   = nullptr;
-    pedals[i].expZero       = ADC_RESOLUTION - 1;
-    pedals[i].expMax        = 0;
+    if (pedals[i].autoSensing) {
+      pedals[i].expZero       = ADC_RESOLUTION - 1;
+      pedals[i].expMax        = 0;
+    }
   };
   
   blynk_refresh();
