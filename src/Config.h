@@ -253,6 +253,22 @@ void eeprom_update_repeat_on_bank_switch(bool enable = true)
   DPRINT("[NVS][Global[Bank Switch]: %d\n", enable);
 }
 
+void eeprom_update_press_time(long p1, long p2, long p3, long p4)
+{
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putLong("Single Time", p1);
+  preferences.putLong("Double Time", p2);
+  preferences.putLong("Long   Time", p3);
+  preferences.putLong("Repeat Time", p4);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global[Single Time]: %d\n", p1);
+  DPRINT("[NVS][Global[Double Time]: %d\n", p2);
+  DPRINT("[NVS][Global[Long   Time]: %d\n", p3);
+  DPRINT("[NVS][Global[Repeat Time]: %d\n", p4);
+}
+
 void eeprom_update_blynk_cloud_enable(bool enable = true)
 {
   DPRINT("Updating NVS ... ");
@@ -320,13 +336,17 @@ void eeprom_read_global()
 {
   DPRINT("Reading NVS Global ... ");
   preferences.begin("Global", true);
-  host           = preferences.getString("Device Name");
-  wifiSSID       = preferences.getString("SSID");
-  wifiPassword   = preferences.getString("Password");
-  theme          = preferences.getString("Bootstrap Theme");
-  currentProfile = preferences.getUChar("Current Profile");
-  tapDanceMode   = preferences.getBool("Tap Dance Mode");
+  host               = preferences.getString("Device Name");
+  wifiSSID           = preferences.getString("SSID");
+  wifiPassword       = preferences.getString("Password");
+  theme              = preferences.getString("Bootstrap Theme");
+  currentProfile     = preferences.getUChar("Current Profile");
+  tapDanceMode       = preferences.getBool("Tap Dance Mode");
   repeatOnBankSwitch = preferences.getBool("Bank Switch");
+  pressTime          = preferences.getLong("Single Time");
+  doublePressTime    = preferences.getLong("Double Time");
+  longPressTime      = preferences.getLong("Long   Time");
+  repeatPressTime    = preferences.getLong("Repeat Time");
   preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
   blynk_set_token(preferences.getString("Blynk Token"));
   preferences.end();
@@ -380,6 +400,8 @@ void eeprom_read_profile(byte profile = currentProfile)
     pedals[i].footSwitch[0] = nullptr;
     pedals[i].footSwitch[1] = nullptr;
     pedals[i].analogPedal   = nullptr;
+    pedals[i].expZero       = ADC_RESOLUTION - 1;
+    pedals[i].expMax        = 0;
   };
   
   blynk_refresh();
@@ -406,14 +428,12 @@ void eeprom_initialize()
   eeprom_update_current_profile(0);
   eeprom_update_tap_dance(false);
   eeprom_update_repeat_on_bank_switch(false);
+  eeprom_update_press_time(pressTime, doublePressTime, longPressTime, repeatPressTime);
   eeprom_update_blynk_cloud_enable(false);
   eeprom_update_blynk_auth_token();
   load_factory_default();
-  for (byte p = 0; p < PROFILES; p++) {
-    currentBank = p;
+  for (byte p = 0; p < PROFILES; p++)
     eeprom_update_profile(p);
-  }
-  currentBank = 1;
 }
 
 void eeprom_init_or_erase()

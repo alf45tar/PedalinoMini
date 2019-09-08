@@ -85,22 +85,38 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 void IRAM_ATTR onButtonLeft()
 {
-  if (reloadProfile) return;
-  currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
-  reloadProfile = true;
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 500ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 500) {
+    if (reloadProfile) return;
+    currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
+    reloadProfile = true;
+  }
 }
 
 void IRAM_ATTR onButtonRight()
 {
-  if (reloadProfile) return;
-  currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
-  reloadProfile = true;
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 500ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 500) {
+    if (reloadProfile) return;
+    currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
+    reloadProfile = true;
+  }
+  last_interrupt_time = interrupt_time;
 }
 
 void IRAM_ATTR onButtonCenter()
 {
-  if (saveProfile) return;
-  saveProfile = true;
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 500ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 500) {
+    scrollingMode = !scrollingMode; 
+  }
+  last_interrupt_time = interrupt_time;
 }
 
 void setup()

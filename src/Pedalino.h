@@ -32,14 +32,16 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 
 #ifdef TTGO_T_EIGHT
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
-#else
-#define FACTORY_DEFAULT_PIN   GPIO_NUM_0
-#endif
-#define BATTERY_PIN           GPIO_NUM_34
-
 #define RIGHT_PIN             GPIO_NUM_37
 #define CENTER_PIN            GPIO_NUM_38
 #define LEFT_PIN              GPIO_NUM_39
+#else
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_0
+#define RIGHT_PIN             GPIO_NUM_37
+#define CENTER_PIN            GPIO_NUM_0
+#define LEFT_PIN              GPIO_NUM_38
+#endif
+#define BATTERY_PIN           GPIO_NUM_34
 
 #define PIN_D(x)          pinD[x]
 #define PIN_A(x)          pinA[x]
@@ -275,10 +277,11 @@ bool  tapDanceMode            = false;
 bool  repeatOnBankSwitch      = false;
 bool  tapDanceBank            = true;
 
-byte bootMode                 = PED_BOOT_NORMAL;
+byte  bootMode                = PED_BOOT_NORMAL;
 volatile byte currentProfile  = 0;
 volatile bool reloadProfile   = true;
 volatile bool saveProfile     = false;
+volatile bool scrollingMode   = false;  // Display scrolling mode
 byte  currentBank             = 0;
 byte  currentPedal            = 0;
 byte  currentInterface        = PED_USBMIDI;
@@ -288,6 +291,10 @@ byte  lastUsed                = 0xFF;   // Pedal or switch
 bool  selectBank              = true;
 byte  currentMidiTimeCode     = PED_MTC_NONE;
 byte  timeSignature           = PED_TIMESIGNATURE_4_4;
+long  pressTime               = 100;
+long  doublePressTime         = 300;
+long  longPressTime           = 500;
+long  repeatPressTime         = 500;
 
 MidiTimeCode  MTC;
 unsigned int  bpm             = 120;
