@@ -157,13 +157,13 @@ void setup()
   if (digitalRead(LEFT_PIN) == LOW) {
     //currentProfile = 0;
     //eeprom_update_current_profile(currentProfile);
-    bleEnabled = false;
+    //bleEnabled = false;
   }
   pinMode(RIGHT_PIN, INPUT_PULLUP);
   if (digitalRead(RIGHT_PIN) == LOW) {
     //currentProfile = 2;
     //eeprom_update_current_profile(currentProfile);
-    wifiEnabled = false;
+    //wifiEnabled = false;
   }
 
 #ifdef BLE

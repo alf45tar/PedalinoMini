@@ -172,23 +172,6 @@ Pressing BOOT button (CENTER button on TTGO T-Eight) you can switch to scrolling
 
 Press BOOT button (CENTER button on TTGO T-Eight) again to return in live performance display mode.
 
-
-## TTGO T-Eight ESP32
-
-The following procedures are for TTGO T-Eight ESP32 only.
-
-#### BLE mode only
-
-- Press and hold navigation RIGHT button
-- Press and release POWER button
-- Release RIGHT when the Bluetooth logo appear
-
-#### WIFI mode only
-
-- Press and hold navigation LEFT button
-- Press and release POWER button
-- Release LEFT when the WiFi logo appear
-
 #### How to switch profiles
 
 During normal operation
