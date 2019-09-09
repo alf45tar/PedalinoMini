@@ -37,9 +37,9 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define LEFT_PIN              GPIO_NUM_39
 #else
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
-#define RIGHT_PIN             GPIO_NUM_37
+#define RIGHT_PIN             GPIO_NUM_16
 #define CENTER_PIN            GPIO_NUM_0
-#define LEFT_PIN              GPIO_NUM_38
+#define LEFT_PIN              GPIO_NUM_17
 #endif
 #define BATTERY_PIN           GPIO_NUM_34
 

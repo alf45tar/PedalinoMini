@@ -153,7 +153,6 @@ void setup()
   DPRINTLN("                                                                      https://github.com/alf45tar/PedalinoMini");
   DPRINT("\nHostname: %s\n", host.c_str());
 
-#ifdef TTGO_T_EIGHT
   pinMode(LEFT_PIN, INPUT_PULLUP);
   if (digitalRead(LEFT_PIN) == LOW) {
     //currentProfile = 0;
@@ -166,7 +165,6 @@ void setup()
     //eeprom_update_current_profile(currentProfile);
     wifiEnabled = false;
   }
-#endif
 
 #ifdef BLE
   if (bleEnabled) {
