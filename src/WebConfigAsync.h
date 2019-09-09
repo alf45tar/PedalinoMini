@@ -2018,7 +2018,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     pressTimeChanged = true;
     controller_setup();
   }
-  if (request->arg("repeatpressttime").toInt() != repeatPressTime) {
+  if (request->arg("repeatpresstime").toInt() != repeatPressTime) {
     repeatPressTime = request->arg("repeatpresstime").toInt();
     pressTimeChanged = true;
     controller_setup();
