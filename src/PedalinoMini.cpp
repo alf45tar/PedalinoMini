@@ -313,6 +313,7 @@ void setup()
     case PED_BOOT_RESET_WIFI:
       DPRINT("Reset WiFi credentials\n");
       eeprom_update_wifi_credentials();
+      eeprom_read_global();
       break;
 
     case PED_FACTORY_DEFAULT:
@@ -322,6 +323,7 @@ void setup()
         lcdPrint("Factory default ");
         delay(1000);
         eeprom_initialize();
+        eeprom_read_global();
         //ESP.restart();
       }
       else
