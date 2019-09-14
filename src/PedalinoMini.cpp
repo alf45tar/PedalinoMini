@@ -229,7 +229,7 @@ void setup()
   bootMode = PED_BOOT_NORMAL;
   if (digitalRead(FACTORY_DEFAULT_PIN) == LOW)
     display_progress_bar_title2("Release button for", "Normal Boot");
-  while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 12000)) {
+  while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 15000)) {
     if (duration > 1000 && duration < 3000 && bootMode != PED_BOOT_BLE) {
       bootMode = PED_BOOT_BLE;
       display_progress_bar_title2("Release button for", "Bluetooth Only");
@@ -246,14 +246,18 @@ void setup()
       bootMode = PED_BOOT_AP_NO_BLE;
       display_progress_bar_title2("Release button for", "AP without BLE");
     }
-    else if (duration > 9000 && duration < 12000 && bootMode != PED_FACTORY_DEFAULT) {
+    else if (duration > 9000 && duration < 11000 && bootMode != PED_BOOT_RESET_WIFI) {
+      bootMode = PED_BOOT_RESET_WIFI;
+      display_progress_bar_title2("Release button for", "WiFi Reset");
+    }
+    else if (duration > 11000 && duration < 15000 && bootMode != PED_FACTORY_DEFAULT) {
       bootMode = PED_FACTORY_DEFAULT;
       display_progress_bar_title2("Hold button for", "Factory Default");
     }
     DPRINT("#");
     lcdSetCursor(duration / 500, 0);
     lcdPrint("#");
-    display_progress_bar_update(duration, 12000);
+    display_progress_bar_update(duration, 15000);
     WIFI_LED_ON();
     delay(50);
     WIFI_LED_OFF();
@@ -287,8 +291,13 @@ void setup()
     case PED_BOOT_AP:
       break;
 
+    case PED_BOOT_RESET_WIFI:
+      DPRINT("Reset WiFi credentials\n");
+      eeprom_update_wifi_credentials();
+      break;
+
     case PED_FACTORY_DEFAULT:
-      if (duration > 12000) {
+      if (duration > 15000) {
         DPRINT("\nReset EEPROM to factory default\n");
         lcdSetCursor(0, 1);
         lcdPrint("Factory default ");

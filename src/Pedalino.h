@@ -64,7 +64,8 @@ typedef uint8_t   byte;
 #define PED_BOOT_WIFI           2
 #define PED_BOOT_AP             3
 #define PED_BOOT_AP_NO_BLE      4
-#define PED_FACTORY_DEFAULT     5
+#define PED_BOOT_RESET_WIFI     5
+#define PED_FACTORY_DEFAULT     6
 
 #define PED_PROGRAM_CHANGE      1
 #define PED_CONTROL_CHANGE      2

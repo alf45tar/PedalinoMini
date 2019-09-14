@@ -148,14 +148,15 @@ void wifi_connect()
 
 ## Booting modes
 
-PedalinoMini™ has 6 booting modes:
+PedalinoMini™ has 7 booting modes:
 
 1. Normal
 2. Bluetooth Only
 3. WiFi Only
 4. Access Point with Bluetooth
 5. Access Point without Bluetooth
-6. Reset to factory default
+6. Reset WiFi credentials
+7. Reset to factory default
 
 Normal mode is selected if you don't press any button on boot.
 
