@@ -219,6 +219,7 @@ void setup()
   display_init();
 
   eeprom_init_or_erase();
+  eeprom_read_global();
 
   // Reset to factory default if BOOT key is pressed and hold for alt least 12 seconds at power on
   
@@ -226,32 +227,34 @@ void setup()
   unsigned long milliStart = millis();
   unsigned long duration = 0;
   lcdClear();
-  bootMode = PED_BOOT_NORMAL;
-  if (digitalRead(FACTORY_DEFAULT_PIN) == LOW)
+  byte newBootMode = PED_BOOT_UNKNOWN;
+  if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) {
+    newBootMode = PED_BOOT_NORMAL;
     display_progress_bar_title2("Release button for", "Normal Boot");
+  }
   while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 15000)) {
-    if (duration > 1000 && duration < 3000 && bootMode != PED_BOOT_BLE) {
-      bootMode = PED_BOOT_BLE;
+    if (duration > 1000 && duration < 3000 && newBootMode != PED_BOOT_BLE) {
+      newBootMode = PED_BOOT_BLE;
       display_progress_bar_title2("Release button for", "Bluetooth Only");
     }
-    else if (duration > 3000 && duration < 5000 && bootMode != PED_BOOT_WIFI) {
-      bootMode = PED_BOOT_WIFI;
+    else if (duration > 3000 && duration < 5000 && newBootMode != PED_BOOT_WIFI) {
+      newBootMode = PED_BOOT_WIFI;
       display_progress_bar_title2("Release button for", "WiFi Only");
     }
-    else if (duration > 5000 && duration < 7000 && bootMode != PED_BOOT_AP) {
-      bootMode = PED_BOOT_AP;
+    else if (duration > 5000 && duration < 7000 && newBootMode != PED_BOOT_AP) {
+      newBootMode = PED_BOOT_AP;
       display_progress_bar_title2("Release button for", "Access Point");
     }
-    else if (duration > 7000 && duration < 9000 && bootMode != PED_BOOT_AP_NO_BLE) {
-      bootMode = PED_BOOT_AP_NO_BLE;
+    else if (duration > 7000 && duration < 9000 && newBootMode != PED_BOOT_AP_NO_BLE) {
+      newBootMode = PED_BOOT_AP_NO_BLE;
       display_progress_bar_title2("Release button for", "AP without BLE");
     }
-    else if (duration > 9000 && duration < 11000 && bootMode != PED_BOOT_RESET_WIFI) {
-      bootMode = PED_BOOT_RESET_WIFI;
+    else if (duration > 9000 && duration < 11000 && newBootMode != PED_BOOT_RESET_WIFI) {
+      newBootMode = PED_BOOT_RESET_WIFI;
       display_progress_bar_title2("Release button for", "WiFi Reset");
     }
-    else if (duration > 11000 && duration < 15000 && bootMode != PED_FACTORY_DEFAULT) {
-      bootMode = PED_FACTORY_DEFAULT;
+    else if (duration > 11000 && duration < 15000 && newBootMode != PED_FACTORY_DEFAULT) {
+      newBootMode = PED_FACTORY_DEFAULT;
       display_progress_bar_title2("Hold button for", "Factory Default");
     }
     DPRINT("#");
@@ -264,7 +267,23 @@ void setup()
     delay(50);
     duration = millis() - milliStart;
   }
+
   //display_clear();
+
+  if (newBootMode != PED_BOOT_UNKNOWN && newBootMode != bootMode) {
+    bootMode = newBootMode;
+    switch (bootMode) { 
+      case PED_BOOT_NORMAL:
+      case PED_BOOT_BLE:
+      case PED_BOOT_WIFI:
+      case PED_BOOT_AP:
+      case PED_BOOT_AP_NO_BLE:
+        eeprom_update_boot_mode(bootMode);
+        break;
+      default:
+        break;
+    }
+  }
   switch (bootMode) { 
     case PED_BOOT_NORMAL:
       break;
@@ -311,8 +330,6 @@ void setup()
       
   }
   
-  eeprom_read_global();
-
   // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
   serial_midi_connect();              // On receiving MIDI data callbacks setup
   DPRINT("USB MIDI started\n");

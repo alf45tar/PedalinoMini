@@ -158,7 +158,7 @@ PedalinoMini™ has 7 booting modes:
 6. Reset WiFi credentials
 7. Reset to factory default
 
-Normal mode is selected if you don't press any button on boot.
+The last booting mode is selected if you don't press any button on boot.
 
 To select a different mode:
 

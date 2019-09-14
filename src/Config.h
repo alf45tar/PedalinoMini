@@ -211,6 +211,16 @@ void eeprom_update_device_name(String name = host)
   DPRINT("[NVS][Global][Device Name]: %s\n", name.c_str());
 }
 
+void eeprom_update_boot_mode(byte mode = PED_BOOT_NORMAL)
+{
+  DPRINT("Updating NVS ...\n");
+  preferences.begin("Global", false);
+  preferences.putUChar("Boot Mode", mode);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global][Boot Mode]: %d\n", mode);
+}
+
 void eeprom_update_wifi_credentials(String ssid = "", String pass = "")
 {
   DPRINT("Updating NVS ... ");
@@ -337,6 +347,7 @@ void eeprom_read_global()
   DPRINT("Reading NVS Global ... ");
   preferences.begin("Global", true);
   host               = preferences.getString("Device Name");
+  bootMode           = preferences.getUChar("Boot Mode");
   wifiSSID           = preferences.getString("SSID");
   wifiPassword       = preferences.getString("Password");
   theme              = preferences.getString("Bootstrap Theme");
@@ -425,6 +436,7 @@ void eeprom_initialize()
   preferences.clear();
   preferences.end();
   eeprom_update_device_name();
+  eeprom_update_boot_mode();
   eeprom_update_wifi_credentials();
   eeprom_update_theme();
   eeprom_update_current_profile(0);
