@@ -11,28 +11,25 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #include "Fonts.h"
 
-#ifdef TTGO_T_EIGHT
+#if defined(TTGO_T_EIGHT) || defined(SSH1106WIRE)
 #include "SH1106Wire.h"
 #define OLED_I2C_ADDRESS  0x3c
 #define OLED_I2C_SDA      21
 #define OLED_I2C_SCL      22
-#else
+SH1106Wire                display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
+#endif
+#if defined(SSD1306WIRE)
 #include <SSD1306Wire.h>
 #define OLED_I2C_ADDRESS  0x3c
 #define OLED_I2C_SDA      SDA
 #define OLED_I2C_SCL      SCL
+SSD1306Wire               display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 #endif
 #include <OLEDDisplayUi.h>
 #include <Battery.h>
 #include <WiFi.h>
 
 
-// Initialize the OLED display using Wire library
-#ifdef TTGO_T_EIGHT
-SH1106Wire    display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
-#else
-SSD1306Wire   display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
-#endif
 OLEDDisplayUi ui(&display);
 bool          uiUpdate = true;
 
