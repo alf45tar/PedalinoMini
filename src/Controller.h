@@ -781,16 +781,23 @@ void refresh_switch_12L(byte i)
       case PED_BANK_PLUS:
         switch (k) {
           case 1:
-            currentBank = (currentBank + 1) % BANKS;
+            if (currentBank == pedals[i].expMax - 1)
+              currentBank = pedals[i].expZero - 1;
+            else
+              currentBank++;
             break;
           case 2:
-            if (currentBank > 0) currentBank--;
-            else currentBank = BANKS - 1;
+            if (currentBank == (pedals[i].expZero - 1))
+              currentBank = pedals[i].expMax - 1;
+            else
+              currentBank--;
             break;
           case 3:
-            currentBank = 0;
+            currentBank = pedals[i].expZero - 1;
             break;
         }
+        currentBank = constrain(currentBank, pedals[i].expZero - 1, pedals[i].expMax - 1);
+        currentBank = constrain(currentBank, 0, BANKS - 1);
         if (repeatOnBankSwitch)
           midi_send(lastMIDIMessage[currentBank].midiMessage,
                     lastMIDIMessage[currentBank].midiCode,
@@ -801,16 +808,23 @@ void refresh_switch_12L(byte i)
       case PED_BANK_MINUS:
         switch (k) {
           case 1:
-            if (currentBank > 0) currentBank--;
-            else currentBank = BANKS - 1;
+            if (currentBank == (pedals[i].expZero - 1))
+              currentBank = pedals[i].expMax - 1;
+            else
+              currentBank--;
             break;
           case 2:
-            currentBank = (currentBank + 1) % BANKS;
+            if (currentBank == pedals[i].expMax - 1)
+              currentBank = pedals[i].expZero - 1;
+            else
+              currentBank++;
             break;
           case 3:
-            currentBank = BANKS - 1;
+            currentBank = pedals[i].expMax - 1;
             break;
         }
+        currentBank = constrain(currentBank, pedals[i].expZero - 1, pedals[i].expMax - 1);
+        currentBank = constrain(currentBank, 0, BANKS - 1);
         if (repeatOnBankSwitch)
           midi_send(lastMIDIMessage[currentBank].midiMessage,
                     lastMIDIMessage[currentBank].midiCode,

@@ -1886,6 +1886,21 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
 
     a = request->arg(String("max") + String(i+1));
     pedals[i].expMax = a.toInt();
+
+    switch (pedals[i].function) {
+      case PED_BANK_PLUS:
+      case PED_BANK_MINUS:
+        pedals[i].expZero = constrain(pedals[i].expZero, 1, BANKS);
+        pedals[i].expMax  = constrain(pedals[i].expMax,  1, BANKS);
+      break;
+    }
+    if (pedals[i].expMax < pedals[i].expZero) {
+      int t;
+      t = pedals[i].expMax;
+      pedals[i].expMax = pedals[i].expZero;
+      pedals[i].expZero = t;
+    }
+
   }
   eeprom_update_profile();
   autosensing_setup();
