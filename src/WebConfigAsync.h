@@ -110,7 +110,7 @@ void get_top_page(int p = 0) {
     page += currentProfile == 1 ? F("<a class='btn btn-primary' href='?profile=2' role='button'>B</a>") : F("<a class='btn btn-outline-primary' href='?profile=2' role='button'>B</a>");
     page += currentProfile == 2 ? F("<a class='btn btn-primary' href='?profile=3' role='button'>C</a>") : F("<a class='btn btn-outline-primary' href='?profile=3' role='button'>C</a>");
 
-    page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
+    //page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
 /*
     page += F("<div class='btn-group my-2 my-sm-0'>");
     page += F("<button type='button' class='btn btn-info'>Profile ");

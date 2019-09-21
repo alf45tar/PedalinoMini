@@ -773,11 +773,11 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       ui.enableAutoTransition();
     }
     else {
+      display->setFont(DSEG7_Classic_Bold_50);
       display->setTextAlignment(TEXT_ALIGN_LEFT);
-      display->setFont(DSEG7_Classic_Bold_50);
       display->drawString(  0 + x, 9 + y, (currentProfile == 0 ? String('A') : (currentProfile == 1 ? String('B') : String('C'))));
+      display->drawString( 38 + x, 9 + y, String("."));
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
-      display->setFont(DSEG7_Classic_Bold_50);
       display->drawString(128 + x, 9 + y, (currentBank >= 9  ? String("") : String('0')) + String(currentBank + 1));
       ui.disableAutoTransition();
     }
