@@ -2185,7 +2185,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 void get_update_page() {
 
 #ifdef WEBCONFIG
-  get_top_page(5);
+  get_top_page();
 #else
   page += F("<!doctype html>");
   page += F("<html lang='en'>");

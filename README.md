@@ -44,7 +44,7 @@ Open source wireless MIDI foot controller for guitarists and more.
 
 ## iOS and Android App
 
-The app made with [Blynk](https://www.blynk.cc) is on the way.
+The app made with [Blynk](https://www.blynk.cc) is delayed due to a Blynk [bug](https://community.blynk.cc/t/esp32-4x-slower-than-esp8266/38420).
 
 ## Bill of materials
 

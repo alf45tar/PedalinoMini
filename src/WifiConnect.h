@@ -255,6 +255,10 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       DPRINT("WPS_PIN = " PINSTR, PIN2STR(info.sta_er_pin.pin_code));
       break;
 
+    case SYSTEM_EVENT_STA_WPS_ER_PBC_OVERLAP:
+      DPRINT("SYSTEM_EVENT_STA_WPS_ER_PBC_OVERLAP\n");
+      break;
+
     default:
       DPRINT("Event: %d\n", event);
       break;
