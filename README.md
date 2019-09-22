@@ -173,12 +173,14 @@ Pressing BOOT button (CENTER button on TTGO T-Eight) you can switch to scrolling
 
 Press BOOT button (CENTER button on TTGO T-Eight) again to return in live performance display mode.
 
-#### How to switch profiles
+## How to switch profiles
 
 During normal operation
 
 - Press navigation RIGHT button to move to the next profile
 - Press navigation LEFT button to move to the previous profile
+
+If you keep pressed the button for more than 500ms (half a second) a new profile change occurs on release.
 
 ## Factory default configuration
 

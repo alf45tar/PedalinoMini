@@ -366,9 +366,9 @@ void setup()
   }
 #endif
 
-  attachInterrupt(LEFT_PIN,   onButtonLeft,   FALLING);
-  attachInterrupt(CENTER_PIN, onButtonCenter, FALLING);
-  attachInterrupt(RIGHT_PIN,  onButtonRight,  FALLING);
+  attachInterrupt(LEFT_PIN,   onButtonLeft,   CHANGE);
+  attachInterrupt(CENTER_PIN, onButtonCenter, CHANGE);
+  attachInterrupt(RIGHT_PIN,  onButtonRight,  CHANGE);
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
 }
