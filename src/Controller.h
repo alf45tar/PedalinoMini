@@ -340,15 +340,15 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     case PED_PROGRAM_CHANGE_DEC:
 
       if (on_off) {
-        DPRINT("PROGRAM CHANGE.....Program %3d.....Channel %2d\n", code, channel);
-        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendProgramChange(code, channel);
-        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendProgramChange(code, channel);
-        AppleMidiSendProgramChange(code, channel);
-        ipMIDISendProgramChange(code, channel);
-        BLESendProgramChange(code, channel);
-        OSCSendProgramChange(code, channel);
-        screen_info(midi::ProgramChange, code, 0, channel);
-        lastMIDIMessage[currentBank] = {PED_PROGRAM_CHANGE, code, 0, channel};
+        DPRINT("PROGRAM CHANGE.....Program %3d.....Channel %2d\n", value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendProgramChange(value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendProgramChange(value, channel);
+        AppleMidiSendProgramChange(value, channel);
+        ipMIDISendProgramChange(value, channel);
+        BLESendProgramChange(value, channel);
+        OSCSendProgramChange(value, channel);
+        screen_info(midi::ProgramChange, value, 0, channel);
+        lastMIDIMessage[currentBank] = {PED_PROGRAM_CHANGE, value, 0, channel};
       }
       break;
     
