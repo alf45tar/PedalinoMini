@@ -621,6 +621,7 @@ void refresh_switch_12L_midi(byte i, bool send)
       case MD_UISwitch::KEY_PRESS:
 
         DPRINT("Pedal %2d   SINGLE PRESS \n", i + 1);
+        if ((pedals[i].pressMode & PED_PRESS_1) != PED_PRESS_1) break;
         switch (banks[b][i].midiMessage) {
           case PED_BANK_SELECT_INC:
           case PED_BANK_SELECT_DEC:
@@ -646,6 +647,7 @@ void refresh_switch_12L_midi(byte i, bool send)
       case MD_UISwitch::KEY_DPRESS:
 
         DPRINT("Pedal %2d   DOUBLE PRESS \n", i + 1);
+        if ((pedals[i].pressMode & PED_PRESS_2) != PED_PRESS_2) break;
         switch (banks[b][i].midiMessage) {
           case PED_BANK_SELECT_INC:
           case PED_BANK_SELECT_DEC:
@@ -667,6 +669,7 @@ void refresh_switch_12L_midi(byte i, bool send)
       case MD_UISwitch::KEY_LONGPRESS:
 
         DPRINT("Pedal %2d   LONG   PRESS \n", i + 1);
+        if ((pedals[i].pressMode & PED_PRESS_L) != PED_PRESS_L) break;
         switch (banks[b][i].midiMessage) {
           case PED_BANK_SELECT_INC:
           case PED_PROGRAM_CHANGE_INC:

@@ -19,9 +19,19 @@ Preferences preferences;
 //
 void load_factory_default()
 {
-  wifiSSID = "";
-  wifiPassword = "";
-  theme = "bootstrap";
+  host               = getChipId();
+  bootMode           = PED_BOOT_NORMAL;
+  wifiSSID           = "";
+  wifiPassword       = "";
+  theme              = "bootstrap";
+  currentProfile     = 0;
+  pressTime          = PED_PRESS_TIME;
+  doublePressTime    = PED_DOUBLE_PRESS_TIME;
+  longPressTime      = PED_LONG_PRESS_TIME;
+  repeatPressTime    = PED_REPEAT_PRESS_TIME;
+  tapDanceMode       = false;
+  repeatOnBankSwitch = false;
+  tapDanceBank       = true;
   blynk_set_token("");
 
   for (byte p = 0; p < PEDALS-2; p++)
@@ -201,7 +211,7 @@ void load_factory_default()
   }
 }
 
-void eeprom_update_device_name(String name = host)
+void eeprom_update_device_name(String name = getChipId())
 {
   DPRINT("Updating NVS ...\n");
   preferences.begin("Global", false);
@@ -233,7 +243,7 @@ void eeprom_update_wifi_credentials(String ssid = "", String pass = "")
   DPRINT("[NVS][Global][Password]: %s\n", pass.c_str());
 }
 
-void eeprom_update_current_profile(byte profile = currentProfile)
+void eeprom_update_current_profile(byte profile = 0)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -243,7 +253,7 @@ void eeprom_update_current_profile(byte profile = currentProfile)
   DPRINT("[NVS][Global][Current Profile]: %d\n", profile);
 }
 
-void eeprom_update_tap_dance(bool enable = true)
+void eeprom_update_tap_dance(bool enable = false)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -253,7 +263,7 @@ void eeprom_update_tap_dance(bool enable = true)
   DPRINT("[NVS][Global[Tap Dance Mode]: %d\n", enable);
 }
 
-void eeprom_update_repeat_on_bank_switch(bool enable = true)
+void eeprom_update_repeat_on_bank_switch(bool enable = false)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -263,7 +273,10 @@ void eeprom_update_repeat_on_bank_switch(bool enable = true)
   DPRINT("[NVS][Global[Bank Switch]: %d\n", enable);
 }
 
-void eeprom_update_press_time(long p1, long p2, long p3, long p4)
+void eeprom_update_press_time(long p1 = PED_PRESS_TIME,
+                              long p2 = PED_DOUBLE_PRESS_TIME,
+                              long p3 = PED_LONG_PRESS_TIME,
+                              long p4 = PED_REPEAT_PRESS_TIME)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -279,7 +292,7 @@ void eeprom_update_press_time(long p1, long p2, long p3, long p4)
   DPRINT("[NVS][Global[Repeat Time]: %d\n", p4);
 }
 
-void eeprom_update_blynk_cloud_enable(bool enable = true)
+void eeprom_update_blynk_cloud_enable(bool enable = false)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -435,17 +448,17 @@ void eeprom_initialize()
   preferences.begin("C", false);
   preferences.clear();
   preferences.end();
+  load_factory_default();
   eeprom_update_device_name();
   eeprom_update_boot_mode();
   eeprom_update_wifi_credentials();
   eeprom_update_theme();
-  eeprom_update_current_profile(0);
-  eeprom_update_tap_dance(false);
-  eeprom_update_repeat_on_bank_switch(false);
-  eeprom_update_press_time(pressTime, doublePressTime, longPressTime, repeatPressTime);
-  eeprom_update_blynk_cloud_enable(false);
+  eeprom_update_current_profile();
+  eeprom_update_tap_dance();
+  eeprom_update_repeat_on_bank_switch();
+  eeprom_update_press_time();
+  eeprom_update_blynk_cloud_enable();
   eeprom_update_blynk_auth_token();
-  load_factory_default();
   for (byte p = 0; p < PROFILES; p++)
     eeprom_update_profile(p);
 }

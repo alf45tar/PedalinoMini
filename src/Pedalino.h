@@ -57,6 +57,11 @@ typedef uint8_t   byte;
 //#define BOUNCE_WITH_PROMPT_DETECTION  // Report accurate switch time normally with no delay. Use when accurate switch transition timing is important.
 #include <Bounce2.h>                    // https://github.com/thomasfredericks/Bounce2
 
+#define PED_PRESS_TIME        200
+#define PED_DOUBLE_PRESS_TIME 400
+#define PED_LONG_PRESS_TIME   500
+#define PED_REPEAT_PRESS_TIME 500
+
 #include "MidiTimeCode.h"
 
 #define PED_BOOT_UNKNOWN        0
@@ -293,10 +298,10 @@ byte  lastUsed                = 0xFF;   // Pedal or switch
 bool  selectBank              = true;
 byte  currentMidiTimeCode     = PED_MTC_NONE;
 byte  timeSignature           = PED_TIMESIGNATURE_4_4;
-long  pressTime               = 100;
-long  doublePressTime         = 300;
-long  longPressTime           = 500;
-long  repeatPressTime         = 500;
+long  pressTime               = PED_PRESS_TIME;
+long  doublePressTime         = PED_DOUBLE_PRESS_TIME;
+long  longPressTime           = PED_LONG_PRESS_TIME;
+long  repeatPressTime         = PED_REPEAT_PRESS_TIME;
 
 MidiTimeCode  MTC;
 unsigned int  bpm             = 120;
