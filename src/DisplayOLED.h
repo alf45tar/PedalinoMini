@@ -422,7 +422,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
       display->drawString(64 + 10*currentProfile, 0, String(currentProfile));
     }
 
-#ifdef TTGO_T_EIGHT
+#ifdef BATTERY
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(batteryIndicator);
     voltage = (199*voltage + bat.voltage()) / 200;
@@ -848,7 +848,7 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       display->setTextAlignment(TEXT_ALIGN_LEFT);
       display->drawString(0 + x, 26 + y, "AP:");
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
-      display->drawString(128 + x, 26 + y, wifiSoftAP);
+      display->drawString(128 + x, 26 + y, ssidSoftAP);
       display->setTextAlignment(TEXT_ALIGN_LEFT);
       display->drawString(0 + x, 36 + y, "AP IP:");
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
