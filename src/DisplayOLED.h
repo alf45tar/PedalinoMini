@@ -848,7 +848,7 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       display->setTextAlignment(TEXT_ALIGN_LEFT);
       display->drawString(0 + x, 26 + y, "AP:");
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
-      display->drawString(128 + x, 26 + y, ssidSoftAP);
+      display->drawString(128 + x, 26 + y, wifiSoftAP);
       display->setTextAlignment(TEXT_ALIGN_LEFT);
       display->drawString(0 + x, 36 + y, "AP IP:");
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
