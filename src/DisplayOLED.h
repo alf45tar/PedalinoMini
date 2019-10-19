@@ -588,7 +588,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   if (millis() < endMillis2) {
     ui.disableAutoTransition();
     ui.switchToFrame(0);
-    if (banks[currentBank][lastUsed].pedalName[0] == 0) {
+    if (lastPedalName[0] == 0) {
       display->setTextAlignment(TEXT_ALIGN_CENTER);
       switch (m1) {
         case midi::InvalidType:
@@ -656,7 +656,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
         default:
           display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
           display->setFont(ArialMT_Plain_24);
-          display->drawString(64, 32, String(banks[currentBank][lastUsed].pedalName)); 
+          display->drawString(64, 32, String(lastPedalName));
           break;
       }    
     }
@@ -848,7 +848,7 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       display->setTextAlignment(TEXT_ALIGN_LEFT);
       display->drawString(0 + x, 26 + y, "AP:");
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
-      display->drawString(128 + x, 26 + y, wifiSoftAP);
+      display->drawString(128 + x, 26 + y, ssidSoftAP);
       display->setTextAlignment(TEXT_ALIGN_LEFT);
       display->drawString(0 + x, 36 + y, "AP IP:");
       display->setTextAlignment(TEXT_ALIGN_RIGHT);

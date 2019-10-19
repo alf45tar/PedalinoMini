@@ -17,6 +17,9 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <Update.h>
 #include <esp_wifi.h>
 #include <esp_wps.h>
+#ifdef BLUFI
+#include "BluFi.h"
+#endif
 
 #define WIFI_CONNECT_TIMEOUT    15
 #define SMART_CONFIG_TIMEOUT    15
@@ -205,13 +208,31 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       //WiFi.softAPsetHostname(host.c_str());
       //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
       //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
-      //DPRINT("AP SSID     : %s\n", wifiSoftAP.c_str());
+      //DPRINT("AP SSID     : %s\n", ssidSoftAP.c_str());
       //DPRINT("AP PSK      : %s\n", host.c_str());
       //DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
       //DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
       //DPRINT("Channel     : %d\n", WiFi.channel());
-      //DPRINT("Connect to %s wireless network with no password\n", wifiSoftAP.c_str());
+      //DPRINT("Connect to %s wireless network with no password\n", ssidSoftAP.c_str());
       //start_services();
+#ifdef BLUFI
+      {
+        wifi_mode_t            mode;
+        wifi_config_t          config;
+        esp_blufi_extra_info_t info;
+
+        esp_wifi_get_mode(&mode);
+        if (mode == WIFI_MODE_AP) {
+          esp_wifi_get_config(WIFI_IF_AP, &config);
+          memset(&info, 0, sizeof(esp_blufi_extra_info_t));
+          info.softap_ssid     = config.ap.ssid;
+          info.softap_ssid_len = config.ap.ssid_len;
+          esp_blufi_send_wifi_conn_report(mode, ESP_BLUFI_STA_CONN_SUCCESS, 0, &info);
+        } else {
+          esp_blufi_send_wifi_conn_report(mode, ESP_BLUFI_STA_CONN_FAIL, 0, NULL);
+        }
+      }
+#endif
       break;
 
     case SYSTEM_EVENT_AP_STOP:
@@ -259,6 +280,41 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_PBC_OVERLAP\n");
       break;
 
+#ifdef BLUFI
+    case SYSTEM_EVENT_SCAN_DONE: {
+      DPRINT("SYSTEM_EVENT_SCAN_DONE\n");
+      uint16_t apCount = 0;
+      esp_wifi_scan_get_ap_num(&apCount);
+      if (apCount == 0) {
+        BLUFI_INFO("Nothing AP found");
+        break;
+      }
+      wifi_ap_record_t *ap_list = (wifi_ap_record_t *)malloc(sizeof(wifi_ap_record_t) * apCount);
+      if (!ap_list) {
+        BLUFI_ERROR("malloc error, ap_list is NULL");
+        break;
+      }
+      ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&apCount, ap_list));
+      esp_blufi_ap_record_t * blufi_ap_list = (esp_blufi_ap_record_t *)malloc(apCount * sizeof(esp_blufi_ap_record_t));
+      if (!blufi_ap_list) {
+        if (ap_list) {
+          free(ap_list);
+        }
+        BLUFI_ERROR("malloc error, blufi_ap_list is NULL");
+        break;
+      }
+      for (int i = 0; i < apCount; ++i) {
+        blufi_ap_list[i].rssi = ap_list[i].rssi;
+        memcpy(blufi_ap_list[i].ssid, ap_list[i].ssid, sizeof(ap_list[i].ssid));
+      }
+      esp_blufi_send_wifi_list(apCount, blufi_ap_list);
+      esp_wifi_scan_stop();
+      free(ap_list);
+      free(blufi_ap_list);
+      break;
+    }
+#endif
+
     default:
       DPRINT("Event: %d\n", event);
       break;
@@ -282,20 +338,20 @@ void ap_mode_start()
 
   WiFi.mode(WIFI_AP);
   
-  if (WiFi.softAP(wifiSoftAP.c_str(), host.c_str())) {
-    DPRINT("AP %s started with password %s\n", wifiSoftAP.c_str(), host.c_str());
+  if (WiFi.softAP(ssidSoftAP.c_str(), passwordSoftAP.c_str())) {
+    DPRINT("AP %s started with password %s\n", ssidSoftAP.c_str(), passwordSoftAP.c_str());
     // Setup the DNS server redirecting all the domains to the apIP
     //dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     //dnsServer.start(53, "*", apIP);
     WiFi.softAPsetHostname(host.c_str());
     //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
     //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
-    DPRINT("AP SSID     : %s\n", wifiSoftAP.c_str());
-    DPRINT("AP PSK      : %s\n", host.c_str());
+    DPRINT("AP SSID     : %s\n", ssidSoftAP.c_str());
+    DPRINT("AP PSK      : %s\n", passwordSoftAP.c_str());
     DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
     DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
     DPRINT("Channel     : %d\n", WiFi.channel());
-    DPRINT("Connect to %s wireless network with password %s\n", wifiSoftAP.c_str(), host.c_str());
+    DPRINT("Connect to %s wireless network with password %s\n", ssidSoftAP.c_str(), passwordSoftAP.c_str());
     start_services();
   }  
   else
@@ -353,7 +409,7 @@ bool smart_config()
     DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
     DPRINT("Password    : %s\n", WiFi.psk().c_str());
 
-    eeprom_update_wifi_credentials(WiFi.SSID(), WiFi.psk());
+    eeprom_update_sta_wifi_credentials(WiFi.SSID(), WiFi.psk());
   }
   else
     DPRINT("SmartConfig timeout\n");
@@ -416,7 +472,7 @@ bool wps_config()
       DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
       DPRINT("Password    : %s\n", WiFi.psk().c_str());
 
-      eeprom_update_wifi_credentials(WiFi.SSID(), WiFi.psk());
+      eeprom_update_sta_wifi_credentials(WiFi.SSID(), WiFi.psk());
     }  
   }
   else {

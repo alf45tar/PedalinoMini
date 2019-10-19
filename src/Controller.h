@@ -508,6 +508,7 @@ void refresh_switch_1_midi(byte i, bool send)
     pedals[i].lastUpdate[1] = pedals[i].lastUpdate[0];
     lastUsedSwitch = i;
     lastUsed = i;
+    strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
   }
   else {
     if (state1) {                                                             // pin state changed
@@ -524,6 +525,7 @@ void refresh_switch_1_midi(byte i, bool send)
         pedals[i].lastUpdate[0] = millis();
         lastUsedSwitch = i;
         lastUsed = i;
+        strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
         DPRINT("Bank %d\n", currentBank + 1);
         return;
       }
@@ -560,6 +562,7 @@ void refresh_switch_1_midi(byte i, bool send)
       pedals[i].lastUpdate[0] = millis();
       lastUsedSwitch = i;
       lastUsed = i;
+      strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
     }
     if (state2) {                                                             // pin state changed
       input = pedals[i].debouncer[1]->read();                                 // reads the updated pin state
@@ -587,6 +590,7 @@ void refresh_switch_1_midi(byte i, bool send)
       pedals[i].lastUpdate[1] = millis();
       lastUsedSwitch = i;
       lastUsed = i;
+      strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
     }
   }
 }
@@ -642,6 +646,7 @@ void refresh_switch_12L_midi(byte i, bool send)
         }                    
         lastUsedSwitch = i;
         lastUsed = i;
+        strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
         break;
 
       case MD_UISwitch::KEY_DPRESS:
@@ -664,6 +669,7 @@ void refresh_switch_12L_midi(byte i, bool send)
           midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
         }                   
         lastUsedSwitch = i;
+        strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
         break;
 
       case MD_UISwitch::KEY_LONGPRESS:
@@ -696,6 +702,7 @@ void refresh_switch_12L_midi(byte i, bool send)
         }
         lastUsedSwitch = i;
         lastUsed = i;
+        strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
         break;
 
       case MD_UISwitch::KEY_RPTPRESS:
@@ -730,57 +737,41 @@ void refresh_switch_12L(byte i)
   if ((k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS) && k1 == MD_UISwitch::KEY_NULL) k = 2;
   if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
       (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
+  
   if (k > 0 && (k1 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_PRESS)) {
     // Single press
     if (pedals[i].mode == PED_LADDER) {
-      if (k1 != MD_UISwitch::KEY_NULL) {
-        switch (pedals[i].footSwitch[0]->getKey()) {
-/*
+      switch (pedals[i].footSwitch[0]->getKey()) {
             case 'S':
-              return MD_Menu::NAV_SEL;
               break;
 
             case 'L':
-              if (M.isInMenu())
-                return MD_Menu::NAV_ESC;
-              else if (MTC.isPlaying()) 
+              if (MTC.isPlaying()) 
                 MTC.sendStop();
               else
                 MTC.sendPosition(0, 0, 0, 0);
-              return MD_Menu::NAV_NULL;
               break;
 
             case 'U':
-              if (M.isInMenu())
-                return MD_Menu::NAV_INC;
-              else if (currentBank < BANKS - 1) currentBank++;
-              return MD_Menu::NAV_NULL;
+              if (currentBank < BANKS - 1) currentBank++;
               break;
 
             case 'D':
-              if (M.isInMenu())
-                return MD_Menu::NAV_DEC;
-              else if (currentBank > 0) currentBank--;
-              return MD_Menu::NAV_NULL;
+              if (currentBank > 0) currentBank--;
               break;
 
             case 'R':
-              if (M.isInMenu())
-                return MD_Menu::NAV_NULL;
-              else if (MTC.isPlaying())
+              if (MTC.isPlaying())
                 MTC.sendStop();
               else if (MTC.getFrames() == 0 && MTC.getSeconds() == 0 && MTC.getMinutes() == 0 && MTC.getHours() == 0)
                 MTC.sendPlay();
               else
                 MTC.sendContinue();
-              return MD_Menu::NAV_NULL;
               break;
-*/
         }
-      }
     }
-    else {
-      switch (pedals[i].function) {
+
+    switch (pedals[i].function) {
       case PED_BANK_PLUS:
         switch (k) {
           case 1:
@@ -890,7 +881,6 @@ void refresh_switch_12L(byte i)
             break;
         }
         break;
-      }
     }
   }
 
@@ -993,6 +983,7 @@ void refresh_analog(byte i, bool send)
         pedals[i].lastUpdate[0] = micros();
         lastUsedPedal = i;
         lastUsed = i;
+        strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
         break;
       case PED_BPM_PLUS:
       case PED_BPM_MINUS:
@@ -1075,6 +1066,11 @@ void controller_run(bool send = true)
       case PED_ANALOG:
         refresh_analog(i, send);
         break;
+
+      case PED_LADDER:
+        refresh_switch_12L(i);
+        break;
+
     }
   }
 }
@@ -1088,6 +1084,7 @@ void controller_setup()
   lastUsedSwitch = 0xFF;
   lastUsedPedal  = 0xFF;
   lastUsed       = 0xFF;
+  memset(lastPedalName, 0, MAXPEDALNAME+1);
 
   DPRINT("Bank %2d\n", currentBank + 1);
 
@@ -1274,6 +1271,7 @@ void controller_setup()
           if (lastUsedPedal == 0xFF) {
             lastUsedPedal = i;
             lastUsed = i;
+            strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
           }
         }
         DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));

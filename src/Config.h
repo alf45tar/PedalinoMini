@@ -23,6 +23,8 @@ void load_factory_default()
   bootMode           = PED_BOOT_NORMAL;
   wifiSSID           = "";
   wifiPassword       = "";
+  ssidSoftAP         = String("Pedalino-") + getChipId();
+  passwordSoftAP     = getChipId();
   theme              = "bootstrap";
   currentProfile     = 0;
   pressTime          = PED_PRESS_TIME;
@@ -231,16 +233,28 @@ void eeprom_update_boot_mode(byte mode = PED_BOOT_NORMAL)
   DPRINT("[NVS][Global][Boot Mode]: %d\n", mode);
 }
 
-void eeprom_update_wifi_credentials(String ssid = "", String pass = "")
+void eeprom_update_sta_wifi_credentials(String ssid = "", String pass = "")
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
-  preferences.putString("SSID", ssid);
-  preferences.putString("Password", pass);
+  preferences.putString("STA SSID", ssid);
+  preferences.putString("STA Password", pass);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("[NVS][Global][SSID]:     %s\n", ssid.c_str());
-  DPRINT("[NVS][Global][Password]: %s\n", pass.c_str());
+  DPRINT("[NVS][Global][STA SSID]:     %s\n", ssid.c_str());
+  DPRINT("[NVS][Global][STA Password]: %s\n", pass.c_str());
+}
+
+void eeprom_update_ap_wifi_credentials(String ssid = String("Pedalino-") + getChipId(), String pass = getChipId())
+{
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putString("AP SSID", ssid);
+  preferences.putString("AP Password", pass);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global][AP SSID]:     %s\n", ssid.c_str());
+  DPRINT("[NVS][Global][AP Password]: %s\n", pass.c_str());
 }
 
 void eeprom_update_current_profile(byte profile = 0)
@@ -361,8 +375,10 @@ void eeprom_read_global()
   preferences.begin("Global", true);
   host               = preferences.getString("Device Name");
   bootMode           = preferences.getUChar("Boot Mode");
-  wifiSSID           = preferences.getString("SSID");
-  wifiPassword       = preferences.getString("Password");
+  wifiSSID           = preferences.getString("STA SSID");
+  wifiPassword       = preferences.getString("STA Password");
+  ssidSoftAP         = preferences.getString("AP SSID");
+  passwordSoftAP     = preferences.getString("AP Password");
   theme              = preferences.getString("Bootstrap Theme");
   currentProfile     = preferences.getUChar("Current Profile");
   tapDanceMode       = preferences.getBool("Tap Dance Mode");
@@ -451,7 +467,8 @@ void eeprom_initialize()
   load_factory_default();
   eeprom_update_device_name();
   eeprom_update_boot_mode();
-  eeprom_update_wifi_credentials();
+  eeprom_update_sta_wifi_credentials();
+  eeprom_update_ap_wifi_credentials();
   eeprom_update_theme();
   eeprom_update_current_profile();
   eeprom_update_tap_dance();

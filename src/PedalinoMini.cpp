@@ -312,7 +312,7 @@ void setup()
 
     case PED_BOOT_RESET_WIFI:
       DPRINT("Reset WiFi credentials\n");
-      eeprom_update_wifi_credentials();
+      eeprom_update_sta_wifi_credentials();
       eeprom_read_global();
       break;
 
@@ -344,6 +344,10 @@ void setup()
     DPRINT("BLE MIDI service advertising started\n");
   }
  #endif
+
+#ifdef BLUFI
+  blufi_config();
+#endif
 
 #ifdef WIFI
   if (wifiEnabled) {

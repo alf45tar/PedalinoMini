@@ -295,6 +295,7 @@ byte  currentInterface        = PED_USBMIDI;
 byte  lastUsedSwitch          = 0xFF;
 byte  lastUsedPedal           = 0xFF;
 byte  lastUsed                = 0xFF;   // Pedal or switch
+char  lastPedalName[MAXPEDALNAME+1] = "";
 bool  selectBank              = true;
 byte  currentMidiTimeCode     = PED_MTC_NONE;
 byte  timeSignature           = PED_TIMESIGNATURE_4_4;
@@ -358,6 +359,12 @@ MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
   { 720, 15, 'S' },  // Select
 };
 
+#define PED_LADDER_1  'R'
+#define PED_LADDER_2  'U'
+#define PED_LADDER_3  'D'
+#define PED_LADDER_4  'L'
+#define PED_LADDER_5  'S'
+
 bool powersaver = false;
 
 #ifdef DEBUG_ESP_PORT
@@ -393,7 +400,8 @@ String getChipId() {
 }
 
 String host(getChipId());
-String wifiSoftAP("Pedalino-" + getChipId());
+String ssidSoftAP("Pedalino-" + getChipId());
+String passwordSoftAP(getChipId());
 
 
 #include <AsyncTCP.h>

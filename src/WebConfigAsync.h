@@ -296,7 +296,7 @@ void get_root_page() {
   if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA) {
   page += F("<h3>Wireless AP</h3>");
   page += F("<dt>AP SSID</dt><dd>");
-  page += wifiSoftAP;
+  page += ssidSoftAP;
   page += F("</dd>");
   page += F("<dt>AP MAC Address</dt><dd>");
   page += WiFi.softAPmacAddress();
@@ -652,16 +652,16 @@ void get_banks_page() {
   page += F("<span class='badge badge-primary'>MIDI Channel</span>");
   page += F("</div>");
   page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>MIDI Code/Note</span>");
+  page += F("<span class='badge badge-primary'>Control Change/Note</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>MIDI Value 1</span>");
+  page += F("<span class='badge badge-primary' data-toggle='tooltip' title='Single Press/From'>MIDI Value 1</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>MIDI Value 2</span>");
+  page += F("<span class='badge badge-primary' data-toggle='tooltip' title='Double Press'>MIDI Value 2</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>MIDI Value 3</span>");
+  page += F("<span class='badge badge-primary' data-toggle='tooltip' title='Long Press/To'>MIDI Value 3</span>");
   page += F("</div>");
   page += F("</div>");
 
@@ -831,10 +831,10 @@ void get_pedals_page() {
   page += F("<span class='badge badge-primary'>Analog<br>Map</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>Min</span>");
+  page += F("<span class='badge badge-primary' data-toggle='tooltip' title='Analog Min/First Bank/BPM Min'>Min</span>");
   page += F("</div>");
   page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>Max</span>");
+  page += F("<span class='badge badge-primary' data-toggle='tooltip' title='Analog Max/Last Bank/BPM Max'>Max</span>");
   page += F("</div>");
   page += F("</div>");
 
@@ -2387,7 +2387,9 @@ inline void http_run() {
 
 #ifdef WEBSOCKET
     webSocket.binaryAll(display.buffer, 128*64);
+    webSocket.cleanupClients();
 #endif
+    
 /*
     if (!buffer) {
       buffer = webSocket.makeBuffer(128*64);
