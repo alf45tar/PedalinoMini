@@ -112,13 +112,8 @@ typedef uint8_t   byte;
 #define PED_STOP                4
 #define PED_CONTINUE            5
 #define PED_TAP                 6
-#define PED_MENU                7
-#define PED_CONFIRM             8
-#define PED_ESCAPE              9
-#define PED_NEXT               10
-#define PED_PREVIOUS           11
-#define PED_BPM_PLUS           12
-#define PED_BPM_MINUS          13
+#define PED_BPM_PLUS            7
+#define PED_BPM_MINUS           8
 
 #define PED_LINEAR              0
 #define PED_LOG                 1

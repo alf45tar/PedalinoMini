@@ -212,6 +212,36 @@ unsigned int map_analog(byte p, unsigned int value)
   return value;
 }
 
+void footswitch_update(byte p, byte f)
+{
+  pedals[p].footSwitch[f]->setPressTime(pressTime);
+  pedals[p].footSwitch[f]->setDoublePressTime(doublePressTime);
+  pedals[p].footSwitch[f]->setLongPressTime(longPressTime);
+  pedals[p].footSwitch[f]->setRepeatTime(repeatPressTime);
+  switch (pedals[p].pressMode) {
+    case PED_PRESS_1:
+      pedals[p].footSwitch[f]->enableDoublePress(false);
+      pedals[p].footSwitch[f]->enableLongPress(false);
+      break;
+    case PED_PRESS_2:
+    case PED_PRESS_1_2:
+      pedals[p].footSwitch[f]->enableDoublePress(true);
+      pedals[p].footSwitch[f]->enableLongPress(false);
+      break;
+    case PED_PRESS_L:
+      case PED_PRESS_1_L:
+      pedals[p].footSwitch[f]->enableDoublePress(false);
+      pedals[p].footSwitch[f]->enableLongPress(true);
+      break;
+    case PED_PRESS_1_2_L:
+    case PED_PRESS_2_L:
+      pedals[p].footSwitch[f]->enableDoublePress(true);
+      pedals[p].footSwitch[f]->enableLongPress(true);
+      break;
+  }
+  pedals[p].footSwitch[f]->enableRepeat(pedals[p].function != PED_MIDI);
+}
+
 void bank_update (byte b, byte p, int d = 1, bool enable = true)
 {
   if (enable) {
@@ -883,63 +913,6 @@ void refresh_switch_12L(byte i)
         break;
     }
   }
-
-  // Double press, long press and repeat
-  if (pedals[i].footSwitch[0] != nullptr)
-    switch (k1) {
-      case MD_UISwitch::KEY_NULL:
-        pedals[i].footSwitch[0]->setDoublePressTime(doublePressTime);
-        pedals[i].footSwitch[0]->setLongPressTime(longPressTime);
-        pedals[i].footSwitch[0]->setRepeatTime(repeatPressTime);
-        pedals[i].footSwitch[0]->enableDoublePress(true);
-        pedals[i].footSwitch[0]->enableLongPress(true);
-        break;
-      case MD_UISwitch::KEY_RPTPRESS:
-        pedals[i].footSwitch[0]->setDoublePressTime(0);
-        pedals[i].footSwitch[0]->setLongPressTime(0);
-        pedals[i].footSwitch[0]->setRepeatTime(10);
-        pedals[i].footSwitch[0]->enableDoublePress(false);
-        pedals[i].footSwitch[0]->enableLongPress(false);
-        break;
-      case MD_UISwitch::KEY_DPRESS:
-        //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_SEL;
-        break;
-      case MD_UISwitch::KEY_LONGPRESS:
-        //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_ESC;
-        break;
-      case MD_UISwitch::KEY_PRESS:
-      case MD_UISwitch::KEY_DOWN:
-      case MD_UISwitch::KEY_UP:
-        break;
-    }
-
-  if (pedals[i].footSwitch[1] != nullptr)
-    switch (k2) {
-      case MD_UISwitch::KEY_NULL:
-        pedals[i].footSwitch[1]->setDoublePressTime(doublePressTime);
-        pedals[i].footSwitch[1]->setLongPressTime(longPressTime);
-        pedals[i].footSwitch[1]->setRepeatTime(repeatPressTime);
-        pedals[i].footSwitch[1]->enableDoublePress(true);
-        pedals[i].footSwitch[1]->enableLongPress(true);
-        break;
-      case MD_UISwitch::KEY_RPTPRESS:
-        pedals[i].footSwitch[1]->setDoublePressTime(0);
-        pedals[i].footSwitch[1]->setLongPressTime(0);
-        pedals[i].footSwitch[1]->setRepeatTime(10);
-        pedals[i].footSwitch[1]->enableDoublePress(false);
-        pedals[i].footSwitch[1]->enableLongPress(false);
-        break;
-      case MD_UISwitch::KEY_DPRESS:
-        //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_SEL;
-        break;
-      case MD_UISwitch::KEY_LONGPRESS:
-        //if (pedals[i].function == PED_MENU) return MD_Menu::NAV_ESC;
-        break;
-      case MD_UISwitch::KEY_PRESS:
-      case MD_UISwitch::KEY_DOWN:
-      case MD_UISwitch::KEY_UP:
-        break;
-    }
 }
 
 
@@ -1099,11 +1072,6 @@ void controller_setup()
       case PED_STOP:        DPRINT("STOP      "); break;
       case PED_CONTINUE:    DPRINT("CONTINUE  "); break;
       case PED_TAP:         DPRINT("TAP       "); break;
-      case PED_MENU:        DPRINT("MENU      "); break;
-      case PED_CONFIRM:     DPRINT("CONFIRM   "); break;
-      case PED_ESCAPE:      DPRINT("ESCAPE    "); break;
-      case PED_NEXT:        DPRINT("NEXT      "); break;
-      case PED_PREVIOUS:    DPRINT("PREVIOUS  "); break;
       case PED_BPM_PLUS:    DPRINT("BPM+      "); break;
       case PED_BPM_MINUS:   DPRINT("BPM-      "); break;
       default:              DPRINT("          "); break;
@@ -1218,41 +1186,7 @@ void controller_setup()
                 break;
             }
             pedals[i].footSwitch[p]->begin();
-            //pedals[i].footSwitch[p]->setDebounceTime(DEBOUNCE_INTERVAL);
-            pedals[i].footSwitch[p]->setPressTime(pressTime);
-            if (pedals[i].function == PED_MIDI) {
-              switch (pedals[i].pressMode) {
-                case PED_PRESS_1:
-                  pedals[i].footSwitch[p]->enableDoublePress(false);
-                  pedals[i].footSwitch[p]->enableLongPress(false);
-                  break;
-                case PED_PRESS_2:
-                case PED_PRESS_1_2:
-                  pedals[i].footSwitch[p]->enableDoublePress(true);
-                  pedals[i].footSwitch[p]->enableLongPress(false);
-                  break;
-                case PED_PRESS_L:
-                case PED_PRESS_1_L:
-                  pedals[i].footSwitch[p]->enableDoublePress(false);
-                  pedals[i].footSwitch[p]->enableLongPress(true);
-                  break;
-                case PED_PRESS_1_2_L:
-                case PED_PRESS_2_L:
-                  pedals[i].footSwitch[p]->enableDoublePress(true);
-                  pedals[i].footSwitch[p]->enableLongPress(true);
-                  break;
-              }
-              pedals[i].footSwitch[p]->setDoublePressTime(doublePressTime);
-              pedals[i].footSwitch[p]->setLongPressTime(longPressTime);
-              pedals[i].footSwitch[p]->enableRepeat(false);
-            }
-            else
-            {
-              pedals[i].footSwitch[p]->setDoublePressTime(doublePressTime);
-              pedals[i].footSwitch[p]->setLongPressTime(longPressTime);
-              pedals[i].footSwitch[p]->setRepeatTime(repeatPressTime);
-              pedals[i].footSwitch[p]->enableRepeatResult(true);
-            }
+            footswitch_update(i, p);
           }
         }
         break;
@@ -1279,47 +1213,9 @@ void controller_setup()
 
       case PED_LADDER:
         pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt, ARRAY_SIZE(kt));
-        DPRINT("   Pin A%d", PIN_A(i));
         pedals[i].footSwitch[0]->begin();
-        //pedals[i].footSwitch[0]->setDebounceTime(DEBOUNCE_INTERVAL);
-        pedals[i].footSwitch[0]->setPressTime(pressTime);
-        if (pedals[i].function == PED_MIDI) {
-          switch (pedals[i].pressMode) {
-            case PED_PRESS_1:
-              pedals[i].footSwitch[0]->enableDoublePress(false);
-              pedals[i].footSwitch[0]->enableLongPress(false);
-              break;
-            case PED_PRESS_2:
-            case PED_PRESS_1_2:
-              pedals[i].footSwitch[0]->enableDoublePress(true);
-              pedals[i].footSwitch[0]->enableLongPress(false);
-              break;
-            case PED_PRESS_L:
-            case PED_PRESS_1_L:
-              pedals[i].footSwitch[0]->enableDoublePress(false);
-              pedals[i].footSwitch[0]->enableLongPress(true);
-              break;
-            case PED_PRESS_1_2_L:
-            case PED_PRESS_2_L:
-              pedals[i].footSwitch[0]->enableDoublePress(true);
-              pedals[i].footSwitch[0]->enableLongPress(true);
-              break;
-          }
-          pedals[i].footSwitch[0]->setDoublePressTime(doublePressTime);
-          pedals[i].footSwitch[0]->setLongPressTime(longPressTime);
-          pedals[i].footSwitch[0]->enableRepeat(false);
-        }
-        else
-        {
-          /*
-            pedals[i].footSwitch[0]->setDoublePressTime(doublePressTime);
-            pedals[i].footSwitch[0]->setLongPressTime(longPressTime);
-            pedals[i].footSwitch[0]->setRepeatTime(repeatPressTime);
-            pedals[i].footSwitch[0]->enableRepeatResult(true);
-          */
-          pedals[i].footSwitch[0]->enableDoublePress(false);
-          pedals[i].footSwitch[0]->enableLongPress(false);
-        }
+        footswitch_update(i, 0);
+        DPRINT("   Pin A%d", PIN_A(i));
         break;
 
       case PED_JOG_WHEEL:
