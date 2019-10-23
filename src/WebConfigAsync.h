@@ -911,11 +911,27 @@ void get_pedals_page() {
     page += F("<option value='");
     page += String(PED_BANK_PLUS) + F("'");
     if (pedals[i-1].function == PED_BANK_PLUS) page += F(" selected");
-    page += F(">Bank+</option>");
+    page += F(">Bank+1</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_PLUS_2) + F("'");
+    if (pedals[i-1].function == PED_BANK_PLUS_2) page += F(" selected");
+    page += F(">Bank+2</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_PLUS_3) + F("'");
+    if (pedals[i-1].function == PED_BANK_PLUS_3) page += F(" selected");
+    page += F(">Bank+3</option>");
     page += F("<option value='");
     page += String(PED_BANK_MINUS) + F("'");
     if (pedals[i-1].function == PED_BANK_MINUS) page += F(" selected");
-    page += F(">Bank-</option>");
+    page += F(">Bank-1</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_MINUS_2) + F("'");
+    if (pedals[i-1].function == PED_BANK_MINUS_2) page += F(" selected");
+    page += F(">Bank-2</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_MINUS_3) + F("'");
+    if (pedals[i-1].function == PED_BANK_MINUS_3) page += F(" selected");
+    page += F(">Bank-3</option>");
     page += F("<option value='");
     page += String(PED_START) + F("'");
     if (pedals[i-1].function == PED_START) page += F(" selected");
@@ -1870,6 +1886,10 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     switch (pedals[i].function) {
       case PED_BANK_PLUS:
       case PED_BANK_MINUS:
+      case PED_BANK_PLUS_2:
+      case PED_BANK_MINUS_2:
+      case PED_BANK_PLUS_3:
+      case PED_BANK_MINUS_3:
         pedals[i].expZero = constrain(pedals[i].expZero, 1, BANKS);
         pedals[i].expMax  = constrain(pedals[i].expMax,  1, BANKS);
       break;

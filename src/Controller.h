@@ -755,22 +755,15 @@ void refresh_switch_12L(byte i)
                                      1 = Closed   Open
                                      2 =  Open   Closed
                                      3 = Closed  Closed */
+  byte step;
 
   if (pedals[i].function == PED_MIDI) return;
 
-  k = 0;
-  k1 = MD_UISwitch::KEY_NULL;
-  k2 = MD_UISwitch::KEY_NULL;
-  if (pedals[i].footSwitch[0] != nullptr) k1 = pedals[i].footSwitch[0]->read();
-  if (pedals[i].footSwitch[1] != nullptr) k2 = pedals[i].footSwitch[1]->read();
-  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) && k2 == MD_UISwitch::KEY_NULL) k = 1;
-  if ((k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS) && k1 == MD_UISwitch::KEY_NULL) k = 2;
-  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
-      (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
-  
-  if (k > 0 && (k1 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_PRESS)) {
-    // Single press
-    if (pedals[i].mode == PED_LADDER) {
+  if (pedals[i].mode == PED_LADDER) {
+    k1 = MD_UISwitch::KEY_NULL;
+    if (pedals[i].footSwitch[0] != nullptr) k1 = pedals[i].footSwitch[0]->read();
+    if (k1 != MD_UISwitch::KEY_NULL) {
+      DPRINT("%d %c ", k1, pedals[i].footSwitch[0]->getKey());
       switch (pedals[i].footSwitch[0]->getKey()) {
             case 'S':
               break;
@@ -799,22 +792,52 @@ void refresh_switch_12L(byte i)
                 MTC.sendContinue();
               break;
         }
+      }
+      return;
     }
 
+  k = 0;
+  k1 = MD_UISwitch::KEY_NULL;
+  k2 = MD_UISwitch::KEY_NULL;
+  if (pedals[i].footSwitch[0] != nullptr) k1 = pedals[i].footSwitch[0]->read();
+  if (pedals[i].footSwitch[1] != nullptr) k2 = pedals[i].footSwitch[1]->read();
+  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) && k2 == MD_UISwitch::KEY_NULL) k = 1;
+  if ((k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS) && k1 == MD_UISwitch::KEY_NULL) k = 2;
+  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
+      (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
+  
+  if (k > 0 && (k1 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_PRESS)) {
+    // Single press
     switch (pedals[i].function) {
       case PED_BANK_PLUS:
+      case PED_BANK_PLUS_2:
+      case PED_BANK_PLUS_3:
+        switch (pedals[i].function) {
+          case PED_BANK_PLUS:
+            step = 1;
+            break;
+          case PED_BANK_PLUS_2:
+            step = 2;
+            break;
+          case PED_BANK_PLUS_3:
+            step = 3;
+            break;
+          default:
+            step = 0;
+            break;
+        }
         switch (k) {
           case 1:
             if (currentBank == pedals[i].expMax - 1)
               currentBank = pedals[i].expZero - 1;
             else
-              currentBank++;
+              currentBank = currentBank + step;
             break;
           case 2:
             if (currentBank == (pedals[i].expZero - 1))
               currentBank = pedals[i].expMax - 1;
             else
-              currentBank--;
+              currentBank = currentBank - step;
             break;
           case 3:
             currentBank = pedals[i].expZero - 1;
@@ -830,18 +853,34 @@ void refresh_switch_12L(byte i)
         break;
 
       case PED_BANK_MINUS:
+      case PED_BANK_MINUS_2:
+      case PED_BANK_MINUS_3:
+        switch (pedals[i].function) {
+          case PED_BANK_MINUS:
+            step = 1;
+            break;
+          case PED_BANK_MINUS_2:
+            step = 2;
+            break;
+          case PED_BANK_MINUS_3:
+            step = 3;
+            break;
+          default:
+            step = 0;
+            break;
+        }
         switch (k) {
           case 1:
             if (currentBank == (pedals[i].expZero - 1))
               currentBank = pedals[i].expMax - 1;
             else
-              currentBank--;
+              currentBank = currentBank - step;
             break;
           case 2:
             if (currentBank == pedals[i].expMax - 1)
               currentBank = pedals[i].expZero - 1;
             else
-              currentBank++;
+              currentBank = currentBank + step;
             break;
           case 3:
             currentBank = pedals[i].expMax - 1;
@@ -1058,6 +1097,7 @@ void controller_setup()
   lastUsedPedal  = 0xFF;
   lastUsed       = 0xFF;
   memset(lastPedalName, 0, MAXPEDALNAME+1);
+  controller_delete();
 
   DPRINT("Bank %2d\n", currentBank + 1);
 
@@ -1065,16 +1105,20 @@ void controller_setup()
   for (byte i = 0; i < PEDALS; i++) {
     DPRINT("Pedal %2d     ", i + 1);
     switch (pedals[i].function) {
-      case PED_MIDI:        DPRINT("MIDI      "); break;
-      case PED_BANK_PLUS:   DPRINT("BANK_PLUS "); break;
-      case PED_BANK_MINUS:  DPRINT("BANK_MINUS"); break;
-      case PED_START:       DPRINT("START     "); break;
-      case PED_STOP:        DPRINT("STOP      "); break;
-      case PED_CONTINUE:    DPRINT("CONTINUE  "); break;
-      case PED_TAP:         DPRINT("TAP       "); break;
-      case PED_BPM_PLUS:    DPRINT("BPM+      "); break;
-      case PED_BPM_MINUS:   DPRINT("BPM-      "); break;
-      default:              DPRINT("          "); break;
+      case PED_MIDI:         DPRINT("MIDI      "); break;
+      case PED_BANK_PLUS:    DPRINT("BANK+1    "); break;
+      case PED_BANK_MINUS:   DPRINT("BANK-1    "); break;
+      case PED_START:        DPRINT("START     "); break;
+      case PED_STOP:         DPRINT("STOP      "); break;
+      case PED_CONTINUE:     DPRINT("CONTINUE  "); break;
+      case PED_TAP:          DPRINT("TAP       "); break;
+      case PED_BPM_PLUS:     DPRINT("BPM+      "); break;
+      case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
+      case PED_BANK_PLUS_2:  DPRINT("BANK+2    "); break;
+      case PED_BANK_MINUS_2: DPRINT("BANK-2    "); break;
+      case PED_BANK_PLUS_3:  DPRINT("BANK+3    "); break;
+      case PED_BANK_MINUS_3: DPRINT("BANK-3    "); break;
+      default:               DPRINT("          "); break;
     }
     DPRINT("   ");
     switch (pedals[i].mode) {

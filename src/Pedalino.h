@@ -114,6 +114,10 @@ typedef uint8_t   byte;
 #define PED_TAP                 6
 #define PED_BPM_PLUS            7
 #define PED_BPM_MINUS           8
+#define PED_BANK_PLUS_2         9
+#define PED_BANK_MINUS_2       10
+#define PED_BANK_PLUS_3        11
+#define PED_BANK_MINUS_3       12
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
