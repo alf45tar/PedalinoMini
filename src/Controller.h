@@ -755,7 +755,8 @@ void refresh_switch_12L(byte i)
                                      1 = Closed   Open
                                      2 =  Open   Closed
                                      3 = Closed  Closed */
-  byte step;
+  
+  byte f, step;
 
   if (pedals[i].function == PED_MIDI) return;
 
@@ -806,13 +807,39 @@ void refresh_switch_12L(byte i)
   if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
       (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
   
-  if (k > 0 && (k1 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_PRESS)) {
-    // Single press
+  f = pedals[i].function;
+
+  // Double press or long press invert pedal function
+  if (k > 0 && (k1 == MD_UISwitch::KEY_DPRESS    || k2 == MD_UISwitch::KEY_DPRESS ||
+                k1 == MD_UISwitch::KEY_LONGPRESS || k2 == MD_UISwitch::KEY_LONGPRESS))
     switch (pedals[i].function) {
+      case PED_BANK_PLUS:
+        f = PED_BANK_MINUS;
+        break;
+      case PED_BANK_PLUS_2:
+        f = PED_BANK_MINUS_2;
+        break;
+      case PED_BANK_PLUS_3:
+        f = PED_BANK_MINUS_3;
+        break;
+      case PED_BANK_MINUS:
+        f = PED_BANK_PLUS;
+        break;
+      case PED_BANK_MINUS_2:
+        f = PED_BANK_PLUS_2;
+        break;
+      case PED_BANK_MINUS_3:
+        f = PED_BANK_PLUS_3;
+        break;
+    }
+
+  //if (k > 0 && (k1 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_PRESS)) {
+    if (k > 0) {
+    switch (f) {
       case PED_BANK_PLUS:
       case PED_BANK_PLUS_2:
       case PED_BANK_PLUS_3:
-        switch (pedals[i].function) {
+        switch (f) {
           case PED_BANK_PLUS:
             step = 1;
             break;
@@ -855,7 +882,7 @@ void refresh_switch_12L(byte i)
       case PED_BANK_MINUS:
       case PED_BANK_MINUS_2:
       case PED_BANK_MINUS_3:
-        switch (pedals[i].function) {
+        switch (f) {
           case PED_BANK_MINUS:
             step = 1;
             break;
