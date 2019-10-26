@@ -667,7 +667,6 @@ void refresh_switch_12L_midi(byte i, bool send)
 
     if (pedals[i].mode == PED_LADDER) {
       if (k1 == MD_UISwitch::KEY_PRESS) {
-        DPRINT("%d %c\n", k1, pedals[i].footSwitch[0]->getKey());
         switch (pedals[i].footSwitch[0]->getKey()) {
             case PED_LADDER_1:
               break;
