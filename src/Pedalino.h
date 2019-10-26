@@ -353,9 +353,9 @@ MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
 {
   {  30, 30, 'R' },  // Right
   { 130, 50, 'U' },  // Up
-  { 305, 40, 'D' },  // Down
-  { 475, 35, 'L' },  // Left
-  { 720, 100, 'S' },  // Select
+  { 305, 50, 'D' },  // Down
+  { 475, 50, 'L' },  // Left
+  { 720, 90, 'S' },  // Select
 };
 
 #define PED_LADDER_1  'R'
