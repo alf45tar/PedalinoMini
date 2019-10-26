@@ -684,7 +684,7 @@ void refresh_switch_12L_midi(byte i, bool send)
               break;
 
             case PED_LADDER_5:
-              b = (b + 5) % BANKS;
+              b = (b + 4) % BANKS;
               break;
         }
       }
