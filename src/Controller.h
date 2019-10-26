@@ -627,30 +627,85 @@ void refresh_switch_1_midi(byte i, bool send)
 
 void refresh_switch_12L_midi(byte i, bool send)
 {
-  MD_UISwitch::keyResult_t  k, k1, k2;
-  byte                      b;
+  MD_UISwitch::keyResult_t k1;    // Close status between T and S
+  MD_UISwitch::keyResult_t k2;    // Close status between R and S
+  MD_UISwitch::keyResult_t k3;
+  byte                     k;     /*       k1      k2
+                                     0 =  Open    Open
+                                     1 = Closed   Open
+                                     2 =  Open   Closed
+                                     3 = Closed  Closed */
+  
+  byte                     b;
 
-  if (pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2) return;
+  if (pedals[i].mode     == PED_NONE)   return;
+  if (pedals[i].mode     == PED_ANALOG) return;
+  if (pedals[i].mode     == PED_LATCH1) return;
+  if (pedals[i].mode     == PED_LATCH2) return;
+  if (pedals[i].function != PED_MIDI)   return;
 
   pedals[i].pedalValue[0] = digitalRead(PIN_D(i));
   //pedals[i].lastUpdate[0] = millis();
   pedals[i].pedalValue[1] = digitalRead(PIN_A(i));
   //pedals[i].lastUpdate[1] = millis();
 
+  k = 0;
   k1 = MD_UISwitch::KEY_NULL;
   k2 = MD_UISwitch::KEY_NULL;
-  if (pedals[i].footSwitch[0] != nullptr) k1 = pedals[i].footSwitch[0]->read();
-  if (pedals[i].footSwitch[1] != nullptr) k2 = pedals[i].footSwitch[1]->read();
+  if (pedals[i].footSwitch[0] != nullptr)
+    k1 = pedals[i].footSwitch[0]->read();
+  if (pedals[i].footSwitch[1] != nullptr && (pedals[i].mode == PED_MOMENTARY2 ||
+                                             pedals[i].mode == PED_MOMENTARY3 ||
+                                             pedals[i].mode == PED_LATCH2))
+    k2 = pedals[i].footSwitch[1]->read();
+  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) && k2 == MD_UISwitch::KEY_NULL) k = 1;
+  if ((k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS) && k1 == MD_UISwitch::KEY_NULL) k = 2;
+  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
+      (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
 
-  int j = 2;
-  while ( j >= 0) {
-    switch (j) {
-      case 0: k = k1; break;
-      case 1: k = k2; break;
-      case 2: k = (k1 == k2) ? k1 : MD_UISwitch::KEY_NULL; break;
+  b = currentBank;
+
+    if (pedals[i].mode == PED_LADDER) {
+      if (k1 == MD_UISwitch::KEY_PRESS) {
+        DPRINT("%d %c\n", k1, pedals[i].footSwitch[0]->getKey());
+        switch (pedals[i].footSwitch[0]->getKey()) {
+            case PED_LADDER_1:
+              break;
+
+            case PED_LADDER_2:
+              b = (b + 1) % BANKS;
+              break;
+
+            case PED_LADDER_3:
+              b = (b + 2) % BANKS;
+              break;
+
+            case PED_LADDER_4:
+              b = (b + 3) % BANKS;
+              break;
+
+            case PED_LADDER_5:
+              b = (b + 5) % BANKS;
+              break;
+        }
+      }
+      else return;
     }
-    b = currentBank;
+
     switch (k) {
+      case 0:
+        k3 = MD_UISwitch::KEY_NULL;
+        break;
+      case 1:
+        k3 = k1;
+        break;
+      case 2:
+      case 3:
+        k3 = k2;
+        break;
+    }
+
+    switch (k3) {
 
       case MD_UISwitch::KEY_PRESS:
 
@@ -668,7 +723,7 @@ void refresh_switch_12L_midi(byte i, bool send)
             break;
 
           default:
-            b = (currentBank + j) % BANKS;
+            b = (b + k - 1) % BANKS;
             if (send) {
               midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel);
             }
@@ -692,7 +747,7 @@ void refresh_switch_12L_midi(byte i, bool send)
             break;
                      
           default:
-            b = (currentBank + j) % BANKS;
+            b = (b + k - 1) % BANKS;
             break;
         }
         if (send) {
@@ -724,7 +779,7 @@ void refresh_switch_12L_midi(byte i, bool send)
             break;
                         
           default:
-            b = (currentBank + j) % BANKS;
+            b = (b + k - 1) % BANKS;
             if (send) {
               midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel);
             }
@@ -741,10 +796,8 @@ void refresh_switch_12L_midi(byte i, bool send)
       case MD_UISwitch::KEY_UP:
         break;
     }
-    if (k1 == k2 && k1 != MD_UISwitch::KEY_NULL) j = -1;
-    else j--;
-  }
 }
+
 
 void refresh_switch_12L(byte i)
 {
@@ -758,56 +811,45 @@ void refresh_switch_12L(byte i)
   
   byte f, step;
 
-  if (pedals[i].function == PED_MIDI) return;
-
-  if (pedals[i].mode == PED_LADDER) {
-    k1 = MD_UISwitch::KEY_NULL;
-    if (pedals[i].footSwitch[0] != nullptr) k1 = pedals[i].footSwitch[0]->read();
-    if (k1 != MD_UISwitch::KEY_NULL) {
-      DPRINT("%d %c ", k1, pedals[i].footSwitch[0]->getKey());
-      switch (pedals[i].footSwitch[0]->getKey()) {
-            case 'S':
-              break;
-
-            case 'L':
-              if (MTC.isPlaying()) 
-                MTC.sendStop();
-              else
-                MTC.sendPosition(0, 0, 0, 0);
-              break;
-
-            case 'U':
-              if (currentBank < BANKS - 1) currentBank++;
-              break;
-
-            case 'D':
-              if (currentBank > 0) currentBank--;
-              break;
-
-            case 'R':
-              if (MTC.isPlaying())
-                MTC.sendStop();
-              else if (MTC.getFrames() == 0 && MTC.getSeconds() == 0 && MTC.getMinutes() == 0 && MTC.getHours() == 0)
-                MTC.sendPlay();
-              else
-                MTC.sendContinue();
-              break;
-        }
-      }
-      return;
-    }
+  if (pedals[i].mode     == PED_NONE)   return;
+  if (pedals[i].mode     == PED_ANALOG) return;
+  if (pedals[i].function == PED_MIDI)   return;
 
   k = 0;
   k1 = MD_UISwitch::KEY_NULL;
   k2 = MD_UISwitch::KEY_NULL;
-  if (pedals[i].footSwitch[0] != nullptr) k1 = pedals[i].footSwitch[0]->read();
-  if (pedals[i].footSwitch[1] != nullptr) k2 = pedals[i].footSwitch[1]->read();
+  if (pedals[i].footSwitch[0] != nullptr)
+    k1 = pedals[i].footSwitch[0]->read();
+  if (pedals[i].footSwitch[1] != nullptr && (pedals[i].mode == PED_MOMENTARY2 ||
+                                             pedals[i].mode == PED_MOMENTARY3 ||
+                                             pedals[i].mode == PED_LATCH2))
+    k2 = pedals[i].footSwitch[1]->read();
   if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) && k2 == MD_UISwitch::KEY_NULL) k = 1;
   if ((k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS) && k1 == MD_UISwitch::KEY_NULL) k = 2;
   if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
       (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
   
   f = pedals[i].function;
+
+  if (pedals[i].mode == PED_LADDER && k1 == MD_UISwitch::KEY_PRESS) {
+      switch (pedals[i].footSwitch[0]->getKey()) {
+            case PED_LADDER_1:
+              break;
+
+            case PED_LADDER_2:
+              break;
+
+            case PED_LADDER_3:
+              break;
+
+            case PED_LADDER_4:
+              break;
+
+            case PED_LADDER_5:
+              break;
+        }
+    }
+
 
   // Double press or long press invert pedal function
   if (k > 0 && (k1 == MD_UISwitch::KEY_DPRESS    || k2 == MD_UISwitch::KEY_DPRESS ||
@@ -1107,9 +1149,9 @@ void controller_run(bool send = true)
         break;
 
       case PED_LADDER:
-        refresh_switch_12L(i);
+        if (pedals[i].function == PED_MIDI) refresh_switch_12L_midi(i, send);
+        else refresh_switch_12L(i);
         break;
-
     }
   }
 }

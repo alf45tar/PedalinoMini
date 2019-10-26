@@ -351,11 +351,11 @@ MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MI
 
 MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
 {
-  {  10, 10, 'R' },  // Right
-  { 130, 15, 'U' },  // Up
-  { 305, 15, 'D' },  // Down
-  { 475, 15, 'L' },  // Left
-  { 720, 15, 'S' },  // Select
+  {  30, 30, 'R' },  // Right
+  { 130, 50, 'U' },  // Up
+  { 305, 40, 'D' },  // Down
+  { 475, 35, 'L' },  // Left
+  { 720, 100, 'S' },  // Select
 };
 
 #define PED_LADDER_1  'R'
