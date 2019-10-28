@@ -393,9 +393,9 @@ RemoteDebug Debug;
 #endif
 
 String getChipId() {
-  String id((uint32_t)ESP.getEfuseMac(), HEX); // Low 4 bytes of MAC address (6 bytes)
-  id.toUpperCase();
-  return id;
+  char chipId[9];
+  snprintf(chipId, 9, "%08X", (uint32_t)ESP.getEfuseMac()); // Low 4 bytes of MAC address (6 bytes)
+  return String(chipId);
 }
 
 String host(getChipId());
