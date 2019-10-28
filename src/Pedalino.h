@@ -400,7 +400,7 @@ String getChipId() {
 
 String host(getChipId());
 String ssidSoftAP("Pedalino-" + getChipId());
-String passwordSoftAP(getChipId());
+String passwordSoftAP(getChipId() + getChipId());
 
 
 #include <AsyncTCP.h>

@@ -24,7 +24,7 @@ void load_factory_default()
   wifiSSID           = "";
   wifiPassword       = "";
   ssidSoftAP         = String("Pedalino-") + getChipId();
-  passwordSoftAP     = getChipId();
+  passwordSoftAP     = getChipId() + getChipId();
   theme              = "bootstrap";
   currentProfile     = 0;
   pressTime          = PED_PRESS_TIME;
@@ -245,7 +245,7 @@ void eeprom_update_sta_wifi_credentials(String ssid = "", String pass = "")
   DPRINT("[NVS][Global][STA Password]: %s\n", pass.c_str());
 }
 
-void eeprom_update_ap_wifi_credentials(String ssid = String("Pedalino-") + getChipId(), String pass = getChipId())
+void eeprom_update_ap_wifi_credentials(String ssid = String("Pedalino-") + getChipId(), String pass = getChipId() + getChipId())
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
