@@ -1979,6 +1979,7 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
 void http_handle_post_options(AsyncWebServerRequest *request) {
 
   const String checked("on");
+  bool restartRequired = false;
   
   http_handle_globals(request);
 
@@ -2012,8 +2013,8 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   if (request->arg("mdnsdevicename") != host) {
     host = request->arg("mdnsdevicename");
     eeprom_update_device_name(host);
-    delay(1000);
-    ESP.restart();
+    // Postpone the restart until after all changes are committed to EEPROM.
+    restartRequired = true;
   }
 
   bool pressTimeChanged = false;
@@ -2046,6 +2047,13 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
+
+  // Restart only after all changes have been committed to EEPROM, and the response has been sent to the HTTP client.
+  if (restartRequired)
+  {
+    delay(1000);
+    ESP.restart();
+  }
 }
 
 #ifdef WEBSOCKET
