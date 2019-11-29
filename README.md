@@ -103,15 +103,15 @@ MIDI Clock|MIDI Time Code
 
 ## WEB user interface
 
-![WEB Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-home.png "Screen 1")
+![WEB Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-home.png "Home")
 
-![WEB Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-banks.png "Screen 2")
+![WEB Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-banks.png "Banks")
 
-![WEB Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-pedals.png "Screen 3")
+![WEB Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-pedals.png "Pedals")
 
-![WEB Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-interfaces.png "Screen 4")
+![WEB Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-interfaces.png "Interfaces")
 
-![WEB Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-options.png "Screen 5")
+![WEB Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-options-wifi.png "Options")
 
 ## How to connect PedalinoMini™ to a WiFi network
 
@@ -122,7 +122,7 @@ PedalinoMini™ implements Wi-Fi Protected Setup (WPS) and Smart Config technolo
 - [ESP8266 SmartConfig](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch) for Android
 - [Espressif Esptouch](https://itunes.apple.com/us/app/espressif-esptouch/id1071176700?mt=8) for iOS
 
-If the WiFi network is not available PedalinoMini™ will create an hotspot for you. Connect all your device to it.
+If the WiFi network is not available, PedalinoMini™ will create a hotspot for you. Once connected to the PedalinoMini™ hotspot, you can use the web interface to set the SSID and password of an access point that you would like to connect to.
 
 - On power on Pedalino will try to connect to the last know access point
 - If it cannot connect to the last used access point within 15 seconds it enters into Smart Config mode

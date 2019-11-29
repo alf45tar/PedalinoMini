@@ -1407,6 +1407,29 @@ void get_options_page() {
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
+  page += F("<label for='wifissid' class='col-2 col-form-label'>Wifi Network</label>");
+  page += F("<div class='col-5'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='wifissid' name='wifiSSID' placeholder='SSID' value='");
+  page += wifiSSID + F("'>");
+  page += F("</div>");
+  page += F("<div class='col-5'>");
+  page += F("<input class='form-control' type='password' maxlength='32' id='wifipassword' name='wifiPassword' placeholder='password' value='");
+  page += wifiPassword + F("'>");
+  page += F("</div>");
+  page += F("<div class='w-100'></div>");
+  page += F("<div class='col-2'>");
+  page += F("</div>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
+  page += F("<p>Connect to a wifi network using SSID and password.</p>");
+  // page += F("<p>Pedalino will be restarted if you change it.</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
   page += F("<label for='bootstraptheme' class='col-2 col-form-label'>Web UI Theme</label>");
   page += F("<div class='col-10'>");
   page += F("<select class='custom-select' id='bootstraptheme' name='theme'>");
@@ -2013,7 +2036,19 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   if (request->arg("mdnsdevicename") != host) {
     host = request->arg("mdnsdevicename");
     eeprom_update_device_name(host);
-    // Postpone the restart until after all changes are committed to EEPROM.
+    restartRequired = true;
+  }
+
+  String setSSID = request->arg("wifiSSID");
+  String setPassword = request->arg("wifiPassword");
+  // todo: don't send the current password to the web client.
+  // Require the user to enter the password in order to change it?
+  if (setSSID != wifiSSID || setPassword != wifiPassword)
+  {
+    wifiSSID = setSSID;
+    wifiPassword = setPassword;
+    eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
+
     restartRequired = true;
   }
 
