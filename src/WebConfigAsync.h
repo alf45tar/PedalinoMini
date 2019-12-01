@@ -1388,7 +1388,7 @@ void get_options_page() {
   page += F("<form method='post'>");
 
   page += F("<div class='form-row'>");
-  page += F("<label for='bootstraptheme' class='col-2 col-form-label'>Device Name</label>");
+  page += F("<label for='devicename' class='col-2 col-form-label'>Device Name</label>");
   page += F("<div class='col-10'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='devicename' name='mdnsdevicename' placeholder='' value='");
   page += host + F("'>");
@@ -1454,7 +1454,7 @@ void get_options_page() {
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
-  page += F("<label for='sendOnBankSwitch' class='col-2 col-form-label'>Bank Switch</label>");
+  page += F("<label for='repeatOnBankSwitch' class='col-2 col-form-label'>Bank Switch</label>");
   page += F("<div class='col-10'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='repeatOnBankSwitch' name='repeatonbankswitch'");
@@ -1494,7 +1494,7 @@ void get_options_page() {
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
-  page += F("<label for='pressTime' class='col-2 col-form-label'>Double Press Time</label>");
+  page += F("<label for='doublePressTime' class='col-2 col-form-label'>Double Press Time</label>");
   page += F("<div class='col-10'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='doublePressTime' name='doublepresstime' placeholder='' value='");
   page += String(doublePressTime) + F("'>");
@@ -1513,7 +1513,7 @@ void get_options_page() {
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
-  page += F("<label for='pressTime' class='col-2 col-form-label'>Long Press Time</label>");
+  page += F("<label for='longPressTime' class='col-2 col-form-label'>Long Press Time</label>");
   page += F("<div class='col-10'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='longPressTime' name='longpresstime' placeholder='' value='");
   page += String(longPressTime) + F("'>");
@@ -1531,7 +1531,7 @@ void get_options_page() {
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
-  page += F("<label for='pressTime' class='col-2 col-form-label'>Repeat Press Time</label>");
+  page += F("<label for='repeatPressTime' class='col-2 col-form-label'>Repeat Press Time</label>");
   page += F("<div class='col-10'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='repeatPressTime' name='repeatpresstime' placeholder='' value='");
   page += String(repeatPressTime) + F("'>");
@@ -1550,7 +1550,7 @@ void get_options_page() {
 
 #ifdef BLYNK
   page += F("<div class='form-row'>");
-  page += F("<label for='blynk' class='col-2 col-form-label'>Blynk Cloud</label>");
+  page += F("<label for='blynkCloud' class='col-2 col-form-label'>Blynk Cloud</label>");
   page += F("<div class='col-10'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='blynkCloud' name='blynkcloud'");
@@ -1979,6 +1979,7 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
 void http_handle_post_options(AsyncWebServerRequest *request) {
 
   const String checked("on");
+  bool restartRequired = false;
   
   http_handle_globals(request);
 
@@ -2012,8 +2013,8 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   if (request->arg("mdnsdevicename") != host) {
     host = request->arg("mdnsdevicename");
     eeprom_update_device_name(host);
-    delay(1000);
-    ESP.restart();
+    // Postpone the restart until after all changes are committed to EEPROM.
+    restartRequired = true;
   }
 
   bool pressTimeChanged = false;
@@ -2046,6 +2047,13 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
+
+  // Restart only after all changes have been committed to EEPROM, and the response has been sent to the HTTP client.
+  if (restartRequired)
+  {
+    delay(1000);
+    ESP.restart();
+  }
 }
 
 #ifdef WEBSOCKET
