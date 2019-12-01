@@ -69,7 +69,7 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 
 ## How to build and upload
 
-[PlatformIO](https://platformio.org) 4.0 is the recommended IDE for Pedalino build and upload.
+[PlatformIO](https://platformio.org) 4.1 is the recommended IDE for Pedalino build and upload.
 
 1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode)
 2. Run the following commands from View->Command Palette (Ctrl+Shift+P)

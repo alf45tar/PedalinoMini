@@ -360,8 +360,6 @@ void eeprom_update_profile(byte profile = currentProfile)
   preferences.putBytes("Sequences", &sequences, sizeof(sequences));
   preferences.putUChar("Current Bank", currentBank);
   preferences.putUChar("Current MTC", currentMidiTimeCode);
-  preferences.putString("SSID", wifiSSID);
-  preferences.putString("Password", wifiPassword);
   preferences.end();
 
   DPRINT(" ... done\n");
@@ -372,25 +370,29 @@ void eeprom_update_profile(byte profile = currentProfile)
 void eeprom_read_global()
 {
   DPRINT("Reading NVS Global ... ");
-  preferences.begin("Global", true);
-  host               = preferences.getString("Device Name");
-  bootMode           = preferences.getUChar("Boot Mode");
-  wifiSSID           = preferences.getString("STA SSID");
-  wifiPassword       = preferences.getString("STA Password");
-  ssidSoftAP         = preferences.getString("AP SSID");
-  passwordSoftAP     = preferences.getString("AP Password");
-  theme              = preferences.getString("Bootstrap Theme");
-  currentProfile     = preferences.getUChar("Current Profile");
-  tapDanceMode       = preferences.getBool("Tap Dance Mode");
-  repeatOnBankSwitch = preferences.getBool("Bank Switch");
-  pressTime          = preferences.getLong("Single Time");
-  doublePressTime    = preferences.getLong("Double Time");
-  longPressTime      = preferences.getLong("Long   Time");
-  repeatPressTime    = preferences.getLong("Repeat Time");
-  preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
-  blynk_set_token(preferences.getString("Blynk Token"));
-  preferences.end();
-  DPRINT("done\n");
+  if (preferences.begin("Global", true)) {
+    host               = preferences.getString("Device Name");
+    bootMode           = preferences.getUChar("Boot Mode");
+    wifiSSID           = preferences.getString("STA SSID");
+    wifiPassword       = preferences.getString("STA Password");
+    ssidSoftAP         = preferences.getString("AP SSID");
+    passwordSoftAP     = preferences.getString("AP Password");
+    theme              = preferences.getString("Bootstrap Theme");
+    currentProfile     = preferences.getUChar("Current Profile");
+    tapDanceMode       = preferences.getBool("Tap Dance Mode");
+    repeatOnBankSwitch = preferences.getBool("Bank Switch");
+    pressTime          = preferences.getLong("Single Time");
+    doublePressTime    = preferences.getLong("Double Time");
+    longPressTime      = preferences.getLong("Long   Time");
+    repeatPressTime    = preferences.getLong("Repeat Time");
+    preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
+    blynk_set_token(preferences.getString("Blynk Token"));
+    preferences.end();
+    DPRINT("done\n");
+  }
+  else {
+    DPRINT("NVS open error ... using default values\n");  
+  }
 }
 
 void eeprom_read_profile(byte profile = currentProfile)
@@ -492,6 +494,7 @@ void eeprom_init_or_erase()
       ESP_ERROR_CHECK(nvs_flash_erase());
       DPRINT("done\n");
       err = nvs_flash_init();
+      eeprom_initialize();
   }
   ESP_ERROR_CHECK(err);
 }

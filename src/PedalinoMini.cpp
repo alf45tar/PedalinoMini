@@ -221,7 +221,7 @@ void setup()
   eeprom_init_or_erase();
   eeprom_read_global();
 
-  // Reset to factory default if BOOT key is pressed and hold for alt least 12 seconds at power on
+  // Reset to factory default if BOOT key is pressed and hold for alt least 15 seconds at power on
   
   pinMode(FACTORY_DEFAULT_PIN, INPUT_PULLUP);
   unsigned long milliStart = millis();
