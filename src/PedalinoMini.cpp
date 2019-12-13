@@ -93,6 +93,7 @@ void IRAM_ATTR onButtonLeft()
     currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
     reloadProfile = true;
   }
+  last_interrupt_time = interrupt_time;
 }
 
 void IRAM_ATTR onButtonRight()

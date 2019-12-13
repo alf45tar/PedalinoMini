@@ -1979,7 +1979,7 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
 void http_handle_post_options(AsyncWebServerRequest *request) {
 
   const String checked("on");
-  bool restartRequired = false;
+  bool  restartRequired = false;
   
   http_handle_globals(request);
 
@@ -2049,8 +2049,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   request->send(response);
 
   // Restart only after all changes have been committed to EEPROM, and the response has been sent to the HTTP client.
-  if (restartRequired)
-  {
+  if (restartRequired) {
     delay(1000);
     ESP.restart();
   }
