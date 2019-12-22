@@ -48,7 +48,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define CLOCK_PIN             GPIO_NUM_5    // SH_CP
 #define LATCH_PIN             GPIO_NUM_17   // ST_CP
 
-#include <ShiftOut.h>
+#include "ShiftOut.h"
 
 ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 
