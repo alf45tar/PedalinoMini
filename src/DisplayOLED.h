@@ -923,7 +923,7 @@ void display_init()
     display.clear();
     display.drawXbm((display.getWidth() - WIFI_LOGO_WIDTH) / 2, (display.getHeight() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
     display.display();
-    delay(500);
+    leds.kittCar();
   }
 #endif
 
@@ -932,7 +932,7 @@ void display_init()
     display.clear();
     display.drawXbm((display.getWidth() - BLUETOOTH_LOGO_WIDTH) / 2, (display.getHeight() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
     display.display();
-    delay(500);
+    leds.kittCar();
   }
 #endif
 

@@ -20,7 +20,11 @@ Preferences preferences;
 void load_factory_default()
 {
   host               = getChipId();
+#ifdef BOARD_HAS_PSRAM
   bootMode           = PED_BOOT_NORMAL;
+#else
+  bootMode           = PED_BOOT_WIFI;
+#endif
   wifiSSID           = "";
   wifiPassword       = "";
   ssidSoftAP         = String("Pedalino-") + getChipId();

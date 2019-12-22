@@ -120,12 +120,16 @@ void IRAM_ATTR onButtonCenter()
   last_interrupt_time = interrupt_time;
 }
 
+
 void setup()
 {
   //esp_spiram_add_to_heapalloc();
 
   pinMode(WIFI_LED, OUTPUT);
   pinMode(BLE_LED, OUTPUT);
+
+  leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
+  display_init();
 
 #ifdef DEBUG_ESP_PORT
   //esp_log_level_set("*",      ESP_LOG_ERROR);
@@ -217,8 +221,6 @@ void setup()
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram()); 
 
-  display_init();
-
   eeprom_init_or_erase();
   eeprom_read_global();
 
@@ -232,31 +234,45 @@ void setup()
   if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) {
     newBootMode = PED_BOOT_NORMAL;
     display_progress_bar_title2("Release button for", "Normal Boot");
+    leds.setAllLow();
+    leds.write();
   }
   while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 15000)) {
     if (duration > 1000 && duration < 3000 && newBootMode != PED_BOOT_BLE) {
       newBootMode = PED_BOOT_BLE;
       display_progress_bar_title2("Release button for", "Bluetooth Only");
+      leds.setHigh(0);
+      leds.write();
     }
     else if (duration > 3000 && duration < 5000 && newBootMode != PED_BOOT_WIFI) {
       newBootMode = PED_BOOT_WIFI;
       display_progress_bar_title2("Release button for", "WiFi Only");
+      leds.setHigh(1);
+      leds.write();
     }
     else if (duration > 5000 && duration < 7000 && newBootMode != PED_BOOT_AP) {
       newBootMode = PED_BOOT_AP;
       display_progress_bar_title2("Release button for", "Access Point");
+      leds.setHigh(2);
+      leds.write();
     }
     else if (duration > 7000 && duration < 9000 && newBootMode != PED_BOOT_AP_NO_BLE) {
       newBootMode = PED_BOOT_AP_NO_BLE;
       display_progress_bar_title2("Release button for", "AP without BLE");
+      leds.setHigh(3);
+      leds.write();
     }
     else if (duration > 9000 && duration < 11000 && newBootMode != PED_BOOT_RESET_WIFI) {
       newBootMode = PED_BOOT_RESET_WIFI;
       display_progress_bar_title2("Release button for", "WiFi Reset");
+      leds.setHigh(4);
+      leds.write();
     }
     else if (duration > 11000 && duration < 15000 && newBootMode != PED_FACTORY_DEFAULT) {
       newBootMode = PED_FACTORY_DEFAULT;
       display_progress_bar_title2("Hold button for", "Factory Default");
+      leds.setHigh(5);
+      leds.write();
     }
     DPRINT("#");
     lcdSetCursor(duration / 500, 0);
@@ -322,10 +338,11 @@ void setup()
         DPRINT("\nReset EEPROM to factory default\n");
         lcdSetCursor(0, 1);
         lcdPrint("Factory default ");
+        leds.kittCar();
         delay(1000);
         eeprom_initialize();
-        eeprom_read_global();
-        //ESP.restart();
+        //eeprom_read_global();
+        ESP.restart();
       }
       else
         bootMode = PED_BOOT_NORMAL;
@@ -376,11 +393,15 @@ void setup()
   attachInterrupt(RIGHT_PIN,  onButtonRight,  CHANGE);
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
+
+  leds.setAllLow();
+  leds.write();
 }
 
 
 void loop()
 {
+  
 #ifdef WIFI
   if (!appleMidiConnected) WIFI_LED_OFF();
 #endif

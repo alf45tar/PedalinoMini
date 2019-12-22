@@ -391,10 +391,14 @@ bool smart_config()
 
   DPRINT("SmartConfig started\n");
   display_progress_bar_title("SmartConfig");
+  leds.setAllLow();
+  leds.write();
   for (int i = 0; i < SMART_CONFIG_TIMEOUT && !WiFi.smartConfigDone(); i++) {
     display_progress_bar_update(i, SMART_CONFIG_TIMEOUT-1);
     status_blink();
     delay(950);
+    leds.setHigh(map(i, 0, SMART_CONFIG_TIMEOUT-2, 0, 5));
+    leds.write();
   }
   display_progress_bar_update(1, 1);
   
@@ -417,11 +421,14 @@ bool smart_config()
   if (WiFi.smartConfigDone())
   {
     WiFi.stopSmartConfig();
+    leds.kittCar();
     return true;
   }
   else
   {
     WiFi.stopSmartConfig();
+    leds.setAllLow();
+    leds.write();
     return false;
   }
 }
@@ -445,11 +452,17 @@ bool wps_config()
   
   DPRINT("WPS started\n");
   display_progress_bar_title("Press WPS button on AP");
+  leds.setAllLow();
+  leds.write();
   for (int i = 0; i < 10*WPS_TIMEOUT && wpsStatus == 0; i++) {
     display_progress_bar_update(i, 10*WPS_TIMEOUT-1);
+    leds.setHigh(map(i, 0, 10*WPS_TIMEOUT-10, 5, 0));
+    leds.write();
     delay(100);
   }
   display_progress_bar_update(1, 1);
+  leds.setAllLow();
+  leds.write();
 
   if (wpsStatus == 1) {
     // Wait for WiFi to connect to AP
@@ -496,16 +509,28 @@ bool ap_connect(String ssid, String password)
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), password.c_str());
   display_progress_bar_title2("Connecting to", ssid);
+  leds.setAllLow();
+  leds.write();
   for (byte i = 0; i < WIFI_CONNECT_TIMEOUT * 2 && !WiFi.isConnected(); i++) {
     display_progress_bar_update(i, WIFI_CONNECT_TIMEOUT*2-1);
     status_blink();
     delay(100);
     status_blink();
     delay(300);
+    leds.setHigh(map(i, 0, WIFI_CONNECT_TIMEOUT*2-2, 0, 5));
+    leds.write();
   }
   display_progress_bar_update(1, 1);
 
-  WiFi.isConnected() ? WIFI_LED_ON() : WIFI_LED_OFF();
+  if (WiFi.isConnected()) {
+    WIFI_LED_ON();
+    leds.setAllHigh();
+    leds.write();
+    delay(100);
+  }
+  else WIFI_LED_OFF();
+  leds.setAllLow();
+  leds.write();
 
   return WiFi.isConnected();
 }

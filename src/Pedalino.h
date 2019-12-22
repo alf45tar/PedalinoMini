@@ -37,11 +37,20 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define LEFT_PIN              GPIO_NUM_39
 #else
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
-#define RIGHT_PIN             GPIO_NUM_16
+#define RIGHT_PIN             GPIO_NUM_23
 #define CENTER_PIN            GPIO_NUM_0
-#define LEFT_PIN              GPIO_NUM_17
+#define LEFT_PIN              GPIO_NUM_23
 #endif
 #define BATTERY_PIN           GPIO_NUM_34
+
+#define NUMBER_OF_SHIFT_REGISTERS 1
+#define SERIAL_DATA_PIN       GPIO_NUM_16   // DS
+#define CLOCK_PIN             GPIO_NUM_5    // SH_CP
+#define LATCH_PIN             GPIO_NUM_17   // ST_CP
+
+#include <ShiftOut.h>
+
+ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 
 #define PIN_D(x)          pinD[x]
 #define PIN_A(x)          pinA[x]
@@ -56,6 +65,7 @@ typedef uint8_t   byte;
 #define BOUNCE_LOCK_OUT                 // This method is a lot more responsive, but does not cancel noise.
 //#define BOUNCE_WITH_PROMPT_DETECTION  // Report accurate switch time normally with no delay. Use when accurate switch transition timing is important.
 #include <Bounce2.h>                    // https://github.com/thomasfredericks/Bounce2
+
 
 #define PED_PRESS_TIME        200
 #define PED_DOUBLE_PRESS_TIME 400
@@ -303,6 +313,7 @@ long  doublePressTime         = PED_DOUBLE_PRESS_TIME;
 long  longPressTime           = PED_LONG_PRESS_TIME;
 long  repeatPressTime         = PED_REPEAT_PRESS_TIME;
 
+
 MidiTimeCode  MTC;
 unsigned int  bpm             = 120;
 
@@ -425,6 +436,7 @@ void   blynk_disconnect();
 void   blynk_refresh();
 
 void   screen_update(bool);
+void   screen_info(int, int, int, int);
 void   eeprom_update_current_profile(byte);
 bool   auto_reconnect(String ssid = "", String password = "");
 bool   smart_config();

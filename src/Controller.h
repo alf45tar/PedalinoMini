@@ -9,7 +9,6 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-void screen_info(int, int, int, int);
 
 //
 //
@@ -573,6 +572,8 @@ void refresh_switch_1_midi(byte i, bool send)
                       banks[b][i].midiCode,
                       banks[b][i].midiValue1,
                       banks[b][i].midiChannel);
+            leds.invert(i);
+            leds.write();
           }
           break;
         case HIGH:  // HIGH = release
@@ -585,6 +586,11 @@ void refresh_switch_1_midi(byte i, bool send)
                       banks[b][i].midiValue2,
                       banks[b][i].midiChannel,
                       latch);
+            if (latch) {
+              leds.invert(i);
+              leds.write();
+            }
+
           }
           break;
       }
