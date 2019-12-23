@@ -1731,8 +1731,8 @@ void http_handle_globals(AsyncWebServerRequest *request) {
   if (request->hasArg("profile")) {
     uiprofile = request->arg("profile");
     currentProfile = constrain(uiprofile.toInt() - 1, 0, PROFILES - 1);
-    eeprom_update_current_profile(currentProfile);
-    eeprom_read_profile();
+    saveProfile = true;
+    reloadProfile = true;
   }
 
   if (request->hasArg("theme")) {

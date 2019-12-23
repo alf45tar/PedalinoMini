@@ -472,7 +472,11 @@ void eeprom_initialize()
   preferences.end();
   load_factory_default();
   eeprom_update_device_name();
-  eeprom_update_boot_mode();
+#ifdef BOARD_HAS_PSRAM
+  eeprom_update_boot_mode(PED_BOOT_NORMAL);
+#else
+  eeprom_update_boot_mode(PED_BOOT_WIFI);
+#endif
   eeprom_update_sta_wifi_credentials();
   eeprom_update_ap_wifi_credentials();
   eeprom_update_theme();

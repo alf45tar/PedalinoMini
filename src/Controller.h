@@ -1104,7 +1104,7 @@ void controller_run(bool send = true)
 {
   if (saveProfile && send) {
     DPRINT("Saving profile ...\n");
-    eeprom_update_current_profile();
+    eeprom_update_current_profile(currentProfile);
     delay(500);
     saveProfile = false;
     return;
