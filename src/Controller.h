@@ -1105,18 +1105,16 @@ void controller_run(bool send = true)
   if (saveProfile && send) {
     DPRINT("Saving profile ...\n");
     eeprom_update_current_profile(currentProfile);
-    delay(500);
     saveProfile = false;
     return;
   }
 
   if (reloadProfile && send) {
     DPRINT("Loading profile ...\n");
-    eeprom_read_profile();
+    eeprom_read_profile(currentProfile);
     autosensing_setup();
     controller_setup();
     mtc_setup();
-    delay(200);
     reloadProfile = false;
     return;
   }

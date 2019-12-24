@@ -38,20 +38,31 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define RIGHT_PIN             GPIO_NUM_37
 #define CENTER_PIN            GPIO_NUM_38
 #define LEFT_PIN              GPIO_NUM_39
+#define SERIAL_DATA_PIN       GPIO_NUM_2   // DS
+#define CLOCK_PIN             GPIO_NUM_2   // SH_CP
+#define LATCH_PIN             GPIO_NUM_2   // ST_CP
+#define USB_MIDI_IN_PIN       GPIO_NUM_18  // Used by SD
+#define USB_MIDI_OUT_PIN      GPIO_NUM_19  // Used by SD
+#define DIN_MIDI_IN_PIN       GPIO_NUM_15
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #else
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
 #define RIGHT_PIN             GPIO_NUM_23
 #define CENTER_PIN            GPIO_NUM_0
 #define LEFT_PIN              GPIO_NUM_23
+#define SERIAL_DATA_PIN       GPIO_NUM_16   // DS
+#define CLOCK_PIN             GPIO_NUM_5    // SH_CP
+#define LATCH_PIN             GPIO_NUM_17   // ST_CP
+#define USB_MIDI_IN_PIN       GPIO_NUM_18
+#define USB_MIDI_OUT_PIN      GPIO_NUM_19
+#define DIN_MIDI_IN_PIN       GPIO_NUM_15
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #endif
 #define BATTERY_PIN           GPIO_NUM_34
 
 #include "ShiftOut.h"
 
 #define NUMBER_OF_SHIFT_REGISTERS 1
-#define SERIAL_DATA_PIN       GPIO_NUM_16   // DS
-#define CLOCK_PIN             GPIO_NUM_5    // SH_CP
-#define LATCH_PIN             GPIO_NUM_17   // ST_CP
 
 ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 
@@ -65,15 +76,15 @@ ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 struct Serial1MIDISettings : public midi::DefaultSettings
 {
   static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = GPIO_NUM_18;
-  static const int8_t TxPin  = GPIO_NUM_19;
+  static const int8_t RxPin  = USB_MIDI_IN_PIN;
+  static const int8_t TxPin  = USB_MIDI_OUT_PIN;
 };
 
 struct Serial2MIDISettings : public midi::DefaultSettings
 {
   static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = GPIO_NUM_15;
-  static const int8_t TxPin  = GPIO_NUM_4;
+  static const int8_t RxPin  = DIN_MIDI_IN_PIN;
+  static const int8_t TxPin  = DIN_MIDI_OUT_PIN;
 };
 
 #define SERIAL_MIDI_USB   Serial1

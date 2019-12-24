@@ -31,6 +31,9 @@ void printMIDI(const char *interface, midi::StatusByte status, const byte *data)
 
   type    = DIN_MIDI.getTypeFromStatusByte(status);
   channel = DIN_MIDI.getChannelFromStatusByte(status);
+  
+  lastPedalName[0] = 0;
+  screen_info(type, data[0], data[1], channel);
 
   switch (type) {
 

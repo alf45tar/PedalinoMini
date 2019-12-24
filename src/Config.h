@@ -393,6 +393,22 @@ void eeprom_read_global()
     blynk_set_token(preferences.getString("Blynk Token"));
     preferences.end();
     DPRINT("done\n");
+    DPRINT("[NVS][Global][Device Name]:     %s\n", host.c_str());
+    DPRINT("[NVS][Global][Boot Mode]:       %d\n", bootMode);
+    DPRINT("[NVS][Global][STA SSID]:        %s\n", wifiSSID.c_str());
+    DPRINT("[NVS][Global][STA Password]:    %s\n", wifiPassword.c_str());
+    DPRINT("[NVS][Global][AP SSID]:         %s\n", ssidSoftAP.c_str());
+    DPRINT("[NVS][Global][AP Password]:     %s\n", passwordSoftAP.c_str());
+    DPRINT("[NVS][Global][Bootstrap Theme]: %s\n", theme.c_str());
+    DPRINT("[NVS][Global][Current Profile]: %d\n", currentProfile);
+    DPRINT("[NVS][Global[Tap Dance Mode]:   %d\n", tapDanceMode);
+    DPRINT("[NVS][Global[Bank Switch]:      %d\n", repeatOnBankSwitch);
+    DPRINT("[NVS][Global[Single Time]:      %d\n", pressTime);
+    DPRINT("[NVS][Global[Double Time]:      %d\n", doublePressTime);
+    DPRINT("[NVS][Global[Long   Time]:      %d\n", longPressTime);
+    DPRINT("[NVS][Global[Repeat Time]:      %d\n", repeatPressTime);
+    DPRINT("[NVS][Global[Blynk Cloud]:      %d\n", blynk_enabled());
+    DPRINT("[NVS][Global][Blynk Token]:     %s\n", blynk_get_token().c_str());
   }
   else {
     DPRINT("NVS open error ... using default values\n");  

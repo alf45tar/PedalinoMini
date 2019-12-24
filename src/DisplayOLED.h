@@ -592,7 +592,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       display->setTextAlignment(TEXT_ALIGN_CENTER);
       switch (m1) {
         case midi::InvalidType:
-           drawRect(display, 64-22, 15, 64+24, 15+23);
+          drawRect(display, 64-22, 15, 64+24, 15+23);
           display->setFont(ArialMT_Plain_10);
           display->drawString( 64 + x, 39 + y, String("Bank"));
           display->setFont(ArialMT_Plain_24);
