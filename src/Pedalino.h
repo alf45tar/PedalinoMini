@@ -30,6 +30,9 @@ __________           .___      .__  .__                 _____  .__       .__    
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
 
+#define PIN_D(x)          pinD[x]
+#define PIN_A(x)          pinA[x]
+
 #ifdef TTGO_T_EIGHT
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
 #define RIGHT_PIN             GPIO_NUM_37
@@ -43,21 +46,45 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #endif
 #define BATTERY_PIN           GPIO_NUM_34
 
+#include "ShiftOut.h"
+
 #define NUMBER_OF_SHIFT_REGISTERS 1
 #define SERIAL_DATA_PIN       GPIO_NUM_16   // DS
 #define CLOCK_PIN             GPIO_NUM_5    // SH_CP
 #define LATCH_PIN             GPIO_NUM_17   // ST_CP
 
-#include "ShiftOut.h"
-
 ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 
-#define PIN_D(x)          pinD[x]
-#define PIN_A(x)          pinA[x]
+// Serial MIDI interfaces
+
+#include <MIDI.h>                       // https://github.com/FortySevenEffects/arduino_midi_library
+
+#define MIDI_BAUD_RATE                  31250
+#define HIGH_SPEED_SERIAL_BAUD_RATE     1000000
+
+struct Serial1MIDISettings : public midi::DefaultSettings
+{
+  static const long BaudRate = MIDI_BAUD_RATE;
+  static const int8_t RxPin  = GPIO_NUM_18;
+  static const int8_t TxPin  = GPIO_NUM_19;
+};
+
+struct Serial2MIDISettings : public midi::DefaultSettings
+{
+  static const long BaudRate = MIDI_BAUD_RATE;
+  static const int8_t RxPin  = GPIO_NUM_15;
+  static const int8_t TxPin  = GPIO_NUM_4;
+};
+
+#define SERIAL_MIDI_USB   Serial1
+#define SERIAL_MIDI_DIN   Serial2
+
+MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, Serial1MIDISettings);
+MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MIDISettings);
+
 
 typedef uint8_t   byte;
 
-#include <MIDI.h>                       // https://github.com/FortySevenEffects/arduino_midi_library
 #include <ResponsiveAnalogRead.h>       // https://github.com/dxinteractive/ResponsiveAnalogRead
 #include <MD_UISwitch.h>                // https://github.com/MajicDesigns/MD_UISwitch
 
@@ -333,30 +360,6 @@ bool  bleConnected            = false;
 String wifiSSID("");
 String wifiPassword("");
 
-// Serial MIDI interface to comunicate with Arduino
-
-#define MIDI_BAUD_RATE                  31250
-#define HIGH_SPEED_SERIAL_BAUD_RATE     1000000
-
-struct Serial1MIDISettings : public midi::DefaultSettings
-{
-  static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = 18;
-  static const int8_t TxPin  = 19;
-};
-
-struct Serial2MIDISettings : public midi::DefaultSettings
-{
-  static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = 15;
-  static const int8_t TxPin  = 4;
-};
-
-#define SERIAL_MIDI_USB   Serial1
-#define SERIAL_MIDI_DIN   Serial2
-
-MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, Serial1MIDISettings);
-MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MIDISettings);
 
 // The keys value that works for most LCD Keypad Shield
 
