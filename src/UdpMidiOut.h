@@ -12,7 +12,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifdef WIFI
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <WiFiUDP.h>
+#include <WiFiUdp.h>
 #include <AsyncUDP.h>
 #include <AppleMidi.h>
 #include <OSCMessage.h>
