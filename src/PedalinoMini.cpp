@@ -453,12 +453,6 @@ void loop()
     // Listen to incoming AppleMIDI messages from WiFi
     rtpMIDI_listen();
 
-    // Listen to incoming ipMIDI messages from WiFi
-    ipMIDI_listen();
-
-    // Listen to incoming OSC UDP messages from WiFi
-    oscUDP_listen();
-
     http_run();
 
     // Run OTA update service

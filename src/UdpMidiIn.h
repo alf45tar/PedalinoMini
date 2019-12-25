@@ -12,7 +12,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifdef WIFI
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <WiFiUdp.h>
+#include <AsyncUDP.h>
 #include <AppleMidi.h>
 #include <OSCMessage.h>
 #include <OSCBundle.h>
@@ -420,24 +420,21 @@ void OnOscControlChange(OSCMessage &msg)
 
 // Listen to incoming OSC messages from WiFi
 
-void oscUDP_listen() {
+void oscOnPacket(AsyncUDPPacket packet) {
 
   if (!wifiEnabled) return;
   if (!WiFi.isConnected()) return;
 
   if (!interfaces[PED_OSC].midiIn) return;
 
-  int size = oscUDP.parsePacket();
-
-  if (size > 0) {
-    while (size--) oscMsg.fill(oscUDP.read());
-    if (!oscMsg.hasError()) {
-      oscMsg.dispatch(" / pedalino / midi / noteOn",        OnOscNoteOn);
-      oscMsg.dispatch(" / pedalino / midi / noteOff",       OnOscNoteOff);
-      oscMsg.dispatch(" / pedalino / midi / controlChange", OnOscControlChange);
-    } else {
-      DPRINTLN("OSC error: %d", oscMsg.getError());
-    }
+  while (packet.available() > 0)
+    oscMsg.fill(packet.read());
+  if (!oscMsg.hasError()) {
+    oscMsg.dispatch("/pedalino/midi/noteOn",        OnOscNoteOn);
+    oscMsg.dispatch("/pedalino/midi/noteOff",       OnOscNoteOff);
+    oscMsg.dispatch("/pedalino/midi/controlChange", OnOscControlChange);
+  } else {
+    DPRINTLN("OSC error: %d", oscMsg.getError());
   }
 }
 
@@ -453,7 +450,7 @@ inline void rtpMIDI_listen() {
 
 // Listen to incoming ipMIDI messages from WiFi
 
-void ipMIDI_listen() {
+void ipMidiOnPacket(AsyncUDPPacket packet) {
 
   byte status, type, channel;
   byte data[2];
@@ -466,18 +463,16 @@ void ipMIDI_listen() {
 
   if (!interfaces[PED_IPMIDI].midiIn) return;
   
-  ipMIDI.parsePacket();
+  while (packet.available() > 0) {
 
-  while (ipMIDI.available() > 0) {
-
-    ipMIDI.read(&status, 1);
+    packet.read(&status, 1);
     type    = DIN_MIDI.getTypeFromStatusByte(status);
     channel = DIN_MIDI.getChannelFromStatusByte(status);
 
     switch (type) {
 
       case midi::NoteOff:
-        ipMIDI.read(data, 2);
+        packet.read(data, 2);
         note     = data[0];
         velocity = data[1];
         if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendNoteOff(note, velocity, channel);
@@ -488,7 +483,7 @@ void ipMIDI_listen() {
         break;
 
       case midi::NoteOn:
-        ipMIDI.read(data, 2);
+        packet.read(data, 2);
         note     = data[0];
         velocity = data[1];
         if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendNoteOn(note, velocity, channel);
@@ -499,7 +494,7 @@ void ipMIDI_listen() {
         break;
 
       case midi::AfterTouchPoly:
-        ipMIDI.read(data, 2);
+        packet.read(data, 2);
         note     = data[0];
         pressure = data[1];
         if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendAfterTouch(note, pressure, channel);
@@ -510,7 +505,7 @@ void ipMIDI_listen() {
         break;
 
       case midi::ControlChange:
-        ipMIDI.read(data, 2);
+        packet.read(data, 2);
         number  = data[0];
         value   = data[1];
         if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendControlChange(number, value, channel);
@@ -521,7 +516,7 @@ void ipMIDI_listen() {
         break;
 
       case midi::ProgramChange:
-        ipMIDI.read(data, 1);
+        packet.read(data, 1);
         number  = data[0];
         if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendProgramChange(number, channel);
         if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendProgramChange(number, channel);
@@ -531,7 +526,7 @@ void ipMIDI_listen() {
         break;
 
       case midi::AfterTouchChannel:
-        ipMIDI.read(data, 1);
+        packet.read(data, 1);
         pressure = data[0];
         if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendAfterTouch(pressure, channel);
         if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendAfterTouch(pressure, channel);
@@ -541,7 +536,7 @@ void ipMIDI_listen() {
         break;
 
       case midi::PitchBend:
-        ipMIDI.read(data, 2);
+        packet.read(data, 2);
         bend = data[1] << 7 | data[0];
         if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendPitchBend(bend, channel);
         if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendPitchBend(bend, channel);
@@ -554,11 +549,11 @@ void ipMIDI_listen() {
         switch (status) {
 
           case midi::SystemExclusive:
-            while (ipMIDI.read(data, 1) && data[0] != 0xf7);
+            while (packet.read(data, 1) && data[0] != 0xf7);
             break;
 
           case midi::TimeCodeQuarterFrame:
-            ipMIDI.read(data, 1);
+            packet.read(data, 1);
             value = data[0];
             if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendTimeCodeQuarterFrame(value);
             if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendTimeCodeQuarterFrame(value);
@@ -569,7 +564,7 @@ void ipMIDI_listen() {
             break;
 
           case midi::SongPosition:
-            ipMIDI.read(data, 2);
+            packet.read(data, 2);
             beats = data[1] << 7 | data[0];
             if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongPosition(beats);
             if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongPosition(beats);
@@ -579,7 +574,7 @@ void ipMIDI_listen() {
             break;
 
           case midi::SongSelect:
-            ipMIDI.read(data, 1);
+            packet.read(data, 1);
             number = data[0];
             if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongSelect(number);
             if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongSelect(number);
@@ -651,10 +646,11 @@ void ipMIDI_listen() {
         break;
 
       default:
-        ipMIDI.read(data, 2);
+        packet.read(data, 2);
     }
-    DPRINTMIDI(ipMIDI.remoteIP().toString().c_str(), status, data);
-  }
+    DPRINTMIDI(packet.remoteIP().toString().c_str(), status, data);
+  } 
+
 }
 
 #endif  // NOWIFI

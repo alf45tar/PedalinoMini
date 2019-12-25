@@ -12,7 +12,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifdef WIFI
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <WiFiUdp.h>
+#include <WiFiUDP.h>
+#include <AsyncUDP.h>
 #include <AppleMidi.h>
 #include <OSCMessage.h>
 #include <OSCBundle.h>
@@ -24,13 +25,13 @@ APPLEMIDI_CREATE_INSTANCE(WiFiUDP, AppleMIDI); // see definition in AppleMidi_De
 
 // ipMIDI
 
-WiFiUDP                 ipMIDI;
+AsyncUDP                ipMIDI;
 IPAddress               ipMIDImulticast(225, 0, 0, 37);
 unsigned int            ipMIDIdestPort = 21928;
 
 // WiFi OSC comunication
 
-WiFiUDP                 oscUDP;                  // A UDP instance to let us send and receive packets over UDP
+AsyncUDP                oscUDP;                  // A UDP instance to let us send and receive packets over UDP
 IPAddress               oscRemoteIp;             // remote IP of an external OSC device or broadcast address
 const unsigned int      oscRemotePort = 9000;    // remote port of an external OSC device
 const unsigned int      oscLocalPort = 8000;     // local port to listen for OSC packets (actually not used for sending)
@@ -203,9 +204,7 @@ void ipMIDISendChannelMessage1(byte type, byte channel, byte data1)
 
   midiPacket[0] = (type & 0xf0) | ((channel - 1) & 0x0f);
   midiPacket[1] = data1;
-  ipMIDI.beginMulticastPacket();
-  ipMIDI.write(midiPacket, 2);
-  ipMIDI.endPacket();
+  ipMIDI.writeTo(midiPacket, 2, ipMIDImulticast, ipMIDIdestPort);
 }
 
 void ipMIDISendChannelMessage2(byte type, byte channel, byte data1, byte data2)
@@ -217,9 +216,8 @@ void ipMIDISendChannelMessage2(byte type, byte channel, byte data1, byte data2)
   midiPacket[0] = (type & 0xf0) | ((channel - 1) & 0x0f);
   midiPacket[1] = data1;
   midiPacket[2] = data2;
-  ipMIDI.beginMulticastPacket();
-  ipMIDI.write(midiPacket, 3);
-  ipMIDI.endPacket();
+  ipMIDI.writeTo(midiPacket, 3, ipMIDImulticast, ipMIDIdestPort);
+
 }
 
 void ipMIDISendSystemCommonMessage1(byte type, byte data1)
@@ -230,9 +228,7 @@ void ipMIDISendSystemCommonMessage1(byte type, byte data1)
 
   midiPacket[0] = type;
   midiPacket[1] = data1;
-  ipMIDI.beginMulticastPacket();
-  ipMIDI.write(midiPacket, 2);
-  ipMIDI.endPacket();
+  ipMIDI.writeTo(midiPacket, 2, ipMIDImulticast, ipMIDIdestPort);
 }
 
 void ipMIDISendSystemCommonMessage2(byte type, byte data1, byte data2)
@@ -244,9 +240,7 @@ void ipMIDISendSystemCommonMessage2(byte type, byte data1, byte data2)
   midiPacket[0] = type;
   midiPacket[1] = data1;
   midiPacket[2] = data2;
-  ipMIDI.beginMulticastPacket();
-  ipMIDI.write(midiPacket, 3);
-  ipMIDI.endPacket();
+  ipMIDI.writeTo(midiPacket, 3, ipMIDImulticast, ipMIDIdestPort);
 }
 
 void ipMIDISendRealTimeMessage(byte type)
@@ -256,9 +250,7 @@ void ipMIDISendRealTimeMessage(byte type)
   if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
 
   midiPacket[0] = type;
-  ipMIDI.beginMulticastPacket();
-  ipMIDI.write(midiPacket, 1);
-  ipMIDI.endPacket();
+  ipMIDI.writeTo(midiPacket, 1, ipMIDImulticast, ipMIDIdestPort);
 }
 
 void ipMIDISendNoteOn(byte note, byte velocity, byte channel)
@@ -360,84 +352,84 @@ void OSCSendNoteOn(byte note, byte velocity, byte channel)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/note/";
   msg += note;
   OSCMessage oscMsg(msg.c_str());
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.add((float)(velocity / 127.0)).add((int32_t)channel).send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.add((float)(velocity / 127.0)).add((int32_t)channel).send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendNoteOff(byte note, byte velocity, byte channel)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
-
+  
+  AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/note/";
   msg += note;
   OSCMessage oscMsg(msg.c_str());
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.add((float)0).add((int32_t)channel).send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.add((float)0).add((int32_t)channel).send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendAfterTouchPoly(byte note, byte pressure, byte channel)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/aftertouchpoly/";
   msg += note;
   OSCMessage oscMsg(msg.c_str());
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.add((float)(pressure / 127.0)).add((int32_t)channel).send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.add((float)(pressure / 127.0)).add((int32_t)channel).send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendControlChange(byte number, byte value, byte channel)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/cc/";
   msg += number;
   OSCMessage oscMsg(msg.c_str());
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.add((float)(value / 127.0)).add((int32_t)channel).send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.add((float)(value / 127.0)).add((int32_t)channel).send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendProgramChange(byte number, byte channel)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/pc/";
   msg += number;
   OSCMessage oscMsg(msg.c_str());
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.add((int32_t)channel).send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.add((int32_t)channel).send(udpMsg).empty();
+  oscUDP.send(udpMsg);  
 }
 
 void OSCSendAfterTouch(byte pressure, byte channel)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/aftertouchchannel/";
   msg += channel;
   OSCMessage oscMsg(msg.c_str());
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.add((float)(pressure / 127.0)).add((int32_t)channel).send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.add((float)(pressure / 127.0)).add((int32_t)channel).send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendPitchBend(int bend, byte channel)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/pitchbend/";
   msg += channel;
   OSCMessage oscMsg(msg.c_str());
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.add((float)((bend + 8192) / 16383.0)).add((int32_t)channel).send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.add((float)((bend + 8192) / 16383.0)).add((int32_t)channel).send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendSystemExclusive(const byte* array, unsigned size)
@@ -452,34 +444,34 @@ void OSCSendSongPosition(unsigned int beats)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/songpostion/";
   msg += beats;
   OSCMessage oscMsg(msg.c_str());
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.add((int32_t)beats).send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.add((int32_t)beats).send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendSongSelect(byte songnumber)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/songselect/";
   msg += songnumber;
   OSCMessage oscMsg(msg.c_str());
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.add((int32_t)songnumber).send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.add((int32_t)songnumber).send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendTuneRequest(void)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/tunerequest/");
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendClock(void)
@@ -490,49 +482,49 @@ void OSCSendStart(void)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/start/");
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendContinue(void)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/continue/");
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendStop(void)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/stop/");
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendActiveSensing(void)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/activesensing/");
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 
 void OSCSendSystemReset(void)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
 
+  AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/reset/");
-  oscUDP.beginPacket(oscRemoteIp, oscRemotePort);
-  oscMsg.send(oscUDP).empty();
-  oscUDP.endPacket();
+  oscMsg.send(udpMsg).empty();
+  oscUDP.send(udpMsg);
 }
 #endif  //  NOWIFI
