@@ -4,7 +4,7 @@
 
 # PedalinoMini™
 
-Open source wireless MIDI foot controller for guitarists and more.
+The first cloud connected wireless IoT MIDI foot controller for guitarists and more.
 
 - Plug-and-play with any MIDI-compatible app on iOS 8 and above as well as OS X Yosemite and above.
 - High customizable using iOS or Android app
@@ -45,9 +45,17 @@ Open source wireless MIDI foot controller for guitarists and more.
 
 ## iOS and Android App
 
-The app made with [Blynk](https://www.blynk.cc) is delayed due to a Blynk [bug](https://community.blynk.cc/t/esp32-4x-slower-than-esp8266/38420).
+The app made with [Blynk](https://www.blynk.cc) will be released soon. The app will not for free because Blynk is charging you Blynk.Energy cost (the required energy pack cost 13.99 euro). I will not earn any buck from Blynk.
+
+Unfortunately there are no ways to try before buying. Until they will not change their business model I strongly discourage any purchase because I cannot guarantee that the app will fit your purpose.
+
+As far I know Blynk is the best solution I found to develop an iOS/Android app. With a resonable upfront cost you can receiving my app updates or you can decide to modify my app yourself according to your needs.
+
+Blynk app is connected to PedalinoMini™ through Blynk cloud. A small delay is present. I think to solve it when BLE connection will be fully supported by Blynk.
 
 <img src="./images/ios-live.png" width="200"/> <img src="./images/ios-bank.png" width="200"/> <img src="./images/ios-pedal.png" width="200"/> <img src="./images/ios-interface.png" width="200"/>
+
+Enabling Blynk could reduce responsiveness due to a Blynk [bug](https://community.blynk.cc/t/esp32-4x-slower-than-esp8266/38420).
 
 ## Bill of materials
 
