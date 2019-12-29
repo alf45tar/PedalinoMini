@@ -49,7 +49,7 @@ The app made with [Blynk](https://www.blynk.cc) will be released soon. The app w
 
 Unfortunately there are no ways to try before buying. Until they will not change their business model I strongly discourage any purchase because I cannot guarantee that the app will fit your purpose.
 
-As far I know Blynk is the best solution I found to develop an iOS/Android app. With a resonable upfront cost you can receiving my app updates or you can decide to modify my app yourself according to your needs.
+Blynk is the best solution I found to develop an iOS/Android app. With a resonable upfront cost you can receiving my app updates or you can decide to modify my app yourself according to your needs.
 
 Blynk app is connected to PedalinoMini™ through Blynk cloud. A small delay is present. I think to solve it when BLE connection will be fully supported by Blynk.
 
