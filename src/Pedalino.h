@@ -121,6 +121,7 @@ typedef uint8_t   byte;
 #define PED_BOOT_RESET_WIFI     6
 #define PED_FACTORY_DEFAULT     7
 
+#define PED_EMPTY               0
 #define PED_PROGRAM_CHANGE      1
 #define PED_CONTROL_CHANGE      2
 #define PED_NOTE_ON_OFF         3
@@ -135,15 +136,15 @@ typedef uint8_t   byte;
 #define PED_MIDI_CONTINUE       12
 #define PED_SEQUENCE            20
 
-#define PED_NONE                0
-#define PED_MOMENTARY1          1
-#define PED_LATCH1              2
-#define PED_ANALOG              3
-#define PED_JOG_WHEEL           4
-#define PED_MOMENTARY2          5
-#define PED_MOMENTARY3          6
-#define PED_LATCH2              7
-#define PED_LADDER              8
+#define PED_NONE                1
+#define PED_MOMENTARY1          2
+#define PED_LATCH1              3
+#define PED_ANALOG              4
+#define PED_JOG_WHEEL           5
+#define PED_MOMENTARY2          6
+#define PED_MOMENTARY3          7
+#define PED_LATCH2              8
+#define PED_LADDER              9
 
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
@@ -153,19 +154,19 @@ typedef uint8_t   byte;
 #define PED_PRESS_2_L           6
 #define PED_PRESS_1_2_L         7
 
-#define PED_MIDI                0
-#define PED_BANK_PLUS           1
-#define PED_BANK_MINUS          2
-#define PED_START               3
-#define PED_STOP                4
-#define PED_CONTINUE            5
-#define PED_TAP                 6
-#define PED_BPM_PLUS            7
-#define PED_BPM_MINUS           8
-#define PED_BANK_PLUS_2         9
-#define PED_BANK_MINUS_2       10
-#define PED_BANK_PLUS_3        11
-#define PED_BANK_MINUS_3       12
+#define PED_MIDI                1
+#define PED_BANK_PLUS           2
+#define PED_BANK_MINUS          3
+#define PED_START               4
+#define PED_STOP                5
+#define PED_CONTINUE            6
+#define PED_TAP                 7
+#define PED_BPM_PLUS            8
+#define PED_BPM_MINUS           9
+#define PED_BANK_PLUS_2        10
+#define PED_BANK_MINUS_2       11
+#define PED_BANK_PLUS_3        12
+#define PED_BANK_MINUS_3       13
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
@@ -180,10 +181,6 @@ typedef uint8_t   byte;
 
 #define PED_DISABLE             0
 #define PED_ENABLE              1
-
-#define PED_LEGACY_MIDI_OUT     0
-#define PED_LEGACY_MIDI_IN      1
-#define PED_LEGACY_MIDI_THRU    2
 
 #define PED_MTC_NONE            0
 #define PED_MTC_SLAVE           1
@@ -209,15 +206,19 @@ typedef uint8_t   byte;
 
 struct bank {
   char                   pedalName[MAXPEDALNAME+1];
-  byte                   midiMessage;     /* 1 = Program Change,
-                                             2 = Control Code
-                                             3 = Note On/Note Off
-                                             4 = Pitch Bend 
-                                             5 = Bank Select+
-                                             6 = Bank Select-
-                                             7 = Program Change+
-                                             8 = Program Change-
-                                             9 = Sequence */
+  byte                   midiMessage;     /*  1 = Program Change,
+                                              2 = Control Code
+                                              3 = Note On/Note Off
+                                              4 = Bank Select+
+                                              5 = Bank Select-
+                                              6 = Program Change+
+                                              7 = Program Change-
+                                              8 = Pitch Bend
+                                              9 = Channel Pressure
+                                             10 = Start
+                                             11 = Stop
+                                             12 = Continue
+                                             13 = Sequence */
   byte                   midiChannel;     /* MIDI channel 1-16 */
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue1;      /* Single click */
@@ -226,25 +227,30 @@ struct bank {
 };
 
 struct pedal {
-  byte                   function;        /* 0 = MIDI
-                                             1 = bank+
-                                             2 = bank-
-                                             3 = menu
-                                             4 = confirm
-                                             5 = escape
-                                             6 = next
-                                             7 = previous */
+  byte                   function;        /*  1 = MIDI
+                                              2 = Bank+
+                                              3 = Bank-
+                                              4 = Start
+                                              5 = Stop
+                                              6 = Continue
+                                              7 = Tap
+                                              8 = BPM+
+                                              9 = BPM-
+                                             10 = Bank+2
+                                             11 = Bank-2
+                                             12 = Bank+3
+                                             13 = Bank-3 */
   byte                   autoSensing;     /* 0 = disable
                                              1 = enable   */
-  byte                   mode;            /* 0 = none
-                                             1 = momentary
-                                             2 = latch
-                                             3 = analog
-                                             4 = jog wheel
-                                             5 = momentary 2
-                                             6 = momentary 3
-                                             7 = latch 2
-                                             8 = ladder */
+  byte                   mode;            /* 1 = none
+                                             2 = momentary
+                                             3 = latch
+                                             4 = analog
+                                             5 = jog wheel
+                                             6 = momentary 2
+                                             7 = momentary 3
+                                             8 = latch 2
+                                             9 = ladder */
   byte                   pressMode;       /* 1 = single click
                                              2 = double click
                                              4 = long click
@@ -254,10 +260,10 @@ struct pedal {
                                              7 = single, double and long click */
   byte                   invertPolarity;
   byte                   mapFunction;
-  int                    expZero;
-  int                    expMax;
-  int                    pedalValue[2];
-  unsigned long          lastUpdate[2];         // last time the value is changed
+  int                    expZero;           // [0, ADC_RESOLUTION-1]
+  int                    expMax;            // [0, ADC_RESOLUTION-1]
+  int                    pedalValue[2];     // [0, MIDI_RESOLUTION-1]
+  unsigned long          lastUpdate[2];     // last time the value is changed
   Bounce                *debouncer[2];
   MD_UISwitch           *footSwitch[2];
   ResponsiveAnalogRead  *analogPedal;
@@ -273,16 +279,19 @@ struct interface {
 };
 
 struct sequence {
-  byte                   midiMessage;     /* 0 = None
-                                             1 = Program Change,
-                                             2 = Control Code
-                                             3 = Note On/Note Off
-                                             4 = Pitch Bend 
-                                             5 = Bank Select+
-                                             6 = Bank Select-
-                                             7 = Program Change+
-                                             8 = Program Change-
-                                             9 = Sequence */
+  byte                   midiMessage;     /*  1 = Program Change,
+                                              2 = Control Code
+                                              3 = Note On/Note Off
+                                              4 = Bank Select+
+                                              5 = Bank Select-
+                                              6 = Program Change+
+                                              7 = Program Change-
+                                              8 = Pitch Bend
+                                              9 = Channel Pressure
+                                             10 = Start
+                                             11 = Stop
+                                             12 = Continue
+                                             13 = Sequence */
   byte                   midiChannel;     /* MIDI channel 1-16 */
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue1;      /* Single click */
@@ -291,16 +300,19 @@ struct sequence {
 };
 
 struct message {
-  byte                   midiMessage;     /* 0 = None
-                                             1 = Program Change,
-                                             2 = Control Code
-                                             3 = Note On/Note Off
-                                             4 = Pitch Bend 
-                                             5 = Bank Select+
-                                             6 = Bank Select-
-                                             7 = Program Change+
-                                             8 = Program Change-
-                                             9 = Sequence */
+  byte                   midiMessage;     /*  1 = Program Change,
+                                              2 = Control Code
+                                              3 = Note On/Note Off
+                                              4 = Bank Select+
+                                              5 = Bank Select-
+                                              6 = Program Change+
+                                              7 = Program Change-
+                                              8 = Pitch Bend
+                                              9 = Channel Pressure
+                                             10 = Start
+                                             11 = Stop
+                                             12 = Continue
+                                             13 = Sequence */
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue;       /* Control Code value, Note velocity */
   byte                   midiChannel;     /* MIDI channel 1-16 */
@@ -456,6 +468,7 @@ bool   auto_reconnect(String ssid = "", String password = "");
 bool   smart_config();
 bool   ap_connect(String ssid = "", String password = "");
 #ifdef WIFI
+#include <BlynkSimpleEsp32.h>
 String translateEncryptionType(wifi_auth_mode_t);
 #endif
 

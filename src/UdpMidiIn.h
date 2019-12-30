@@ -32,8 +32,19 @@ void printMIDI(const char *interface, midi::StatusByte status, const byte *data)
   type    = DIN_MIDI.getTypeFromStatusByte(status);
   channel = DIN_MIDI.getChannelFromStatusByte(status);
   
-  lastPedalName[0] = 0;
-  screen_info(type, data[0], data[1], channel);
+  switch (type) {
+    case midi::NoteOff:
+    case midi::NoteOn:
+    case midi::ControlChange:
+    case midi::ProgramChange:
+    case midi::PitchBend:
+      lastPedalName[0] = 0;
+      screen_info(type, data[0], data[1], channel);
+      break;
+
+    default:
+      break;
+  }
 
   switch (type) {
 
@@ -76,56 +87,51 @@ void printMIDI(const char *interface, midi::StatusByte status, const byte *data)
       DPRINTLN("Received from %s  PitchBend   Bend 0x%02X   Channel %02d", interface, bend, channel);
       break;
 
-    case 0xf0:
-      switch (status) {
+    case midi::SystemExclusive:
+      DPRINTLN("Received from %s  SystemExclusive 0x%02X", interface, data[0]);
+      break;
 
-        case midi::SystemExclusive:
-          DPRINTLN("Received from %s  SystemExclusive 0x%02X", interface, data[0]);
-          break;
+    case midi::TimeCodeQuarterFrame:
+      value = data[0];
+      DPRINTLN("Received from %s  TimeCodeQuarterFrame 0x%02X", interface, value);
+      break;
 
-        case midi::TimeCodeQuarterFrame:
-          value = data[0];
-          DPRINTLN("Received from %s  TimeCodeQuarterFrame 0x%02X", interface, value);
-          break;
+    case midi::SongPosition:
+      beats = data[1] << 7 | data[0];
+      DPRINTLN("Received from %s  SongPosition Beats 0x%04X", interface, beats);
+      break;
 
-        case midi::SongPosition:
-          beats = data[1] << 7 | data[0];
-          DPRINTLN("Received from %s  SongPosition Beats 0x%04X", interface, beats);
-          break;
+    case midi::SongSelect:
+      number = data[0];
+      DPRINTLN("Received from %s  SongSelect 0x%02X", interface, number);
+      break;
 
-        case midi::SongSelect:
-          number = data[0];
-          DPRINTLN("Received from %s  SongSelect 0x%02X", interface, number);
-          break;
+    case midi::TuneRequest:
+      DPRINTLN("Received from %s  TuneRequest", interface);
+      break;
 
-        case midi::TuneRequest:
-          DPRINTLN("Received from %s  TuneRequest", interface);
-          break;
+    case midi::Clock:
+      //DPRINTLN("Received from %s  Clock", interface);
+      break;
 
-        case midi::Clock:
-          //DPRINTLN("Received from %s  Clock", interface);
-          break;
+    case midi::Start:
+      DPRINTLN("Received from %s  Start", interface);
+      break;
 
-        case midi::Start:
-          DPRINTLN("Received from %s  Start", interface);
-          break;
+    case midi::Continue:
+      DPRINTLN("Received from %s  Continue", interface);
+      break;
 
-        case midi::Continue:
-          DPRINTLN("Received from %s  Continue", interface);
-          break;
+    case midi::Stop:
+      DPRINTLN("Received from %s  Stop", interface);
+      break;
 
-        case midi::Stop:
-          DPRINTLN("Received from %s  Stop", interface);
-          break;
+    case midi::ActiveSensing:
+      DPRINTLN("Received from %s  ActiveSensing", interface);
+      break;
 
-        case midi::ActiveSensing:
-          DPRINTLN("Received from %s  ActiveSensing", interface);
-          break;
-
-        case midi::SystemReset:
-          DPRINTLN("Received from %s  SystemReset", interface);
-          break;
-      }
+    case midi::SystemReset:
+      DPRINTLN("Received from %s  SystemReset", interface);
       break;
 
     default:
@@ -418,18 +424,56 @@ void OnOscControlChange(OSCMessage &msg)
   if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendControlChange(msg.getInt(1), msg.getInt(2), msg.getInt(0));
 }
 
+IPAddress oscControllerIP;
+
+void OnOscSendConfiguration(OSCMessage &msg)
+{
+  if (!wifiEnabled) return;
+  
+  DPRINT("/clean__pedalino__send_configuration\n");
+
+  AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg;
+  OSCMessage      oscMsg("/clean__pedalino__pedal_1");
+
+  oscMsg.add(banks[currentBank][0].pedalName).send(udpMsg).empty();
+  //udpOut.connect(oscControllerIP, 9000);
+  udpOut.connect(IPAddress(192,168,2,120), 9000);
+  udpOut.send(udpMsg);
+  udpOut.close();
+}
+
+void OnOscPedal1(OSCMessage &msg)
+{
+  if (msg.getString(0, banks[currentBank][0].pedalName, MAXPEDALNAME) > 0) {
+    DPRINT("/clean__pedalino__pedal_1 %s\n", banks[currentBank][0].pedalName);
+  } else {
+    DPRINT("OSC error: %d\n", msg.getError());
+  }
+}
+
+
 // Listen to incoming OSC messages from WiFi
 
-void oscOnPacket(AsyncUDPPacket packet) {
+void oscOnPacket(AsyncUDPPacket &packet) {
 
   if (!wifiEnabled) return;
   if (!WiFi.isConnected()) return;
 
   if (!interfaces[PED_OSC].midiIn) return;
 
-  while (packet.available() > 0)
+  OSCMessage oscMsg;
+
+  DPRINT("[OSC]<: ");
+  while (packet.available() > 0) {
     oscMsg.fill(packet.read());
+  }
+  oscControllerIP = packet.remoteIP();
+  DPRINT("Clean OSC: %s\n", oscControllerIP.toString().c_str());
+
   if (!oscMsg.hasError()) {
+    oscMsg.dispatch("/clean__pedalino__send_configuration", OnOscSendConfiguration);
+    oscMsg.dispatch("/clean__pedalino__pedal_1",    OnOscPedal1);
     oscMsg.dispatch("/pedalino/midi/noteOn",        OnOscNoteOn);
     oscMsg.dispatch("/pedalino/midi/noteOff",       OnOscNoteOff);
     oscMsg.dispatch("/pedalino/midi/controlChange", OnOscControlChange);
@@ -453,7 +497,7 @@ inline void rtpMIDI_listen() {
 void ipMidiOnPacket(AsyncUDPPacket packet) {
 
   byte status, type, channel;
-  byte data[2];
+  byte data[2] = {0, 0};
   byte note, velocity, pressure, number, value;
   int  bend;
   unsigned int beats;
@@ -545,108 +589,105 @@ void ipMidiOnPacket(AsyncUDPPacket packet) {
         OSCSendPitchBend(bend, channel);
         break;
 
-      case 0xf0:
-        switch (status) {
+      case midi::SystemExclusive:
+        while (packet.read(data, 1) && data[0] != 0xf7);
+        break;
 
-          case midi::SystemExclusive:
-            while (packet.read(data, 1) && data[0] != 0xf7);
-            break;
+      case midi::TimeCodeQuarterFrame:
+        packet.read(data, 1);
+        value = data[0];
+        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendTimeCodeQuarterFrame(value);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendTimeCodeQuarterFrame(value);
+        BLESendTimeCodeQuarterFrame(value);
+        AppleMidiSendTimeCodeQuarterFrame(value);
+        OSCSendTimeCodeQuarterFrame(value);
+        MTC.decodMTCQuarterFrame(value);
+      break;
 
-          case midi::TimeCodeQuarterFrame:
-            packet.read(data, 1);
-            value = data[0];
-            if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendTimeCodeQuarterFrame(value);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendTimeCodeQuarterFrame(value);
-            BLESendTimeCodeQuarterFrame(value);
-            AppleMidiSendTimeCodeQuarterFrame(value);
-            OSCSendTimeCodeQuarterFrame(value);
-            MTC.decodMTCQuarterFrame(value);
-            break;
+      case midi::SongPosition:
+        packet.read(data, 2);
+        beats = data[1] << 7 | data[0];
+        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongPosition(beats);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongPosition(beats);
+        BLESendSongPosition(beats);
+        AppleMidiSendSongPosition(beats);
+        OSCSendSongPosition(beats);
+        break;
 
-          case midi::SongPosition:
-            packet.read(data, 2);
-            beats = data[1] << 7 | data[0];
-            if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongPosition(beats);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongPosition(beats);
-            BLESendSongPosition(beats);
-            AppleMidiSendSongPosition(beats);
-            OSCSendSongPosition(beats);
-            break;
+      case midi::SongSelect:
+        packet.read(data, 1);
+        number = data[0];
+        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongSelect(number);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongSelect(number);
+        BLESendSongSelect(number);
+        AppleMidiSendSongSelect(number);
+        OSCSendSongSelect(number);
+        break;
 
-          case midi::SongSelect:
-            packet.read(data, 1);
-            number = data[0];
-            if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongSelect(number);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongSelect(number);
-            BLESendSongSelect(number);
-            AppleMidiSendSongSelect(number);
-            OSCSendSongSelect(number);
-            break;
+      case midi::TuneRequest:
+        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::TuneRequest);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::TuneRequest);
+        BLESendTuneRequest();
+        AppleMidiSendTuneRequest();
+        OSCSendTuneRequest();
+        break;
 
-          case midi::TuneRequest:
-            if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::TuneRequest);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::TuneRequest);
-            BLESendTuneRequest();
-            AppleMidiSendTuneRequest();
-            OSCSendTuneRequest();
-            break;
+      case midi::Clock:
+        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Clock);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Clock);
+        BLESendClock();
+        AppleMidiSendClock();
+        OSCSendClock();
+        if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) bpm = MTC.tapTempo();
+        break;
 
-          case midi::Clock:
-            if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Clock);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Clock);
-            BLESendClock();
-            AppleMidiSendClock();
-            OSCSendClock();
-            if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) bpm = MTC.tapTempo();
-            break;
+      case midi::Start:
+        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Start);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Start);
+        BLESendStart();
+        AppleMidiSendStart();
+        OSCSendStart();
+        if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendPlay();
+        break;
 
-          case midi::Start:
-            if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Start);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Start);
-            BLESendStart();
-            AppleMidiSendStart();
-            OSCSendStart();
-            if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendPlay();
-            break;
+      case midi::Continue:
+        if (interfaces[PED_USBMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Continue);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Continue);
+        BLESendContinue();
+        AppleMidiSendContinue();
+        OSCSendContinue();
+        if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendContinue();
+        break;
 
-          case midi::Continue:
-            if (interfaces[PED_USBMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Continue);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Continue);
-            BLESendContinue();
-            AppleMidiSendContinue();
-            OSCSendContinue();
-            if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendContinue();
-            break;
+      case midi::Stop:
+        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Stop);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Stop);
+        BLESendStop();
+        AppleMidiSendStop();
+        OSCSendStop();
+        if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendStop();
+        break;
 
-          case midi::Stop:
-            if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Stop);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Stop);
-            BLESendStop();
-            AppleMidiSendStop();
-            OSCSendStop();
-            if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendStop();
-            break;
+      case midi::ActiveSensing:
+        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::ActiveSensing);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::ActiveSensing);
+        BLESendActiveSensing();
+        AppleMidiSendActiveSensing();
+        OSCSendActiveSensing();
+        break;
 
-          case midi::ActiveSensing:
-            if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::ActiveSensing);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::ActiveSensing);
-            BLESendActiveSensing();
-            AppleMidiSendActiveSensing();
-            OSCSendActiveSensing();
-            break;
-
-          case midi::SystemReset:
-            if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::SystemReset);
-            if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::SystemReset);
-            BLESendSystemReset();
-            AppleMidiSendSystemReset();
-            OSCSendSystemReset();
-            break;
-        }
+      case midi::SystemReset:
+        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::SystemReset);
+        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::SystemReset);
+        BLESendSystemReset();
+        AppleMidiSendSystemReset();
+        OSCSendSystemReset();
         break;
 
       default:
-        packet.read(data, 2);
+        DPRINT("ipMIDI status byte %d unknown/d", status);
+        packet.read(data, 1);
+        break;
     }
     DPRINTMIDI(packet.remoteIP().toString().c_str(), status, data);
   } 

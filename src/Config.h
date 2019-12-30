@@ -198,16 +198,16 @@ void load_factory_default()
 
   for (byte i = 0; i < INTERFACES; i++) 
     {
-      interfaces[i].midiIn      = PED_ENABLE;
+      interfaces[i].midiIn      = PED_DISABLE;
       interfaces[i].midiOut     = PED_ENABLE;
       interfaces[i].midiThru    = PED_DISABLE;
-      interfaces[i].midiRouting = PED_ENABLE;
+      interfaces[i].midiRouting = PED_DISABLE;
       interfaces[i].midiClock   = PED_DISABLE;
     };
 
   for (byte s = 0; s < SEQUENCES; s++) {
     for (byte t = 0; t < STEPS; t++) {
-      sequences[s][t].midiMessage  = PED_NONE;
+      sequences[s][t].midiMessage  = PED_EMPTY;
       sequences[s][t].midiChannel  = 1;
       sequences[s][t].midiCode     = 0;
       sequences[s][t].midiValue1   = 0;
@@ -401,13 +401,13 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][AP Password]:     %s\n", passwordSoftAP.c_str());
     DPRINT("[NVS][Global][Bootstrap Theme]: %s\n", theme.c_str());
     DPRINT("[NVS][Global][Current Profile]: %d\n", currentProfile);
-    DPRINT("[NVS][Global[Tap Dance Mode]:   %d\n", tapDanceMode);
-    DPRINT("[NVS][Global[Bank Switch]:      %d\n", repeatOnBankSwitch);
-    DPRINT("[NVS][Global[Single Time]:      %d\n", pressTime);
-    DPRINT("[NVS][Global[Double Time]:      %d\n", doublePressTime);
-    DPRINT("[NVS][Global[Long   Time]:      %d\n", longPressTime);
-    DPRINT("[NVS][Global[Repeat Time]:      %d\n", repeatPressTime);
-    DPRINT("[NVS][Global[Blynk Cloud]:      %d\n", blynk_enabled());
+    DPRINT("[NVS][Global][Tap Dance Mode]:  %d\n", tapDanceMode);
+    DPRINT("[NVS][Global][Bank Switch]:     %d\n", repeatOnBankSwitch);
+    DPRINT("[NVS][Global][Single Time]:     %d\n", pressTime);
+    DPRINT("[NVS][Global][Double Time]:     %d\n", doublePressTime);
+    DPRINT("[NVS][Global][Long   Time]:     %d\n", longPressTime);
+    DPRINT("[NVS][Global][Repeat Time]:     %d\n", repeatPressTime);
+    DPRINT("[NVS][Global][Blynk Cloud]:     %d\n", blynk_enabled());
     DPRINT("[NVS][Global][Blynk Token]:     %s\n", blynk_get_token().c_str());
   }
   else {

@@ -68,7 +68,8 @@ void stop_services()
   MDNS.end();
   ArduinoOTA.end();
   ipMIDI.close();
-  oscUDP.close();
+  oscUDPin.close();
+  oscUDPout.close();
 }
 
 void start_services()
@@ -99,7 +100,6 @@ void start_services()
   DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
 #endif
 
-  //ipMIDI.beginMulticast(ipMIDImulticast, ipMIDIdestPort);
   ipMIDI.listenMulticast(ipMIDImulticast, ipMIDIdestPort);
   ipMIDI.onPacket(ipMidiOnPacket);
   DPRINT("ipMIDI server started\n");
@@ -109,8 +109,8 @@ void start_services()
   DPRINT("RTP-MIDI started\n");
 
   // Set incoming OSC messages port
-  oscUDP.listen(oscLocalPort);
-  oscUDP.onPacket(oscOnPacket);
+  oscUDPin.listen(WiFi.localIP(), oscLocalPort);
+  oscUDPin.onPacket(oscOnPacket);
 
   DPRINT("OSC server started\n");
 
@@ -121,7 +121,7 @@ void start_services()
     oscRemoteIp[i] |= (localMask[i] ^ B11111111);
 
   // Set outcoming OSC broadcast ip/port
-  oscUDP.connect(oscRemoteIp, oscRemotePort);
+  oscUDPout.connect(oscRemoteIp, oscRemotePort);
 
   // Connect to Blynk Cloud
   blynk_connect();

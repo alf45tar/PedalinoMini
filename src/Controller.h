@@ -322,9 +322,6 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
 {
   switch (message) {
 
-    case PED_NONE:
-      break;
-
     case PED_NOTE_ON_OFF:
 
       if (on_off && value > 0) {
@@ -574,6 +571,7 @@ void refresh_switch_1_midi(byte i, bool send)
                       banks[b][i].midiChannel);
             leds.invert(i);
             leds.write();
+            if (blynk_cloud_connected()) Blynk.virtualWrite(71 + i, leds.get(i) ? 1 : 0);
           }
           break;
         case HIGH:  // HIGH = release
@@ -589,6 +587,7 @@ void refresh_switch_1_midi(byte i, bool send)
             if (latch) {
               leds.invert(i);
               leds.write();
+              if (blynk_cloud_connected()) Blynk.virtualWrite(71 + i, leds.get(i) ? 1 : 0);
             }
 
           }

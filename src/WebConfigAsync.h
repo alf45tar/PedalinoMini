@@ -1243,7 +1243,7 @@ void get_sequences_page() {
     page += String(i);
     page += F("'>");
     page += F("<option value='");
-    page += String(PED_NONE) + F("'");
+    page += String(PED_EMPTY) + F("'");
     if (sequences[s-1][i-1].midiMessage == PED_NONE) page += F(" selected");
     page += F("></option>");
     page += F("<option value='");
@@ -1878,10 +1878,10 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     pedals[i].mapFunction = a.toInt();
 
     a = request->arg(String("min") + String(i+1));
-    pedals[i].expZero = a.toInt();
+    pedals[i].expZero = constrain(a.toInt(), 0, ADC_RESOLUTION - 1);
 
     a = request->arg(String("max") + String(i+1));
-    pedals[i].expMax = a.toInt();
+    pedals[i].expMax = constrain(a.toInt(), 0, ADC_RESOLUTION - 1);
 
     switch (pedals[i].function) {
       case PED_BANK_PLUS:

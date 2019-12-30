@@ -31,11 +31,11 @@ unsigned int            ipMIDIdestPort = 21928;
 
 // WiFi OSC comunication
 
-AsyncUDP                oscUDP;                  // A UDP instance to let us send and receive packets over UDP
+AsyncUDP                oscUDPin;                // A UDP instance to let us receive packets over UDP
+AsyncUDP                oscUDPout;               // A UDP instance to let us send packets over UDP
 IPAddress               oscRemoteIp;             // remote IP of an external OSC device or broadcast address
 const unsigned int      oscRemotePort = 9000;    // remote port of an external OSC device
 const unsigned int      oscLocalPort = 8000;     // local port to listen for OSC packets (actually not used for sending)
-OSCMessage              oscMsg;
 #endif  // WIFI
 
 bool                    appleMidiConnected = false;
@@ -357,7 +357,7 @@ void OSCSendNoteOn(byte note, byte velocity, byte channel)
   msg += note;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((float)(velocity / 127.0)).add((int32_t)channel).send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendNoteOff(byte note, byte velocity, byte channel)
@@ -369,7 +369,7 @@ void OSCSendNoteOff(byte note, byte velocity, byte channel)
   msg += note;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((float)0).add((int32_t)channel).send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendAfterTouchPoly(byte note, byte pressure, byte channel)
@@ -381,7 +381,7 @@ void OSCSendAfterTouchPoly(byte note, byte pressure, byte channel)
   msg += note;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((float)(pressure / 127.0)).add((int32_t)channel).send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendControlChange(byte number, byte value, byte channel)
@@ -393,7 +393,7 @@ void OSCSendControlChange(byte number, byte value, byte channel)
   msg += number;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((float)(value / 127.0)).add((int32_t)channel).send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendProgramChange(byte number, byte channel)
@@ -405,7 +405,7 @@ void OSCSendProgramChange(byte number, byte channel)
   msg += number;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((int32_t)channel).send(udpMsg).empty();
-  oscUDP.send(udpMsg);  
+  oscUDPout.send(udpMsg);  
 }
 
 void OSCSendAfterTouch(byte pressure, byte channel)
@@ -417,7 +417,7 @@ void OSCSendAfterTouch(byte pressure, byte channel)
   msg += channel;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((float)(pressure / 127.0)).add((int32_t)channel).send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendPitchBend(int bend, byte channel)
@@ -429,7 +429,7 @@ void OSCSendPitchBend(int bend, byte channel)
   msg += channel;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((float)((bend + 8192) / 16383.0)).add((int32_t)channel).send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendSystemExclusive(const byte* array, unsigned size)
@@ -449,7 +449,7 @@ void OSCSendSongPosition(unsigned int beats)
   msg += beats;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((int32_t)beats).send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendSongSelect(byte songnumber)
@@ -461,7 +461,7 @@ void OSCSendSongSelect(byte songnumber)
   msg += songnumber;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((int32_t)songnumber).send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendTuneRequest(void)
@@ -471,7 +471,7 @@ void OSCSendTuneRequest(void)
   AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/tunerequest/");
   oscMsg.send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendClock(void)
@@ -485,7 +485,7 @@ void OSCSendStart(void)
   AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/start/");
   oscMsg.send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendContinue(void)
@@ -495,7 +495,7 @@ void OSCSendContinue(void)
   AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/continue/");
   oscMsg.send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendStop(void)
@@ -505,7 +505,7 @@ void OSCSendStop(void)
   AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/stop/");
   oscMsg.send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendActiveSensing(void)
@@ -515,7 +515,7 @@ void OSCSendActiveSensing(void)
   AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/activesensing/");
   oscMsg.send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendSystemReset(void)
@@ -525,6 +525,6 @@ void OSCSendSystemReset(void)
   AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/reset/");
   oscMsg.send(udpMsg).empty();
-  oscUDP.send(udpMsg);
+  oscUDPout.send(udpMsg);
 }
 #endif  //  NOWIFI
