@@ -17,6 +17,7 @@ inline void blynk_enable() {}
 inline void blynk_disable() {}
 inline bool blynk_enabled() { return false; }
 inline bool blynk_cloud_connected() { return false; }
+inline bool blynk_app_connected() { return false; }
 inline void blynk_config() {}
 inline void blynk_connect() {}
 inline void blynk_disconnect() {}
@@ -156,6 +157,11 @@ String blynk_set_token(String token)
 bool blynk_cloud_connected()
 {
   return Blynk.connected();
+}
+
+bool blynk_app_connected()
+{
+  return blynkAppConnected;
 }
 
 void blynk_connect()
@@ -708,6 +714,7 @@ BLYNK_WRITE(BLYNK_PEDAL_MODE) {
       break;  
   }
   pedals[currentPedal].mode = mode;
+  autosensing_setup();
   controller_setup();
   blynk_refresh_live();
 }
