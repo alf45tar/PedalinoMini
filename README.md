@@ -47,7 +47,7 @@ The first cloud connected wireless IoT MIDI foot controller for guitarists and m
 
 The app made with [Blynk](https://www.blynk.cc) will be released soon. The app will not for free because Blynk is charging you Blynk.Energy cost (the required energy pack cost 13.99 euro). I will not earn any buck from Blynk.
 
-Unfortunately there is no way to try before buying. Until they will not change their business model I strongly discourage any purchase because I cannot guarantee that the app will fit your purpose.
+Unfortunately there is no way to try before buying. Until they will not change their business model I am not suggesting any purchase because I cannot guarantee that the app will fit any purpose.
 
 Blynk is the best solution I found to develop an iOS/Android app. With a resonable upfront cost you can receiving my app updates or you can decide to modify my app yourself according to your needs.
 
