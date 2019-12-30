@@ -350,15 +350,17 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
 
     case PED_CONTROL_CHANGE:
 
-      DPRINT("CONTROL CHANGE.....Code %3d......Value %3d.....Channel %2d\n", code, value, channel);
-      if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(code, value, channel);
-      if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(code, value, channel);
-      AppleMidiSendControlChange(code, value, channel);
-      ipMIDISendControlChange(code, value, channel);
-      BLESendControlChange(code, value, channel);
-      OSCSendControlChange(code, value, channel);
-      screen_info(midi::ControlChange, code, value, channel);
-      lastMIDIMessage[currentBank] = {PED_CONTROL_CHANGE, code, value, channel};
+      if (on_off) {
+        DPRINT("CONTROL CHANGE.....Code %3d......Value %3d.....Channel %2d\n", code, value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(code, value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(code, value, channel);
+        AppleMidiSendControlChange(code, value, channel);
+        ipMIDISendControlChange(code, value, channel);
+        BLESendControlChange(code, value, channel);
+        OSCSendControlChange(code, value, channel);
+        screen_info(midi::ControlChange, code, value, channel);
+        lastMIDIMessage[currentBank] = {PED_CONTROL_CHANGE, code, value, channel};
+      }
       break;
 
     case PED_PROGRAM_CHANGE:
@@ -1086,13 +1088,15 @@ void controller_setup();
 //
 void controller_delete()
 {
+  return;
+  
   // Delete previous setup
   for (byte i = 0; i < PEDALS; i++) {
-    delete pedals[i].debouncer[0];
-    delete pedals[i].debouncer[1];
-    delete pedals[i].footSwitch[0];
-    delete pedals[i].footSwitch[1];
-    delete pedals[i].analogPedal;
+    if (pedals[i].debouncer[0]  != nullptr) delete pedals[i].debouncer[0];
+    if (pedals[i].debouncer[1]  != nullptr) delete pedals[i].debouncer[1];
+    if (pedals[i].footSwitch[0] != nullptr) delete pedals[i].footSwitch[0];
+    if (pedals[i].footSwitch[1] != nullptr) delete pedals[i].footSwitch[1];
+    if (pedals[i].analogPedal   != nullptr) delete pedals[i].analogPedal;
   }
 }
 

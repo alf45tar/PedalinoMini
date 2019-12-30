@@ -175,15 +175,12 @@ void blynk_connect()
   if (WiFi.getMode() != WIFI_AP && strlen(blynkAuthToken) == BLYNK_AUTHTOKEN_LEN) {
     Blynk.config(blynkAuthToken);
     lastFail = Blynk.connect() ? 0 : millis();
+    /*
+    blynkEnabled = true;
+    Blynk.begin(blynkAuthToken);
+    lastFail = 0;
+    */
   }
-#endif
-#ifdef BLE
-  // Connect to Blynk Cloud
-  /*
-  blynkEnabled = true;
-  Blynk.begin("522b382dbdfc411891aac707d106b293");
-  lastFail = 0;
-  */
 #endif
 }
 

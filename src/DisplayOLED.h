@@ -417,7 +417,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
     display->setFont(blynkSign);
     if (blynk_cloud_connected())
-      blynkAppConnected ? display->drawString(36, 0, String(2)) :display->drawString(36, 0, String(1));
+      blynk_app_connected() ? display->drawString(36, 0, String(2)) :display->drawString(36, 0, String(1));
     else display->drawString(36, 0, String(0));
     if (scrollingMode) {
       display->setTextAlignment(TEXT_ALIGN_CENTER);
