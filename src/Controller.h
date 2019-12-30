@@ -573,7 +573,9 @@ void refresh_switch_1_midi(byte i, bool send)
                       banks[b][i].midiChannel);
             leds.invert(i);
             leds.write();
+#ifdef BLYNK       
             if (blynk_cloud_connected()) Blynk.virtualWrite(71 + i, leds.get(i) ? 1 : 0);
+#endif
           }
           break;
         case HIGH:  // HIGH = release
@@ -589,7 +591,9 @@ void refresh_switch_1_midi(byte i, bool send)
             if (latch) {
               leds.invert(i);
               leds.write();
+#ifdef BLYNK
               if (blynk_cloud_connected()) Blynk.virtualWrite(71 + i, leds.get(i) ? 1 : 0);
+#endif
             }
 
           }
