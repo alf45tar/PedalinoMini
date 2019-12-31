@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+                                                                                   (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -416,7 +416,8 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         ipMIDISendPitchBend(bend, channel);
         BLESendPitchBend(bend, channel);
         OSCSendPitchBend(bend, channel);
-        screen_info(midi::PitchBend, bend, 0, channel);
+        const unsigned ubend = unsigned(bend - int(MIDI_PITCHBEND_MIN));
+        screen_info(midi::PitchBend, ubend & 0x7f, (ubend >> 7) & 0x7f, channel);
       }
       break;
     
@@ -430,7 +431,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         ipMIDISendAfterTouch(value, channel);
         BLESendAfterTouch(value, channel);
         OSCSendAfterTouch(value, channel);
-        screen_info(midi::AfterTouchChannel, 0, value, channel);
+        screen_info(midi::AfterTouchChannel, value, 0, channel);
       }
       break;
 

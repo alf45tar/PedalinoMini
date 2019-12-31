@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+                                                                                   (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -26,15 +26,15 @@ SH1106Wire                display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 SSD1306Wire               display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 #endif
 #include <OLEDDisplayUi.h>
-#include <Battery.h>
 #include <WiFi.h>
-
 
 OLEDDisplayUi ui(&display);
 bool          uiUpdate = true;
 
+#ifdef BATTERY
+#include <Battery.h>
 Battery bat(3000, 4200, BATTERY_PIN);
-
+#endif
 
 #define WIFI_LOGO_WIDTH   78
 #define WIFI_LOGO_HEIGHT  64
@@ -382,14 +382,16 @@ void display_progress_bar_title2(String title1, String title2)
 
 void display_progress_bar_update(unsigned int progress, unsigned int total)
 {
-  display.drawProgressBar(4, 32, 120, 8, 100*progress/total);
+  display.drawProgressBar(0, 32, 127, 8, 100*progress/total);
   display.display();
 }
 
 void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
+#ifdef BATTERY
   static uint16_t voltage = bat.voltage();
   static uint8_t  level   = bat.level(voltage);
+#endif
 
   if ((millis() >= endMillis2) ||
       (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
@@ -537,8 +539,51 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
   if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2) {
-    byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
-    display->drawProgressBar(4, 54, 120, 8, p);
+    //byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
+    int p;
+    switch (m1) {
+
+      case midi::ControlChange:
+        p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
+        display->drawProgressBar(0, 54, 127, 8, p);
+        break;
+
+      case midi::PitchBend:
+        p = map(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX, -100, 100);
+        if ( p >= 0 ) {
+          display->drawProgressBar(60, 54, 67, 8, p);
+          uint16_t radius = 8 / 2;
+          uint16_t xRadius = 0 + radius;
+          uint16_t yRadius = 54 + radius;
+          uint16_t doubleRadius = 2 * radius;
+          display->drawCircleQuads(xRadius, yRadius, radius, 0b00000110);
+          display->drawHorizontalLine(xRadius, 54, 68 - doubleRadius);
+          display->drawHorizontalLine(xRadius, 54 + 8, 68 - doubleRadius);
+          display->drawCircleQuads(0 + 68 - radius, yRadius, radius, 0b00001001);
+        }
+        else {
+          display->drawProgressBar(60, 54, 67, 8, 0);
+          uint16_t radius = 8 / 2;
+          uint16_t xRadius = 0 + radius;
+          uint16_t yRadius = 54 + radius;
+          uint16_t doubleRadius = 2 * radius;
+          uint16_t innerRadius = radius - 2;
+          display->drawCircleQuads(xRadius, yRadius, radius, 0b00000110);
+          display->drawHorizontalLine(xRadius, 54, 68 - doubleRadius);
+          display->drawHorizontalLine(xRadius, 54 + 8, 68 - doubleRadius);
+          display->drawCircleQuads(0 + 68 - radius, yRadius, radius, 0b00001001);
+          uint16_t maxProgressWidth = (68 - doubleRadius) * p / 100;
+          display->fillCircle(68 + maxProgressWidth - xRadius, yRadius, innerRadius);
+          display->fillRect(68 + maxProgressWidth - xRadius + 1, 54 + 2, -maxProgressWidth, 8 - 3);
+          display->fillCircle(68 - xRadius, yRadius, innerRadius);
+        } 
+        break;
+
+      case midi::AfterTouchChannel:
+        p = map(m2, 0, MIDI_RESOLUTION - 1, 0, 100);
+        display->drawProgressBar(0, 54, 127, 8, p);
+        break;
+    }
   }
   else if (scrollingMode) { 
     display->drawLine(0, 51, 127, 51);
@@ -568,10 +613,10 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
       if(appleMidiConnected) display->drawString(84, 54, String(1));
       else display->drawString(84, 54, String(0));
 
-      if (interfaces[PED_IPMIDI].midiIn) display->drawString(106, 54, String(2));
+      if (interfaces[PED_IPMIDI].midiIn || interfaces[PED_IPMIDI].midiOut) display->drawString(106, 54, String(2));
       else display->drawString(106, 54, String(0));
 
-      if (interfaces[PED_OSC].midiIn) display->drawString(128, 54, String(3));
+      if (interfaces[PED_OSC].midiIn || interfaces[PED_OSC].midiOut) display->drawString(128, 54, String(3));
       else display->drawString(128, 54, String(0));
     }
 #endif
@@ -635,6 +680,13 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           drawRect(display, 84-38, 15, 84+36, 15+23);
           display->setFont(ArialMT_Plain_10);
           display->drawString(84 + x, 39 + y, String("Pitch")); 
+          display->setFont(ArialMT_Plain_24);
+          display->drawString(84 + x, 14 + y, String(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN));  
+          break;
+        case midi::AfterTouchChannel:
+          drawRect(display, 84-22, 15, 84+24, 15+23);
+          display->setFont(ArialMT_Plain_10);
+          display->drawString(84 + x, 39 + y, String("Pressure")); 
           display->setFont(ArialMT_Plain_24);
           display->drawString(84 + x, 14 + y, String(m2));  
           break;
@@ -876,12 +928,8 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 
 void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
-  static uint16_t voltage = bat.voltage();
-
   if (!scrollingMode || MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2)
     ui.switchToFrame(0);
-
-  voltage = (99*voltage + bat.voltage()) / 100;
 
   display->setFont(ArialMT_Plain_10);
   display->setTextAlignment(TEXT_ALIGN_LEFT);
@@ -889,10 +937,15 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->drawString(128 + x, 16 + y, ESP.getFreeHeap()/1024 + String(" Kb"));
 
+#ifdef BATTERY
+  static uint16_t voltage = bat.voltage();
+  voltage = (99*voltage + bat.voltage()) / 100;
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0 + x, 26 + y, "Battery voltage:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->drawString(128 + x, 26 + y, voltage + String(" mV"));
+#endif
+
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0 + x, 36 + y, "Running time:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
@@ -973,7 +1026,9 @@ void display_init()
 
   display.flipScreenVertically();
 
+#ifdef BATTERY
   bat.begin(3300, 2, &sigmoidal);
+#endif
 }
 
 void display_ui_update_disable()

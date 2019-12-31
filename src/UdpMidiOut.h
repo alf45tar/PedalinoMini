@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+                                                                                   (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -217,7 +217,6 @@ void ipMIDISendChannelMessage2(byte type, byte channel, byte data1, byte data2)
   midiPacket[1] = data1;
   midiPacket[2] = data2;
   ipMIDI.writeTo(midiPacket, 3, ipMIDImulticast, ipMIDIdestPort);
-
 }
 
 void ipMIDISendSystemCommonMessage1(byte type, byte data1)
@@ -285,7 +284,8 @@ void ipMIDISendAfterTouch(byte pressure, byte channel)
 
 void ipMIDISendPitchBend(int bend, byte channel)
 {
-  ipMIDISendChannelMessage1(midi::PitchBend, channel, bend);
+  const unsigned ubend = unsigned(bend - int(MIDI_PITCHBEND_MIN));
+  ipMIDISendChannelMessage2(midi::PitchBend, channel, ubend & 0x7f, (ubend >> 7) & 0x7f);
 }
 
 void ipMIDISendSystemExclusive(const byte* array, unsigned size)
