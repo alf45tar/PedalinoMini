@@ -38,6 +38,9 @@ void printMIDI(const char *interface, midi::StatusByte status, const byte *data)
     case midi::ControlChange:
     case midi::ProgramChange:
     case midi::PitchBend:
+    case midi::AfterTouchChannel:
+      lastUsed = 0;
+      lastUsedPedal = 0;
       lastPedalName[0] = 0;
       screen_info(type, data[0], data[1], channel);
       break;
@@ -489,7 +492,7 @@ inline void rtpMIDI_listen() {
   if (!wifiEnabled) return;
   if (!WiFi.isConnected()) return;
 
-  AppleMIDI.run();
+  AppleMIDI.read();
 }
 
 // Listen to incoming ipMIDI messages from WiFi

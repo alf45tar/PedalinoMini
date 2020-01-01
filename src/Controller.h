@@ -1056,11 +1056,11 @@ void refresh_analog(byte i, bool send)
     pedals[i].expMax  = _max(pedals[i].expMax,  input - SAFE_ZONE);
     //DPRINT("%d -> [%d, %d]\n", input, pedals[i].expZero, pedals[i].expMax);
   }
-  value = map_analog(i, input);                             // expand to [0, 1023] and apply the map function
+  value = map_analog(i, input);                             // expand to [0, ADC_RESOLUTION-1] and apply the map function
   pedals[i].analogPedal->update(value);                     // update the responsive analog average
   if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
     value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
-    value = map(value,                                      // map from [0, 1023] to [min, max] MIDI value
+    value = map(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
               0,
               ADC_RESOLUTION - 1,
               pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
@@ -1093,8 +1093,6 @@ void controller_setup();
 //
 void controller_delete()
 {
-  return;
-  
   // Delete previous setup
   for (byte i = 0; i < PEDALS; i++) {
     if (pedals[i].debouncer[0]  != nullptr) delete pedals[i].debouncer[0];
@@ -1323,7 +1321,7 @@ void controller_setup()
           pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
           pedals[i].analogPedal->setAnalogResolution(ADC_RESOLUTION);
           pedals[i].analogPedal->enableEdgeSnap();
-          pedals[i].analogPedal->setActivityThreshold(6.0);
+          pedals[i].analogPedal->setActivityThreshold(3.0);
           analogReadResolution(ADC_RESOLUTION_BITS);
           analogSetPinAttenuation(PIN_A(i), ADC_11db);
           if (lastUsedPedal == 0xFF) {

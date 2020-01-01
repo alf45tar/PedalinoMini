@@ -34,10 +34,10 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define PIN_A(x)          pinA[x]
 
 #ifdef TTGO_T_EIGHT
-#define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_38  // Right 37   Center 38   Left 39
 #define RIGHT_PIN             GPIO_NUM_37
 #define CENTER_PIN            GPIO_NUM_38
-#define LEFT_PIN              GPIO_NUM_39
+#define LEFT_PIN              GPIO_NUM_39  // Shared with A2
 #define SERIAL_DATA_PIN       GPIO_NUM_2   // DS
 #define CLOCK_PIN             GPIO_NUM_2   // SH_CP
 #define LATCH_PIN             GPIO_NUM_2   // ST_CP
@@ -45,6 +45,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define USB_MIDI_OUT_PIN      GPIO_NUM_19  // Used by SD
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
+#define BATTERY_PIN           GPIO_NUM_15
 #else
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
 #define RIGHT_PIN             GPIO_NUM_23
@@ -57,8 +58,8 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define USB_MIDI_OUT_PIN      GPIO_NUM_19
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
+#define BATTERY_PIN           GPIO_NUM_23
 #endif
-#define BATTERY_PIN           GPIO_NUM_34
 
 #include "ShiftOut.h"
 
@@ -200,8 +201,9 @@ typedef uint8_t   byte;
 #define PED_TIMESIGNATURE_12_8  6
 
 #define MIDI_RESOLUTION         128       // MIDI 7-bit CC resolution
-#define ADC_RESOLUTION         1024       // hardware 9 to 12-bit ADC converter resolution
-#define ADC_RESOLUTION_BITS      10       // software 1 to 16-bit resolution
+#define ADC_RESOLUTION          128       
+#define ADC_RESOLUTION_BITS       7       // hardware 9 to 12-bit ADC converter resolution
+                                          // software 1 to 16-bit resolution
 #define CALIBRATION_DURATION   8000       // milliseconds
 
 struct bank {

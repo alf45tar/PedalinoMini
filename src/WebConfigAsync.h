@@ -226,6 +226,28 @@ void get_root_page() {
   page += F("<dt>Sequences</dt><dd>");
   page += String(SEQUENCES);
   page += F("</dd>");
+  page += F("<dt>Boot Mode</dt><dd>");
+  switch (bootMode) {
+    case PED_BOOT_NORMAL:
+      page += F("Normal");
+      break;
+    case PED_BOOT_BLE:
+      page += F("BLE only");
+      break;
+    case PED_BOOT_WIFI:
+      page += F("WiFi only");
+      break;
+    case PED_BOOT_AP:
+      page += F("Access Point and BLE");
+      break;
+    case PED_BOOT_AP_NO_BLE:
+      page += F("Access Point without BLE");
+      break;
+  }
+  page += F("</dd>");
+  page += F("<dt>SDK Version</dt><dd>");
+  page += ESP.getSdkVersion();
+  page += F("</dd>");
   page += F("</div>");
 
   page += F("<div class='col-6 col-sm-3'>");
@@ -265,9 +287,6 @@ void get_root_page() {
   page += F("<dt>Free Heap Size</dt><dd>");
   page += ESP.getFreeHeap() / 1024;
   page += F(" kB</dd>");
-  page += F("<dt>SDK Version</dt><dd>");
-  page += ESP.getSdkVersion();
-  page += F("</dd>");
   //page += F("<dt>Running On Core</dt><dd>");
   //page += xPortGetCoreID();
   //page += F("</dd>");
