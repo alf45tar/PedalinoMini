@@ -173,11 +173,11 @@ void autosensing_setup()
         default:
           // tip connected connected to a pot
           pedals[p].mode = PED_ANALOG;
-          pedals[p].invertPolarity = true;
+          //pedals[p].invertPolarity = true;
           // inititalize continuos calibration
           pedals[p].expZero = ADC_RESOLUTION - 1;
           pedals[p].expMax = 0;
-          DPRINT(" ANALOG POLARITY-");
+          DPRINT(" ANALOG POLARITY+");
       }
     }
     else {
@@ -197,7 +197,7 @@ unsigned int map_analog(byte p, unsigned int value)
 {
   p = constrain(p, 0, PEDALS - 1);
   value = constrain(value, pedals[p].expZero, pedals[p].expMax);                  // make sure that the analog value is between the minimum and maximum value
-  value = map(value, pedals[p].expZero, pedals[p].expMax, 0, ADC_RESOLUTION - 1); // map the value from [minimumValue, maximumValue] to [0, 1023]
+  value = map(value, pedals[p].expZero, pedals[p].expMax, 0, ADC_RESOLUTION - 1); // map the value from [minimumValue, maximumValue] to [0, ADC_RESOLUTION-1]
   switch (pedals[p].mapFunction) {
     case PED_LINEAR:
       break;
@@ -1059,12 +1059,15 @@ void refresh_analog(byte i, bool send)
   value = map_analog(i, input);                             // expand to [0, ADC_RESOLUTION-1] and apply the map function
   pedals[i].analogPedal->update(value);                     // update the responsive analog average
   if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
+    DPRINT("%d ", value);
     value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
+    DPRINT("%d ",value);
     value = map(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
               0,
               ADC_RESOLUTION - 1,
               pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
               pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
+    DPRINT("%d\n", value);
     double velocity = (1000.0 * ((int)value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
     switch (pedals[i].function) {
       case PED_MIDI:
@@ -1321,7 +1324,8 @@ void controller_setup()
           pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
           pedals[i].analogPedal->setAnalogResolution(ADC_RESOLUTION);
           pedals[i].analogPedal->enableEdgeSnap();
-          pedals[i].analogPedal->setActivityThreshold(3.0);
+          pedals[i].analogPedal->setActivityThreshold(10.0);
+          //pedals[i].analogPedal->setSnapMultiplier(0.1);
           analogReadResolution(ADC_RESOLUTION_BITS);
           analogSetPinAttenuation(PIN_A(i), ADC_11db);
           if (lastUsedPedal == 0xFF) {
