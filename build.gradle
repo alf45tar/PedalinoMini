@@ -5,5 +5,7 @@ plugins {
 sonarqube {
   properties {
     property "sonar.projectKey", "alf45tar_PedalinoMini"
+    property "sonar.organization", "alf45tar"
+    property "sonar.host.url", "https://sonarcloud.io"
   }
 }
