@@ -16,14 +16,3 @@ install:
 
 script:
     - platformio ci --project-conf=platformio.ini
-
-dist: trusty
-
-addons:
-  sonarcloud:
-    organization: "alf45tar"
-    token:
-      secure: "b3ff6ab7d9d15c9daa09886f458eb3afe5c03ae8" # encrypted value of your token
-
-script:
-  - ./gradlew sonarqube
