@@ -433,15 +433,15 @@ void OnOscSendConfiguration(OSCMessage &msg)
 {
   if (!wifiEnabled) return;
   
-  DPRINT("/clean__pedalino__send_configuration\n");
+  DPRINT("OSC message /send_configuration received from %s\n", oscControllerIP.toString().c_str());
 
   AsyncUDP        udpOut;
   AsyncUDPMessage udpMsg;
-  OSCMessage      oscMsg("/clean__pedalino__pedal_1");
+  OSCMessage      oscMsg("/led_1");
 
-  oscMsg.add(banks[currentBank][0].pedalName).send(udpMsg).empty();
-  //udpOut.connect(oscControllerIP, 9000);
-  udpOut.connect(IPAddress(192,168,2,120), 9000);
+  //oscMsg.add(banks[currentBank][0].pedalName).send(udpMsg).empty();
+  oscMsg.add((int32_t)1).send(udpMsg);
+  udpOut.connect(oscControllerIP, 9000);
   udpOut.send(udpMsg);
   udpOut.close();
 }
@@ -449,10 +449,31 @@ void OnOscSendConfiguration(OSCMessage &msg)
 void OnOscPedal1(OSCMessage &msg)
 {
   if (msg.getString(0, banks[currentBank][0].pedalName, MAXPEDALNAME) > 0) {
-    DPRINT("/clean__pedalino__pedal_1 %s\n", banks[currentBank][0].pedalName);
+    DPRINT("OSC message /pedal_1 %s received from %s\n", banks[currentBank][0].pedalName, oscControllerIP.toString().c_str());
   } else {
     DPRINT("OSC error: %d\n", msg.getError());
   }
+}
+
+void OnOscLed1(OSCMessage &msg)
+{
+  DPRINT("OSC message /led_1 %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  leds.set(0, msg.getInt(0));
+  leds.write();
+}
+
+void OnOscLed2(OSCMessage &msg)
+{
+  DPRINT("OSC message /led_2 %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  leds.set(1, msg.getInt(0));
+  leds.write();
+}
+
+void OnOscLed3(OSCMessage &msg)
+{
+  DPRINT("OSC message /led_3 %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  leds.set(2, msg.getInt(0));
+  leds.write();
 }
 
 
@@ -467,16 +488,17 @@ void oscOnPacket(AsyncUDPPacket &packet) {
 
   OSCMessage oscMsg;
 
-  DPRINT("[OSC]<: ");
   while (packet.available() > 0) {
     oscMsg.fill(packet.read());
   }
   oscControllerIP = packet.remoteIP();
-  DPRINT("Clean OSC: %s\n", oscControllerIP.toString().c_str());
 
   if (!oscMsg.hasError()) {
-    oscMsg.dispatch("/clean__pedalino__send_configuration", OnOscSendConfiguration);
-    oscMsg.dispatch("/clean__pedalino__pedal_1",    OnOscPedal1);
+    oscMsg.dispatch("/send_configuration",          OnOscSendConfiguration);
+    oscMsg.dispatch("/pedal_1",                     OnOscPedal1);
+    oscMsg.dispatch("/led_1",                       OnOscLed1);
+    oscMsg.dispatch("/led_2",                       OnOscLed2);
+    oscMsg.dispatch("/led_3",                       OnOscLed3);
     oscMsg.dispatch("/pedalino/midi/noteOn",        OnOscNoteOn);
     oscMsg.dispatch("/pedalino/midi/noteOff",       OnOscNoteOff);
     oscMsg.dispatch("/pedalino/midi/controlChange", OnOscControlChange);

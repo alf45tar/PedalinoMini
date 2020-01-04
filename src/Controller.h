@@ -1059,15 +1059,12 @@ void refresh_analog(byte i, bool send)
   value = map_analog(i, input);                             // expand to [0, ADC_RESOLUTION-1] and apply the map function
   pedals[i].analogPedal->update(value);                     // update the responsive analog average
   if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
-    DPRINT("%d ", value);
     value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
-    DPRINT("%d ",value);
     value = map(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
               0,
               ADC_RESOLUTION - 1,
               pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
               pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
-    DPRINT("%d\n", value);
     double velocity = (1000.0 * ((int)value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
     switch (pedals[i].function) {
       case PED_MIDI:

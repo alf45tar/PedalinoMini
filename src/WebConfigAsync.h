@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+                                                                                   (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -53,12 +53,12 @@ void get_top_page(int p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-YLGeXaapI0/5IgZopewRJcFXomhRMlYYjugPLSyNjTY=' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-L/W5Wfqfa0sdBNIKN9cG6QA5F2qx4qICmU2VgLruv9Y=' crossorigin='anonymous'>");
   #else
-    page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' integrity='sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css' integrity='sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh' crossorigin='anonymous'>");
   #endif
   } else {
-    page += F("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/4.3.1/");
+    page += F("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/4.4.1/");
     page += theme;
     page += F("/bootstrap.min.css' crossorigin='anonymous'>");
   }
@@ -104,7 +104,8 @@ void get_top_page(int p = 0) {
   page += F("</li>");
   page += F("</ul>");
   }
-  if (p > 1) {
+  //if (p > 1)
+  {
     page += F("<form class='form-inline my-2 my-lg-0'>");
     page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
     page += currentProfile == 1 ? F("<a class='btn btn-primary' href='?profile=2' role='button'>B</a>") : F("<a class='btn btn-outline-primary' href='?profile=2' role='button'>B</a>");
@@ -155,13 +156,13 @@ void get_footer_page() {
   page += F("<p></p>");
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/jquery-3.3.1.slim.min.js' integrity='sha256-o3xvfVoAnalAlD3CPebt5QWZ3yLdooNGruu0ZJvZy0U=' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/popper.min.js' integrity='sha256-fTuUgtT7O2rqoImwjrhDgbXTKUwyxxujIMRIK7TbuNU=' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-CjSoeELFOcH0/uxWu6mC/Vlrc1AARqbm/jiiImDGV3s=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/jquery-3.4.1.slim.min.js' integrity='sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/popper.min.js' integrity='sha256-x3YZWtRjM8bJqf48dFAv/qmgL68SI4jqNWeSLMZaMGA=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-WqU1JavFxSAMcLP2WIOI+GB2zWmShMI82mTpLDcqFUg=' crossorigin='anonymous'></script>");
 #else
-  page += F("<script src='https://code.jquery.com/jquery-3.3.1.slim.min.js' integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo' crossorigin='anonymous'></script>");
-  page += F("<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js' integrity='sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1' crossorigin='anonymous'></script>");
-  page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js' integrity='sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM' crossorigin='anonymous'></script>");
+  page += F("<script src='https://code.jquery.com/jquery-3.4.1.slim.min.js' integrity='sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n' crossorigin='anonymous'></script>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js' integrity='sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo' crossorigin='anonymous'></script>");
+  page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js' integrity='sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6' crossorigin='anonymous'></script>");
 #endif
   page += F("</body>");
   page += F("</html>");
@@ -175,7 +176,7 @@ void get_login_page() {
   page += F("<div class='text-center mb-4'>");
   page += F("<img class='mb-4' src='/logo.png' alt='' width='64' height='64'>");
   page += F("<h1 class='h3 mb-3 font-weight-normal'>PedalinoMini&trade;</h1>");
-  page += F("<p>Smart wireless MIDI foot controller <a href='https://github.com/alf45tar/PedalinoMini'>More info</a></p>");
+  page += F("<p>Wireless MIDI foot controller <a href='https://github.com/alf45tar/PedalinoMini'>More info</a></p>");
   page += F("</div>");
 
   page += F("<div class='form-label-group'>");
@@ -380,7 +381,7 @@ void get_live_page() {
   get_top_page(1);
 
   page += F("<div aria-live='polite' aria-atomic='true' style='position: relative;'>"
-            "<div id='remotedisplay' class='toast' style='position: absolute; top: 0; right: 0;' data-autohide='false'>"
+            "<div id='remotedisplay' class='toast' style='position: absolute; top: 0; right: 0; max-width: 600px;' data-autohide='false'>"
             "<div class='toast-header'>"
             "<strong class='mr-auto'>Remote Display</strong>"
             "<button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>"
@@ -2376,7 +2377,7 @@ void http_setup() {
   httpServer.serveStatic("/logo.png", SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
   httpServer.serveStatic("/css/bootstrap.min.css", SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/bootstrap.min.js", SPIFFS, "/js/bootstrap.min.js").setDefaultFile("/js/bootstrap.min.js").setCacheControl("max-age=600");
-  httpServer.serveStatic("/js/jquery-3.3.1.slim.min.js", SPIFFS, "/js/jquery-3.3.1.slim.min.js").setDefaultFile("/js/jquery-3.3.1.slim.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/jquery-3.4.1.slim.min.js", SPIFFS, "/js/jquery-3.4.1.slim.min.js").setDefaultFile("/js/jquery-3.4.1.slim.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/popper.min.js", SPIFFS, "/js/popper.min.js").setDefaultFile("/js/popper.min.js").setCacheControl("max-age=600");
 
   httpServer.on("/",                        http_handle_root);
