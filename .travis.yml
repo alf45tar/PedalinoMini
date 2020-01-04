@@ -26,5 +26,4 @@ addons:
       secure: "b3ff6ab7d9d15c9daa09886f458eb3afe5c03ae8" # encrypted value of your token
 
 script:
-  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
-  - sonar-scanner
+  - ./gradlew sonarqube
