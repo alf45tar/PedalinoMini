@@ -109,7 +109,8 @@ void start_services()
   DPRINT("RTP-MIDI started\n");
 
   // Set incoming OSC messages port
-  oscUDPin.listen(WiFi.localIP(), oscLocalPort);
+  //oscUDPin.listen(WiFi.localIP(), oscLocalPort);
+  oscUDPin.listen(oscLocalPort);
   oscUDPin.onPacket(oscOnPacket);
 
   DPRINT("OSC server started\n");

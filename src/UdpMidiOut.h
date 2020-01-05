@@ -27,15 +27,16 @@ APPLEMIDI_CREATE_INSTANCE(WiFiUDP, AppleMIDI); // see definition in AppleMidi_De
 
 AsyncUDP                ipMIDI;
 IPAddress               ipMIDImulticast(225, 0, 0, 37);
-unsigned int            ipMIDIdestPort = 21928;
+const unsigned int      ipMIDIdestPort = 21928;
 
 // WiFi OSC comunication
 
-AsyncUDP                oscUDPin;                // A UDP instance to let us receive packets over UDP
 AsyncUDP                oscUDPout;               // A UDP instance to let us send packets over UDP
 IPAddress               oscRemoteIp;             // remote IP of an external OSC device or broadcast address
 const unsigned int      oscRemotePort = 9000;    // remote port of an external OSC device
-const unsigned int      oscLocalPort = 8000;     // local port to listen for OSC packets (actually not used for sending)
+
+AsyncUDP                oscUDPin;                // A UDP instance to let us receive packets over UDP
+const unsigned int      oscLocalPort  = 8000;    // local port to listen for OSC packets
 #endif  // WIFI
 
 bool                    appleMidiConnected = false;

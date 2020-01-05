@@ -438,10 +438,16 @@ void OnOscSendConfiguration(OSCMessage &msg)
   AsyncUDP        udpOut;
   AsyncUDPMessage udpMsg;
   OSCMessage      oscMsg("/led_1");
+  OSCBundle       oscBndl;
 
   //oscMsg.add(banks[currentBank][0].pedalName).send(udpMsg).empty();
-  oscMsg.add((int32_t)1).send(udpMsg);
+  //oscMsg.add((int32_t)1).send(udpMsg).empty();
+  oscBndl.add("/led_1").add((int32_t)1);
+  oscBndl.add("/led_2").add((int32_t)0);
+  oscBndl.add("/led_3").add((int32_t)1);
+  oscBndl.send(udpMsg).empty();
   udpOut.connect(oscControllerIP, 9000);
+  //udpOut.connect(IPAddress(192,168,2,120), 9000);
   udpOut.send(udpMsg);
   udpOut.close();
 }
@@ -479,7 +485,7 @@ void OnOscLed3(OSCMessage &msg)
 
 // Listen to incoming OSC messages from WiFi
 
-void oscOnPacket(AsyncUDPPacket &packet) {
+void oscOnPacket(AsyncUDPPacket packet) {
 
   if (!wifiEnabled) return;
   if (!WiFi.isConnected()) return;
@@ -507,15 +513,6 @@ void oscOnPacket(AsyncUDPPacket &packet) {
   }
 }
 
-// Listen to incoming AppleMIDI messages from WiFi
-
-inline void rtpMIDI_listen() {
-
-  if (!wifiEnabled) return;
-  if (!WiFi.isConnected()) return;
-
-  AppleMIDI.read();
-}
 
 // Listen to incoming ipMIDI messages from WiFi
 
@@ -717,6 +714,17 @@ void ipMidiOnPacket(AsyncUDPPacket packet) {
     DPRINTMIDI(packet.remoteIP().toString().c_str(), status, data);
   } 
 
+}
+
+
+// Listen to incoming AppleMIDI messages from WiFi
+
+inline void rtpMIDI_listen() {
+
+  if (!wifiEnabled) return;
+  if (!WiFi.isConnected()) return;
+
+  AppleMIDI.read();
 }
 
 #endif  // NOWIFI
