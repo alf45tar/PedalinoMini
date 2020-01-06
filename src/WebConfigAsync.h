@@ -1628,6 +1628,7 @@ size_t get_root_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
     rebuild = false;
   }
   page.getBytes(buffer, maxLen, index);
+  buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
   if (rebuild) page = "";
@@ -1644,6 +1645,7 @@ size_t get_live_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
     rebuild = false;
   }
   page.getBytes(buffer, maxLen, index);
+  buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
   if (rebuild) page = "";
@@ -1660,6 +1662,7 @@ size_t get_banks_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
     rebuild = false;
   }
   page.getBytes(buffer, maxLen, index);
+  buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
   if (rebuild) page = "";
@@ -1676,6 +1679,7 @@ size_t get_pedals_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
     rebuild = false;
   }
   page.getBytes(buffer, maxLen, index);
+  buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
   if (rebuild) page = "";
@@ -1692,6 +1696,7 @@ size_t get_interfaces_page_chunked(uint8_t *buffer, size_t maxLen, size_t index)
     rebuild = false;
   }
   page.getBytes(buffer, maxLen, index);
+  buffer[maxLen-1] = 0; // CWE-126  
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
   if (rebuild) page = "";
@@ -1708,6 +1713,7 @@ size_t get_sequences_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) 
     rebuild = false;
   }
   page.getBytes(buffer, maxLen, index);
+  buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
   if (rebuild) page = "";
@@ -1724,6 +1730,7 @@ size_t get_options_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
     rebuild = false;
   }
   page.getBytes(buffer, maxLen, index);
+  buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
   if (rebuild) page = "";
