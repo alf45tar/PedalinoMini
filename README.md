@@ -162,23 +162,28 @@ void wifi_connect()
 PedalinoMini™ has 7 booting modes:
 
 1. Normal
+
 BLE and WiFi are enabled.
 PedalinoMini™ starts the WiFi procedure on boot (connect to last AP -> SmartConfig -> WPS -> Access Point).
 After boot PedalinoMini™ will wait for BLE-MIDI connection.
 
 2. Bluetooth Only
+
 WiFi is disabled.
 PedalinoMini™ will wait for BLE-MIDI connection.
 
 3. WiFi Only
+
 PedalinoMini™ starts the WiFi procedure on boot (connect to last AP -> SmartConfig -> WPS -> Access Point).
 BLE is disabled.
 
 4. Access Point with Bluetooth
+
 PedalinoMini™ skip the WiFi procedure on boot and create a WiFi Access Point.
 PedalinoMini™ will wait for BLE-MIDI connection.
 
 5. Access Point without Bluetooth
+
 PedalinoMini™ skip the WiFi procedure on boot and create a WiFi Access Point.
 BLE is disabled.
 
