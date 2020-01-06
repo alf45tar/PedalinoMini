@@ -268,22 +268,28 @@ void bank_update (byte b, byte p, int d = 1, bool enable = true)
           case PED_BANK_SELECT_INC:
             if (banks[b][p].midiValue2 == banks[b][p].midiValue3) banks[b][p].midiValue2 = banks[b][p].midiValue1;
             else banks[b][p].midiValue2++;
+            banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);            
+            banks[b][p].midiCode = banks[b][p].midiValue2;
             break;
 
           case PED_BANK_SELECT_DEC:
             if (banks[b][p].midiValue2 == banks[b][p].midiValue1) banks[b][p].midiValue2 = banks[b][p].midiValue3;
             else banks[b][p].midiValue2--;
+            banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);
+            banks[b][p].midiCode = banks[b][p].midiValue2;
             break;
 
           case PED_PROGRAM_CHANGE_INC:
             if (banks[b][p].midiValue2 == banks[b][p].midiValue3) banks[b][p].midiValue2 = banks[b][p].midiValue1;
             else banks[b][p].midiValue2++;
+            banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);
             banks[b][p].midiCode = banks[b][p].midiValue2;
             break;
 
           case PED_PROGRAM_CHANGE_DEC:
             if (banks[b][p].midiValue2 == banks[b][p].midiValue1) banks[b][p].midiValue2 = banks[b][p].midiValue3;
             else banks[b][p].midiValue2--;
+            banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);
             banks[b][p].midiCode = banks[b][p].midiValue2;
             break;
         }
@@ -297,7 +303,8 @@ void bank_update (byte b, byte p, int d = 1, bool enable = true)
             banks[b][p].midiCode = banks[b][p].midiValue1;
           case PED_BANK_SELECT_INC:
           case PED_BANK_SELECT_DEC:
-            banks[b][p].midiValue2 = banks[b][p].midiValue1;
+            //banks[b][p].midiValue2 = banks[b][p].midiValue1;
+            banks[b][p].midiCode = banks[b][p].midiValue1;
             break;
         }
         break;
@@ -310,7 +317,8 @@ void bank_update (byte b, byte p, int d = 1, bool enable = true)
             banks[b][p].midiCode = banks[b][p].midiValue3;
           case PED_BANK_SELECT_INC:
           case PED_BANK_SELECT_DEC:
-            banks[b][p].midiValue2 = banks[b][p].midiValue3;
+            //banks[b][p].midiValue2 = banks[b][p].midiValue3;
+            banks[b][p].midiCode = banks[b][p].midiValue3;
             break;
         }
         break;
@@ -368,15 +376,15 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
     case PED_PROGRAM_CHANGE_DEC:
 
       if (on_off) {
-        DPRINT("PROGRAM CHANGE.....Program %3d.....Channel %2d\n", value, channel);
-        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendProgramChange(value, channel);
-        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendProgramChange(value, channel);
-        AppleMidiSendProgramChange(value, channel);
-        ipMIDISendProgramChange(value, channel);
-        BLESendProgramChange(value, channel);
-        OSCSendProgramChange(value, channel);
-        screen_info(midi::ProgramChange, value, 0, channel);
-        lastMIDIMessage[currentBank] = {PED_PROGRAM_CHANGE, value, 0, channel};
+        DPRINT("PROGRAM CHANGE.....Program %3d.....Channel %2d\n", code, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendProgramChange(code, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendProgramChange(code, channel);
+        AppleMidiSendProgramChange(code, channel);
+        ipMIDISendProgramChange(code, channel);
+        BLESendProgramChange(code, channel);
+        OSCSendProgramChange(code, channel);
+        screen_info(midi::ProgramChange, code, 0, channel);
+        lastMIDIMessage[currentBank] = {PED_PROGRAM_CHANGE, code, 0, channel};
       }
       break;
     
@@ -385,23 +393,22 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
 
       if (on_off) {
         // MSB
-        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect, code, channel);
-        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect, code, channel);
-        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect, code, channel);
-        AppleMidiSendControlChange(midi::BankSelect, code, channel);
-        ipMIDISendControlChange(midi::BankSelect, code, channel);
-        BLESendControlChange(midi::BankSelect, code, channel);
-        OSCSendControlChange(midi::BankSelect, code, channel);
-        screen_info(midi::ControlChange, midi::BankSelect, code, channel);
+        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect, value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect, value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect, value, channel);
+        AppleMidiSendControlChange(midi::BankSelect, value, channel);
+        ipMIDISendControlChange(midi::BankSelect, value, channel);
+        BLESendControlChange(midi::BankSelect, value, channel);
+        OSCSendControlChange(midi::BankSelect, value, channel);
         // LSB
-        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect+32, value, channel);
-        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect+32, value, channel);
-        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect+32, value, channel);
-        AppleMidiSendControlChange(midi::BankSelect+32, value, channel);
-        ipMIDISendControlChange(midi::BankSelect+32, value, channel);
-        BLESendControlChange(midi::BankSelect+32, value, channel);
-        OSCSendControlChange(midi::BankSelect+32, value, channel);
-        screen_info(midi::ControlChange, midi::BankSelect+32, value, channel);
+        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect+32, code, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect+32, code, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect+32, code, channel);
+        AppleMidiSendControlChange(midi::BankSelect+32, code, channel);
+        ipMIDISendControlChange(midi::BankSelect+32, code, channel);
+        BLESendControlChange(midi::BankSelect+32, code, channel);
+        OSCSendControlChange(midi::BankSelect+32, code, channel);
+         screen_info(midi::ControlChange, midi::BankSelect+32, code, channel);
       }
       break;
 
@@ -1232,30 +1239,44 @@ void controller_setup()
     DPRINT("   ");
     switch (banks[currentBank][i].midiMessage) {
       case PED_PROGRAM_CHANGE:
-        DPRINT("PROGRAM_CHANGE %3d", banks[currentBank][i].midiCode);
+        DPRINT("PROGRAM_CHANGE     %3d", banks[currentBank][i].midiCode);
         break;
       case PED_CONTROL_CHANGE:
-        DPRINT("CONTROL_CHANGE %3d", banks[currentBank][i].midiCode);
+        DPRINT("CONTROL_CHANGE     %3d", banks[currentBank][i].midiCode);
         break;
       case PED_NOTE_ON_OFF:
-        DPRINT("NOTE_ON_OFF    %3d", banks[currentBank][i].midiCode);
+        DPRINT("NOTE_ON_OFF        %3d", banks[currentBank][i].midiCode);
+        break;
+      case PED_BANK_SELECT_INC:
+        DPRINT("BANK_SELECT_INC    %3d", banks[currentBank][i].midiCode);
+        break;
+      case PED_BANK_SELECT_DEC:
+        DPRINT("BANK_SELECT_DEC    %3d", banks[currentBank][i].midiCode);
+        break;
+      case PED_PROGRAM_CHANGE_INC:
+        DPRINT("PROGRAM_CHANGE_INC %3d", banks[currentBank][i].midiCode);
+        break;
+      case PED_PROGRAM_CHANGE_DEC:
+        DPRINT("PROGRAM_CHANGE_DEC %3d", banks[currentBank][i].midiCode);
         break;
       case PED_PITCH_BEND:
-        DPRINT("PITCH_BEND        ");
+        DPRINT("PITCH_BEND            ");
         break;
       case PED_CHANNEL_PRESSURE:
-        DPRINT("CHANNEL PRESSURE  ");
+        DPRINT("CHANNEL PRESSURE      ");
         break;
       case PED_MIDI_START:
-        DPRINT("MIDI START        ");
+        DPRINT("MIDI_START            ");
         break;
       case PED_MIDI_STOP:
-        DPRINT("MIDI STOP         ");
+        DPRINT("MIDI_STOP             ");
         break;
       case PED_MIDI_CONTINUE:
-        DPRINT("MIDI CONTINUE     ");
+        DPRINT("MIDI_CONTINUE         ");
         break;
-      
+      case PED_SEQUENCE:
+        DPRINT("SEQUENCE           %3d", banks[currentBank][i].midiCode);
+        break;
     }
     DPRINT("   Channel %2d", banks[currentBank][i].midiChannel);
 
