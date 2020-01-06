@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/alf45tar/PedalinoMini.svg?branch=master)](https://travis-ci.org/alf45tar/PedalinoMini)
+[![Build Status](https://travis-ci.org/alf45tar/PedalinoMini.svg?branch=master)](https://travis-ci.org/alf45tar/PedalinoMini) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/14609917402d4d498a78faa014539473)](https://www.codacy.com/manual/alf45tar/PedalinoMini?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=alf45tar/PedalinoMini&amp;utm_campaign=Badge_Grade)
 
 [![](https://github.com/alf45tar/PedalinoMini/blob/master/images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
 
