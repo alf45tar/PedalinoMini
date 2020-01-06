@@ -62,7 +62,7 @@ Enabling Blynk could reduce responsiveness due to a Blynk [bug](https://communit
 The shortest bill of materials ever: an ESP32 board and a OLED display. That's it.
 
 - Any ESP32 board supported by [Arduino core for ESP32 WiFi chip](https://github.com/espressif/arduino-esp32)
-- Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
+  - Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
 - OLED I2C 0.96"/1.3" display 128x64 pixels SSD1306/SH1106 based
 
 Not enough short?
