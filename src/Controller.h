@@ -520,7 +520,8 @@ void refresh_switch_1_midi(byte i, bool send)
       case LOW:   // LOW = pressed
         if (send) midi_send(banks[b][i].midiMessage,
                             banks[b][i].midiCode,
-                            banks[b][i].midiValue1,
+                            banks[b][i].midiMessage == PED_CONTROL_CHANGE ?
+                                  (leds.get(i) ? banks[b][i].midiValue2 : banks[b][i].midiValue1) : banks[b][i].midiValue1,
                             banks[b][i].midiChannel);
         break;
       case HIGH:  // HIGH = release
@@ -570,7 +571,8 @@ void refresh_switch_1_midi(byte i, bool send)
             bank_update(b, i);
             midi_send(banks[b][i].midiMessage,
                       banks[b][i].midiCode,
-                      banks[b][i].midiValue1,
+                      banks[b][i].midiMessage == PED_CONTROL_CHANGE ?
+                            (leds.get(i) ? banks[b][i].midiValue2 : banks[b][i].midiValue1) : banks[b][i].midiValue1,
                       banks[b][i].midiChannel);
             leds.invert(i);
             leds.write();
@@ -619,7 +621,8 @@ void refresh_switch_1_midi(byte i, bool send)
         case LOW:   // LOW = pressed
           if (send) midi_send(banks[b][i].midiMessage,
                               banks[b][i].midiCode,
-                              banks[b][i].midiValue1,
+                              banks[b][i].midiMessage == PED_CONTROL_CHANGE ?
+                                    (leds.get(i) ? banks[b][i].midiValue2 : banks[b][i].midiValue1) : banks[b][i].midiValue1,
                               banks[b][i].midiChannel);
         case HIGH:  // HIGH = release
           if (send) midi_send(banks[b][i].midiMessage,
