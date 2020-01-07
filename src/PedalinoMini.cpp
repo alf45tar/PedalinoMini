@@ -287,6 +287,15 @@ void setup()
 
   //display_clear();
 
+  DPRINT("\n");
+  switch ((newBootMode == PED_BOOT_UNKNOWN) ? bootMode : newBootMode) { 
+    case PED_BOOT_NORMAL:     DPRINT("Boot NORMAL\n");  break;
+    case PED_BOOT_BLE:        DPRINT("Boot BLE\n");     break;
+    case PED_BOOT_WIFI:       DPRINT("Boot WIFI\n");    break;
+    case PED_BOOT_AP:         DPRINT("Boot AP+BLE\n");  break;
+    case PED_BOOT_AP_NO_BLE:  DPRINT("Boot AP\n");      break;
+  }
+
   if (newBootMode != PED_BOOT_UNKNOWN && newBootMode != bootMode) {
     bootMode = newBootMode;
     switch (bootMode) { 
@@ -328,7 +337,7 @@ void setup()
       break;
 
     case PED_BOOT_RESET_WIFI:
-      DPRINT("Reset WiFi credentials\n");
+      DPRINT("\nReset WiFi credentials\n");
       eeprom_update_sta_wifi_credentials();
       eeprom_read_global();
       break;
@@ -403,10 +412,10 @@ void loop()
 {
   
 #ifdef WIFI
-  if (!appleMidiConnected) WIFI_LED_OFF();
+  if (!appleMidiConnected && !bleMidiConnected) WIFI_LED_OFF();
 #endif
 #ifdef BLE
-  if (!bleMidiConnected)  BLE_LED_OFF();
+  if (!bleMidiConnected && !appleMidiConnected) BLE_LED_OFF();
 #endif
   if (appleMidiConnected ||  bleMidiConnected) {
     // led fast blinking (5 times per second)
@@ -421,7 +430,7 @@ void loop()
     }
   }
 #ifdef WIFI
-  else
+  else if (!bleMidiConnected) 
     // led always on if connected to an AP or one or more client connected the the internal AP
     switch (WiFi.getMode()) {
       case WIFI_STA:

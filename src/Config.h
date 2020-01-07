@@ -219,7 +219,7 @@ void load_factory_default()
 
 void eeprom_update_device_name(String name = getChipId())
 {
-  DPRINT("Updating NVS ...\n");
+  DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putString("Device Name", name);
   preferences.end();
@@ -229,7 +229,7 @@ void eeprom_update_device_name(String name = getChipId())
 
 void eeprom_update_boot_mode(byte mode = PED_BOOT_NORMAL)
 {
-  DPRINT("Updating NVS ...\n");
+  DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putUChar("Boot Mode", mode);
   preferences.end();
