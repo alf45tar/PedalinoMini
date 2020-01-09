@@ -2230,8 +2230,6 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 }
 #endif  // NO_WEBSOCKET
 
-#endif  // WEBCONFIG
-
 
 void get_update_page() {
 
@@ -2414,6 +2412,8 @@ void http_setup() {
   Timer2Attach(100);
 #endif  // WEBCONFIG
 }
+
+#endif  // WEBCONFIG
 
 inline void http_run() {
 
