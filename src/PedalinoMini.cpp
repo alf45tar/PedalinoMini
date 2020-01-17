@@ -52,7 +52,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "esp32-hal-psram.h"
 #endif
 
-#include <esp_log.h>
+#include <esp32-hal-log.h>
 #include <esp_bt_main.h>
 #include <string>
 #include "Pedalino.h"
@@ -158,19 +158,7 @@ void setup()
   DPRINTLN("                                                                                  (c) 2018-2020 alf45star      ");
   DPRINTLN("                                                                      https://github.com/alf45tar/PedalinoMini");
   DPRINT("\nHostname: %s\n", host.c_str());
-
-  pinMode(LEFT_PIN, INPUT_PULLUP);
-  if (digitalRead(LEFT_PIN) == LOW) {
-    //currentProfile = 0;
-    //eeprom_update_current_profile(currentProfile);
-    //bleEnabled = false;
-  }
-  pinMode(RIGHT_PIN, INPUT_PULLUP);
-  if (digitalRead(RIGHT_PIN) == LOW) {
-    //currentProfile = 2;
-    //eeprom_update_current_profile(currentProfile);
-    //wifiEnabled = false;
-  }
+  DPRINT("PSRAM%sfound\n", psramFound() ? " " : " not ");
 
 #ifdef BLE
   if (bleEnabled) {
@@ -398,6 +386,10 @@ void setup()
   }
 #endif
 
+  pinMode(LEFT_PIN, INPUT_PULLUP);
+  pinMode(CENTER_PIN, INPUT_PULLUP);
+  pinMode(RIGHT_PIN, INPUT_PULLUP);
+  
   attachInterrupt(LEFT_PIN,   onButtonLeft,   CHANGE);
   attachInterrupt(CENTER_PIN, onButtonCenter, CHANGE);
   attachInterrupt(RIGHT_PIN,  onButtonRight,  CHANGE);

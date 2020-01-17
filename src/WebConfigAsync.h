@@ -1867,6 +1867,7 @@ void http_handle_post_banks(AsyncWebServerRequest *request) {
     banks[b][i].midiValue3 = a.toInt();
   }
   eeprom_update_profile();
+  eeprom_update_current_profile(currentProfile);
   blynk_refresh();
   alert = "Saved";
 
@@ -1932,6 +1933,7 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
 
   }
   eeprom_update_profile();
+  eeprom_update_current_profile(currentProfile);
   autosensing_setup();
   controller_setup();
   blynk_refresh();
@@ -1964,6 +1966,7 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
     interfaces[i].midiClock = (a == checked) ? PED_ENABLE : PED_DISABLE;
   }
   eeprom_update_profile();
+  eeprom_update_current_profile(currentProfile);
   blynk_refresh();
   alert = "Saved";
 
@@ -1997,6 +2000,7 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
     sequences[s][i].midiValue3 = a.toInt();
   }
   eeprom_update_profile();
+  eeprom_update_current_profile(currentProfile);
   blynk_refresh();
   alert = "Saved";
 
@@ -2072,6 +2076,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   if (pressTimeChanged)
     eeprom_update_press_time(pressTime, doublePressTime,longPressTime, repeatPressTime);
 
+  eeprom_update_current_profile(currentProfile);
   alert = "Saved";
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
   response->addHeader("Connection", "close");
