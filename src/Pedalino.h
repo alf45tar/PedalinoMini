@@ -320,6 +320,8 @@ struct message {
   byte                   midiChannel;     /* MIDI channel 1-16 */
 };
 
+MD_UISwitch_Digital bootButton(CENTER_PIN);
+
 #ifdef __BOARD_HAS_PSRAM__
 bank**      banks;
 pedal*      pedals;

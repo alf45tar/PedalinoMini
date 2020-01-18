@@ -391,7 +391,17 @@ void setup()
   pinMode(RIGHT_PIN, INPUT_PULLUP);
   
   attachInterrupt(LEFT_PIN,   onButtonLeft,   CHANGE);
-  attachInterrupt(CENTER_PIN, onButtonCenter, CHANGE);
+  
+  //attachInterrupt(CENTER_PIN, onButtonCenter, CHANGE);
+  bootButton.begin();
+  bootButton.setPressTime(pressTime);
+  bootButton.setDoublePressTime(doublePressTime);
+  bootButton.setLongPressTime(longPressTime);
+  bootButton.setRepeatTime(repeatPressTime);
+  bootButton.enableDoublePress(true);
+  bootButton.enableLongPress(true);
+  bootButton.enableRepeat(true);
+
   attachInterrupt(RIGHT_PIN,  onButtonRight,  CHANGE);
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
@@ -403,6 +413,24 @@ void setup()
 
 void loop()
 {
+
+  switch (bootButton.read()){
+    case MD_UISwitch::KEY_PRESS:
+      if (!reloadProfile) {
+        currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
+        reloadProfile = true;
+      }
+      break;
+    case MD_UISwitch::KEY_DPRESS:
+      if (!reloadProfile) {
+        currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
+        reloadProfile = true;
+      }
+      break;
+    case MD_UISwitch::KEY_LONGPRESS:
+      scrollingMode = !scrollingMode; 
+      break;
+  }
   
 #ifdef WIFI
   if (!appleMidiConnected && !bleMidiConnected) WIFI_LED_OFF();

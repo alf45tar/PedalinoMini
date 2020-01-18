@@ -182,18 +182,15 @@ To select a different mode:
 
 On start the live performance display is selected. On live performace mode the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
 
-Pressing BOOT button (CENTER button on TTGO T-Eight) you can switch to scrolling pages where configuration parameters (the device name, the IP address etc.) are displayed.
-
-Press BOOT button (CENTER button on TTGO T-Eight) again to return in live performance display mode.
-
 ## How to switch profiles
 
 During normal operation
 
-- Press navigation RIGHT button to move to the next profile
-- Press navigation LEFT button to move to the previous profile
+- Single press of BOOT button to move to the next profile
+- Double press of BOOT button to move to the previous profile
+- Long press of BOOT buttom to switch between live performance display and scrolling pages where configuration parameters (the device name, the IP address etc.) are displayed.
 
-If you keep pressed the button for more than 500ms (half a second) a new profile change occurs on release.
+On TTGO T-Eight replace BOOT button with CENTER button.
 
 ## Factory default configuration
 
