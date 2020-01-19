@@ -9,6 +9,8 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#include <TickerTimer.h>
+
 #ifdef NOBLYNK
 inline String blynk_get_token() { return String("                                "); }
 inline String blynk_set_token(String token) { return token; }
@@ -123,7 +125,7 @@ String     password("");
 void blynk_setup()
 {
   // Setup a 1Hz timer
-  Timer3Attach(1000);
+  TickerTimerAttach(TICKERTIMER3, 1000);
 }
 
 void blynk_enable()
@@ -193,9 +195,8 @@ void blynk_disconnect()
 
 inline void blynk_run()
 {
-  if (interruptCounter3 > 0) {
-
-    interruptCounter3 = 0;
+  if (TickerTimerIsSet(TICKERTIMER3)) {
+    TickerTimerClear(TICKERTIMER3);
 
     if (!blynkEnabled) return;
 

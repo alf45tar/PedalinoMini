@@ -8,6 +8,7 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                                    (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
+#include "TickerTimer.h"
 
 String theme = "bootstrap";
 
@@ -2414,17 +2415,17 @@ void http_setup() {
   httpServer.begin();
 
   // Setup a 10Hz timer
-  Timer2Attach(100);
+  TickerTimerAttach(TICKERTIMER2, 100);
 #endif  // WEBCONFIG
 }
 
 #endif  // WEBCONFIG
 
+// FIXME: interruptCounter2 is a global
 inline void http_run() {
 
-  if (interruptCounter2 > 0) {
-
-    interruptCounter2 = 0;
+  if (TickerTimerIsSet(TICKERTIMER2)) {
+    TickerTimerClear(TICKERTIMER2);
 
 #ifdef WEBSOCKET
     webSocket.binaryAll(display.buffer, 128*64);
