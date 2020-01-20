@@ -1,0 +1,13 @@
+dependencies:
+    cache_directories:
+        - "~/.platformio"
+
+    pre:
+        - sudo pip install -U platformio
+
+        # pre-install PlatformIO development platforms, they will be cached
+        - platformio platform install espressif32
+
+test:
+    override:
+        - - platformio ci --project-conf=platformio.ini
