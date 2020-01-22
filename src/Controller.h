@@ -1171,6 +1171,19 @@ void controller_run(bool send = true)
         if (pedals[i].function == PED_MIDI) refresh_switch_12L_midi(i, send);
         else refresh_switch_12L(i);
         break;
+      
+      case PED_JOG_WHEEL:
+        switch (pedals[i].jogwheel->read()) {
+          case DIR_NONE:
+            break;
+          case DIR_CW:
+            DPRINT("CW\n");
+            break;
+          case DIR_CCW:
+            DPRINT("CCW\n");
+            break;
+        }
+        break;
     }
   }
 }
@@ -1366,6 +1379,9 @@ void controller_setup()
         break;
 
       case PED_JOG_WHEEL:
+        pedals[i].jogwheel = new MD_REncoder(PIN_D(i), PIN_A(i));
+        pedals[i].jogwheel->begin();
+        DPRINT("   Pin A%d (CLK) D%d (DT)", PIN_A(i), PIN_D(i));
         break;
     }
    DPRINT("\n");

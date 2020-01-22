@@ -99,6 +99,7 @@ typedef uint8_t   byte;
 
 #include <ResponsiveAnalogRead.h>       // https://github.com/dxinteractive/ResponsiveAnalogRead
 #include <MD_UISwitch.h>                // https://github.com/MajicDesigns/MD_UISwitch
+#include <MD_Rencoder.h>                // https://github.com/MajicDesigns/MD_REncoder
 
 #define DEBOUNCE_INTERVAL 20
 #define BOUNCE_LOCK_OUT                 // This method is a lot more responsive, but does not cancel noise.
@@ -268,6 +269,7 @@ struct pedal {
   unsigned long          lastUpdate[2];     // last time the value is changed
   Bounce                *debouncer[2];
   MD_UISwitch           *footSwitch[2];
+  MD_REncoder           *jogwheel;
   ResponsiveAnalogRead  *analogPedal;
 };
 

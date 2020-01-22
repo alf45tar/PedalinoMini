@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+                                                                                   (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -53,7 +53,7 @@ void load_factory_default()
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
 
   pedals[PEDALS-2] = {PED_MIDI,       // function
@@ -68,7 +68,7 @@ void load_factory_default()
                       0,              // last state of switch 2
                       millis(),       // last time switch 1 status changed
                       millis(),       // last time switch 2 status changed
-                      nullptr, nullptr, nullptr, nullptr, nullptr
+                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                       };
 
   pedals[PEDALS-1] = {PED_MIDI,       // function
@@ -83,7 +83,7 @@ void load_factory_default()
                       0,              // last state of switch 2
                       millis(),       // last time switch 1 status changed
                       millis(),       // last time switch 2 status changed
-                      nullptr, nullptr, nullptr, nullptr, nullptr
+                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                       };
 
   for (byte b = 0; b < BANKS; b = b + 2) {
