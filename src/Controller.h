@@ -1177,10 +1177,20 @@ void controller_run(bool send = true)
           case DIR_NONE:
             break;
           case DIR_CW:
-            DPRINT("CW\n");
+            pedals[i].pedalValue[0] = constrain(pedals[i].pedalValue[0] + pedals[i].jogwheel->speed() + 1, 0, MIDI_RESOLUTION - 1);
+            if (pedals[i].function == PED_MIDI)
+              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel);
+            pedals[i].lastUpdate[0] = micros();
+            lastUsedPedal = i;
+            lastUsed = i;
             break;
           case DIR_CCW:
-            DPRINT("CCW\n");
+            pedals[i].pedalValue[0] = constrain(pedals[i].pedalValue[0] - pedals[i].jogwheel->speed() - 1, 0, MIDI_RESOLUTION - 1);
+            if (pedals[i].function == PED_MIDI)
+              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel);
+            pedals[i].lastUpdate[0] = micros();
+            lastUsedPedal = i;
+            lastUsed = i;
             break;
         }
         break;
@@ -1381,6 +1391,7 @@ void controller_setup()
       case PED_JOG_WHEEL:
         pedals[i].jogwheel = new MD_REncoder(PIN_D(i), PIN_A(i));
         pedals[i].jogwheel->begin();
+        pedals[i].jogwheel->setPeriod(100);
         DPRINT("   Pin A%d (CLK) D%d (DT)", PIN_A(i), PIN_D(i));
         break;
     }
