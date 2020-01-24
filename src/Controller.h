@@ -1184,7 +1184,7 @@ void controller_run(bool send = true)
                 pedals[i].pedalValue[0] = constrain(pedals[i].pedalValue[0] + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].jogwheel->speed() + 1),
                                                     pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
                                                     pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
-                DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, direction, pedals[i].pedalValue[0], pedals[i].jogwheel->speed());
+                DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, ((direction == DIR_CW) ? 1 : -1), pedals[i].pedalValue[0], pedals[i].jogwheel->speed());
                 if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel);
                 if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel, false);
                 pedals[i].lastUpdate[0] = micros();
