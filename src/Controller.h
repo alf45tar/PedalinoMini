@@ -1173,24 +1173,33 @@ void controller_run(bool send = true)
         break;
       
       case PED_JOG_WHEEL:
-        switch (pedals[i].jogwheel->read()) {
+        uint8_t direction = pedals[i].jogwheel->read();
+        switch (direction) {
           case DIR_NONE:
             break;
           case DIR_CW:
-            pedals[i].pedalValue[0] = constrain(pedals[i].pedalValue[0] + pedals[i].jogwheel->speed() + 1, 0, MIDI_RESOLUTION - 1);
-            if (pedals[i].function == PED_MIDI)
-              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel);
-            pedals[i].lastUpdate[0] = micros();
-            lastUsedPedal = i;
-            lastUsed = i;
-            break;
           case DIR_CCW:
-            pedals[i].pedalValue[0] = constrain(pedals[i].pedalValue[0] - pedals[i].jogwheel->speed() - 1, 0, MIDI_RESOLUTION - 1);
-            if (pedals[i].function == PED_MIDI)
-              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel);
-            pedals[i].lastUpdate[0] = micros();
-            lastUsedPedal = i;
-            lastUsed = i;
+            switch (pedals[i].function) {
+              case PED_MIDI:
+                pedals[i].pedalValue[0] = constrain(pedals[i].pedalValue[0] + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].jogwheel->speed() + 1),
+                                                    pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
+                                                    pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
+                DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, direction, pedals[i].pedalValue[0], pedals[i].jogwheel->speed());
+                if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel);
+                if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel, false);
+                pedals[i].lastUpdate[0] = micros();
+                lastUsedPedal = i;
+                lastUsed = i;
+                strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
+                break;
+              case PED_BPM_PLUS:
+              case PED_BPM_MINUS:
+                bpm = constrain(bpm + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].jogwheel->speed() + 1),
+                                pedals[i].invertPolarity ? 300 : 40,
+                                pedals[i].invertPolarity ? 40 : 300);
+                MTC.setBpm(bpm);
+                break;
+            }      
             break;
         }
         break;
@@ -1391,7 +1400,7 @@ void controller_setup()
       case PED_JOG_WHEEL:
         pedals[i].jogwheel = new MD_REncoder(PIN_D(i), PIN_A(i));
         pedals[i].jogwheel->begin();
-        pedals[i].jogwheel->setPeriod(100);
+        pedals[i].jogwheel->setPeriod(500);
         DPRINT("   Pin A%d (CLK) D%d (DT)", PIN_A(i), PIN_D(i));
         break;
     }
