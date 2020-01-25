@@ -21,6 +21,7 @@ void leds_update(byte type, byte channel, byte data1, byte data2)
             leds.setHigh(i);
             leds.write();
           }
+          break;
         case PED_CONTROL_CHANGE:
           if (type == midi::ControlChange && banks[currentBank][i].midiCode == data1) {
             if (data2 == 0) {
@@ -33,12 +34,14 @@ void leds_update(byte type, byte channel, byte data1, byte data2)
               leds.write();
             }
           }
+          break;
         case PED_NOTE_ON_OFF:
           // Invert the status only on NoteOn
           if (type == midi::NoteOn && banks[currentBank][i].midiCode == data1) {
             leds.invert(i);
             leds.write();
           }
+          break;
       }
     }
   }
