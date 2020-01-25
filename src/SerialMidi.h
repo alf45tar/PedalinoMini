@@ -22,6 +22,7 @@ void OnUSBMidiNoteOn(byte channel, byte note, byte velocity)
   ipMIDISendNoteOn(note, velocity, channel);
   AppleMidiSendNoteOn(note, velocity, channel);
   OSCSendNoteOn(note, velocity, channel);
+  leds_update(midi::NoteOn, channel, note, velocity);
 }
 
 void OnUSBMidiNoteOff(byte channel, byte note, byte velocity)
@@ -55,6 +56,7 @@ void OnUSBMidiControlChange(byte channel, byte number, byte value)
   ipMIDISendControlChange(number, value, channel);
   AppleMidiSendControlChange(number, value, channel);
   OSCSendControlChange(number, value, channel);
+  leds_update(midi::ControlChange, channel, number, value);
 }
 
 void OnUSBMidiProgramChange(byte channel, byte number)
@@ -66,6 +68,7 @@ void OnUSBMidiProgramChange(byte channel, byte number)
   ipMIDISendProgramChange(number, channel);
   AppleMidiSendProgramChange(number, channel);
   OSCSendProgramChange(number, channel);
+  leds_update(midi::ProgramChange, channel, number, 0);
 }
 
 void OnUSBMidiAfterTouchChannel(byte channel, byte pressure)

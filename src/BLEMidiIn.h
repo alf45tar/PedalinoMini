@@ -35,6 +35,7 @@ void OnBleMidiNoteOn(byte channel, byte note, byte velocity)
   AppleMidiSendNoteOn(note, velocity, channel);
   ipMIDISendNoteOn(note, velocity, channel);
   OSCSendNoteOn(note, velocity, channel);
+  leds_update(midi::NoteOn, channel, note, velocity);
 }
 
 void OnBleMidiNoteOff(byte channel, byte note, byte velocity)
@@ -71,6 +72,7 @@ void OnBleMidiReceiveControlChange(byte channel, byte number, byte value)
   AppleMidiSendControlChange(number, value, channel);
   ipMIDISendControlChange(number, value, channel);
   OSCSendControlChange(number, value, channel);
+  leds_update(midi::ControlChange, channel, number, value);
 }
 
 void OnBleMidiReceiveProgramChange(byte channel, byte number)
@@ -83,6 +85,7 @@ void OnBleMidiReceiveProgramChange(byte channel, byte number)
   AppleMidiSendProgramChange(number, channel);
   ipMIDISendProgramChange(number, channel);
   OSCSendProgramChange(number, channel);
+  leds_update(midi::ProgramChange, channel, number, 0);
 }
 
 void OnBleMidiReceiveAfterTouchChannel(byte channel, byte pressure)

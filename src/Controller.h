@@ -10,6 +10,53 @@ __________           .___      .__  .__                 _____  .__       .__    
  */
 
 
+void leds_update(byte type, byte channel, byte data1, byte data2) 
+{
+  for (byte i = 0; i < PEDALS; i++) {
+    if (pedals[i].function == PED_MIDI && banks[currentBank][i].midiChannel == channel) {
+      switch (banks[currentBank][i].midiMessage) {
+        case PED_PROGRAM_CHANGE:
+          // Led on on PC pedal, other PC pedals off (see below)
+          if (type == midi::ProgramChange && banks[currentBank][i].midiCode == data1) {
+            leds.setHigh(i);
+            leds.write();
+          }
+        case PED_CONTROL_CHANGE:
+          if (type == midi::ControlChange && banks[currentBank][i].midiCode == data1) {
+            if (data2 == 0) {
+              // Led off if CC value == 0
+              leds.setLow(i);
+              leds.write();
+            } else {
+              // Led on if CC value is > 0
+              leds.setHigh(i);
+              leds.write();
+            }
+          }
+        case PED_NOTE_ON_OFF:
+          // Invert the status only on NoteOn
+          if (type == midi::NoteOn && banks[currentBank][i].midiCode == data1) {
+            leds.invert(i);
+            leds.write();
+          }
+      }
+    }
+  }
+  // Reset leds of other Program Change pedals
+  if (type == midi::ProgramChange) {
+    for (byte i = 0; i < PEDALS; i++) {
+      if (pedals[i].function                == PED_MIDI &&
+          banks[currentBank][i].midiChannel == channel &&
+          banks[currentBank][i].midiMessage == PED_PROGRAM_CHANGE &&
+          banks[currentBank][i].midiCode    != data1) {
+        leds.setLow(i);
+        leds.write();
+      }  
+    }
+  }
+}
+
+
 //
 //
 //

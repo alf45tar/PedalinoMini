@@ -38,7 +38,7 @@ The first cloud connected wireless IoT MIDI foot controller for guitarists and m
 - Invert polarity via software
 - Individual automatic calibration of expression pedals. Manual fine tuning is not usually requested.
 - Transform a linear expression pedal into log expression pedal and vice versa
-- 6 status leds
+- 6 status leds that can be controlled by MIDI remote devices too
 - Responsive and mobile-first configuration web interface (<http://pedalino.local>)
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
 - Firmware update via HTTP (<http://pedalino.local/update>)

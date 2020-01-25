@@ -185,6 +185,7 @@ void OnAppleMidiNoteOn(byte channel, byte note, byte velocity)
   BLESendNoteOn(note, velocity, channel);
   ipMIDISendNoteOn(note, velocity, channel);
   OSCSendNoteOn(note, velocity, channel);
+  leds_update(midi::NoteOn, channel, note, velocity);
 }
 
 void OnAppleMidiNoteOff(byte channel, byte note, byte velocity)
@@ -218,6 +219,7 @@ void OnAppleMidiReceiveControlChange(byte channel, byte number, byte value)
   BLESendControlChange(number, value, channel);
   ipMIDISendControlChange(number, value, channel);
   OSCSendControlChange(number, value, channel);
+  leds_update(midi::ControlChange, channel, number, value);
 }
 
 void OnAppleMidiReceiveProgramChange(byte channel, byte number)
@@ -228,6 +230,7 @@ void OnAppleMidiReceiveProgramChange(byte channel, byte number)
   if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendProgramChange(number, channel);
   BLESendProgramChange(number, channel);
   OSCSendProgramChange(number, channel);
+  leds_update(midi::ProgramChange, channel, number, 0);
 }
 
 void OnAppleMidiReceiveAfterTouchChannel(byte channel, byte pressure)
@@ -427,6 +430,7 @@ void OnOscControlChange(OSCMessage &msg)
   if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendControlChange(msg.getInt(1), msg.getInt(2), msg.getInt(0));
 }
 
+#define OSC_CONTROLLER_PORT   8080
 IPAddress oscControllerIP;
 
 void OnOscSendConfiguration(OSCMessage &msg)
@@ -441,15 +445,20 @@ void OnOscSendConfiguration(OSCMessage &msg)
   OSCBundle       oscBndl;
 
   //oscMsg.add(banks[currentBank][0].pedalName).send(udpMsg).empty();
-  //oscMsg.add((int32_t)1).send(udpMsg).empty();
-  oscBndl.add("/led_1").add((int32_t)1);
-  oscBndl.add("/led_2").add((int32_t)0);
-  oscBndl.add("/led_3").add((int32_t)1);
-  oscBndl.send(udpMsg).empty();
-  udpOut.connect(oscControllerIP, 9000);
-  //udpOut.connect(IPAddress(192,168,2,120), 9000);
+  oscMsg.add((uint32_t)1).send(udpMsg).empty();
+  udpOut.connect(oscControllerIP, OSC_CONTROLLER_PORT);
   udpOut.send(udpMsg);
   udpOut.close();
+
+/*
+  oscBndl.add("/led_1").add((bool)true);
+  oscBndl.add("/led_2").add((bool)false);
+  oscBndl.add("/led_3").add((bool)true);
+  oscBndl.send(udpMsg).empty();
+  udpOut.connect(oscControllerIP, 9000);
+  udpOut.send(udpMsg);
+  udpOut.close();
+*/
 }
 
 void OnOscPedal1(OSCMessage &msg)
@@ -711,6 +720,7 @@ void ipMidiOnPacket(AsyncUDPPacket packet) {
         packet.read(data, 1);
         break;
     }
+    leds_update(type, channel, data[0], data[1]);
     DPRINTMIDI(packet.remoteIP().toString().c_str(), status, data);
   } 
 

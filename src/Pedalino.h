@@ -469,6 +469,7 @@ void   blynk_refresh();
 
 void   screen_update(bool);
 void   screen_info(int, int, int, int);
+void   leds_update(byte, byte, byte, byte);
 void   eeprom_update_current_profile(byte);
 bool   auto_reconnect(String ssid = "", String password = "");
 bool   smart_config();
