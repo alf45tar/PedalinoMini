@@ -1,4 +1,4 @@
-[![](https://github.com/alf45tar/PedalinoMini/blob/master/images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
+[![](./images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
 
 # PedalinoMini™
 
@@ -73,8 +73,8 @@ USB MIDI and DIN MIDI connection requires additional hardware.
 
 ## Schematic
 
-![Schematic1](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-1.svg "Schematic1")
-![Schematic2](https://github.com/alf45tar/PedalinoMini/blob/master/images/Schematic_PedalinoMini_Sheet-2.svg "Schematic2")
+![Schematic1](./images/Schematic_PedalinoMini_Sheet-1.svg "Schematic1")
+![Schematic2](./images/Schematic_PedalinoMini_Sheet-2.svg "Schematic2")
 
 Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins will be floating. A floating pin can trigger unexpected MIDI events. As alternative you can disable the not used pedals via web interface.
 
@@ -106,23 +106,23 @@ IMPORTANT: ESP32 board and Arduino Pro Micro must share GND.
 
 Home screen|Device info|MIDI message
 -----|-----|-----
-![OLED Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-home.png "Screen 1")|![OLED Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-device.png "Screen 2")|![OLED Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi.png "Screen 3")
+![OLED Screen 1](./images/oled-home.png "Screen 1")|![OLED Screen 2](./images/oled-device.png "Screen 2")|![OLED Screen 3](./images/oled-midi.png "Screen 3")
 
 MIDI Clock|MIDI Time Code
 -----|-----
-![OLED Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-midi-clock.png "Screen 4")|![OLED Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/oled-mtc.png "Screen 5")
+![OLED Screen 4](./images/oled-midi-clock.png "Screen 4")|![OLED Screen 5](./images/oled-mtc.png "Screen 5")
 
 ## WEB user interface
 
-![WEB Screen 1](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-home.png "Screen 1")
+![WEB Screen 1](./images/web-home.png "Screen 1")
 
-![WEB Screen 2](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-banks.png "Screen 2")
+![WEB Screen 2](./images/web-banks.png "Screen 2")
 
-![WEB Screen 3](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-pedals.png "Screen 3")
+![WEB Screen 3](./images/web-pedals.png "Screen 3")
 
-![WEB Screen 4](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-interfaces.png "Screen 4")
+![WEB Screen 4](./images/web-interfaces.png "Screen 4")
 
-![WEB Screen 5](https://github.com/alf45tar/PedalinoMini/blob/master/images/web-options.png "Screen 5")
+![WEB Screen 5](./images/web-options.png "Screen 5")
 
 ## How to connect PedalinoMini™ to a WiFi network
 
