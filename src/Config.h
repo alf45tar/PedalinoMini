@@ -510,15 +510,25 @@ void eeprom_init_or_erase()
 {
   load_factory_default();
   esp_err_t err = nvs_flash_init();
-  if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+  switch (err) {
+    case ESP_OK:
+      DPRINT("'nvs' partition was successfully initialized\n");
+      if (preferences.begin("Global", true)) {
+        preferences.end();
+        break;
+      }
+      DPRINT("[NVS][Global] not found\n");
+    case ESP_ERR_NVS_NO_FREE_PAGES:
+    case ESP_ERR_NVS_NEW_VERSION_FOUND:
       // NVS partition was truncated and needs to be erased
-      // Retry nvs_flash_init
-      DPRINT("Unable to mount NVS partition");
-      DPRINT("Formatting NVS ... ");
       ESP_ERROR_CHECK(nvs_flash_erase());
-      DPRINT("done\n");
-      err = nvs_flash_init();
+      DPRINT("'nvs' partition formatted\n");
+      ESP_ERROR_CHECK(nvs_flash_init());
       eeprom_initialize();
+      break;
+    case ESP_ERR_NOT_FOUND:
+      DPRINT("'nvs' partition not found\n");
+      break;
+    
   }
-  ESP_ERROR_CHECK(err);
 }
