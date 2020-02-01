@@ -16,4 +16,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install platformio
     - name: Run PlatformIO
-      run: platformio run . -e esp32doit-devkit-v1
+      run: pplatformio ci --project-conf=platformio.ini
+      env:
+        PLATFORMIO_CI_SRC: .
