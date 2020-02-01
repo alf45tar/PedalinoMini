@@ -737,8 +737,9 @@ void refresh_switch_12L_midi(byte i, bool send)
 
   b = currentBank;
 
-    if (pedals[i].mode == PED_LADDER) {
+    if (pedals[i].mode == PED_LADDER5 || pedals[i].mode == PED_LADDER6) {
       if (k1 == MD_UISwitch::KEY_PRESS) {
+        DPRINT("%d\n", pedals[i].footSwitch[0]->getKey());
         switch (pedals[i].footSwitch[0]->getKey()) {
             case PED_LADDER_1:
               break;
@@ -757,6 +758,10 @@ void refresh_switch_12L_midi(byte i, bool send)
 
             case PED_LADDER_5:
               b = (b + 4) % BANKS;
+              break;
+            
+            case PED_LADDER_6:
+              b = (b + 5) % BANKS;
               break;
         }
       }
@@ -902,7 +907,7 @@ void refresh_switch_12L(byte i)
   
   f = pedals[i].function;
 
-  if (pedals[i].mode == PED_LADDER && k1 == MD_UISwitch::KEY_PRESS) {
+  if ((pedals[i].mode == PED_LADDER5 || pedals[i].mode == PED_LADDER6) && k1 == MD_UISwitch::KEY_PRESS) {
       switch (pedals[i].footSwitch[0]->getKey()) {
             case PED_LADDER_1:
               break;
@@ -917,6 +922,9 @@ void refresh_switch_12L(byte i)
               break;
 
             case PED_LADDER_5:
+              break;
+
+            case PED_LADDER_6:
               break;
         }
     }
@@ -1217,7 +1225,8 @@ void controller_run(bool send = true)
         refresh_analog(i, send);
         break;
 
-      case PED_LADDER:
+      case PED_LADDER5:
+      case PED_LADDER6:
         if (pedals[i].function == PED_MIDI) refresh_switch_12L_midi(i, send);
         else refresh_switch_12L(i);
         break;
@@ -1269,6 +1278,8 @@ void controller_setup()
   memset(lastPedalName, 0, MAXPEDALNAME+1);
   controller_delete();
 
+  analogReadResolution(ADC_RESOLUTION_BITS);
+
   DPRINT("Bank %2d\n", currentBank + 1);
 
   // Build new MIDI controllers setup
@@ -1299,7 +1310,8 @@ void controller_setup()
       case PED_LATCH2:      DPRINT("LATCH2    "); break;
       case PED_ANALOG:      DPRINT("ANALOG    "); break;
       case PED_JOG_WHEEL:   DPRINT("JOG_WHEEL "); break;
-      case PED_LADDER:      DPRINT("LADDER    "); break;
+      case PED_LADDER5:     DPRINT("LADDER5   "); break;
+      case PED_LADDER6:     DPRINT("LADDER6   "); break;
       default:              DPRINT("          "); break;
     }
     DPRINT("   ");
@@ -1429,8 +1441,7 @@ void controller_setup()
           pedals[i].analogPedal->enableEdgeSnap();
           pedals[i].analogPedal->setActivityThreshold(10.0);
           //pedals[i].analogPedal->setSnapMultiplier(0.1);
-          analogReadResolution(ADC_RESOLUTION_BITS);
-          analogSetPinAttenuation(PIN_A(i), ADC_11db);
+          //analogSetPinAttenuation(PIN_A(i), ADC_11db);
           if (lastUsedPedal == 0xFF) {
             lastUsedPedal = i;
             lastUsed = i;
@@ -1440,8 +1451,15 @@ void controller_setup()
         DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
         break;
 
-      case PED_LADDER:
-        pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt, ARRAY_SIZE(kt));
+      case PED_LADDER5:
+        pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt5, ARRAY_SIZE(kt5));
+        pedals[i].footSwitch[0]->begin();
+        footswitch_update(i, 0);
+        DPRINT("   Pin A%d", PIN_A(i));
+        break;
+      
+      case PED_LADDER6:
+        pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt6, ARRAY_SIZE(kt6));
         pedals[i].footSwitch[0]->begin();
         footswitch_update(i, 0);
         DPRINT("   Pin A%d", PIN_A(i));

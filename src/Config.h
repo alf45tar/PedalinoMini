@@ -57,7 +57,7 @@ void load_factory_default()
                 };
 
   pedals[PEDALS-2] = {PED_MIDI,       // function
-                      PED_DISABLE,    // autosensing
+                      PED_ENABLE,     // autosensing
                       PED_ANALOG,     // mode
                       PED_NONE,       // press mode
                       PED_ENABLE,     // invert polarity
@@ -72,7 +72,7 @@ void load_factory_default()
                       };
 
   pedals[PEDALS-1] = {PED_MIDI,       // function
-                      PED_DISABLE,    // autosensing
+                      PED_ENABLE,     // autosensing
                       PED_ANALOG,     // mode
                       PED_NONE,       // press mode
                       PED_ENABLE,     // invert polarity

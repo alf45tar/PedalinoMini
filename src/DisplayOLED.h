@@ -375,7 +375,7 @@ void display_progress_bar_title2(String title1, String title2)
   display.setTextAlignment(TEXT_ALIGN_CENTER);
   display.setFont(ArialMT_Plain_10);
   display.drawString(display.getWidth() / 2, 0, title1.c_str());
-  display.setFont(ArialMT_Plain_16);
+  if (title2.length() < 15) display.setFont(ArialMT_Plain_16);
   display.drawString(display.getWidth() / 2, 10, title2.c_str());
   display.display();
 }
@@ -1041,7 +1041,7 @@ void display_ui_update_enable()
   uiUpdate = true;
 }
 
-void display_update(bool force = false)
+void display_update()
 {
   if (uiUpdate) ui.update();
 }

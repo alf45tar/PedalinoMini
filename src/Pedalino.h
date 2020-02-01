@@ -146,7 +146,8 @@ typedef uint8_t   byte;
 #define PED_MOMENTARY2          6
 #define PED_MOMENTARY3          7
 #define PED_LATCH2              8
-#define PED_LADDER              9
+#define PED_LADDER5             9
+#define PED_LADDER6            10
 
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
@@ -202,8 +203,8 @@ typedef uint8_t   byte;
 #define PED_TIMESIGNATURE_12_8  6
 
 #define MIDI_RESOLUTION         128       // MIDI 7-bit CC resolution
-#define ADC_RESOLUTION          128       
-#define ADC_RESOLUTION_BITS       7       // hardware 9 to 12-bit ADC converter resolution
+#define ADC_RESOLUTION         1024       
+#define ADC_RESOLUTION_BITS      10       // hardware 9 to 12-bit ADC converter resolution
                                           // software 1 to 16-bit resolution
 #define CALIBRATION_DURATION   8000       // milliseconds
 
@@ -392,20 +393,34 @@ String wifiPassword("");
 
 // The keys value that works for most LCD Keypad Shield
 
-MD_UISwitch_Analog::uiAnalogKeys_t kt[] =
-{
-  {  30, 30, 'R' },  // Right
-  { 130, 50, 'U' },  // Up
-  { 305, 50, 'D' },  // Down
-  { 475, 50, 'L' },  // Left
-  { 720, 90, 'S' },  // Select
-};
-
 #define PED_LADDER_1  'R'
 #define PED_LADDER_2  'U'
 #define PED_LADDER_3  'D'
 #define PED_LADDER_4  'L'
 #define PED_LADDER_5  'S'
+#define PED_LADDER_6  'I'
+
+MD_UISwitch_Analog::uiAnalogKeys_t kt5[] =
+{
+  {  30, 30, PED_LADDER_1 },  // Right
+  { 130, 50, PED_LADDER_2 },  // Up
+  { 305, 50, PED_LADDER_3 },  // Down
+  { 475, 50, PED_LADDER_4 },  // Left
+  { 720, 90, PED_LADDER_5 },  // Select
+};
+
+// The keys value that works for TC-Helicon Switch 6
+
+MD_UISwitch_Analog::uiAnalogKeys_t kt6[] =
+{
+  { 480, 9, PED_LADDER_1 },  // Down
+  { 500, 9, PED_LADDER_2 },  // Up
+  { 520, 9, PED_LADDER_3 },  // Hit
+  { 540, 9, PED_LADDER_4 },  // Play/Rec
+  { 560, 9, PED_LADDER_5 },  // Stop/Clr
+  { 570, 9, PED_LADDER_6 },  // Loop Inc
+};
+
 
 bool powersaver = false;
 

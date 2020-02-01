@@ -914,9 +914,13 @@ void get_pedals_page() {
     if (pedals[i-1].mode == PED_LATCH2) page += F(" selected");
     page += F(">Latch 2</option>");
     page += F("<option value='");
-    page += String(PED_LADDER) + F("'");
-    if (pedals[i-1].mode == PED_LADDER) page += F(" selected");
-    page += F(">Ladder</option>");
+    page += String(PED_LADDER5) + F("'");
+    if (pedals[i-1].mode == PED_LADDER5) page += F(" selected");
+    page += F(">Ladder 5</option>");
+    page += F("<option value='");
+    page += String(PED_LADDER6) + F("'");
+    if (pedals[i-1].mode == PED_LADDER6) page += F(" selected");
+    page += F(">Ladder 6</option>");
     page += F("</select>");
     page += F("</div>");
 
