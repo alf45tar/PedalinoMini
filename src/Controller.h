@@ -1137,6 +1137,22 @@ void refresh_analog(byte i, bool send)
     switch (pedals[i].function) {
       case PED_MIDI:
         DPRINT("Pedal %2d   input %d output %d velocity %.2f\n", i + 1, input, value, velocity);
+        if (send) {
+          switch (banks[currentBank][i].midiMessage) {
+            case PED_PROGRAM_CHANGE:
+            case PED_PROGRAM_CHANGE_INC:
+            case PED_PROGRAM_CHANGE_DEC:
+            case PED_BANK_SELECT_INC:
+            case PED_BANK_SELECT_DEC:
+              midi_send(banks[currentBank][i].midiMessage, value, 0, banks[currentBank][i].midiChannel);
+              midi_send(banks[currentBank][i].midiMessage, value, 0, banks[currentBank][i].midiChannel, false);
+              break;
+            default:
+              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel);
+              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false);
+              break;
+          }
+        }
         if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel);
         if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false);
         pedals[i].pedalValue[0] = value;
@@ -1244,8 +1260,22 @@ void controller_run(bool send = true)
                                                     pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
                                                     pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
                 DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, ((direction == DIR_CW) ? 1 : -1), pedals[i].pedalValue[0], pedals[i].jogwheel->speed());
-                if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel);
-                if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel, false);
+                if (send) {
+                  switch (banks[currentBank][i].midiMessage) {
+                    case PED_PROGRAM_CHANGE:
+                    case PED_PROGRAM_CHANGE_INC:
+                    case PED_PROGRAM_CHANGE_DEC:
+                    case PED_BANK_SELECT_INC:
+                    case PED_BANK_SELECT_DEC:
+                      midi_send(banks[currentBank][i].midiMessage, pedals[i].pedalValue[0], 0, banks[currentBank][i].midiChannel);
+                      midi_send(banks[currentBank][i].midiMessage, pedals[i].pedalValue[0], 0, banks[currentBank][i].midiChannel, false);
+                      break;
+                    default:
+                      midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel);
+                      midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel, false);
+                      break;
+                  }
+                }
                 pedals[i].lastUpdate[0] = micros();
                 lastUsedPedal = i;
                 lastUsed = i;

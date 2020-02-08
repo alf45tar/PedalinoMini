@@ -494,4 +494,9 @@ bool   ap_connect(String ssid = "", String password = "");
 String translateEncryptionType(wifi_auth_mode_t);
 #endif
 
+void mtc_start();
+void mtc_stop();
+void mtc_continue();
+void mtc_tap();
+
 #endif // _PEDALINO_H

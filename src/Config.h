@@ -40,6 +40,35 @@ void load_factory_default()
   tapDanceBank       = true;
   blynk_set_token("");
 
+#ifdef TTGO_T_EIGHT
+  for (byte p = 0; p < PEDALS; p++) {
+    pedals[p] = {PED_MIDI,       // function
+                 PED_DISABLE,    // autosensing
+                 (p < PEDALS/2) ? PED_MOMENTARY1 : PED_JOG_WHEEL, // mode
+                 PED_PRESS_1,    // press mode
+                 PED_DISABLE,    // invert polarity
+                 0,              // map function
+                 ADC_RESOLUTION * 10 / 100,  // expression pedal zero
+                 ADC_RESOLUTION * 90 / 100,  // expression pedal max
+                 0,              // last state of switch 1
+                 0,              // last state of switch 2
+                 millis(),       // last time switch 1 status changed
+                 millis(),       // last time switch 2 status changed
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                };
+  }
+  for (byte b = 0; b < BANKS; b++) {
+    for (byte p = 0; p < PEDALS; p++) {
+      banks[b][p].pedalName[0] = 0;
+      banks[b][p].midiMessage  = PED_CONTROL_CHANGE;
+      banks[b][p].midiChannel  = b + 1;
+      banks[b][p].midiCode     = 12 + 10*b + p;
+      banks[b][p].midiValue1   = 0;
+      banks[b][p].midiValue2   = 63;
+      banks[b][p].midiValue3   = 127;
+    }
+  }
+#else
   for (byte p = 0; p < PEDALS-2; p++)
     pedals[p] = {PED_MIDI,       // function
                  PED_DISABLE,    // autosensing
@@ -195,10 +224,11 @@ void load_factory_default()
     banks[b+1][5].midiValue2   = 63;
     banks[b+1][5].midiValue3   = 127;
   }
+#endif  // TTGO_T_EIGHT
 
   for (byte i = 0; i < INTERFACES; i++) 
     {
-      interfaces[i].midiIn      = PED_DISABLE;
+      interfaces[i].midiIn      = PED_ENABLE;
       interfaces[i].midiOut     = PED_ENABLE;
       interfaces[i].midiThru    = PED_DISABLE;
       interfaces[i].midiRouting = PED_DISABLE;

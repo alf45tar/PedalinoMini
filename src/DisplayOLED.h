@@ -524,6 +524,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
           display->fillRect(43 * MTC.getBeat(), 0, 42, 10);
           break;
       }
+      display->setColor(WHITE);
     }
     else if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
              MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
