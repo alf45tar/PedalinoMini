@@ -194,6 +194,40 @@ void AppleMidiSendSystemReset(void)
   if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendReset();
 }
 
+void AppleMidiSendRealTimeMessage(byte type)
+{
+  switch (type) {
+
+      case midi::TuneRequest:
+        AppleMidiSendTuneRequest();
+        break;
+
+      case midi::Clock:
+        AppleMidiSendClock();
+        break;
+
+      case midi::Start:
+        AppleMidiSendStart();
+        break;
+
+      case midi::Continue:
+        AppleMidiSendContinue();
+        break;
+
+      case midi::Stop:
+        AppleMidiSendStop();
+        break;
+
+      case midi::ActiveSensing:
+        AppleMidiSendActiveSensing();
+        break;
+
+      case midi::SystemReset:
+        AppleMidiSendSystemReset();
+        break;
+    }
+}
+
 
 // Send messages to WiFi ipMIDI interface
 

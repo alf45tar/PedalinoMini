@@ -63,7 +63,13 @@ void leds_update(byte type, byte channel, byte data1, byte data2)
 //
 //
 //
-void mtc_midi_send(byte b)
+void mtc_midi_real_time_message_send(byte b)
+{
+  if (interfaces[PED_RTPMIDI].midiClock) AppleMidiSendRealTimeMessage(b);
+  if (interfaces[PED_IPMIDI].midiClock)  ipMIDISendRealTimeMessage(b);
+}
+
+void mtc_midi_time_code_quarter_frame_send(byte b)
 {
   if (interfaces[PED_RTPMIDI].midiClock) AppleMidiSendTimeCodeQuarterFrame(b);
   if (interfaces[PED_IPMIDI].midiClock)  ipMIDISendTimeCodeQuarterFrame(b);
@@ -74,7 +80,7 @@ void mtc_midi_send(byte b)
 //
 void mtc_setup() {
 
-  MTC.setup(mtc_midi_send);
+  MTC.setup(mtc_midi_real_time_message_send, mtc_midi_time_code_quarter_frame_send);
 
   switch (currentMidiTimeCode) {
 

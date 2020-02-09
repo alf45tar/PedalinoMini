@@ -60,7 +60,7 @@ class MidiTimeCode
     ~MidiTimeCode();
 
     // To be called on main program setup
-    void setup(void (*midi_send_callback)(byte b));
+    void setup(void (*midi_send_callback_1)(byte b), void (*midi_send_callback_2)(byte b));
 
     // To be called on main program loop
     void loop();
@@ -160,7 +160,8 @@ class MidiTimeCode
 
   private:
     static MidiSynchro                mMode;
-    static void (*mMidiSendCallback)(byte b);
+    static void (*mMidiSendCallback1)(byte b);
+    static void (*mMidiSendCallback2)(byte b);
 
     // Midi Clock Stuff
     TapTempo                          mTapTempo;
