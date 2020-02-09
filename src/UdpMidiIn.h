@@ -441,23 +441,23 @@ void OnOscSendConfiguration(OSCMessage &msg)
 
   AsyncUDP        udpOut;
   AsyncUDPMessage udpMsg;
-  OSCMessage      oscMsg("/led_1");
   OSCBundle       oscBndl;
 
-  //oscMsg.add(banks[currentBank][0].pedalName).send(udpMsg).empty();
-  oscMsg.add((uint32_t)1).send(udpMsg).empty();
-  udpOut.connect(oscControllerIP, OSC_CONTROLLER_PORT);
-  udpOut.send(udpMsg);
-  udpOut.close();
+  for (byte i = 0; i < PEDALS; i++) {
+    char address[8] = "pedal_1";
+    address[6] = 61 + i;
+    address[7] = 0;
+    OSCMessage  oscMsg(address);
+    oscMsg.add(banks[currentBank][i].pedalName).send(udpMsg).empty();
+    udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
+  }
 
 /*
   oscBndl.add("/led_1").add((bool)true);
   oscBndl.add("/led_2").add((bool)false);
   oscBndl.add("/led_3").add((bool)true);
   oscBndl.send(udpMsg).empty();
-  udpOut.connect(oscControllerIP, 9000);
-  udpOut.send(udpMsg);
-  udpOut.close();
+  udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
 */
 }
 
@@ -465,6 +465,51 @@ void OnOscPedal1(OSCMessage &msg)
 {
   if (msg.getString(0, banks[currentBank][0].pedalName, MAXPEDALNAME) > 0) {
     DPRINT("OSC message /pedal_1 %s received from %s\n", banks[currentBank][0].pedalName, oscControllerIP.toString().c_str());
+  } else {
+    DPRINT("OSC error: %d\n", msg.getError());
+  }
+}
+
+void OnOscPedal2(OSCMessage &msg)
+{
+  if (msg.getString(0, banks[currentBank][1].pedalName, MAXPEDALNAME) > 0) {
+    DPRINT("OSC message /pedal_2 %s received from %s\n", banks[currentBank][1].pedalName, oscControllerIP.toString().c_str());
+  } else {
+    DPRINT("OSC error: %d\n", msg.getError());
+  }
+}
+
+void OnOscPedal3(OSCMessage &msg)
+{
+  if (msg.getString(0, banks[currentBank][2].pedalName, MAXPEDALNAME) > 0) {
+    DPRINT("OSC message /pedal_3 %s received from %s\n", banks[currentBank][2].pedalName, oscControllerIP.toString().c_str());
+  } else {
+    DPRINT("OSC error: %d\n", msg.getError());
+  }
+}
+
+void OnOscPedal4(OSCMessage &msg)
+{
+  if (msg.getString(0, banks[currentBank][3].pedalName, MAXPEDALNAME) > 0) {
+    DPRINT("OSC message /pedal_4 %s received from %s\n", banks[currentBank][3].pedalName, oscControllerIP.toString().c_str());
+  } else {
+    DPRINT("OSC error: %d\n", msg.getError());
+  }
+}
+
+void OnOscPedal5(OSCMessage &msg)
+{
+  if (msg.getString(0, banks[currentBank][4].pedalName, MAXPEDALNAME) > 0) {
+    DPRINT("OSC message /pedal_5 %s received from %s\n", banks[currentBank][4].pedalName, oscControllerIP.toString().c_str());
+  } else {
+    DPRINT("OSC error: %d\n", msg.getError());
+  }
+}
+
+void OnOscPedal6(OSCMessage &msg)
+{
+  if (msg.getString(0, banks[currentBank][5].pedalName, MAXPEDALNAME) > 0) {
+    DPRINT("OSC message /pedal_6 %s received from %s\n", banks[currentBank][5].pedalName, oscControllerIP.toString().c_str());
   } else {
     DPRINT("OSC error: %d\n", msg.getError());
   }
@@ -491,6 +536,194 @@ void OnOscLed3(OSCMessage &msg)
   leds.write();
 }
 
+void OnOscSaveLive(OSCMessage &msg)
+{
+  DPRINT("OSC message /save_live received from %s\n", oscControllerIP.toString().c_str());
+  eeprom_update_profile();
+  eeprom_update_current_profile(currentProfile);
+}
+
+void OnOscProfile(OSCMessage &msg)
+{
+  DPRINT("OSC message /profile %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  currentProfile = constrain(msg.getInt(0), 0, PROFILES);
+  reloadProfile = true;
+}
+
+void OnOscBank(OSCMessage &msg)
+{
+  DPRINT("OSC message /bank %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  currentBank = constrain(msg.getInt(0) - 1, 0, BANKS);
+
+  AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg1;
+  AsyncUDPMessage udpMsg2;
+  OSCMessage      oscMsg1("bank-1");
+  OSCMessage      oscMsg2("bank-2");
+
+  if (currentBank < 5) {
+    oscMsg1.add(currentBank + 1).send(udpMsg1).empty();
+    udpOut.sendTo(udpMsg1, oscControllerIP, OSC_CONTROLLER_PORT);
+  }
+  else {
+    oscMsg1.add(0).send(udpMsg1).empty();
+    udpOut.sendTo(udpMsg1, oscControllerIP, OSC_CONTROLLER_PORT);
+  }
+  if (currentBank > 4) {
+    oscMsg2.add(currentBank - 4).send(udpMsg2).empty();
+    udpOut.sendTo(udpMsg2, oscControllerIP, OSC_CONTROLLER_PORT);
+  }
+  else {
+    oscMsg2.add(0).send(udpMsg2).empty();
+    udpOut.sendTo(udpMsg2, oscControllerIP, OSC_CONTROLLER_PORT);
+  }
+}
+
+void OnOscBank_1(OSCMessage &msg)
+{
+  AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg;
+  OSCMessage      oscMsg("bank");
+
+  DPRINT("OSC message /bank-1 %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  if (msg.getInt(0) > 0) {
+    currentBank = constrain(msg.getInt(0) - 1, 0, BANKS);
+    oscMsg.add(currentBank + 1).send(udpMsg).empty();
+    udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
+  }
+}
+
+void OnOscBank_2(OSCMessage &msg)
+{
+  AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg;
+  OSCMessage      oscMsg("bank");
+
+  DPRINT("OSC message /bank-2 %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  if (msg.getInt(0) > 0) {
+    currentBank = constrain(5 + msg.getInt(0) - 1, 0, BANKS);
+    oscMsg.add(currentBank + 1).send(udpMsg).empty();
+    udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
+  }
+}
+
+void OnOscClock(OSCMessage &msg)
+{
+  DPRINT("OSC message /clock %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  
+  switch (msg.getInt(0)) {
+
+    case 0:   // None
+      MTC.setMode(MidiTimeCode::SynchroNone);
+      break;
+
+    case 1:   // MIDI Clock
+      switch (MTC.getMode()) {
+        case MidiTimeCode::SynchroNone:
+        case MidiTimeCode::SynchroClockMaster:
+        case MidiTimeCode::SynchroMTCMaster:
+          MTC.setMode(MidiTimeCode::SynchroClockMaster);
+          bpm = (bpm == 0) ? 120 : bpm;
+          MTC.setBpm(bpm);
+          currentMidiTimeCode = PED_MIDI_CLOCK_MASTER;
+          break;
+        case MidiTimeCode::SynchroClockSlave:
+        case MidiTimeCode::SynchroMTCSlave:
+          MTC.setMode(MidiTimeCode::SynchroClockSlave);
+          currentMidiTimeCode = PED_MIDI_CLOCK_SLAVE;
+          bpm = 0;
+          break;
+      }
+      break;
+
+    case 2:   // MIDI Time Code
+      switch (MTC.getMode()) {
+        case MidiTimeCode::SynchroNone:
+        case MidiTimeCode::SynchroClockMaster:
+        case MidiTimeCode::SynchroMTCMaster:
+          MTC.setMode(MidiTimeCode::SynchroMTCMaster);
+          MTC.sendPosition(0, 0, 0, 0);
+          currentMidiTimeCode = PED_MTC_MASTER_24;
+          break;
+        case MidiTimeCode::SynchroClockSlave:
+        case MidiTimeCode::SynchroMTCSlave:
+          MTC.setMode(MidiTimeCode::SynchroMTCSlave);
+          currentMidiTimeCode = PED_MTC_SLAVE;
+          break;
+      }
+      break;
+  }
+}
+
+void OnOscMasterSlave(OSCMessage &msg)
+{
+  DPRINT("OSC message /masterslave %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  
+  switch (msg.getInt(0)) {
+
+    case 0:   // MASTER
+      switch (MTC.getMode()) {
+        case MidiTimeCode::SynchroClockMaster:
+        case MidiTimeCode::SynchroMTCMaster:
+          break;
+        case MidiTimeCode::SynchroClockSlave:
+          MTC.setMode(MidiTimeCode::SynchroClockMaster);
+          bpm = (bpm == 0) ? 120 : bpm;
+          MTC.setBpm(bpm);
+          currentMidiTimeCode = PED_MIDI_CLOCK_MASTER;
+          break;
+        case MidiTimeCode::SynchroMTCSlave:
+          MTC.setMode(MidiTimeCode::SynchroMTCMaster);
+          MTC.sendPosition(0, 0, 0, 0);
+          currentMidiTimeCode = PED_MTC_MASTER_24;
+          break;
+      }
+
+    case 1:   // SLAVE
+      switch (MTC.getMode()) {
+        case MidiTimeCode::SynchroClockMaster:
+          MTC.setMode(MidiTimeCode::SynchroClockSlave);
+          currentMidiTimeCode = PED_MIDI_CLOCK_SLAVE;
+          bpm = 0;
+          break;
+        case MidiTimeCode::SynchroMTCMaster:
+          MTC.setMode(MidiTimeCode::SynchroMTCSlave);
+          currentMidiTimeCode = PED_MTC_SLAVE;
+          break;
+      }
+  }
+}
+
+void OnOscBPM(OSCMessage &msg)
+{
+  DPRINT("OSC message /bpm %f received from %s\n", msg.getFloat(0), oscControllerIP.toString().c_str());
+  bpm = 40 + 260 * msg.getFloat(0);
+  MTC.setBpm(bpm);
+}
+
+void OnOscPlay(OSCMessage &msg)
+{
+  DPRINT("OSC message /play %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  
+  switch (msg.getInt(0)) {
+    case 0:
+      mtc_stop();
+      break;
+
+    case 1:    
+      mtc_start();
+      break;
+
+    case 2:
+      mtc_continue();
+      break;
+
+    case 3:
+      mtc_stop();
+      break;
+  }
+}
+
 
 // Listen to incoming OSC messages from WiFi
 
@@ -507,13 +740,28 @@ void oscOnPacket(AsyncUDPPacket packet) {
     oscMsg.fill(packet.read());
   }
   oscControllerIP = packet.remoteIP();
+  //oscControllerIP = IPAddress(192,168,2,120);
 
   if (!oscMsg.hasError()) {
     oscMsg.dispatch("/send_configuration",          OnOscSendConfiguration);
+    oscMsg.dispatch("/save_live",                   OnOscSaveLive);
     oscMsg.dispatch("/pedal_1",                     OnOscPedal1);
+    oscMsg.dispatch("/pedal_2",                     OnOscPedal2);
+    oscMsg.dispatch("/pedal_3",                     OnOscPedal3);
+    oscMsg.dispatch("/pedal_4",                     OnOscPedal4);
+    oscMsg.dispatch("/pedal_5",                     OnOscPedal5);
+    oscMsg.dispatch("/pedal_6",                     OnOscPedal6);
     oscMsg.dispatch("/led_1",                       OnOscLed1);
     oscMsg.dispatch("/led_2",                       OnOscLed2);
     oscMsg.dispatch("/led_3",                       OnOscLed3);
+    oscMsg.dispatch("/profile",                     OnOscProfile);
+    oscMsg.dispatch("/bank",                        OnOscBank);
+    oscMsg.dispatch("/bank-1",                      OnOscBank_1);
+    oscMsg.dispatch("/bank-2",                      OnOscBank_2);
+    oscMsg.dispatch("/clock",                       OnOscClock);
+    oscMsg.dispatch("/masterslave",                 OnOscMasterSlave);
+    oscMsg.dispatch("/bpm",                         OnOscBPM);
+    oscMsg.dispatch("/play",                        OnOscPlay);
     oscMsg.dispatch("/pedalino/midi/noteOn",        OnOscNoteOn);
     oscMsg.dispatch("/pedalino/midi/noteOff",       OnOscNoteOff);
     oscMsg.dispatch("/pedalino/midi/controlChange", OnOscControlChange);

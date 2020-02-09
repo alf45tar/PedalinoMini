@@ -393,8 +393,6 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   static uint8_t  level   = bat.level(voltage);
 #endif
 
-  if ((millis() >= endMillis2) ||
-      (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
 #ifdef WIFI
     if (wifiEnabled) {
       static int      signal  = WiFi.RSSI();
@@ -421,11 +419,13 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     if (blynk_cloud_connected())
       blynk_app_connected() ? display->drawString(36, 0, String(2)) :display->drawString(36, 0, String(1));
     else display->drawString(36, 0, String(0));
-    if (scrollingMode) {
-      display->setTextAlignment(TEXT_ALIGN_CENTER);
-      display->setFont(profileSign);
-      display->drawString(64 + 10*currentProfile, 0, String(currentProfile));
-    }
+    
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->setFont(profileSign);
+    display->drawString(64 + (scrollingMode ? 10*currentProfile : 0), 0, String(currentProfile));
+
+  if ((millis() >= endMillis2) ||
+      (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
 
 #ifdef BATTERY
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
@@ -586,7 +586,7 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
         break;
     }
   }
-  else if (scrollingMode) { 
+  else if (scrollingMode || MTC.getMode() != MidiTimeCode::SynchroNone) { 
     display->drawLine(0, 51, 127, 51);
 
     display->setTextAlignment(TEXT_ALIGN_LEFT);

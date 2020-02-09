@@ -180,7 +180,7 @@ const char bar2[]  = {'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o'};
 //const char bar2[]  = {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#'};
 
 int m1, m2, m3, m4;
-unsigned long endMillis2;
+unsigned long endMillis2 = 0;
 
 
 void screen_info(int b1, int b2, int b3, int b4)
