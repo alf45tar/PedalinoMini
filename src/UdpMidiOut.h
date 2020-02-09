@@ -61,6 +61,7 @@ unsigned long           wifiLastOn         = 0;
 #define AppleMidiSendStop(...)
 #define AppleMidiSendActiveSensing(...)
 #define AppleMidiSendSystemReset(...)
+#define AppleMidiSendRealTimeMessage(...)
 #define ipMIDISendChannelMessage1(...)
 #define ipMIDISendChannelMessage2(...)
 #define ipMIDISendSystemCommonMessage1(...)
