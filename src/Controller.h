@@ -1488,6 +1488,8 @@ void controller_setup()
         break;
 
       case PED_LADDER5:
+        pinMode(PIN_D(i), OUTPUT);
+        digitalWrite(PIN_D(i), HIGH);
         pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt5, ARRAY_SIZE(kt5));
         pedals[i].footSwitch[0]->begin();
         footswitch_update(i, 0);
@@ -1495,6 +1497,8 @@ void controller_setup()
         break;
       
       case PED_LADDER6:
+        pinMode(PIN_D(i), OUTPUT);
+        digitalWrite(PIN_D(i), HIGH);
         pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt6, ARRAY_SIZE(kt6));
         pedals[i].footSwitch[0]->begin();
         footswitch_update(i, 0);

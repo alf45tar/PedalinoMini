@@ -413,12 +413,12 @@ MD_UISwitch_Analog::uiAnalogKeys_t kt5[] =
 
 MD_UISwitch_Analog::uiAnalogKeys_t kt6[] =
 {
-  { 480, 9, PED_LADDER_1 },  // Down
-  { 500, 9, PED_LADDER_2 },  // Up
-  { 520, 9, PED_LADDER_3 },  // Hit
-  { 540, 9, PED_LADDER_4 },  // Play/Rec
-  { 560, 9, PED_LADDER_5 },  // Stop/Clr
-  { 570, 9, PED_LADDER_6 },  // Loop Inc
+  { 580, 9, PED_LADDER_1 },  // Down
+  { 610, 9, PED_LADDER_2 },  // Up
+  { 635, 9, PED_LADDER_3 },  // Hit
+  { 660, 9, PED_LADDER_4 },  // Play/Rec
+  { 680, 9, PED_LADDER_5 },  // Stop/Clr
+  { 700, 9, PED_LADDER_6 },  // Loop Inc
 };
 
 
