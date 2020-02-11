@@ -421,6 +421,8 @@ MD_UISwitch_Analog::uiAnalogKeys_t kt6[] =
   { 700, 9, PED_LADDER_6 },  // Loop Inc
 };
 
+#define LADDER_STEPS  6
+MD_UISwitch_Analog::uiAnalogKeys_t kt[LADDER_STEPS];
 
 bool powersaver = false;
 
@@ -493,6 +495,10 @@ bool   ap_connect(String ssid = "", String password = "");
 #include <BlynkSimpleEsp32.h>
 String translateEncryptionType(wifi_auth_mode_t);
 #endif
+
+void display_progress_bar_title(String);
+void display_progress_bar_title2(String, String);
+void display_progress_bar_update(unsigned int, unsigned int);
 
 void mtc_start();
 void mtc_stop();
