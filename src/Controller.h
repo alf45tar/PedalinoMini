@@ -245,27 +245,28 @@ void autosensing_setup()
       pinMode(PIN_A(p), INPUT);
       for (byte i = 0; i < LADDER_STEPS; i++) {
         ResponsiveAnalogRead analog;
-        display_progress_bar_title2("Press and hold switch " + String(i+1), "Calibrate FS" + String(p+1));
-        long start = millis();
-        while (millis() - start < 3000) {
-          display_progress_bar_update(millis()-start, 3000);
-          analog.update(analogRead(PIN_A(5)));
+        display_progress_bar_title2("Pedal " + String(p+1) + " - Press and hold", "Switch " + String(i+1));
+        unsigned long start = millis();
+        while (millis() - start < 2000) {      
+          display_progress_bar_update(2000 - (millis() - start), 2000);
+          analog.update(analogRead(PIN_A(p)));
         }
-        kt[i].adcThreshold = analog.getValue();
-        kt[i].value = i + 1;
+        //kt[i].adcThreshold = analog.getValue();
+        kt[i].adcThreshold = analogRead(PIN_A(p));
+        kt[i].value = i;
       }
 
       for (byte i = 0; i < LADDER_STEPS; i++) {
         switch (i) {
           case 0:
-            kt[0].adcTolerance = (kt[1].adcThreshold - kt[0].adcThreshold) / 2 - 1;
+            kt[0].adcTolerance = abs((kt[1].adcThreshold - kt[0].adcThreshold) / 2 - 1);
             break;
           case LADDER_STEPS - 1:
-            kt[i].adcTolerance = (kt[i].adcThreshold - kt[i-1].adcThreshold) / 2 - 1;
+            kt[i].adcTolerance = abs((kt[i].adcThreshold - kt[i-1].adcThreshold) / 2 - 1);
             break;
           default:
-            kt[i].adcTolerance = min((kt[i].adcThreshold   - kt[i-1].adcThreshold) / 2 - 1,
-                                     (kt[i+1].adcThreshold - kt[i].adcThreshold) / 2 - 1);
+            kt[i].adcTolerance = min(abs((kt[i].adcThreshold   - kt[i-1].adcThreshold) / 2 - 1),
+                                     abs((kt[i+1].adcThreshold - kt[i].adcThreshold) / 2 - 1));
             break;
         }
         DPRINT("Ladder %d Threshold %d Tolerance %d\n", kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
@@ -775,35 +776,11 @@ void refresh_switch_12L_midi(byte i, bool send)
 
   b = currentBank;
 
-    if (pedals[i].mode == PED_LADDER5 || pedals[i].mode == PED_LADDER6) {
-      if (k1 == MD_UISwitch::KEY_PRESS) {
-        switch (pedals[i].footSwitch[0]->getKey()) {
-            case 1:
-              break;
-
-            case 2:
-              b = (b + 1) % BANKS;
-              break;
-
-            case 3:
-              b = (b + 2) % BANKS;
-              break;
-
-            case 4:
-              b = (b + 3) % BANKS;
-              break;
-
-            case 5:
-              b = (b + 4) % BANKS;
-              break;
-            
-            case 6:
-              b = (b + 5) % BANKS;
-              break;
-        }
-      }
-      else return;
-    }
+  if (pedals[i].mode == PED_LADDER5 || pedals[i].mode == PED_LADDER6) {
+    if (k1 == MD_UISwitch::KEY_PRESS)
+      b = (b + pedals[i].footSwitch[0]->getKey()) % BANKS;
+    else return;
+  }
 
     switch (k) {
       case 0:
@@ -946,6 +923,9 @@ void refresh_switch_12L(byte i)
 
   if ((pedals[i].mode == PED_LADDER5 || pedals[i].mode == PED_LADDER6) && k1 == MD_UISwitch::KEY_PRESS) {
       switch (pedals[i].footSwitch[0]->getKey()) {
+            case 0:
+              break;
+
             case 1:
               break;
 
@@ -959,9 +939,6 @@ void refresh_switch_12L(byte i)
               break;
 
             case 5:
-              break;
-
-            case 6:
               break;
         }
     }
@@ -1318,6 +1295,14 @@ void controller_run(bool send = true)
                 lastUsed = i;
                 strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
                 break;
+              case PED_BANK_PLUS:
+              case PED_BANK_MINUS:
+                {
+                  int b = currentBank + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].invertPolarity ? -1 : 1);
+                  b = constrain(b, pedals[i].expZero - 1, pedals[i].expMax - 1);
+                  currentBank = constrain(b, 0, BANKS - 1);
+                  break;
+                }
               case PED_BPM_PLUS:
               case PED_BPM_MINUS:
                 bpm = constrain(bpm + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].jogwheel->speed() + 1),
@@ -1530,7 +1515,7 @@ void controller_setup()
       case PED_LADDER6:
         pinMode(PIN_D(i), OUTPUT);
         digitalWrite(PIN_D(i), HIGH);
-        pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt, ARRAY_SIZE(kt));
+        pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt, LADDER_STEPS);
         pedals[i].footSwitch[0]->begin();
         footswitch_update(i, 0);
         DPRINT("   Pin A%d", PIN_A(i));

@@ -496,6 +496,7 @@ bool   ap_connect(String ssid = "", String password = "");
 String translateEncryptionType(wifi_auth_mode_t);
 #endif
 
+void display_clear();
 void display_progress_bar_title(String);
 void display_progress_bar_title2(String, String);
 void display_progress_bar_update(unsigned int, unsigned int);

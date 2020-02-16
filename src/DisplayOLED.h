@@ -382,6 +382,8 @@ void display_progress_bar_title2(String title1, String title2)
 
 void display_progress_bar_update(unsigned int progress, unsigned int total)
 {
+  display.setColor(BLACK);
+  display.fillRect(0, 32, 127, 8);
   display.drawProgressBar(0, 32, 127, 8, 100*progress/total);
   display.display();
 }
@@ -506,15 +508,20 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
           break;
       }
       */
-      MTC.isPlaying() ? display->setColor(WHITE) : display->setColor(BLACK);
+      //MTC.isPlaying() ? display->setColor(WHITE) : display->setColor(BLACK);
       switch (timeSignature) {
         case PED_TIMESIGNATURE_2_4:
           display->fillRect(64 * MTC.getBeat(), 0, 64, 10);
           break;
         case PED_TIMESIGNATURE_4_4:
-          display->fillRect(32 * MTC.getBeat(), 0, 32, 10);
-          //display->setColor(INVERSE);
-          display->drawRect(32 * MTC.getBeat(), 0, 32, 10);
+          display->drawRect(77 + 13 * 0, 0, 12, 10);
+          display->drawRect(77 + 13 * 1, 0, 12, 10);
+          display->drawRect(77 + 13 * 2, 0, 12, 10);
+          display->drawRect(77 + 13 * 3, 0, 12, 10);
+          if (MTC.isPlaying())
+            display->fillRect(79 + 13 * MTC.getBeat(), 2,  8,  6);
+          else
+            display->drawRect(81 + 13 * MTC.getBeat(), 3,  4,  4);
           break;
         case PED_TIMESIGNATURE_3_4:
         case PED_TIMESIGNATURE_3_8:
@@ -524,7 +531,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
           display->fillRect(43 * MTC.getBeat(), 0, 42, 10);
           break;
       }
-      display->setColor(WHITE);
+      //display->setColor(WHITE);
     }
     else if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
              MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
