@@ -21,6 +21,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define PEDALS            6
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
+#define LADDER_STEPS      6   // max number of switches in a resistor ladder
 
 #define MAXPEDALNAME     10
 
@@ -146,8 +147,7 @@ typedef uint8_t   byte;
 #define PED_MOMENTARY2          6
 #define PED_MOMENTARY3          7
 #define PED_LATCH2              8
-#define PED_LADDER5             9
-#define PED_LADDER6            10
+#define PED_LADDER              9
 
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
@@ -390,38 +390,6 @@ bool  bleConnected            = false;
 String wifiSSID("");
 String wifiPassword("");
 
-
-// The keys value that works for most LCD Keypad Shield
-
-#define PED_LADDER_1  'R'
-#define PED_LADDER_2  'U'
-#define PED_LADDER_3  'D'
-#define PED_LADDER_4  'L'
-#define PED_LADDER_5  'S'
-#define PED_LADDER_6  'I'
-
-MD_UISwitch_Analog::uiAnalogKeys_t kt5[] =
-{
-  {  30, 30, PED_LADDER_1 },  // Right
-  { 130, 50, PED_LADDER_2 },  // Up
-  { 305, 50, PED_LADDER_3 },  // Down
-  { 475, 50, PED_LADDER_4 },  // Left
-  { 720, 90, PED_LADDER_5 },  // Select
-};
-
-// The keys value that works for TC-Helicon Switch 6
-
-MD_UISwitch_Analog::uiAnalogKeys_t kt6[] =
-{
-  { 580, 9, PED_LADDER_1 },  // Down
-  { 610, 9, PED_LADDER_2 },  // Up
-  { 635, 9, PED_LADDER_3 },  // Hit
-  { 660, 9, PED_LADDER_4 },  // Play/Rec
-  { 680, 9, PED_LADDER_5 },  // Stop/Clr
-  { 700, 9, PED_LADDER_6 },  // Loop Inc
-};
-
-#define LADDER_STEPS  6
 MD_UISwitch_Analog::uiAnalogKeys_t kt[LADDER_STEPS];
 
 bool powersaver = false;

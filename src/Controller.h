@@ -181,9 +181,10 @@ void autosensing_setup()
   
   DPRINT("Pedal autosensing...\n");
   analogReadResolution(ADC_RESOLUTION_BITS);
+  analogSetAttenuation(ADC_11db);
 
   for (byte p = 0; p < PEDALS; p++) {
-    if (pedals[p].autoSensing && pedals[p].mode != PED_NONE) {
+    if (pedals[p].autoSensing && pedals[p].mode != PED_NONE && pedals[p].mode != PED_LADDER) {
 
       pinMode(PIN_D(p), INPUT_PULLUP);
       pinMode(PIN_A(p), INPUT_PULLUP);
@@ -241,18 +242,19 @@ void autosensing_setup()
     }  
     DPRINT("\n"); 
   
-    if (pedals[p].mode == PED_LADDER6) {
-      pinMode(PIN_A(p), INPUT);
+    if (pedals[p].mode == PED_LADDER && pedals[p].autoSensing) {
+      ResponsiveAnalogRead analog(PIN_A(p), true);
+      analog.setAnalogResolution(ADC_RESOLUTION);
+      analog.enableEdgeSnap();
       for (byte i = 0; i < LADDER_STEPS; i++) {
-        ResponsiveAnalogRead analog;
         display_progress_bar_title2("Pedal " + String(p+1) + " - Press and hold", "Switch " + String(i+1));
         unsigned long start = millis();
         while (millis() - start < 2000) {      
           display_progress_bar_update(2000 - (millis() - start), 2000);
-          analog.update(analogRead(PIN_A(p)));
+          analog.update();
+          //if (analog.hasChanged()) { DPRINT("GPIO_NUM_%d %d\n", PIN_A(p), analog.getValue()); }
         }
-        //kt[i].adcThreshold = analog.getValue();
-        kt[i].adcThreshold = analogRead(PIN_A(p));
+        kt[i].adcThreshold = analog.getValue();
         kt[i].value = i;
       }
 
@@ -776,7 +778,7 @@ void refresh_switch_12L_midi(byte i, bool send)
 
   b = currentBank;
 
-  if (pedals[i].mode == PED_LADDER5 || pedals[i].mode == PED_LADDER6) {
+  if (pedals[i].mode == PED_LADDER) {
     if (k1 == MD_UISwitch::KEY_PRESS)
       b = (b + pedals[i].footSwitch[0]->getKey()) % BANKS;
     else return;
@@ -921,7 +923,7 @@ void refresh_switch_12L(byte i)
   
   f = pedals[i].function;
 
-  if ((pedals[i].mode == PED_LADDER5 || pedals[i].mode == PED_LADDER6) && k1 == MD_UISwitch::KEY_PRESS) {
+  if ((pedals[i].mode == PED_LADDER) && k1 == MD_UISwitch::KEY_PRESS) {
       switch (pedals[i].footSwitch[0]->getKey()) {
             case 0:
               break;
@@ -1255,8 +1257,7 @@ void controller_run(bool send = true)
         refresh_analog(i, send);
         break;
 
-      case PED_LADDER5:
-      case PED_LADDER6:
+      case PED_LADDER:
         if (pedals[i].function == PED_MIDI) refresh_switch_12L_midi(i, send);
         else refresh_switch_12L(i);
         break;
@@ -1362,8 +1363,7 @@ void controller_setup()
       case PED_LATCH2:      DPRINT("LATCH2    "); break;
       case PED_ANALOG:      DPRINT("ANALOG    "); break;
       case PED_JOG_WHEEL:   DPRINT("JOG_WHEEL "); break;
-      case PED_LADDER5:     DPRINT("LADDER5   "); break;
-      case PED_LADDER6:     DPRINT("LADDER6   "); break;
+      case PED_LADDER:      DPRINT("LADDER    "); break;
       default:              DPRINT("          "); break;
     }
     DPRINT("   ");
@@ -1503,16 +1503,7 @@ void controller_setup()
         DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
         break;
 
-      case PED_LADDER5:
-        pinMode(PIN_D(i), OUTPUT);
-        digitalWrite(PIN_D(i), HIGH);
-        pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt5, ARRAY_SIZE(kt5));
-        pedals[i].footSwitch[0]->begin();
-        footswitch_update(i, 0);
-        DPRINT("   Pin A%d", PIN_A(i));
-        break;
-      
-      case PED_LADDER6:
+      case PED_LADDER:
         pinMode(PIN_D(i), OUTPUT);
         digitalWrite(PIN_D(i), HIGH);
         pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt, LADDER_STEPS);

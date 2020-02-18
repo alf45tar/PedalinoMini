@@ -706,12 +706,9 @@ BLYNK_WRITE(BLYNK_PEDAL_MODE) {
     case PED_LATCH2:
       DPRINT("LATCH2\n");
       break;
-    case PED_LADDER5:
-      DPRINT("LADDER5\n");
+    case PED_LADDER:
+      DPRINT("LADDER\n");
       break;
-    case PED_LADDER6:
-      DPRINT("LADDER6\n");
-      break;  
   }
   pedals[currentPedal].mode = mode;
   autosensing_setup();

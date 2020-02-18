@@ -536,11 +536,12 @@ void OnOscLed3(OSCMessage &msg)
   leds.write();
 }
 
-void OnOscSaveLive(OSCMessage &msg)
+void OnOscSave(OSCMessage &msg)
 {
   DPRINT("OSC message /save_live received from %s\n", oscControllerIP.toString().c_str());
-  eeprom_update_profile();
   eeprom_update_current_profile(currentProfile);
+  for (byte i = 0; i < PROFILES; i++)
+    eeprom_update_profile(i);
 }
 
 void OnOscProfile(OSCMessage &msg)
@@ -724,6 +725,58 @@ void OnOscPlay(OSCMessage &msg)
   }
 }
 
+void OnOscInterface(OSCMessage &msg)
+{
+  DPRINT("OSC message /interface %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  currentInterface = constrain(msg.getInt(0), 0, INTERFACES);
+
+  AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg1;
+  AsyncUDPMessage udpMsg2;
+  AsyncUDPMessage udpMsg3;
+  AsyncUDPMessage udpMsg4;
+  OSCMessage      oscMsg1("midi_in");
+  OSCMessage      oscMsg2("midi_out");
+  OSCMessage      oscMsg3("midi_thru");
+  OSCMessage      oscMsg4("midi_clock");
+
+  oscMsg1.add(interfaces[currentInterface].midiIn).send(udpMsg1).empty();
+  udpOut.sendTo(udpMsg1, oscControllerIP, OSC_CONTROLLER_PORT);
+
+  oscMsg2.add(interfaces[currentInterface].midiOut).send(udpMsg2).empty();
+  udpOut.sendTo(udpMsg2, oscControllerIP, OSC_CONTROLLER_PORT);
+
+  oscMsg3.add(interfaces[currentInterface].midiThru).send(udpMsg3).empty();
+  udpOut.sendTo(udpMsg3, oscControllerIP, OSC_CONTROLLER_PORT);
+
+  oscMsg4.add(interfaces[currentInterface].midiClock).send(udpMsg4).empty();
+  udpOut.sendTo(udpMsg4, oscControllerIP, OSC_CONTROLLER_PORT);
+}
+
+void OnOscMidiIn(OSCMessage &msg)
+{
+  DPRINT("OSC message /midi_in %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  interfaces[currentInterface].midiIn = msg.getInt(0);
+}
+
+void OnOscMidiOut(OSCMessage &msg)
+{
+  DPRINT("OSC message /midi_out %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  interfaces[currentInterface].midiOut = msg.getInt(0);
+}
+
+void OnOscMidiThru(OSCMessage &msg)
+{
+  DPRINT("OSC message /midi_thru %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  interfaces[currentInterface].midiThru = msg.getInt(0);
+}
+
+void OnOscMidiClock(OSCMessage &msg)
+{
+  DPRINT("OSC message /midi_clock %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  interfaces[currentInterface].midiClock = msg.getInt(0);
+}
+
 
 // Listen to incoming OSC messages from WiFi
 
@@ -744,7 +797,7 @@ void oscOnPacket(AsyncUDPPacket packet) {
 
   if (!oscMsg.hasError()) {
     oscMsg.dispatch("/send_configuration",          OnOscSendConfiguration);
-    oscMsg.dispatch("/save_live",                   OnOscSaveLive);
+    oscMsg.dispatch("/save",                        OnOscSave);
     oscMsg.dispatch("/pedal_1",                     OnOscPedal1);
     oscMsg.dispatch("/pedal_2",                     OnOscPedal2);
     oscMsg.dispatch("/pedal_3",                     OnOscPedal3);
@@ -762,6 +815,11 @@ void oscOnPacket(AsyncUDPPacket packet) {
     oscMsg.dispatch("/masterslave",                 OnOscMasterSlave);
     oscMsg.dispatch("/bpm",                         OnOscBPM);
     oscMsg.dispatch("/play",                        OnOscPlay);
+    oscMsg.dispatch("/interface",                   OnOscInterface);
+    oscMsg.dispatch("/midi_in",                     OnOscMidiIn);
+    oscMsg.dispatch("/midi_out",                    OnOscMidiOut);
+    oscMsg.dispatch("/midi_thru",                   OnOscMidiThru);
+    oscMsg.dispatch("/midi_clock",                  OnOscMidiClock);
     oscMsg.dispatch("/pedalino/midi/noteOn",        OnOscNoteOn);
     oscMsg.dispatch("/pedalino/midi/noteOff",       OnOscNoteOff);
     oscMsg.dispatch("/pedalino/midi/controlChange", OnOscControlChange);
