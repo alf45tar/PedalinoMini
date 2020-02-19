@@ -245,6 +245,12 @@ void load_factory_default()
       sequences[s][t].midiValue3   = 0;
     }
   }
+
+  for (byte i = 0; i < LADDER_STEPS; i++) {
+    kt[i].value = i;
+    kt[i].adcThreshold = (i + 1) * 1024 / (LADDER_STEPS + 2);
+    kt[i].adcTolerance = (1024 / LADDER_STEPS + 2) / 2;
+  }
 }
 
 void eeprom_update_device_name(String name = getChipId())
@@ -370,6 +376,19 @@ void eeprom_update_theme(String theme = "bootstrap")
   DPRINT("[NVS][Global][Bootstrap Theme]: %s\n", theme.c_str());
 }
 
+void eeprom_update_ladder()
+{
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putBytes("Ladder", &kt, sizeof(kt));
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global][Ladder]:\n");
+  for (byte i = 0; i < LADDER_STEPS; i++) {
+    DPRINT("Ladder %d Threshold %d Tolerance %d\n", kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
+  }
+}
+
 void eeprom_update_profile(byte profile = currentProfile)
 {
   DPRINT("Updating NVS Profile ");
@@ -419,6 +438,7 @@ void eeprom_read_global()
     doublePressTime    = preferences.getLong("Double Time");
     longPressTime      = preferences.getLong("Long   Time");
     repeatPressTime    = preferences.getLong("Repeat Time");
+    preferences.getBytes("Ladder", &kt, sizeof(kt));
     preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
     blynk_set_token(preferences.getString("Blynk Token"));
     preferences.end();
@@ -439,6 +459,9 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][Repeat Time]:     %d\n", repeatPressTime);
     DPRINT("[NVS][Global][Blynk Cloud]:     %d\n", blynk_enabled());
     DPRINT("[NVS][Global][Blynk Token]:     %s\n", blynk_get_token().c_str());
+    for (byte i = 0; i < LADDER_STEPS; i++) {
+      DPRINT("[NVS][Global][Ladder]:          Ladder %d Threshold %d Tolerance %d\n", kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
+    }
   }
   else {
     DPRINT("NVS open error ... using default values\n");  

@@ -256,9 +256,7 @@ void autosensing_setup()
         while (millis() - start < 3000) {      
           display_progress_bar_update(3000 - (millis() - start), 3000);
           analog.update();
-          if (analog.hasChanged()) {
-            display_progress_bar_2_update(analog.getValue(), ADC_RESOLUTION);
-            DPRINT("GPIO_NUM_%d %d\n", PIN_A(p), analog.getValue()); }
+          if (analog.hasChanged()) display_progress_bar_2_update(analog.getValue(), ADC_RESOLUTION);
         }
         kt[i].adcThreshold = analog.getValue();
         kt[i].value = i;
@@ -279,8 +277,10 @@ void autosensing_setup()
                                      abs((kt[i+1].adcThreshold - kt[i].adcThreshold) / 2 - 1));
             break;
         }
-        DPRINT("Pedal % d Ladder %d Threshold %d Tolerance %d\n", p + 1, kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
       }
+      eeprom_update_ladder();
+      pedals[p].autoSensing = false;
+      eeprom_update_profile();
     }
   }
 }
