@@ -388,6 +388,24 @@ void display_progress_bar_update(unsigned int progress, unsigned int total)
   display.display();
 }
 
+void display_progress_bar_2_update(unsigned int progress, unsigned int total)
+{
+  display.setColor(BLACK);
+  display.fillRect(0, 54, 127, 8);
+  display.drawProgressBar(0, 54, 127, 8, 100*progress/total);
+  display.display();
+}
+
+void display_progress_bar_2_label(unsigned int label, unsigned int x)
+{
+  display.setColor(WHITE);
+  display.setFont(ArialMT_Plain_10);
+  display.setTextAlignment(TEXT_ALIGN_CENTER);
+  display.drawString(x, 42, String(label));
+  display.drawLine(x, 53, x, 63);
+  display.display();
+}
+
 void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
 #ifdef BATTERY

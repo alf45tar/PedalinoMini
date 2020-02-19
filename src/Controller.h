@@ -246,17 +246,25 @@ void autosensing_setup()
       ResponsiveAnalogRead analog(PIN_A(p), true);
       analog.setAnalogResolution(ADC_RESOLUTION);
       analog.enableEdgeSnap();
+      pinMode(PIN_D(p), OUTPUT);
+      digitalWrite(PIN_D(p), HIGH);
       for (byte i = 0; i < LADDER_STEPS; i++) {
         display_progress_bar_title2("Pedal " + String(p+1) + " - Press and hold", "Switch " + String(i+1));
+        for (byte j = 0; j < i; j++)
+          display_progress_bar_2_label(j + 1, 128 * kt[j].adcThreshold / ADC_RESOLUTION);
         unsigned long start = millis();
-        while (millis() - start < 2000) {      
-          display_progress_bar_update(2000 - (millis() - start), 2000);
+        while (millis() - start < 3000) {      
+          display_progress_bar_update(3000 - (millis() - start), 3000);
           analog.update();
-          //if (analog.hasChanged()) { DPRINT("GPIO_NUM_%d %d\n", PIN_A(p), analog.getValue()); }
+          if (analog.hasChanged()) {
+            display_progress_bar_2_update(analog.getValue(), ADC_RESOLUTION);
+            DPRINT("GPIO_NUM_%d %d\n", PIN_A(p), analog.getValue()); }
         }
         kt[i].adcThreshold = analog.getValue();
         kt[i].value = i;
       }
+      display_progress_bar_2_label(LADDER_STEPS, 128 * kt[LADDER_STEPS-1].adcThreshold / ADC_RESOLUTION);
+      delay(1000);
 
       for (byte i = 0; i < LADDER_STEPS; i++) {
         switch (i) {
@@ -271,7 +279,7 @@ void autosensing_setup()
                                      abs((kt[i+1].adcThreshold - kt[i].adcThreshold) / 2 - 1));
             break;
         }
-        DPRINT("Ladder %d Threshold %d Tolerance %d\n", kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
+        DPRINT("Pedal % d Ladder %d Threshold %d Tolerance %d\n", p + 1, kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
       }
     }
   }

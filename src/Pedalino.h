@@ -468,6 +468,8 @@ void display_clear();
 void display_progress_bar_title(String);
 void display_progress_bar_title2(String, String);
 void display_progress_bar_update(unsigned int, unsigned int);
+void display_progress_bar_2_update(unsigned int, unsigned int);
+void display_progress_bar_2_label(unsigned int, unsigned int);
 
 void mtc_start();
 void mtc_stop();
