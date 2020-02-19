@@ -32,11 +32,12 @@ The first cloud connected wireless IoT MIDI foot controller for guitarists and m
 - 10 banks of 6 controllers each
 - 3 user configuration profiles
 - 16 sequences of 10 steps each
-- Each port can connect 1 expression pedal or up to 5 foot switches for a maximum of 30 foot switches.
+- Each port can connect 1 expression pedal or up to 6 foot switches for a maximum of 36 foot switches.
 - MIDI output via AppleMIDI (also known as RTP-MIDI) or ipMIDI via Wi-Fi
 - Send almost every MIDI messages: Program Change, Control Code, Note On/Off, Channel Pressure, Pitch Bend, Bank Select, Start, Stop, Continue or a sequence of the previous messages
 - MIDI channel, MIDI note, MIDI control code, MIDI program change can be configured by each pedal and by each bank
 - Switch debouncing and analog noise suppression without decreasing responsiveness
+- Up to 6 switches connected via a resitors ladder (TC HELICON Switch-6). Any resistors ladder can be automatically calibrated just pressing footswitches in sequence.
 - Invert polarity via software
 - Individual automatic calibration of expression pedals. Manual fine tuning is not usually requested.
 - Transform a linear expression pedal into log expression pedal and vice versa
