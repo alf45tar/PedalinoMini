@@ -1,10 +1,10 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
                                                                                    (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
@@ -226,7 +226,7 @@ void load_factory_default()
   }
 #endif  // TTGO_T_EIGHT
 
-  for (byte i = 0; i < INTERFACES; i++) 
+  for (byte i = 0; i < INTERFACES; i++)
     {
       interfaces[i].midiIn      = PED_ENABLE;
       interfaces[i].midiOut     = PED_ENABLE;
@@ -464,7 +464,7 @@ void eeprom_read_global()
     }
   }
   else {
-    DPRINT("NVS open error ... using default values\n");  
+    DPRINT("NVS open error ... using default values\n");
   }
 }
 
@@ -520,7 +520,7 @@ void eeprom_read_profile(byte profile = currentProfile)
       pedals[i].expMax        = 0;
     }
   };
-  
+
   blynk_refresh();
 }
 
@@ -553,6 +553,7 @@ void eeprom_initialize()
   eeprom_update_tap_dance();
   eeprom_update_repeat_on_bank_switch();
   eeprom_update_press_time();
+  eeprom_update_ladder();
   eeprom_update_blynk_cloud_enable();
   eeprom_update_blynk_auth_token();
   for (byte p = 0; p < PROFILES; p++)
@@ -582,6 +583,5 @@ void eeprom_init_or_erase()
     case ESP_ERR_NOT_FOUND:
       DPRINT("'nvs' partition not found\n");
       break;
-    
   }
 }
