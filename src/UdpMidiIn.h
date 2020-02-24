@@ -465,6 +465,70 @@ void OscSendBank()
   }
 }
 
+void OscSendPedal()
+{
+  AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg1;
+  AsyncUDPMessage udpMsg2;
+  AsyncUDPMessage udpMsg3;
+  AsyncUDPMessage udpMsg4;
+  AsyncUDPMessage udpMsg5;
+  AsyncUDPMessage udpMsg6;
+  AsyncUDPMessage udpMsg7;
+  AsyncUDPMessage udpMsg8;
+  AsyncUDPMessage udpMsg9;
+  AsyncUDPMessage udpMsg10;
+  OSCMessage      oscMsg1("pedal_mode");
+  OSCMessage      oscMsg2("pedal_function");
+  OSCMessage      oscMsg3("auto_sensing");
+  OSCMessage      oscMsg4("single_press");
+  OSCMessage      oscMsg5("double_press");
+  OSCMessage      oscMsg6("long_press");
+  OSCMessage      oscMsg7("invert_polarity");
+  OSCMessage      oscMsg8("analog_map");
+  OSCMessage      oscMsg9("analog_min");
+  OSCMessage      oscMsg10("analog_max");
+
+  oscMsg1.add(pedals[currentPedal].mode - 2).send(udpMsg1).empty();
+  udpOut.sendTo(udpMsg1, oscControllerIP, OSC_CONTROLLER_PORT);
+  //oscMsg2.add(pedals[currentPedal].function).send(udpMsg2).empty();
+  //udpOut.sendTo(udpMsg2, oscControllerIP, OSC_CONTROLLER_PORT);
+  oscMsg3.add(pedals[currentPedal].autoSensing).send(udpMsg3).empty();
+  udpOut.sendTo(udpMsg3, oscControllerIP, OSC_CONTROLLER_PORT);
+  oscMsg4.add((pedals[currentPedal].pressMode & PED_PRESS_1) == PED_PRESS_1 ? 1 : 0).send(udpMsg4).empty();
+  udpOut.sendTo(udpMsg4, oscControllerIP, OSC_CONTROLLER_PORT);
+  oscMsg5.add((pedals[currentPedal].pressMode & PED_PRESS_2) == PED_PRESS_2 ? 1 : 0).send(udpMsg5).empty();
+  udpOut.sendTo(udpMsg5, oscControllerIP, OSC_CONTROLLER_PORT);
+  oscMsg6.add((pedals[currentPedal].pressMode & PED_PRESS_L) == PED_PRESS_L ? 1 : 0).send(udpMsg6).empty();
+  udpOut.sendTo(udpMsg6, oscControllerIP, OSC_CONTROLLER_PORT);
+  oscMsg7.add(pedals[currentPedal].invertPolarity).send(udpMsg7).empty();
+  udpOut.sendTo(udpMsg7, oscControllerIP, OSC_CONTROLLER_PORT);
+  oscMsg8.add(pedals[currentPedal].mapFunction).send(udpMsg8).empty();
+  udpOut.sendTo(udpMsg8, oscControllerIP, OSC_CONTROLLER_PORT);
+  switch (pedals[currentPedal].function) {
+    case PED_BANK_PLUS:
+    case PED_BANK_MINUS:
+    case PED_BANK_PLUS_2:
+    case PED_BANK_MINUS_2:
+    case PED_BANK_PLUS_3:
+    case PED_BANK_MINUS_3:
+      oscMsg9.add((float)pedals[currentPedal].expZero / (BANKS - 1)).send(udpMsg9).empty();
+      oscMsg10.add((float)pedals[currentPedal].expMax / (BANKS - 1)).send(udpMsg10).empty();
+      break;
+    case PED_BPM_PLUS:
+    case PED_BPM_MINUS:
+      oscMsg9.add((float)(pedals[currentPedal].expZero - 40) / 260).send(udpMsg9).empty();
+      oscMsg10.add((float)(pedals[currentPedal].expMax - 40)/ 260).send(udpMsg10).empty();
+      break;
+    default:
+      oscMsg9.add((float)pedals[currentPedal].expZero / (ADC_RESOLUTION - 1)).send(udpMsg9).empty();
+      oscMsg10.add((float)pedals[currentPedal].expMax / (ADC_RESOLUTION - 1)).send(udpMsg10).empty();
+      break;
+  }
+  udpOut.sendTo(udpMsg9, oscControllerIP, OSC_CONTROLLER_PORT);
+  udpOut.sendTo(udpMsg10, oscControllerIP, OSC_CONTROLLER_PORT);
+}
+
 void OscSendLive()
 {
   AsyncUDP        udpOut;
@@ -544,6 +608,7 @@ void OscSendInterface()
 void OscControllerUpdate()
 {
   OscSendBank();
+  OscSendPedal();
   OscSendInterface();
   OscSendLive();
 }
@@ -652,6 +717,133 @@ void OnOscProfile(OSCMessage &msg)
   DPRINT("OSC message /profile %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
   currentProfile = constrain(msg.getInt(0), 0, PROFILES - 1);
   reloadProfile = true;
+}
+
+void OnOscPedal(OSCMessage &msg)
+{
+  DPRINT("OSC message /pedal %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  currentPedal = constrain(msg.getInt(0), 0, PEDALS - 1);
+  OscSendPedal();
+}
+
+void OnOscPedalMode(OSCMessage &msg)
+{
+  DPRINT("OSC message /pedal_mode %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  pedals[currentPedal].mode = msg.getInt(0) + 2;
+
+}
+
+void OnOscPedalFunction(OSCMessage &msg)
+{
+  DPRINT("OSC message /pedal_function %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  pedals[currentPedal].function = msg.getInt(0);
+
+}
+
+void OnOscPedalAutoSensing(OSCMessage &msg)
+{
+  DPRINT("OSC message /auto_sensing %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  pedals[currentPedal].autoSensing = constrain(msg.getInt(0), 0, 1);
+
+}
+
+void OnOscPedalSinglePress(OSCMessage &msg)
+{
+  DPRINT("OSC message /single_press %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  switch (msg.getInt(0)) {
+    case 0:
+      pedals[currentPedal].pressMode &= ~PED_PRESS_1;
+      break;
+    case 1:
+      pedals[currentPedal].pressMode |= PED_PRESS_1;
+      break;
+  }
+}
+
+void OnOscPedalDoublePress(OSCMessage &msg)
+{
+  DPRINT("OSC message /double_press %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  switch (msg.getInt(0)) {
+    case 0:
+      pedals[currentPedal].pressMode &= ~PED_PRESS_2;
+      break;
+    case 1:
+      pedals[currentPedal].pressMode |= PED_PRESS_2;
+      break;
+  }
+}
+
+void OnOscPedalLongPress(OSCMessage &msg)
+{
+  DPRINT("OSC message /long_press %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  switch (msg.getInt(0)) {
+    case 0:
+      pedals[currentPedal].pressMode &= ~PED_PRESS_L;
+      break;
+    case 1:
+      pedals[currentPedal].pressMode |= PED_PRESS_L;
+      break;
+  }
+}
+
+void OnOscPedalInvertPolarity(OSCMessage &msg)
+{
+  DPRINT("OSC message /invert_polarity %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  pedals[currentPedal].invertPolarity = constrain(msg.getInt(0), 0, 1);
+}
+
+void OnOscPedalAnalogMap(OSCMessage &msg)
+{
+  DPRINT("OSC message /analog_map %f received from %s\n", msg.getFloat(0), oscControllerIP.toString().c_str());
+  pedals[currentPedal].mapFunction = constrain(msg.getInt(0), 0, 2);
+}
+
+void OnOscPedalAnalogMin(OSCMessage &msg)
+{
+  DPRINT("OSC message /analog_min %f received from %s\n", msg.getFloat(0), oscControllerIP.toString().c_str());
+  switch (pedals[currentPedal].function) {
+    case PED_BANK_PLUS:
+    case PED_BANK_MINUS:
+    case PED_BANK_PLUS_2:
+    case PED_BANK_MINUS_2:
+    case PED_BANK_PLUS_3:
+    case PED_BANK_MINUS_3:
+      pedals[currentPedal].expZero = constrain(msg.getFloat(0) * (PEDALS - 1), 0, PEDALS);
+      break;
+    case PED_BPM_PLUS:
+    case PED_BPM_MINUS:
+      pedals[currentPedal].expZero = constrain(40 + msg.getFloat(0) * 260, 40, 300);
+      break;
+    default:
+      pedals[currentPedal].expZero = constrain(msg.getFloat(0) * (ADC_RESOLUTION - 1), 0, ADC_RESOLUTION - 1);
+      break;
+  }
+  if (pedals[currentPedal].expZero > pedals[currentPedal].expMax)
+    pedals[currentPedal].expMax = pedals[currentPedal].expZero;
+}
+
+void OnOscPedalAnalogMax(OSCMessage &msg)
+{
+  DPRINT("OSC message /analog_max %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
+  switch (pedals[currentPedal].function) {
+    case PED_BANK_PLUS:
+    case PED_BANK_MINUS:
+    case PED_BANK_PLUS_2:
+    case PED_BANK_MINUS_2:
+    case PED_BANK_PLUS_3:
+    case PED_BANK_MINUS_3:
+      pedals[currentPedal].expMax = constrain(msg.getFloat(0) * (PEDALS - 1), 0, PEDALS);
+      break;
+    case PED_BPM_PLUS:
+    case PED_BPM_MINUS:
+      pedals[currentPedal].expMax = constrain(40 + msg.getFloat(0) * 260, 40, 300);
+      break;
+    default:
+      pedals[currentPedal].expMax = constrain(msg.getFloat(0) * (ADC_RESOLUTION - 1), 0, ADC_RESOLUTION - 1);
+      break;
+  }
+  if (pedals[currentPedal].expMax < pedals[currentPedal].expMax)
+    pedals[currentPedal].expZero = pedals[currentPedal].expMax;
 }
 
 void OnOscBank(OSCMessage &msg)
@@ -864,6 +1056,19 @@ void oscOnPacket(AsyncUDPPacket packet) {
     oscMsg.dispatch("/bank",                        OnOscBank);
     oscMsg.dispatch("/bank-1",                      OnOscBank_1);
     oscMsg.dispatch("/bank-2",                      OnOscBank_2);
+
+    oscMsg.dispatch("/pedal",                       OnOscPedal);
+    oscMsg.dispatch("/pedal_mode",                  OnOscPedalMode);
+    oscMsg.dispatch("/pedal_function",              OnOscPedalFunction);
+    oscMsg.dispatch("/auto_sensing",                OnOscPedalAutoSensing);
+    oscMsg.dispatch("/single_press",                OnOscPedalSinglePress);
+    oscMsg.dispatch("/double_press",                OnOscPedalDoublePress);
+    oscMsg.dispatch("/long_press",                  OnOscPedalLongPress);
+    oscMsg.dispatch("/invert_polarity",             OnOscPedalInvertPolarity);
+    oscMsg.dispatch("/analog_map",                  OnOscPedalAnalogMap);
+    oscMsg.dispatch("/analog_min",                  OnOscPedalAnalogMin);
+    oscMsg.dispatch("/analog_max",                  OnOscPedalAnalogMax);
+
     oscMsg.dispatch("/clock",                       OnOscClock);
     oscMsg.dispatch("/masterslave",                 OnOscMasterSlave);
     oscMsg.dispatch("/bpm",                         OnOscBPM);
