@@ -436,13 +436,19 @@ IPAddress oscControllerIP;
 void OscSendBank()
 {
   AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg;
   AsyncUDPMessage udpMsg1;
   AsyncUDPMessage udpMsg2;
   AsyncUDPMessage udpMsg3;
+  AsyncUDPMessage udpMsg4;
+  OSCMessage      oscMsg("profile");
   OSCMessage      oscMsg1("bank");
   OSCMessage      oscMsg2("bank-1");
   OSCMessage      oscMsg3("bank-2");
+  OSCMessage      oscMsg4("pedal_name");
 
+  oscMsg.add(currentProfile).send(udpMsg).empty();
+  udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
 
   oscMsg1.add(currentBank + 1).send(udpMsg1).empty();
   udpOut.sendTo(udpMsg1, oscControllerIP, OSC_CONTROLLER_PORT);
@@ -463,11 +469,17 @@ void OscSendBank()
     oscMsg3.add(0).send(udpMsg3).empty();
     udpOut.sendTo(udpMsg3, oscControllerIP, OSC_CONTROLLER_PORT);
   }
+
+  oscMsg4.add(banks[currentBank][currentPedal].pedalName).send(udpMsg4).empty();
+  udpOut.sendTo(udpMsg4, oscControllerIP, OSC_CONTROLLER_PORT);
+
 }
 
 void OscSendPedal()
 {
   AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg;
+  AsyncUDPMessage udpMsg0;
   AsyncUDPMessage udpMsg1;
   AsyncUDPMessage udpMsg2;
   AsyncUDPMessage udpMsg3;
@@ -478,6 +490,8 @@ void OscSendPedal()
   AsyncUDPMessage udpMsg8;
   AsyncUDPMessage udpMsg9;
   AsyncUDPMessage udpMsg10;
+  OSCMessage      oscMsg("profile");
+  OSCMessage      oscMsg0("pedal");
   OSCMessage      oscMsg1("pedal_mode");
   OSCMessage      oscMsg2("pedal_function");
   OSCMessage      oscMsg3("auto_sensing");
@@ -489,6 +503,10 @@ void OscSendPedal()
   OSCMessage      oscMsg9("analog_min");
   OSCMessage      oscMsg10("analog_max");
 
+  oscMsg.add(currentProfile).send(udpMsg).empty();
+  udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
+  oscMsg0.add(currentPedal).send(udpMsg0).empty();
+  udpOut.sendTo(udpMsg0, oscControllerIP, OSC_CONTROLLER_PORT);
   oscMsg1.add(pedals[currentPedal].mode - 2).send(udpMsg1).empty();
   udpOut.sendTo(udpMsg1, oscControllerIP, OSC_CONTROLLER_PORT);
   //oscMsg2.add(pedals[currentPedal].function).send(udpMsg2).empty();
@@ -532,14 +550,19 @@ void OscSendPedal()
 void OscSendLive()
 {
   AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg;
   AsyncUDPMessage udpMsg1;
   AsyncUDPMessage udpMsg2;
   AsyncUDPMessage udpMsg3;
   AsyncUDPMessage udpMsg4;
+  OSCMessage      oscMsg("profile");
   OSCMessage      oscMsg1("clock");
   OSCMessage      oscMsg2("masterslave");
   OSCMessage      oscMsg3("bpm");
   OSCMessage      oscMsg4("play");
+
+  oscMsg.add(currentProfile).send(udpMsg).empty();
+  udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
 
   switch (MTC.getMode()) {
     case MidiTimeCode::SynchroNone:
@@ -575,16 +598,21 @@ void OscSendLive()
 void OscSendInterface()
 {
   AsyncUDP        udpOut;
+  AsyncUDPMessage udpMsg;
   AsyncUDPMessage udpMsg0;
   AsyncUDPMessage udpMsg1;
   AsyncUDPMessage udpMsg2;
   AsyncUDPMessage udpMsg3;
   AsyncUDPMessage udpMsg4;
+  OSCMessage      oscMsg("profile");
   OSCMessage      oscMsg0("interface");
   OSCMessage      oscMsg1("midi_in");
   OSCMessage      oscMsg2("midi_out");
   OSCMessage      oscMsg3("midi_thru");
   OSCMessage      oscMsg4("midi_clock");
+
+  oscMsg.add(currentProfile).send(udpMsg).empty();
+  udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
 
   oscMsg0.add(currentInterface).send(udpMsg0).empty();
   udpOut.sendTo(udpMsg0, oscControllerIP, OSC_CONTROLLER_PORT);
@@ -613,76 +641,16 @@ void OscControllerUpdate()
   OscSendLive();
 }
 
-void OnOscSendConfiguration(OSCMessage &msg)
+void OnOscPedalName(OSCMessage &msg)
 {
-  DPRINT("OSC message /send_configuration received from %s\n", oscControllerIP.toString().c_str());
-
-  AsyncUDP        udpOut;
-  AsyncUDPMessage udpMsg;
-
-  for (byte i = 0; i < PEDALS; i++) {
-    char address[8] = "pedal_1";
-    address[6] = 61 + i;
-    address[7] = 0;
-    OSCMessage  oscMsg(address);
-    oscMsg.add(banks[currentBank][i].pedalName).send(udpMsg).empty();
-    udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
-  }
-}
-
-void OnOscPedal1(OSCMessage &msg)
-{
-  if (msg.getString(0, banks[currentBank][0].pedalName, MAXPEDALNAME) > 0) {
-    DPRINT("OSC message /pedal_1 %s received from %s\n", banks[currentBank][0].pedalName, oscControllerIP.toString().c_str());
+  if (msg.getString(0, banks[currentBank][currentPedal].pedalName, MAXPEDALNAME) > 0) {
+    DPRINT("OSC message /pedal_name %s received from %s\n", banks[currentBank][currentPedal].pedalName, oscControllerIP.toString().c_str());
   } else {
     DPRINT("OSC error: %d\n", msg.getError());
   }
 }
 
-void OnOscPedal2(OSCMessage &msg)
-{
-  if (msg.getString(0, banks[currentBank][1].pedalName, MAXPEDALNAME) > 0) {
-    DPRINT("OSC message /pedal_2 %s received from %s\n", banks[currentBank][1].pedalName, oscControllerIP.toString().c_str());
-  } else {
-    DPRINT("OSC error: %d\n", msg.getError());
-  }
-}
 
-void OnOscPedal3(OSCMessage &msg)
-{
-  if (msg.getString(0, banks[currentBank][2].pedalName, MAXPEDALNAME) > 0) {
-    DPRINT("OSC message /pedal_3 %s received from %s\n", banks[currentBank][2].pedalName, oscControllerIP.toString().c_str());
-  } else {
-    DPRINT("OSC error: %d\n", msg.getError());
-  }
-}
-
-void OnOscPedal4(OSCMessage &msg)
-{
-  if (msg.getString(0, banks[currentBank][3].pedalName, MAXPEDALNAME) > 0) {
-    DPRINT("OSC message /pedal_4 %s received from %s\n", banks[currentBank][3].pedalName, oscControllerIP.toString().c_str());
-  } else {
-    DPRINT("OSC error: %d\n", msg.getError());
-  }
-}
-
-void OnOscPedal5(OSCMessage &msg)
-{
-  if (msg.getString(0, banks[currentBank][4].pedalName, MAXPEDALNAME) > 0) {
-    DPRINT("OSC message /pedal_5 %s received from %s\n", banks[currentBank][4].pedalName, oscControllerIP.toString().c_str());
-  } else {
-    DPRINT("OSC error: %d\n", msg.getError());
-  }
-}
-
-void OnOscPedal6(OSCMessage &msg)
-{
-  if (msg.getString(0, banks[currentBank][5].pedalName, MAXPEDALNAME) > 0) {
-    DPRINT("OSC message /pedal_6 %s received from %s\n", banks[currentBank][5].pedalName, oscControllerIP.toString().c_str());
-  } else {
-    DPRINT("OSC error: %d\n", msg.getError());
-  }
-}
 
 void OnOscLed1(OSCMessage &msg)
 {
@@ -723,6 +691,7 @@ void OnOscPedal(OSCMessage &msg)
 {
   DPRINT("OSC message /pedal %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
   currentPedal = constrain(msg.getInt(0), 0, PEDALS - 1);
+  OscSendBank();
   OscSendPedal();
 }
 
@@ -1041,21 +1010,15 @@ void oscOnPacket(AsyncUDPPacket packet) {
   //oscControllerIP = IPAddress(192,168,2,120);
 
   if (!oscMsg.hasError()) {
-    oscMsg.dispatch("/send_configuration",          OnOscSendConfiguration);
+    oscMsg.dispatch("/profile",                     OnOscProfile);
     oscMsg.dispatch("/save",                        OnOscSave);
-    oscMsg.dispatch("/pedal_1",                     OnOscPedal1);
-    oscMsg.dispatch("/pedal_2",                     OnOscPedal2);
-    oscMsg.dispatch("/pedal_3",                     OnOscPedal3);
-    oscMsg.dispatch("/pedal_4",                     OnOscPedal4);
-    oscMsg.dispatch("/pedal_5",                     OnOscPedal5);
-    oscMsg.dispatch("/pedal_6",                     OnOscPedal6);
     oscMsg.dispatch("/led_1",                       OnOscLed1);
     oscMsg.dispatch("/led_2",                       OnOscLed2);
     oscMsg.dispatch("/led_3",                       OnOscLed3);
-    oscMsg.dispatch("/profile",                     OnOscProfile);
     oscMsg.dispatch("/bank",                        OnOscBank);
     oscMsg.dispatch("/bank-1",                      OnOscBank_1);
     oscMsg.dispatch("/bank-2",                      OnOscBank_2);
+    oscMsg.dispatch("/pedal_name",                  OnOscPedalName);
 
     oscMsg.dispatch("/pedal",                       OnOscPedal);
     oscMsg.dispatch("/pedal_mode",                  OnOscPedalMode);
@@ -1078,6 +1041,7 @@ void oscOnPacket(AsyncUDPPacket packet) {
     oscMsg.dispatch("/midi_out",                    OnOscMidiOut);
     oscMsg.dispatch("/midi_thru",                   OnOscMidiThru);
     oscMsg.dispatch("/midi_clock",                  OnOscMidiClock);
+
     oscMsg.dispatch("/pedalino/midi/noteOn",        OnOscNoteOn);
     oscMsg.dispatch("/pedalino/midi/noteOff",       OnOscNoteOff);
     oscMsg.dispatch("/pedalino/midi/controlChange", OnOscControlChange);
