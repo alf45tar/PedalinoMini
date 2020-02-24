@@ -1237,7 +1237,9 @@ void controller_run(bool send = true)
     autosensing_setup();
     controller_setup();
     mtc_setup();
+#ifdef WIFI
     OscControllerUpdate();
+#endif
     reloadProfile = false;
     return;
   }
