@@ -767,10 +767,15 @@ void refresh_switch_12L_midi(byte i, bool send)
   if (pedals[i].mode     == PED_LATCH2) return;
   if (pedals[i].function != PED_MIDI)   return;
 
-  pedals[i].pedalValue[0] = digitalRead(PIN_D(i));
-  //pedals[i].lastUpdate[0] = millis();
-  pedals[i].pedalValue[1] = digitalRead(PIN_A(i));
-  //pedals[i].lastUpdate[1] = millis();
+  switch (pedals[i].mode) {
+    case PED_LADDER:
+      pedals[i].pedalValue[0] = 0;
+      pedals[i].pedalValue[1] = 0;
+      break;
+    default:
+      pedals[i].pedalValue[0] = digitalRead(PIN_D(i));
+      pedals[i].pedalValue[1] = digitalRead(PIN_A(i));
+  }
 
   k = 0;
   k1 = MD_UISwitch::KEY_NULL;
@@ -789,23 +794,24 @@ void refresh_switch_12L_midi(byte i, bool send)
   b = currentBank;
 
   if (pedals[i].mode == PED_LADDER) {
-    if (k1 == MD_UISwitch::KEY_PRESS)
+    if (k1 == MD_UISwitch::KEY_PRESS) {
       b = (b + pedals[i].footSwitch[0]->getKey()) % BANKS;
+    }
     else return;
   }
 
-    switch (k) {
-      case 0:
-        k3 = MD_UISwitch::KEY_NULL;
-        break;
-      case 1:
-        k3 = k1;
-        break;
-      case 2:
-      case 3:
-        k3 = k2;
-        break;
-    }
+  switch (k) {
+    case 0:
+      k3 = MD_UISwitch::KEY_NULL;
+      break;
+    case 1:
+      k3 = k1;
+      break;
+    case 2:
+    case 3:
+      k3 = k2;
+      break;
+   }
 
     switch (k3) {
 
@@ -1231,6 +1237,7 @@ void controller_run(bool send = true)
     autosensing_setup();
     controller_setup();
     mtc_setup();
+    OscControllerUpdate();
     reloadProfile = false;
     return;
   }
@@ -1519,6 +1526,7 @@ void controller_setup()
         pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt, LADDER_STEPS);
         pedals[i].footSwitch[0]->begin();
         footswitch_update(i, 0);
+        pedals[i].footSwitch[0]->read();
         DPRINT("   Pin A%d", PIN_A(i));
         break;
 
@@ -1531,6 +1539,8 @@ void controller_setup()
     }
    DPRINT("\n");
   }
-  for (byte i = 0; i < 100; i++)
+
+  for (int i = 0; i < 100; i++) {
     controller_run(false);            // to avoid spurious readings
+  }
 }
