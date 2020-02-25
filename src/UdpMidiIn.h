@@ -555,11 +555,13 @@ void OscSendLive()
   AsyncUDPMessage udpMsg2;
   AsyncUDPMessage udpMsg3;
   AsyncUDPMessage udpMsg4;
+  AsyncUDPMessage udpMsg5;
   OSCMessage      oscMsg("profile");
   OSCMessage      oscMsg1("clock");
   OSCMessage      oscMsg2("masterslave");
   OSCMessage      oscMsg3("bpm");
   OSCMessage      oscMsg4("play");
+  OSCMessage      oscMsg5("beats_per_minute");
 
   oscMsg.add(currentProfile).send(udpMsg).empty();
   udpOut.sendTo(udpMsg, oscControllerIP, OSC_CONTROLLER_PORT);
@@ -592,6 +594,10 @@ void OscSendLive()
   udpOut.sendTo(udpMsg3, oscControllerIP, OSC_CONTROLLER_PORT);
   oscMsg4.add(0).send(udpMsg4).empty();
   udpOut.sendTo(udpMsg4, oscControllerIP, OSC_CONTROLLER_PORT);
+  char beats_per_minute[4] = {0, 0, 0, 0};
+  sprintf(beats_per_minute, "%3d", bpm);
+  oscMsg5.add(bpm).send(udpMsg5).empty();
+  udpOut.sendTo(udpMsg5, oscControllerIP, OSC_CONTROLLER_PORT);
 }
 
 
@@ -935,6 +941,7 @@ void OnOscBPM(OSCMessage &msg)
   DPRINT("OSC message /bpm %f received from %s\n", msg.getFloat(0), oscControllerIP.toString().c_str());
   bpm = 40 + 260 * msg.getFloat(0);
   MTC.setBpm(bpm);
+  OscSendLive();
 }
 
 void OnOscPlay(OSCMessage &msg)
