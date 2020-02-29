@@ -1,10 +1,10 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
                                                                                    (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
@@ -116,7 +116,7 @@ void IRAM_ATTR onButtonCenter()
   unsigned long interrupt_time = millis();
   // If interrupts come faster than 500ms, assume it's a bounce and ignore
   if (interrupt_time - last_interrupt_time > 500) {
-    scrollingMode = !scrollingMode; 
+    scrollingMode = !scrollingMode;
   }
   last_interrupt_time = interrupt_time;
 }
@@ -147,7 +147,7 @@ void setup()
   DPRINT("ChipRevision %d, CPU Freq %d MHz, SDK Version %s\n",ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getSdkVersion());
   DPRINT("Flash Size %d, Flash Speed %d Hz\n",ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
-  DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram()); 
+  DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
 
   DPRINTLN("_________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___ ");
   DPRINTLN("\\______  \\ ____   __| _/____  |  | |__| ____   ____   /     \\ |__| ____ |__|   /  / \\__    ___/     \\   \\  \\ ");
@@ -199,7 +199,7 @@ void setup()
     banks[b] = (bank*)heap_caps_malloc(PEDALS*sizeof(bank), MALLOC_CAP_SPIRAM);
 
   pedals = (pedal*)heap_caps_malloc(PEDALS*sizeof(pedal), MALLOC_CAP_SPIRAM);
-  
+
   sequences = (sequence**)heap_caps_malloc(SEQUENCES*sizeof(sequence*), MALLOC_CAP_SPIRAM);
   for (byte s = 0; s < SEQUENCES; s++)
     sequences[s] = (sequence*)heap_caps_malloc(STEPS*sizeof(sequence), MALLOC_CAP_SPIRAM);
@@ -208,13 +208,13 @@ void setup()
 #endif
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
-  DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram()); 
+  DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
 
   eeprom_init_or_erase();
   eeprom_read_global();
 
   // Reset to factory default if BOOT key is pressed and hold for alt least 15 seconds at power on
-  
+
   pinMode(FACTORY_DEFAULT_PIN, INPUT_PULLUP);
   unsigned long milliStart = millis();
   unsigned long duration = 0;
@@ -277,7 +277,7 @@ void setup()
   //display_clear();
 
   DPRINT("\n");
-  switch ((newBootMode == PED_BOOT_UNKNOWN) ? bootMode : newBootMode) { 
+  switch ((newBootMode == PED_BOOT_UNKNOWN) ? bootMode : newBootMode) {
     case PED_BOOT_NORMAL:     DPRINT("Boot NORMAL\n");  break;
     case PED_BOOT_BLE:        DPRINT("Boot BLE\n");     break;
     case PED_BOOT_WIFI:       DPRINT("Boot WIFI\n");    break;
@@ -287,7 +287,7 @@ void setup()
 
   if (newBootMode != PED_BOOT_UNKNOWN && newBootMode != bootMode) {
     bootMode = newBootMode;
-    switch (bootMode) { 
+    switch (bootMode) {
       case PED_BOOT_NORMAL:
       case PED_BOOT_BLE:
       case PED_BOOT_WIFI:
@@ -299,7 +299,7 @@ void setup()
         break;
     }
   }
-  switch (bootMode) { 
+  switch (bootMode) {
     case PED_BOOT_NORMAL:
       break;
 
@@ -309,7 +309,7 @@ void setup()
 #else
       bleEnabled = false;
 #endif
-      wifiEnabled = false;    
+      wifiEnabled = false;
       break;
 
     case PED_BOOT_WIFI:
@@ -327,7 +327,7 @@ void setup()
 
     case PED_BOOT_RESET_WIFI:
       DPRINT("\nReset WiFi credentials\n");
-      eeprom_update_sta_wifi_credentials();
+      eeprom_update_sta_wifi_credentials("", "");
       eeprom_read_global();
       break;
 
@@ -345,9 +345,9 @@ void setup()
       else
         bootMode = PED_BOOT_NORMAL;
       break;
-      
+
   }
-  
+
   // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
   serial_midi_connect();              // On receiving MIDI data callbacks setup
   DPRINT("USB MIDI started\n");
@@ -373,7 +373,7 @@ void setup()
       DPRINT("Skipped connection to last AP and/or SmartConfig/WPS setup\n");
       ap_mode_start();
     }
-    else 
+    else
       wifi_connect();
 
     blynk_setup();
@@ -389,9 +389,9 @@ void setup()
   pinMode(LEFT_PIN, INPUT_PULLUP);
   pinMode(CENTER_PIN, INPUT_PULLUP);
   pinMode(RIGHT_PIN, INPUT_PULLUP);
-  
+
   attachInterrupt(LEFT_PIN,   onButtonLeft,   CHANGE);
-  
+
   //attachInterrupt(CENTER_PIN, onButtonCenter, CHANGE);
   bootButton.begin();
   bootButton.setPressTime(pressTime);
@@ -428,10 +428,10 @@ void loop()
       }
       break;
     case MD_UISwitch::KEY_LONGPRESS:
-      scrollingMode = !scrollingMode; 
+      scrollingMode = !scrollingMode;
       break;
   }
-  
+
 #ifdef WIFI
   if (!appleMidiConnected && !bleMidiConnected) WIFI_LED_OFF();
 #endif
@@ -451,7 +451,7 @@ void loop()
     }
   }
 #ifdef WIFI
-  else if (!bleMidiConnected) 
+  else if (!bleMidiConnected)
     // led always on if connected to an AP or one or more client connected the the internal AP
     switch (WiFi.getMode()) {
       case WIFI_STA:

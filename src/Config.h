@@ -273,7 +273,7 @@ void eeprom_update_boot_mode(byte mode = PED_BOOT_NORMAL)
   DPRINT("[NVS][Global][Boot Mode]: %d\n", mode);
 }
 
-void eeprom_update_sta_wifi_credentials(String ssid = "", String pass = "")
+void eeprom_update_sta_wifi_credentials(String ssid = wifiSSID, String pass = wifiPassword)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
