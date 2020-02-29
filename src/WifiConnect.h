@@ -352,8 +352,6 @@ void ap_mode_start()
     //dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     //dnsServer.start(53, "*", apIP);
     WiFi.softAPsetHostname(host.c_str());
-    //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
-    //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
     DPRINT("AP SSID     : %s\n", ssidSoftAP.c_str());
     DPRINT("AP PSK      : %s\n", passwordSoftAP.c_str());
     DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());

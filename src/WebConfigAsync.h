@@ -1418,8 +1418,102 @@ void get_options_page() {
   page += F("</div>");
   page += F("<div class='col-10'>");
   page += F("<div class='shadow p-3 bg-white rounded'>");
-  page += F("<p>Each device must have a different name. Enter the device name without .local. Web UI will be available at http://<i>device_name</i>.local</p>");
-  page += F("<p>Pedalino will be restarted if you change it.</p>");
+  page += F("<p>Each device must have a different name. Enter the device name without .local. Web UI will be available at http://<i>device_name</i>.local<br>");
+  page += F("Pedalino will be restarted if you change it.</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  page += F("<label for='bootMode' class='col-2 col-form-label'>Boot Mode</label>");
+
+  page += F("<div class='col-3'>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='bootModeWifi' name='bootmodewifi'");
+  if (bootMode == PED_BOOT_NORMAL ||
+      bootMode == PED_BOOT_WIFI   ||
+      bootMode == PED_BOOT_AP     ||
+      bootMode == PED_BOOT_AP_NO_BLE) page += F(" checked");
+  page += F(">");
+  page += F("<label class='custom-control-label' for='bootModeWifi'>WiFi</label>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='col-3'>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='bootModeAP' name='bootmodeap'");
+  if (bootMode == PED_BOOT_AP ||
+      bootMode == PED_BOOT_AP_NO_BLE) page += F(" checked");
+  page += F(">");
+  page += F("<label class='custom-control-label' for='bootModeAP'>Access Point</label>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='col-3'>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='bootModeBLE' name='bootmodeble'");
+  if (bootMode == PED_BOOT_NORMAL ||
+      bootMode == PED_BOOT_BLE    ||
+      bootMode == PED_BOOT_AP) page += F(" checked");
+  page += F(">");
+  page += F("<label class='custom-control-label' for='bootModeBLE'>BLE</label>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='w-100'></div>");
+  page += F("<div class='col-2'>");
+  page += F("</div>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
+  page += F("<p>Select the boot mode on next restart.</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  page += F("<label for='wifissid' class='col-2 col-form-label'>Wifi Network</label>");
+  page += F("<div class='col-5'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='wifissid' name='wifiSSID' placeholder='SSID' value='");
+  page += wifiSSID + F("'>");
+  page += F("</div>");
+  page += F("<div class='col-5'>");
+  page += F("<input class='form-control' type='password' maxlength='32' id='wifipassword' name='wifiPassword' placeholder='password' value='");
+  page += wifiPassword + F("'>");
+  page += F("</div>");
+  page += F("<div class='w-100'></div>");
+  page += F("<div class='col-2'>");
+  page += F("</div>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
+  page += F("<p>Connect to a wifi network using SSID and password.<br>");
+  page += F("Pedalino will be restarted if it is connected to a WiFi network and you change them.</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  page += F("<label for='ssidSoftAP' class='col-2 col-form-label'>AP Mode</label>");
+  page += F("<div class='col-5'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='ssidsoftap' name='ssidSoftAP' placeholder='SSID' value='");
+  page += ssidSoftAP + F("'>");
+  page += F("</div>");
+  page += F("<div class='col-5'>");
+  page += F("<input class='form-control' type='password' maxlength='32' id='passwordsoftap' name='passwordSoftAP' placeholder='password' value='");
+  page += passwordSoftAP + F("'>");
+  page += F("</div>");
+  page += F("<div class='w-100'></div>");
+  page += F("<div class='col-2'>");
+  page += F("</div>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='shadow p-3 bg-white rounded'>");
+  page += F("<p>Access Point SSID and password.<br>");
+  page += F("Pedalino will be restarted if it is in AP mode and you changed them.</p>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -1764,9 +1858,11 @@ void http_handle_globals(AsyncWebServerRequest *request) {
     mtc_setup();
   }
 
-  if (request->hasArg("theme")) {
-    theme = request->arg("theme");
-    eeprom_update_theme(theme);
+  if (request->hasArg("theme") ) {
+    if(request->arg("theme") != theme) {
+      theme = request->arg("theme");
+      eeprom_update_theme(theme);
+    }
   }
 }
 
@@ -2016,38 +2112,41 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   http_handle_globals(request);
 
-  tapDanceMode = (request->arg("tapdancemode") == checked);
-  eeprom_update_tap_dance(tapDanceMode);
-  tapDanceBank = true;
-
-  repeatOnBankSwitch = (request->arg("repeatonbankswitch") == checked);
-  eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
-
-  if (request->arg("blynkcloud") == checked) {
-    blynk_enable();
-    eeprom_update_blynk_cloud_enable(true);
-    //blynk_connect();
-    //blynk_refresh();
-  }
-  else {
-    blynk_disconnect();
-    blynk_disable();
-    eeprom_update_blynk_cloud_enable(false);
-  }
-
-  if (request->arg("blynkauthtoken")) {
-    blynk_disconnect();
-    eeprom_update_blynk_auth_token(request->arg("blynkauthtoken"));
-    blynk_set_token(request->arg("blynkauthtoken"));
-    //blynk_connect();
-    //blynk_refresh();
-  }
-
   if (request->arg("mdnsdevicename") != host) {
     host = request->arg("mdnsdevicename");
     eeprom_update_device_name(host);
     // Postpone the restart until after all changes are committed to EEPROM.
     restartRequired = true;
+  }
+
+  int newBootMode = bootMode;
+  if (request->arg("bootmodewifi") == checked)
+    if (request->arg("bootmodeap") == checked)
+      if (request->arg("bootmodeble") == checked)
+        newBootMode = PED_BOOT_AP;
+      else newBootMode = PED_BOOT_AP_NO_BLE;
+    else if (request->arg("bootmodeble") == checked)
+           newBootMode = PED_BOOT_NORMAL;
+         else newBootMode = PED_BOOT_WIFI;
+  else if (request->arg("bootmodeble") == checked) newBootMode = PED_BOOT_BLE;
+       else newBootMode = PED_BOOT_NORMAL;
+  if (newBootMode != bootMode) {
+    bootMode = newBootMode;
+    eeprom_update_boot_mode(bootMode);
+  }
+
+  if (request->arg("wifiSSID") != wifiSSID || request->arg("wifiPassword") != wifiPassword) {
+    wifiSSID      = request->arg("wifiSSID");
+    wifiPassword  = request->arg("wifiPassword");
+    eeprom_update_sta_wifi_credentials();
+    restartRequired = (bootMode == PED_BOOT_NORMAL || bootMode == PED_BOOT_WIFI);
+  }
+
+  if (request->arg("ssidSoftAP") != ssidSoftAP || request->arg("passwordSoftAP") != passwordSoftAP) {
+    ssidSoftAP      = request->arg("ssidSoftAP");
+    passwordSoftAP  = request->arg("passwordSoftAP");
+    eeprom_update_ap_wifi_credentials(ssidSoftAP, passwordSoftAP);
+    restartRequired = (bootMode == PED_BOOT_AP || bootMode == PED_BOOT_AP_NO_BLE);
   }
 
   bool pressTimeChanged = false;
@@ -2075,6 +2174,39 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   if (pressTimeChanged)
     eeprom_update_press_time(pressTime, doublePressTime,longPressTime, repeatPressTime);
+
+  bool newTapDanceMode = (request->arg("tapdancemode") == checked);
+  if (newTapDanceMode != tapDanceMode) {
+    tapDanceBank = newTapDanceMode;
+    eeprom_update_tap_dance(tapDanceMode);
+  }
+
+  bool newRepeatOnBankSwitch = (request->arg("repeatonbankswitch") == checked);
+  if (newRepeatOnBankSwitch != repeatOnBankSwitch) {
+    repeatOnBankSwitch = newRepeatOnBankSwitch;
+    eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
+  }
+
+  bool newBlynkCloud = (request->arg("blynkcloud") == checked);
+  if (newBlynkCloud & !blynk_enabled()) {
+    blynk_enable();
+    eeprom_update_blynk_cloud_enable(true);
+    //blynk_connect();
+    //blynk_refresh();
+  }
+  if (!newBlynkCloud & blynk_enabled()) {
+    blynk_disconnect();
+    blynk_disable();
+    eeprom_update_blynk_cloud_enable(false);
+  }
+
+  if (request->arg("blynkauthtoken") != String(blynkAuthToken)) {
+    blynk_disconnect();
+    eeprom_update_blynk_auth_token(request->arg("blynkauthtoken"));
+    blynk_set_token(request->arg("blynkauthtoken"));
+    //blynk_connect();
+    //blynk_refresh();
+  }
 
   eeprom_update_current_profile(currentProfile);
   alert = "Saved";

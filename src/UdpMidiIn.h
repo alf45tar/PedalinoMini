@@ -641,10 +641,12 @@ void OscSendInterface()
 
 void OscControllerUpdate()
 {
-  OscSendBank();
-  OscSendPedal();
-  OscSendInterface();
-  OscSendLive();
+  if (wifiEnabled) {
+    OscSendBank();
+    OscSendPedal();
+    OscSendInterface();
+    OscSendLive();
+  }
 }
 
 void OnOscPedalName(OSCMessage &msg)
