@@ -226,7 +226,7 @@ void setup()
     leds.setAllLow();
     leds.write();
   }
-  while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 15000)) {
+  while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 16000)) {
     if (duration > 1000 && duration < 3000 && newBootMode != PED_BOOT_BLE) {
       newBootMode = PED_BOOT_BLE;
       display_progress_bar_title2("Release button for", "Bluetooth Only");
@@ -257,16 +257,22 @@ void setup()
       leds.setHigh(4);
       leds.write();
     }
-    else if (duration > 11000 && duration < 15000 && newBootMode != PED_FACTORY_DEFAULT) {
+    else if (duration > 11000 && duration < 13000 && newBootMode != PED_BOOT_LADDER_CONFIG) {
+      newBootMode = PED_BOOT_LADDER_CONFIG;
+      display_progress_bar_title2("Release button for", "Ladder Config");
+      leds.setHigh(5);
+      leds.write();
+    }
+    else if (duration > 13000 && duration < 16000 && newBootMode != PED_FACTORY_DEFAULT) {
       newBootMode = PED_FACTORY_DEFAULT;
       display_progress_bar_title2("Hold button for", "Factory Default");
-      leds.setHigh(5);
+      leds.setAllLow();
       leds.write();
     }
     DPRINT("#");
     lcdSetCursor(duration / 500, 0);
     lcdPrint("#");
-    display_progress_bar_update(duration, 15000);
+    display_progress_bar_update(duration, 16000);
     WIFI_LED_ON();
     delay(50);
     WIFI_LED_OFF();
@@ -329,6 +335,12 @@ void setup()
       DPRINT("\nReset WiFi credentials\n");
       eeprom_update_sta_wifi_credentials("", "");
       eeprom_read_global();
+      break;
+
+    case PED_BOOT_LADDER_CONFIG:
+      DPRINT("\nLadder Config\n");
+      eeprom_read_profile();
+      ladder_config();
       break;
 
     case PED_FACTORY_DEFAULT:

@@ -241,15 +241,24 @@ void autosensing_setup()
       DPRINT("Pedal %2d   autosensing disabled", p + 1);
     }
     DPRINT("\n");
+  }
+}
 
-    if (pedals[p].mode == PED_LADDER && pedals[p].autoSensing) {
+void ladder_config()
+{
+  for (byte p = 0; p < PEDALS; p++) {
+    if (pedals[p].mode == PED_LADDER) {
       ResponsiveAnalogRead analog(PIN_A(p), true);
+
+      analogReadResolution(ADC_RESOLUTION_BITS);
+      analogSetAttenuation(ADC_11db);
       analog.setAnalogResolution(ADC_RESOLUTION);
       analog.enableEdgeSnap();
       pinMode(PIN_D(p), OUTPUT);
       digitalWrite(PIN_D(p), HIGH);
+
       for (byte i = 0; i < LADDER_STEPS; i++) {
-        display_progress_bar_title2("Pedal " + String(p+1) + " - Press and hold", "Switch " + String(i+1));
+        display_progress_bar_title2("Press and hold", "Switch " + String(i+1));
         for (byte j = 0; j < i; j++)
           display_progress_bar_2_label(j + 1, 128 * kt[j].adcThreshold / ADC_RESOLUTION);
         unsigned long start = millis();
@@ -279,12 +288,11 @@ void autosensing_setup()
         }
       }
       eeprom_update_ladder();
-      pedals[p].autoSensing = false;
       eeprom_update_profile();
+      break;
     }
   }
 }
-
 
 byte map_digital(byte p, byte value)
 {

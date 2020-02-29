@@ -87,7 +87,7 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 
 1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode)
 2. Run the following commands from View->Command Palette (Ctrl+Shift+P)
-    - Git: Clone  
+    - Git: Clone
     - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
     - PlaftormIO: Build
     - PlatformIO: Upload
@@ -162,7 +162,7 @@ void wifi_connect()
 
 ## Booting modes
 
-PedalinoMini™ has 7 booting modes:
+PedalinoMini™ has 8 booting modes:
 
 Mode|Name|Description
 ----|----|-----------
@@ -172,7 +172,8 @@ Mode|Name|Description
 4|Access Point with Bluetooth|PedalinoMini™ skip the WiFi procedure on boot and create a WiFi Access Point.<br>PedalinoMini™ will wait for BLE-MIDI connection.
 5|Access Point without Bluetooth|PedalinoMini™ skips the WiFi procedure on boot and create a WiFi Access Point.<br>BLE is disabled.
 6|Reset WiFi credentials|Forget the last connected access point.<br>On next boot PedalinoMini™ can be connected to a new AP.
-7|Reset to factory default|
+7|Ladder Config|Learn mode for your ladder pedal.<br>Select at least one Ladder pedal before to proceed with configuration.
+8|Reset to factory default|
 
 The last booting mode (1-5) is selected if you don't press any button on boot.
 

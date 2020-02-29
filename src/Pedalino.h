@@ -1,10 +1,10 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
                                                                                    (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define MODEL           "PedalinoMini™"      
+#define MODEL           "PedalinoMini™"
 #define INTERFACES        6
 #define PROFILES          3
 #define BANKS            10
@@ -27,7 +27,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 // https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 // GPIOs 34 to 39 are GPIs – input only pins.
-// These pins don’t have internal pull-ups or pull-down resistors. 
+// These pins don’t have internal pull-ups or pull-down resistors.
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
 
@@ -122,7 +122,8 @@ typedef uint8_t   byte;
 #define PED_BOOT_AP             4
 #define PED_BOOT_AP_NO_BLE      5
 #define PED_BOOT_RESET_WIFI     6
-#define PED_FACTORY_DEFAULT     7
+#define PED_BOOT_LADDER_CONFIG  7
+#define PED_FACTORY_DEFAULT     8
 
 #define PED_EMPTY               0
 #define PED_PROGRAM_CHANGE      1
@@ -203,7 +204,7 @@ typedef uint8_t   byte;
 #define PED_TIMESIGNATURE_12_8  6
 
 #define MIDI_RESOLUTION         128       // MIDI 7-bit CC resolution
-#define ADC_RESOLUTION         1024       
+#define ADC_RESOLUTION         1024
 #define ADC_RESOLUTION_BITS      10       // hardware 9 to 12-bit ADC converter resolution
                                           // software 1 to 16-bit resolution
 #define CALIBRATION_DURATION   8000       // milliseconds
@@ -334,7 +335,7 @@ message*    lastMIDIMessage;
 bank      banks[BANKS][PEDALS];                   // Banks Setup
 pedal     pedals[PEDALS];                         // Pedals Setup
 sequence  sequences[SEQUENCES][STEPS];            // Sequences Setup
-message   lastMIDIMessage[BANKS]; 
+message   lastMIDIMessage[BANKS];
 #endif
 
 interface interfaces[] = {
@@ -405,7 +406,7 @@ bool powersaver = false;
 #endif
 
 #ifdef PEDALINO_TELNET_DEBUG
-#include <RemoteDebug.h>          // Remote debug over telnet - not recommended for production, only for development    
+#include <RemoteDebug.h>          // Remote debug over telnet - not recommended for production, only for development
 RemoteDebug Debug;
 #define DPRINT(...)       rdebugI(__VA_ARGS__)
 #define DPRINTLN(...)     rdebugIln(__VA_ARGS__)
