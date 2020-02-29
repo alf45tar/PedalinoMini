@@ -1,17 +1,17 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
                                                                                    (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
 String theme = "bootstrap";
 
-#ifdef NOWIFI 
+#ifdef NOWIFI
 inline void http_run() {};
 #else
 
@@ -171,7 +171,7 @@ void get_footer_page() {
 void get_login_page() {
 
   get_top_page(-1);
-  
+
   page += F("<form class='form-signin'>");
   page += F("<div class='text-center mb-4'>");
   page += F("<img class='mb-4' src='/logo.png' alt='' width='64' height='64'>");
@@ -415,7 +415,7 @@ void get_live_page() {
   }
   page += F("</div>"
             "<p></p>"
-  
+
             "<div class='btn-group'>"
             "<button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
             "MIDI Clock</button>"
@@ -448,7 +448,7 @@ void get_live_page() {
             "</div>"
             "</div>"
             "<p></p>"
-  
+
             "<div>"
             "<h1 id='bpm'></h1> bpm"
             "<h1 id='timesignature'></h1>"
@@ -469,7 +469,7 @@ void get_live_page() {
             "var zoom = 1;"
             "var con;"
             "var source;"
-  
+
             "function webSocketConnect() {"
             "con = new WebSocket('ws://' + location.hostname + ':80/ws');"
             "con.binaryType = 'arraybuffer';"
@@ -583,7 +583,7 @@ void get_live_page() {
             "document.getElementById('zoom1').onclick = function() { resizeScreen(1); return false; };"
             "document.getElementById('zoom2').onclick = function() { resizeScreen(2); return false; };"
             "document.getElementById('zoom4').onclick = function() { resizeScreen(4); return false; };"
-  
+
             "document.getElementById('clock-master').onclick = function() {"
             "sendBinary('clock-master');"
             "return false; };"
@@ -596,7 +596,7 @@ void get_live_page() {
             "document.getElementById('mtc-slave').onclick = function() {"
             "sendBinary('mtc-slave');"
             "return false; };"
-  
+
             "document.getElementById('4_4').onclick = function() {"
             "sendBinary('4/4');"
             "return false; };"
@@ -618,7 +618,7 @@ void get_live_page() {
             "document.getElementById('12_8').onclick = function() {"
             "sendBinary('12/8');"
             "return false; };"
-  
+
             "document.getElementById('start').onclick = function() {"
             "sendBinary('start');"
             "return false; };"
@@ -999,7 +999,7 @@ void get_pedals_page() {
     page += String(i) + F("' name='doublepress") + String(i) + F("'");
     if (pedals[i-1].pressMode == PED_PRESS_2   ||
         pedals[i-1].pressMode == PED_PRESS_1_2 ||
-        pedals[i-1].pressMode == PED_PRESS_2_L || 
+        pedals[i-1].pressMode == PED_PRESS_2_L ||
         pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
     page += F(">");
     page += F("<label class='custom-control-label' for='doubleCheck");
@@ -1047,7 +1047,7 @@ void get_pedals_page() {
     page += F("<option value='");
     page += String(PED_ANTILOG) + F("'");
     if (pedals[i-1].mapFunction == PED_ANTILOG) page += F(" selected");
-    page += F(">Antilog</option>");  
+    page += F(">Antilog</option>");
     page += F("</select>");
     page += F("</div>");
 
@@ -1211,7 +1211,7 @@ void get_interfaces_page() {
 void get_sequences_page() {
 
   const byte s = constrain(uisequence.toInt(), 0, SEQUENCES);
-  
+
   get_top_page(5);
 
   page += F("<div class='btn-group'>");
@@ -1222,7 +1222,7 @@ void get_sequences_page() {
     page += String(i) + F("'>") + String(i) + F("</button></form>");
   }
   page += F("</div>");
-  
+
   page += F("<p></p>");
 
   page += F("<form method='post'>");
@@ -1333,7 +1333,7 @@ void get_sequences_page() {
     }
     page += F("</select>");
     page += F("</div>");
-    
+
     page += F("<div class='col-2'>");
     page += F("<input type='number' class='form-control form-control-sm' name='code");
     page += String(i);
@@ -1402,7 +1402,7 @@ void get_options_page() {
                                  "superhero",
                                  "united",
                                  "yeti"};
-  
+
   get_top_page(6);
 
   page += F("<form method='post'>");
@@ -1696,7 +1696,7 @@ size_t get_interfaces_page_chunked(uint8_t *buffer, size_t maxLen, size_t index)
     rebuild = false;
   }
   page.getBytes(buffer, maxLen, index);
-  buffer[maxLen-1] = 0; // CWE-126  
+  buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
   rebuild = (byteWritten == 0);
   if (rebuild) page = "";
@@ -1744,8 +1744,8 @@ void http_handle_login(AsyncWebServerRequest *request) {
 
 void http_handle_post_login(AsyncWebServerRequest *request) {
   if (request->hasArg("username")) {
-    if (request->arg("username") == String("admin")) 
-      if (request->hasArg("password")) 
+    if (request->arg("username") == String("admin"))
+      if (request->hasArg("password"))
         if (request->arg("password") == host)
           request->redirect("/");
   }
@@ -1754,7 +1754,7 @@ void http_handle_post_login(AsyncWebServerRequest *request) {
 }
 
 void http_handle_globals(AsyncWebServerRequest *request) {
-  
+
   if (request->hasArg("profile")) {
     uiprofile = request->arg("profile");
     currentProfile = constrain(uiprofile.toInt() - 1, 0, PROFILES - 1);
@@ -1767,7 +1767,7 @@ void http_handle_globals(AsyncWebServerRequest *request) {
   if (request->hasArg("theme")) {
     theme = request->arg("theme");
     eeprom_update_theme(theme);
-  }  
+  }
 }
 
 void http_handle_root(AsyncWebServerRequest *request) {
@@ -1823,9 +1823,9 @@ void http_handle_options(AsyncWebServerRequest *request) {
 }
 
 void http_handle_post_live(AsyncWebServerRequest *request) {
-  
+
   String a;
-  
+
   a = request->arg("profile");
   currentProfile = a.toInt();
 
@@ -1839,10 +1839,10 @@ void http_handle_post_live(AsyncWebServerRequest *request) {
 
 
 void http_handle_post_banks(AsyncWebServerRequest *request) {
-  
+
   String     a;
   const byte b = constrain(uibank.toInt() - 1, 0, BANKS);
-  
+
   for (unsigned int i = 0; i < PEDALS; i++) {
     a = request->arg(String("name") + String(i+1));
     strncpy(banks[b][i].pedalName, a.c_str(), MAXPEDALNAME+1);
@@ -1853,13 +1853,13 @@ void http_handle_post_banks(AsyncWebServerRequest *request) {
 
     a = request->arg(String("channel") + String(i+1));
     banks[b][i].midiChannel = a.toInt();
-    
+
     a = request->arg(String("code") + String(i+1));
     banks[b][i].midiCode = a.toInt();
 
     a = request->arg(String("value1") + String(i+1));
     banks[b][i].midiValue1 = a.toInt();
-    
+
     a = request->arg(String("value2") + String(i+1));
     banks[b][i].midiValue2 = a.toInt();
 
@@ -1877,10 +1877,10 @@ void http_handle_post_banks(AsyncWebServerRequest *request) {
 }
 
 void http_handle_post_pedals(AsyncWebServerRequest *request) {
-  
+
   String       a;
   const String checked("on");
-  
+
   //httpServer.sendHeader("Connection", "close");
   for (unsigned int i = 0; i < PEDALS; i++) {
     a = request->arg(String("autosensing") + String(i+1));
@@ -1945,7 +1945,7 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
 }
 
 void http_handle_post_interfaces(AsyncWebServerRequest *request) {
-  
+
   String       a;
   const String checked("on");
 
@@ -1976,23 +1976,23 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
 }
 
 void http_handle_post_sequences(AsyncWebServerRequest *request) {
-  
+
   String     a;
   const byte s = constrain(uisequence.toInt() - 1, 0, SEQUENCES);
-  
+
   for (unsigned int i = 0; i < STEPS; i++) {
     a = request->arg(String("channel") + String(i+1));
     sequences[s][i].midiChannel = a.toInt();
 
     a = request->arg(String("message") + String(i+1));
     sequences[s][i].midiMessage = a.toInt();
-  
+
     a = request->arg(String("code") + String(i+1));
     sequences[s][i].midiCode = a.toInt();
 
     a = request->arg(String("value1") + String(i+1));
     sequences[s][i].midiValue1 = a.toInt();
-    
+
     a = request->arg(String("value2") + String(i+1));
     sequences[s][i].midiValue2 = a.toInt();
 
@@ -2013,13 +2013,13 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   const String checked("on");
   bool  restartRequired = false;
-  
+
   http_handle_globals(request);
 
   tapDanceMode = (request->arg("tapdancemode") == checked);
   eeprom_update_tap_dance(tapDanceMode);
   tapDanceBank = true;
-  
+
   repeatOnBankSwitch = (request->arg("repeatonbankswitch") == checked);
   eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
 
@@ -2130,7 +2130,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
           //memcpy(buffer->get(), display.buffer, 128*64);
           //if (connected && buffer) {client->binary(buffer); delete buffer; buffer = NULL;}
           //client->binary(display.buffer, 128*64);
-        }   
+        }
         else if (strcmp((const char *)data, "start") == 0)
           mtc_start();
         else if (strcmp((const char *)data, "stop") == 0)
@@ -2318,14 +2318,14 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
       ESP.restart();
     }
   }
-    
+
   if (!Update.hasError()) {
     if (Update.write(data, len) == len) {
       if (Update.size()) {
         DPRINT("Progress: %5.1f%%\n", 100.0 * Update.progress() / Update.size());
         display_progress_bar_update(Update.progress(), Update.size());
       }
-    }  
+    }
     else {
       StreamString str;
       Update.printError(str);
@@ -2430,7 +2430,7 @@ inline void http_run() {
     webSocket.binaryAll(display.buffer, 128*64);
     webSocket.cleanupClients();
 #endif
-    
+
 /*
     if (!buffer) {
       buffer = webSocket.makeBuffer(128*64);

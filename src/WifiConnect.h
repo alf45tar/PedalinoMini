@@ -1,10 +1,10 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
                                                                                    (c) 2018-2019 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
@@ -345,7 +345,7 @@ void ap_mode_start()
                       // and before setting up the softAP
 
   WiFi.mode(WIFI_AP);
-  
+
   if (WiFi.softAP(ssidSoftAP.c_str(), passwordSoftAP.c_str())) {
     DPRINT("AP %s started with password %s\n", ssidSoftAP.c_str(), passwordSoftAP.c_str());
     // Setup the DNS server redirecting all the domains to the apIP
@@ -361,7 +361,7 @@ void ap_mode_start()
     DPRINT("Channel     : %d\n", WiFi.channel());
     DPRINT("Connect to %s wireless network with password %s\n", ssidSoftAP.c_str(), passwordSoftAP.c_str());
     start_services();
-  }  
+  }
   else
     DPRINT("AP mode failed\n");
 }
@@ -369,7 +369,7 @@ void ap_mode_start()
 void ap_mode_stop()
 {
   WIFI_LED_OFF();
-  
+
   stop_services();
 
   if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA) {
@@ -409,7 +409,7 @@ bool smart_config()
     leds.write();
   }
   display_progress_bar_update(1, 1);
-  
+
   if (WiFi.smartConfigDone()) {
     // Wait for WiFi to connect to AP
     while (WiFi.status() != WL_CONNECTED) {
@@ -454,10 +454,10 @@ bool wps_config()
   strcpy(WPS.factory_info.model_number, "ESP32");
   strcpy(WPS.factory_info.model_name,   "Pedalino(TM)");
   strcpy(WPS.factory_info.device_name,  "PedalinoMini");
-  
+
   ESP_ERROR_CHECK(esp_wifi_wps_enable(&WPS));
   ESP_ERROR_CHECK(esp_wifi_wps_start(0));
-  
+
   DPRINT("WPS started\n");
   display_progress_bar_title("Press WPS button on AP");
   leds.setAllLow();
@@ -494,7 +494,7 @@ bool wps_config()
       DPRINT("Password    : %s\n", WiFi.psk().c_str());
 
       eeprom_update_sta_wifi_credentials(WiFi.SSID(), WiFi.psk());
-    }  
+    }
   }
   else {
     DPRINT("WPS timeout\n");
