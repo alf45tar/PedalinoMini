@@ -213,7 +213,7 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       //IPAddress apIP(192, 168, 1, 1);
       //IPAddress netMsk(255, 255, 255, 0);
       //WiFi.softAPConfig(apIP, apIP, netMsk);
-      //WiFi.softAPsetHostname(host.c_str());
+      WiFi.softAPsetHostname((host + String(".local")).c_str());
       //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
       //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
       //DPRINT("AP SSID     : %s\n", ssidSoftAP.c_str());
@@ -351,7 +351,9 @@ void ap_mode_start()
     // Setup the DNS server redirecting all the domains to the apIP
     //dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     //dnsServer.start(53, "*", apIP);
-    WiFi.softAPsetHostname(host.c_str());
+    //if (!WiFi.softAPsetHostname(host.c_str())) {
+    //  DPRINT("WiFi.softAPsetHostname(%s) failed\n", host.c_str());
+    //}
     DPRINT("AP SSID     : %s\n", ssidSoftAP.c_str());
     DPRINT("AP PSK      : %s\n", passwordSoftAP.c_str());
     DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
