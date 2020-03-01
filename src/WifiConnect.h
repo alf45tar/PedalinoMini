@@ -561,11 +561,15 @@ void wifi_connect()
   if (auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
     return;
 
+#ifndef NOSMARTCONFIG
   if (!WiFi.isConnected())
     smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+#endif
 
+#ifndef NOWPS
   if (!WiFi.isConnected())
     wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
+#endif
 
   if (!WiFi.isConnected())
     ap_mode_start();          // switch to AP mode until next reboot
