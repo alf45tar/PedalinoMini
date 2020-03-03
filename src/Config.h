@@ -246,11 +246,25 @@ void load_factory_default()
     }
   }
 
-  for (byte i = 0; i < LADDER_STEPS; i++) {
-    kt[i].value = i;
-    kt[i].adcThreshold = (i + 1) * 1024 / (LADDER_STEPS + 2);
-    kt[i].adcTolerance = (1024 / LADDER_STEPS + 2) / 2;
-  }
+  // TC-Helicon Switch 6
+  kt[0].value = 0;
+  kt[0].adcThreshold = 497;
+  kt[0].adcTolerance = 82;
+  kt[1].value = 1;
+  kt[1].adcThreshold = 660;
+  kt[1].adcTolerance = 47;
+  kt[2].value = 2;
+  kt[2].adcThreshold = 752;
+  kt[2].adcTolerance = 33;
+  kt[3].value = 3;
+  kt[3].adcThreshold = 816;
+  kt[3].adcTolerance = 31;
+  kt[4].value = 4;
+  kt[4].adcThreshold = 876;
+  kt[4].adcTolerance = 31;
+  kt[5].value = 5;
+  kt[5].adcThreshold = 945;
+  kt[5].adcTolerance = 35;
 }
 
 void eeprom_update_device_name(String name = getChipId())

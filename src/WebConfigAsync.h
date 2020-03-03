@@ -104,7 +104,7 @@ void get_top_page(int p = 0) {
   page += F("</li>");
   page += F("</ul>");
   }
-  if (p != 6)
+  if (p != 0 && p != 6)
   {
     page += F("<form class='form-inline my-2 my-lg-0'>");
     page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
@@ -356,10 +356,12 @@ void get_root_page() {
   page += F("<dt>DNS 2</dt><dd>");
   page += WiFi.dnsIP(1).toString();
   page += F("</dd>");
+#ifdef BLINK
   page += F("<dt>Blynk Cloud</dt><dd>");
   if (blynk_cloud_connected()) page += String("Online");
   else page += String("Offline");
   page += F("</dd>");
+#endif
   page += F("<dt>MIDI Network</dt><dd>");
   if (appleMidiConnected) page += String("Connected");
   else page += String("Disconnected");
@@ -1431,7 +1433,7 @@ void get_options_page() {
   page += F(">");
   page += F("<label class='custom-control-label' for='bootModeWifi'>WiFi</label>");
   page += F("<small id='bootModeWifiHelpBlock' class='form-text text-muted'>");
-  page += F("RTP-MINI, ipMIDI, OSC and web UI require WiFi.");
+  page += F("RTP-MIDI, ipMIDI, OSC and web UI require WiFi.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
@@ -1593,6 +1595,43 @@ void get_options_page() {
   page += F("Set the repeat time in milliseconds after which a continuous press and hold is treated as a stream of repeated presses, measured from when the first press is detected. Default value is 500.");
   page += F("</small>");
   page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("Ladder Network Configuration");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-1 text-center'>");
+  page += F("<span class='badge badge-primary'>#</span>");
+  page += F("</div>");
+  page += F("<div class='col-6'>");
+  page += F("<span class='badge badge-primary'>Threshold</span>");
+  page += F("</div>");
+  page += F("<div class='col-5'>");
+  page += F("<span class='badge badge-primary'>Tolerance</span>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<p></p>");
+  for (byte i = 1; i <= LADDER_STEPS; i++) {
+    page += F("<div class='form-row'>");
+    page += F("<div class='col-1 mb-3 text-center'>");
+    page += String(i);
+    page += F("</div>");
+    page += F("<div class='col-6'>");
+    page += F("<input class='form-control form-control-sm' type='number' id='threshold");
+    page += String(i) + F("' name='threshold");
+    page += String(i) + F("' min='0' max='");
+    page += String(ADC_RESOLUTION-1) + F("' value='");
+    page += String(kt[i-1].adcThreshold) + F("'>");
+    page += F("</div>");
+    page += F("<div class='col-5'>");
+    page += F("<input class='form-control form-control-sm' type='number' id='tolerance");
+    page += String(i) + F("' name='tolerance");
+    page += String(i) + F("' min='0' max='");
+    page += String(ADC_RESOLUTION-1) + F("' value='");
+    page += String(kt[i-1].adcTolerance) + F("'>");
+    page += F("</div>");
+    page += F("</div>");
+  }
 
   page += F("<p></p>");
 
@@ -2110,6 +2149,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
   }
 
+#ifdef BLINK
   bool newBlynkCloud = (request->arg("blynkcloud") == checked);
   if (newBlynkCloud & !blynk_enabled()) {
     blynk_enable();
@@ -2130,6 +2170,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     //blynk_connect();
     //blynk_refresh();
   }
+#endif
 
   eeprom_update_current_profile(currentProfile);
   alert = "Saved";
