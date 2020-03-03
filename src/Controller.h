@@ -267,8 +267,10 @@ void ladder_config()
           analog.update();
           if (analog.hasChanged()) display_progress_bar_2_update(analog.getValue(), ADC_RESOLUTION);
         }
-        kt[i].adcThreshold = analog.getValue();
-        kt[i].value = i;
+        if (analog.getValue() != ADC_RESOLUTION-1) {
+          kt[i].adcThreshold = analog.getValue();
+          kt[i].value = i;
+        }
       }
       display_progress_bar_2_label(LADDER_STEPS, 128 * kt[LADDER_STEPS-1].adcThreshold / ADC_RESOLUTION);
       delay(1000);
@@ -276,14 +278,14 @@ void ladder_config()
       for (byte i = 0; i < LADDER_STEPS; i++) {
         switch (i) {
           case 0:
-            kt[0].adcTolerance = abs((kt[1].adcThreshold - kt[0].adcThreshold) / 2 - 1);
+            kt[0].adcTolerance = constrain(abs((kt[1].adcThreshold - kt[0].adcThreshold) / 2 - 1), 0 , 255);
             break;
           case LADDER_STEPS - 1:
-            kt[i].adcTolerance = abs((kt[i].adcThreshold - kt[i-1].adcThreshold) / 2 - 1);
+            kt[i].adcTolerance = constrain(abs((kt[i].adcThreshold - kt[i-1].adcThreshold) / 2 - 1), 0, 255);
             break;
           default:
-            kt[i].adcTolerance = min(abs((kt[i].adcThreshold   - kt[i-1].adcThreshold) / 2 - 1),
-                                     abs((kt[i+1].adcThreshold - kt[i].adcThreshold) / 2 - 1));
+            kt[i].adcTolerance = constrain(min(abs((kt[i].adcThreshold   - kt[i-1].adcThreshold) / 2 - 1),
+                                               abs((kt[i+1].adcThreshold - kt[i].adcThreshold) / 2 - 1)), 0, 255);
             break;
         }
       }

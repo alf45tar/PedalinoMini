@@ -72,7 +72,7 @@ void get_top_page(int p = 0) {
 
   page += F("<nav class='navbar navbar-expand-md navbar-light bg-light'>");
   page += F("<a class='navbar-brand' href='/'>");
-  page += F("<img src='/logo.png' width='30' height='30' class='d-inline-block align-top' alt=''>Pedalino&trade;</a>");
+  page += F("<img src='/logo.png' width='30' height='30' class='d-inline-block align-top' alt=''></a>");
   page += F("<button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarNavDropdown' aria-controls='navbarNavDropdown' aria-expanded='false' aria-label='Toggle navigation'>");
   page += F("<span class='navbar-toggler-icon'></span>");
   page += F("</button>");
@@ -1467,7 +1467,7 @@ void get_options_page() {
 
   page += F("<p></p>");
 
-  page += F("<label>Wifi Network</label>");
+  page += F("<label>WiFi Network</label>");
   page += F("<div class='form-row'>");
   page += F("<div class='form-group col-6'>");
   page += F("<label for='wifissid'>SSID</label>");
@@ -1605,9 +1605,15 @@ void get_options_page() {
   page += F("</div>");
   page += F("<div class='col-6'>");
   page += F("<span class='badge badge-primary'>Threshold</span>");
+  page += F("<small class='form-text text-muted'>");
+  page += F("Average analog value for the key.");
+  page += F("</small>");
   page += F("</div>");
   page += F("<div class='col-5'>");
   page += F("<span class='badge badge-primary'>Tolerance</span>");
+  page += F("<small class='form-text text-muted'>");
+  page += F("Tolerance range +/- around average analog value.");
+  page += F("</small>");
   page += F("</div>");
   page += F("</div>");
   page += F("<p></p>");
@@ -1626,8 +1632,7 @@ void get_options_page() {
     page += F("<div class='col-5'>");
     page += F("<input class='form-control form-control-sm' type='number' id='tolerance");
     page += String(i) + F("' name='tolerance");
-    page += String(i) + F("' min='0' max='");
-    page += String(ADC_RESOLUTION-1) + F("' value='");
+    page += String(i) + F("' min='0' max='255' value='");
     page += String(kt[i-1].adcTolerance) + F("'>");
     page += F("</div>");
     page += F("</div>");
@@ -2148,6 +2153,18 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     repeatOnBankSwitch = newRepeatOnBankSwitch;
     eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
   }
+
+  bool newLadder = false;
+  for (byte i = 0; i < LADDER_STEPS; i++) {
+    String a = request->arg(String("threshold") + String(i+1));
+    newLadder = newLadder || kt[i].adcThreshold != a.toInt();
+    kt[i].adcThreshold = a.toInt();
+
+    a = request->arg(String("tolerance") + String(i+1));
+    newLadder = newLadder || kt[i].adcTolerance != a.toInt();
+    kt[i].adcTolerance = a.toInt();
+  }
+  if (newLadder) eeprom_update_ladder();
 
 #ifdef BLINK
   bool newBlynkCloud = (request->arg("blynkcloud") == checked);
