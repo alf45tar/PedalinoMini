@@ -2204,9 +2204,6 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 }
 
 #ifdef WEBSOCKET
-
-AsyncWebSocketClient *wsClient;
-
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
 
   //static bool connected = false;
