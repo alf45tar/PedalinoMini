@@ -83,6 +83,9 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define BLE_LED         LED_BUILTIN  // onboard LED, used as status indicator
 #endif
 
+#define xstr(s) str(s)  // stringize the result of expansion of a macro argument
+#define str(s) #s
+
 
 void IRAM_ATTR onButtonLeft()
 {
@@ -148,6 +151,7 @@ void setup()
   DPRINT("Flash Size %d, Flash Speed %d Hz\n",ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
+  DPRINT("PlatformIO Built Environment: %s\n", xstr(PLATFORMIO_ENV));
 
   DPRINTLN("_________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___ ");
   DPRINTLN("\\______  \\ ____   __| _/____  |  | |__| ____   ____   /     \\ |__| ____ |__|   /  / \\__    ___/     \\   \\  \\ ");

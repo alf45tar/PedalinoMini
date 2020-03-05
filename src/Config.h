@@ -20,9 +20,11 @@ Preferences preferences;
 void load_factory_default()
 {
   host               = getChipId();
-#ifdef BOARD_HAS_PSRAM
   bootMode           = PED_BOOT_NORMAL;
-#else
+#ifdef BLE
+  bootMode           = PED_BOOT_BLE;
+#endif
+#ifdef WIFI
   bootMode           = PED_BOOT_WIFI;
 #endif
   wifiSSID           = "";
@@ -277,7 +279,7 @@ void eeprom_update_device_name(String name = getChipId())
   DPRINT("[NVS][Global][Device Name]: %s\n", name.c_str());
 }
 
-void eeprom_update_boot_mode(byte mode = PED_BOOT_NORMAL)
+void eeprom_update_boot_mode(byte mode = bootMode)
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
@@ -555,11 +557,7 @@ void eeprom_initialize()
   preferences.end();
   load_factory_default();
   eeprom_update_device_name();
-#ifdef BOARD_HAS_PSRAM
-  eeprom_update_boot_mode(PED_BOOT_NORMAL);
-#else
-  eeprom_update_boot_mode(PED_BOOT_WIFI);
-#endif
+  eeprom_update_boot_mode();
   eeprom_update_sta_wifi_credentials();
   eeprom_update_ap_wifi_credentials();
   eeprom_update_theme();

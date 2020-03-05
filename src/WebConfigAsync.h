@@ -32,6 +32,7 @@ AsyncWebServer          httpServer(80);
 AsyncWebSocket               webSocket("/ws");
 AsyncEventSource             events("/events");    // EventSource is single direction, text-only protocol.
 AsyncWebSocketMessageBuffer *buffer = NULL;
+AsyncWebSocketClient        *wsClient = NULL;
 #endif
 
 String page       = "";
@@ -557,7 +558,7 @@ void get_live_page() {
 
             "document.getElementById('showremotedisplay').onclick = function() {"
             "$('#remotedisplay').toast('show');"
-            "setInterval(requestRemoteDisplay, 100);"
+            "setInterval(requestRemoteDisplay, 1000);"
             "return false; };"
 
             "function requestRemoteDisplay() {sendBinary('.');}"
@@ -1421,7 +1422,7 @@ void get_options_page() {
 
   page += F("<p></p>");
 
-  page += F("<label>Boot Mode on next reboot</label>");
+  page += F("<label>Boot Mode</label>");
 
   page += F("<div class='form-row'>");
   page += F("<div class='custom-control custom-switch'>");
@@ -2203,6 +2204,9 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 }
 
 #ifdef WEBSOCKET
+
+AsyncWebSocketClient *wsClient;
+
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
 
   //static bool connected = false;
@@ -2214,10 +2218,12 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
     //client->ping();
     //client->keepAlivePeriod(1);
     //connected = true;
+    wsClient = client;
   } else if(type == WS_EVT_DISCONNECT){
     //client disconnected
     DPRINT("ws[%s][%u] disconnect\n", server->url(), client->id());
     //connected = false;
+    wsClient = NULL;
   } else if(type == WS_EVT_ERROR){
     //error was received from the other end
     DPRINT("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
@@ -2234,10 +2240,12 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         data[len] = 0;
         DPRINT("%s\n", (char*)data);
       } else {
-        for(size_t i=0; i < info->len; i++){
+        for (size_t i = 0; i < info->len; i++) {
           DPRINT("%02x ", data[i]);
         }
-        DPRINT("\n");
+        data[info->len-1] = 0;
+        DPRINT(" %s\n", (char*)data);
+        //DPRINT("%d\n", ESP.getFreeHeap());
         if (strcmp((const char *)data, ".") == 0) {
           //AsyncWebSocketMessageBuffer *buffer = webSocket.makeBuffer(128*64);
           //memcpy(buffer->get(), display.buffer, 128*64);
@@ -2408,7 +2416,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
     blynk_disconnect();
 #ifdef WEBSOCKET
     webSocket.enable(false);
-    webSocket.textAll("Web Update Started");
+    //webSocket.textAll("Web Update Started");
     webSocket.closeAll();
 #endif
 
@@ -2540,7 +2548,10 @@ inline void http_run() {
     interruptCounter2 = 0;
 
 #ifdef WEBSOCKET
-    webSocket.binaryAll(display.buffer, 128*64);
+    //webSocket.binaryAll(display.buffer, 128*64);
+    if (wsClient) wsClient->binary(display.buffer, 128*64);
+     // Limits the number of clients by closing the oldest client
+     // when the maximum number of clients has been exceeded
     webSocket.cleanupClients();
 #endif
 
