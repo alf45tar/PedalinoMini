@@ -35,18 +35,18 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define PIN_A(x)          pinA[x]
 
 #ifdef TTGO_T_EIGHT
-#define FACTORY_DEFAULT_PIN   GPIO_NUM_38  // Right 37   Center 38   Left 39
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
 #define RIGHT_PIN             GPIO_NUM_37
 #define CENTER_PIN            GPIO_NUM_38
-#define LEFT_PIN              GPIO_NUM_39  // Shared with A2
-#define SERIAL_DATA_PIN       GPIO_NUM_2   // DS
-#define CLOCK_PIN             GPIO_NUM_2   // SH_CP
-#define LATCH_PIN             GPIO_NUM_2   // ST_CP
-#define USB_MIDI_IN_PIN       GPIO_NUM_18  // Used by SD
-#define USB_MIDI_OUT_PIN      GPIO_NUM_19  // Used by SD
+#define LEFT_PIN              GPIO_NUM_39   // Shared with A2
+#define SERIAL_DATA_PIN       GPIO_NUM_2    // DS
+#define CLOCK_PIN             GPIO_NUM_2    // SH_CP
+#define LATCH_PIN             GPIO_NUM_2    // ST_CP
+#define USB_MIDI_IN_PIN       GPIO_NUM_18   // Used by SD
+#define USB_MIDI_OUT_PIN      GPIO_NUM_19   // Used by SD
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
-#define BATTERY_PIN           GPIO_NUM_15
+#define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #else
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
 #define RIGHT_PIN             GPIO_NUM_23
@@ -59,7 +59,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define USB_MIDI_OUT_PIN      GPIO_NUM_19
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
-#define BATTERY_PIN           GPIO_NUM_23
+#define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #endif
 
 #include "ShiftOut.h"
@@ -420,6 +420,9 @@ RemoteDebug Debug;
 #define DPRINTLN(...)
 #define DPRINTMIDI(...)
 #endif
+
+#define xstr(s) sstr(s)  // stringize the result of expansion of a macro argument
+#define sstr(s) #s
 
 String getChipId() {
   char chipId[9];

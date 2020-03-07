@@ -1,10 +1,10 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
                                                                                    (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
@@ -40,6 +40,7 @@ const unsigned int      oscLocalPort  = 8000;    // local port to listen for OSC
 #endif  // WIFI
 
 bool                    appleMidiConnected = false;
+String                  appleMidiSessionName;
 unsigned long           wifiLastOn         = 0;
 
 #ifdef NOWIFI
@@ -399,7 +400,7 @@ void OSCSendNoteOn(byte note, byte velocity, byte channel)
 void OSCSendNoteOff(byte note, byte velocity, byte channel)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
-  
+
   AsyncUDPMessage udpMsg;
   String msg = "/pedalino/midi/note/";
   msg += note;
@@ -441,7 +442,7 @@ void OSCSendProgramChange(byte number, byte channel)
   msg += number;
   OSCMessage oscMsg(msg.c_str());
   oscMsg.add((int32_t)channel).send(udpMsg).empty();
-  oscUDPout.send(udpMsg);  
+  oscUDPout.send(udpMsg);
 }
 
 void OSCSendAfterTouch(byte pressure, byte channel)

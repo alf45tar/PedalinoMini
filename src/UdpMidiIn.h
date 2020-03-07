@@ -167,12 +167,14 @@ void printMIDI (const char *interface, const midi::MidiType type, const midi::Ch
 void OnAppleMidiConnected(uint32_t ssrc, char* name)
 {
   appleMidiConnected  = true;
+  appleMidiSessionName = String(name);
   DPRINTLN("AppleMIDI Connected Session ID: %u Name: %s", ssrc, name);
 }
 
 void OnAppleMidiDisconnected(uint32_t ssrc)
 {
   appleMidiConnected  = false;
+  appleMidiSessionName = "";
   DPRINTLN("AppleMIDI Disconnected Session ID %u", ssrc);
 }
 

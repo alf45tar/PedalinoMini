@@ -250,6 +250,9 @@ void get_root_page() {
   page += F("<dt>SDK Version</dt><dd>");
   page += ESP.getSdkVersion();
   page += F("</dd>");
+  page += F("<dt>PlatformIO Build Env</dt><dd>");
+  page += xstr(PLATFORMIO_ENV);
+  page += F("</dd>");
   page += F("</div>");
 
   page += F("<div class='col-6 col-sm-3'>");
@@ -364,7 +367,7 @@ void get_root_page() {
   page += F("</dd>");
 #endif
   page += F("<dt>MIDI Network</dt><dd>");
-  if (appleMidiConnected) page += String("Connected");
+  if (appleMidiConnected) page += String("Connected to<br>") + appleMidiSessionName;
   else page += String("Disconnected");
   page += F("</dd>");
 #ifdef BLE
@@ -2414,11 +2417,12 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
 #ifdef WEBSOCKET
     webSocket.enable(false);
     //webSocket.textAll("Web Update Started");
-    webSocket.closeAll();
+    //webSocket.closeAll();
 #endif
 
     DPRINT("Update Start: %s\n", filename.c_str());
     display_ui_update_disable();
+
     display_progress_bar_title("HTTP Update");
     if (Update.begin()) {  //start with max available size
       DPRINT("Update start\n");

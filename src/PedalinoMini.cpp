@@ -83,9 +83,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define BLE_LED         LED_BUILTIN  // onboard LED, used as status indicator
 #endif
 
-#define xstr(s) str(s)  // stringize the result of expansion of a macro argument
-#define str(s) #s
-
 
 void IRAM_ATTR onButtonLeft()
 {
