@@ -426,6 +426,7 @@ void setup()
 
 void loop()
 {
+  if (firmwareUpdate) return;
 
   switch (bootButton.read()){
     case MD_UISwitch::KEY_PRESS:

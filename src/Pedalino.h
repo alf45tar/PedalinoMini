@@ -394,6 +394,7 @@ String wifiPassword("");
 MD_UISwitch_Analog::uiAnalogKeys_t kt[LADDER_STEPS];
 
 bool powersaver = false;
+bool firmwareUpdate = false;
 
 #ifdef DEBUG_ESP_PORT
 #include <esp_log.h>

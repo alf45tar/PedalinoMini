@@ -2384,14 +2384,14 @@ void get_update_page() {
  // handler for the /update form page
 
 void http_handle_update (AsyncWebServerRequest *request) {
-  if (request->hasArg("theme")) theme = request->arg("theme");
+  //if (request->hasArg("theme")) theme = request->arg("theme");
   // The connection will be closed after completion of the response.
   // The connection SHOULD NOT be considered `persistent'.
   // Applications that do not support persistent connections MUST include the "close" connection option in every message.
   //httpServer.sendHeader("Connection", "close");
-  if (!request->authenticate("admin", "password")) {
-			return request->requestAuthentication();
-	}
+  //if (!request->authenticate("admin", "password")) {
+	//		return request->requestAuthentication();
+	//}
   get_update_page();
   request->send(200, "text/html", page);
 }
@@ -2411,41 +2411,62 @@ void http_handle_update_file_upload_finish (AsyncWebServerRequest *request) {
 
 void http_handle_update_file_upload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
 
+  //Upload handler chunks in data
   if (!index) {
     // Disconnect, not to interfere with OTA process
     blynk_disconnect();
 #ifdef WEBSOCKET
     webSocket.enable(false);
-    //webSocket.textAll("Web Update Started");
-    //webSocket.closeAll();
+    webSocket.closeAll();
 #endif
-
+    firmwareUpdate = true;
+    leds.setAllLow();
+    leds.write();
     DPRINT("Update Start: %s\n", filename.c_str());
-    display_ui_update_disable();
 
-    display_progress_bar_title("HTTP Update");
-    if (Update.begin()) {  //start with max available size
+    int cmd = (filename.indexOf("spiffs") > -1) ? U_SPIFFS : U_FLASH;
+    // Start with max available size
+    if (Update.begin(UPDATE_SIZE_UNKNOWN, cmd)) {
       DPRINT("Update start\n");
-      display_progress_bar_update(0, 100);
     }
     else {
       StreamString str;
       Update.printError(str);
       DPRINT("Update start fail: %s", str.c_str());
-      display.clear();
-      display.setFont(ArialMT_Plain_10);
-      display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-      display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Update aborted");
-      display.display();
-      ESP.restart();
+      firmwareUpdate = false;
     }
   }
 
   if (!Update.hasError()) {
+    // Write chunked data to the free sketch space
     if (Update.write(data, len) == len) {
       if (Update.size()) {
+        unsigned int progress = 100 * Update.progress() / Update.size();
+        if (progress < 15) {
+          leds.setHigh(0);
+          leds.write();
+        }
+        else if (progress < 30) {
+          leds.setHigh(1);
+          leds.write();
+        }
+        else if (progress < 45) {
+          leds.setHigh(2);
+          leds.write();
+        }
+        else if (progress < 60) {
+          leds.setHigh(3);
+          leds.write();
+        }
+        else if (progress < 75) {
+          leds.setHigh(4);
+          leds.write();
+        }
+        else if (progress < 90) {
+          leds.setHigh(5);
+          leds.write();
+        }
         DPRINT("Progress: %5.1f%%\n", 100.0 * Update.progress() / Update.size());
-        display_progress_bar_update(Update.progress(), Update.size());
       }
     }
     else {
@@ -2455,14 +2476,11 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
     }
   }
 
+  // if the final flag is set then this is the last frame of data
   if (final) {
-    display.clear();
-    display.setFont(ArialMT_Plain_10);
-    display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-    display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Restart");
-    display.display();
-    if (Update.end(true)) {
+    if (Update.end(true)) {   //true to set the size to the current progress
       DPRINT("Update Success: %uB\n", index+len);
+      leds.kittCar();
     } else {
       StreamString str;
       Update.printError(str);
