@@ -187,18 +187,19 @@ To select a different mode:
 - Press and release EN button (POWER button on TTGO T-Eight) and immediately after press and hold BOOT button (CENTER button on TTGO T-Eight)
 - Follow the istructions on display. Keep it pressed until the progress bar reach the end to reset to factory default. If you release the button before the progress bar reach the end PedalinoMini™ will start in one of the supported boot mode.
 
-Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI
-:--:|----|:------:|:---------:|:------:|:----:|:------:|:-:|:----:
-1|Normal|x|x|x|x|x|x|x
-2|Bluetooth Only|x|x|-|-|x|-|-
-3|WiFi Only|x|x|x|x|-|x|x
-4|Access Point with Bluetooth|x|x|x|x|x|x|x
-5|Access Point without Bluetooth|x|x|x|x|-|x|x
+Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware Update|HTTP Firmware Update
+:--:|----|:------:|:---------:|:------:|:----:|:------:|:-:|:----:|:-----------------:|:------------------:
+1|Normal|x|x|x|x|x|x|x|-|-
+2|Bluetooth Only|x|x|-|-|x|-|-|x|-
+3|WiFi Only|x|x|x|x|-|x|x|x|x
+4|Access Point with Bluetooth|x|x|x|x|x|x|x|-|-
+5|Access Point without Bluetooth|x|x|x|x|-|x|x|x|x
 
 - (x) Supported
   (-) Not supported
 - USB-MIDI and DIN-MIDI are always available if hardware implemented.
 - Normal (1) and Access Point with Bluetooth (4) are instable due to memory limit.
+- OTA/HTTP Firmware Update is available only when firmware is less than 2 MB.
 
 ## Display mode
 
