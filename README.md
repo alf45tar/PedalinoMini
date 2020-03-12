@@ -37,7 +37,7 @@ The first cloud connected wireless IoT MIDI foot controller for guitarists and m
 - Send almost every MIDI messages: Program Change, Control Code, Note On/Off, Channel Pressure, Pitch Bend, Bank Select, Start, Stop, Continue or a sequence of the previous messages
 - MIDI channel, MIDI note, MIDI control code, MIDI program change can be configured by each pedal and by each bank
 - Switch debouncing and analog noise suppression without decreasing responsiveness
-- Up to 6 switches connected via a resitors ladder (TC HELICON Switch-6). Any resistors ladder can be automatically calibrated just pressing footswitches in sequence.
+- Up to 6 switches connected via a resitors ladder (TC HELICON Switch-6). Any resistors ladder can be calibrated just pressing footswitches in sequence.
 - Invert polarity via software
 - Individual automatic calibration of expression pedals. Manual fine tuning is not usually requested.
 - Transform a linear expression pedal into log expression pedal and vice versa
@@ -172,15 +172,29 @@ Mode|Name|Description
 4|Access Point with Bluetooth|PedalinoMini™ skip the WiFi procedure on boot and create a WiFi Access Point.<br>PedalinoMini™ will wait for BLE-MIDI connection.
 5|Access Point without Bluetooth|PedalinoMini™ skips the WiFi procedure on boot and create a WiFi Access Point.<br>BLE is disabled.
 6|Reset WiFi credentials|Forget the last connected access point.<br>On next boot PedalinoMini™ can be connected to a new AP.
-7|Ladder Config|Learn mode for your ladder pedal.<br>Select at least one Ladder pedal before to proceed with configuration.
+7|Ladder Config|Learn mode for your ladder pedal. Any resistors ladder can be calibrated just pressing footswitches in sequence.<br>Select at least one Ladder pedal before to proceed with configuration.
 8|Reset to factory default|
 
 The last booting mode (1-5) is selected if you don't press any button on boot.
+The default boot mode is (3) WiFi Only or (2) Bluetooth if WiFi support it is not included.
 
 To select a different mode:
 
 - Press and release EN button (POWER button on TTGO T-Eight) and immediately after press and hold BOOT button (CENTER button on TTGO T-Eight)
 - Follow the istructions on display. Keep it pressed until the progress bar reach the end to reset to factory default. If you release the button before the progress bar reach the end PedalinoMini™ will start in one of the supported boot mode.
+
+Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI
+:--:|----|:------:|:---------:|:------:|:----:|:------:|:-:|:----:
+1|Normal|x|x|x|x|x|x|x
+2|Bluetooth Only|x|x|-|-|x|-|-
+3|WiFi Only|x|x|x|x|-|x|x
+4|Access Point with Bluetooth|x|x|x|x|x|x|x
+5|Access Point without Bluetooth|x|x|x|x|-|x|x
+
+- (x) Supported
+  (-) Not supported
+- USB-MIDI and DIN-MIDI are always available if hardware implemented.
+- Normal (1) and Access Point with Bluetooth (4) are instable due to memory limit.
 
 ## Display mode
 
