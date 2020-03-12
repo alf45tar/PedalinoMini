@@ -127,6 +127,8 @@ MIDI Clock|MIDI Time Code
 
 ![WEB Screen 5](./images/web-options.png "Screen 5")
 
+![WEB Screen 5](./images/web-options-2.png "Screen 6")
+
 ## How to connect PedalinoMini™ to a WiFi network
 
 PedalinoMini™ supports IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).
