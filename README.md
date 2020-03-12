@@ -125,9 +125,11 @@ MIDI Clock|MIDI Time Code
 
 ![WEB Screen 4](./images/web-interfaces.png "Screen 4")
 
-![WEB Screen 5](./images/web-options.png "Screen 5")
+![WEB Screen 5](./images/web-sequences.png "Screen 5")
 
-![WEB Screen 5](./images/web-options-2.png "Screen 6")
+![WEB Screen 6](./images/web-options-1.png "Screen 6")
+
+![WEB Screen 7](./images/web-options-2.png "Screen 7")
 
 ## How to connect PedalinoMini™ to a WiFi network
 

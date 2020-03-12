@@ -1558,6 +1558,7 @@ void get_options_page() {
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
+  page += F("<div class='form-group col-6'>");
   page += F("<label for='pressTime'>Press Time</label>");
   page += F("<input class='form-control' type='text' maxlength='32' id='pressTime' name='presstime' placeholder='' value='");
   page += String(pressTime) + F("'>");
@@ -1565,10 +1566,7 @@ void get_options_page() {
   page += F("Switch press time in milliseconds. Default value is 200.");
   page += F("</small>");
   page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='form-row'>");
+  page += F("<div class='form-group col-6'>");
   page += F("<label for='doublePressTime'>Double Press Time</label>");
   page += F("<input class='form-control' type='text' maxlength='32' id='doublePressTime' name='doublepresstime' placeholder='' value='");
   page += String(doublePressTime) + F("'>");
@@ -1577,10 +1575,12 @@ void get_options_page() {
   page += F("A double press is detected if the switch is released and depressed within this time, measured from when the first press is detected.");
   page += F("</small>");
   page += F("</div>");
+  page += F("</div>");
 
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
+  page += F("<div class='form-group col-6'>");
   page += F("<label for='longPressTime'>Long Press Time</label>");
   page += F("<input class='form-control' type='text' maxlength='32' id='longPressTime' name='longpresstime' placeholder='' value='");
   page += String(longPressTime) + F("'>");
@@ -1588,16 +1588,14 @@ void get_options_page() {
   page += F("Set the long press time in milliseconds after which a continuous press and release is deemed a long press, measured from when the first press is detected. Default value is 500.");
   page += F("</small>");
   page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='form-row'>");
+  page += F("<div class='form-group col-6'>");
   page += F("<label for='repeatPressTime'>Repeat Press Time</label>");
   page += F("<input class='form-control' type='text' maxlength='32' id='repeatPressTime' name='repeatpresstime' placeholder='' value='");
   page += String(repeatPressTime) + F("'>");
   page += F("<small id='repeatPressTimeModeHelpBlock' class='form-text text-muted'>");
   page += F("Set the repeat time in milliseconds after which a continuous press and hold is treated as a stream of repeated presses, measured from when the first press is detected. Default value is 500.");
   page += F("</small>");
+  page += F("</div>");
   page += F("</div>");
 
   page += F("<p></p>");
@@ -1607,13 +1605,13 @@ void get_options_page() {
   page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>#</span>");
   page += F("</div>");
-  page += F("<div class='col-6'>");
+  page += F("<div class='col-5'>");
   page += F("<span class='badge badge-primary'>Threshold</span>");
   page += F("<small class='form-text text-muted'>");
   page += F("Average analog value for the key.");
   page += F("</small>");
   page += F("</div>");
-  page += F("<div class='col-5'>");
+  page += F("<div class='col-6'>");
   page += F("<span class='badge badge-primary'>Tolerance</span>");
   page += F("<small class='form-text text-muted'>");
   page += F("Tolerance range +/- around average analog value.");
@@ -1626,14 +1624,14 @@ void get_options_page() {
     page += F("<div class='col-1 mb-3 text-center'>");
     page += String(i);
     page += F("</div>");
-    page += F("<div class='col-6'>");
+    page += F("<div class='col-5'>");
     page += F("<input class='form-control form-control-sm' type='number' id='threshold");
     page += String(i) + F("' name='threshold");
     page += String(i) + F("' min='0' max='");
     page += String(ADC_RESOLUTION-1) + F("' value='");
     page += String(kt[i-1].adcThreshold) + F("'>");
     page += F("</div>");
-    page += F("<div class='col-5'>");
+    page += F("<div class='col-6'>");
     page += F("<input class='form-control form-control-sm' type='number' id='tolerance");
     page += String(i) + F("' name='tolerance");
     page += String(i) + F("' min='0' max='255' value='");
