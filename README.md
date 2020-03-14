@@ -44,7 +44,7 @@ The first cloud connected wireless IoT MIDI foot controller for guitarists and m
 - 6 status leds that can be controlled by MIDI remote devices too
 - Responsive and mobile-first configuration web interface (<http://pedalino.local>)
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
-- Firmware update via HTTP (<http://pedalino.local/update>)
+- OTA (Over the Air) firmware update or via HTTP (<http://pedalino.local/update>)
 
 ## iOS and Android App
 
@@ -170,10 +170,10 @@ PedalinoMini™ has 8 booting modes:
 
 Mode|Name|Description
 ----|----|-----------
-1|Normal|BLE and WiFi are enabled. PedalinoMini™ starts the WiFi procedure on boot (connect to last AP -> SmartConfig -> WPS -> Access Point).<br>After boot PedalinoMini™ will wait for BLE-MIDI connection.
+1|Normal|BLE and WiFi are enabled. PedalinoMini™ starts the WiFi procedure on boot (connect to last AP -> SmartConfig -> WPS -> Access Point).<br>After boot PedalinoMini™ will wait for BLE-MIDI connection.<br>Web UI config is disabled.
 2|Bluetooth Only|WiFi is disabled.<br> PedalinoMini™ will wait for BLE-MIDI connection.
 3|WiFi Only|PedalinoMini™ starts the WiFi procedure on boot (connect to last AP -> SmartConfig -> WPS -> Access Point).<br>BLE is disabled.
-4|Access Point with Bluetooth|PedalinoMini™ skip the WiFi procedure on boot and create a WiFi Access Point.<br>PedalinoMini™ will wait for BLE-MIDI connection.
+4|Access Point with Bluetooth|PedalinoMini™ skip the WiFi procedure on boot and create a WiFi Access Point.<br>PedalinoMini™ will wait for BLE-MIDI connection.<br>Web UI config is disabled.
 5|Access Point without Bluetooth|PedalinoMini™ skips the WiFi procedure on boot and create a WiFi Access Point.<br>BLE is disabled.
 6|Reset WiFi credentials|Forget the last connected access point.<br>On next boot PedalinoMini™ can be connected to a new AP.
 7|Ladder Config|Learn mode for your ladder pedal. Any resistors ladder can be calibrated just pressing footswitches in sequence.<br>Select at least one Ladder pedal before to proceed with configuration.
@@ -189,16 +189,16 @@ To select a different mode:
 
 Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware Update|HTTP Firmware Update
 :--:|----|:------:|:---------:|:------:|:----:|:------:|:-:|:----:|:-----------------:|:------------------:
-1|Normal|x|x|x|x|x|x|x|-|-
+1|Normal|x|x|x|x|x|x|-|-|-
 2|Bluetooth Only|x|x|-|-|x|-|-|x|-
 3|WiFi Only|x|x|x|x|-|x|x|x|x
-4|Access Point with Bluetooth|x|x|x|x|x|x|x|-|-
+4|Access Point with Bluetooth|x|x|x|x|x|x|-|-|-
 5|Access Point without Bluetooth|x|x|x|x|-|x|x|x|x
 
 - (x) Supported
   (-) Not supported
 - USB-MIDI and DIN-MIDI are always available if hardware implemented.
-- Normal (1) and Access Point with Bluetooth (4) are instable due to memory limit.
+- Web UI config is disabled in Normal (1) and Access Point with Bluetooth (4) due to memory limit.
 - OTA/HTTP Firmware Update is available only when firmware is less than 2 MB.
 
 ## Display mode

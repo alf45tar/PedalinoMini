@@ -6,17 +6,17 @@ volatile int  interruptCounter1 = 0;
 volatile int  interruptCounter2 = 0;
 volatile int  interruptCounter3 = 0;
 
-void onTimer1()
+static void onTimer1()
 {
   interruptCounter1++;
 }
 
-void onTimer2()
+static void onTimer2()
 {
   interruptCounter2++;
 }
 
-void onTimer3()
+static void onTimer3()
 {
   interruptCounter3++;
 }

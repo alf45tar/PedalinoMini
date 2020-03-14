@@ -94,10 +94,18 @@ void start_services()
   DPRINT("OTA update started\n");
 
 #ifdef WEBCONFIG
-  http_setup();
-  DPRINT("HTTP server started\n");
-  DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
-  DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
+  switch (bootMode) {
+    case PED_BOOT_WIFI:
+    case PED_BOOT_AP_NO_BLE:
+      http_setup();
+      DPRINT("HTTP server started\n");
+      DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
+      DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
+      break;
+    default:
+      DPRINT("HTTP server not started. Use 'WiFi Only' or 'AP without BLE' boot mode for web config ui.\n");
+      break;
+  }
 #endif
 
   ipMIDI.listenMulticast(ipMIDImulticast, ipMIDIdestPort);
