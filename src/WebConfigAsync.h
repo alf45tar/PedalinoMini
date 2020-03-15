@@ -1642,6 +1642,26 @@ void get_options_page() {
 
   page += F("<p></p>");
 
+  page += F("<div class='form-row'>");
+  page += F("<div class='form-group col-6'>");
+  page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
+  page += F("<select class='custom-select custom-select-sm' name='encodersensitivity'>");
+  for (unsigned int s = 1; s <= 10; s++) {
+    page += F("<option value='");
+    page += String(s) + F("'");
+    if (encoderSensitivity == s) page += F(" selected");
+    page += F(">");
+    page += String(s) + F("</option>");
+  }
+  page += F("</select>");
+  page += F("<small id='encoderSensitivityHelpBlock' class='form-text text-muted'>");
+  page += F("Encoder sensitivity. Default value is 5.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
 #ifdef BLYNK
   page += F("<div class='form-row'>");
   page += F("<div class='custom-control custom-switch'>");
@@ -2168,6 +2188,11 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   }
   if (newLadder) eeprom_update_ladder();
 
+if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
+    encoderSensitivity = request->arg("encodersensitivity").toInt();
+    eeprom_update_encoder_sensitivity(encoderSensitivity);
+    controller_setup();
+  }
 #ifdef BLINK
   bool newBlynkCloud = (request->arg("blynkcloud") == checked);
   if (newBlynkCloud & !blynk_enabled()) {

@@ -36,6 +36,7 @@ void OnBleMidiNoteOn(byte channel, byte note, byte velocity)
   ipMIDISendNoteOn(note, velocity, channel);
   OSCSendNoteOn(note, velocity, channel);
   leds_update(midi::NoteOn, channel, note, velocity);
+  screen_info(midi::NoteOn, note, velocity, channel);
 }
 
 void OnBleMidiNoteOff(byte channel, byte note, byte velocity)
@@ -48,6 +49,7 @@ void OnBleMidiNoteOff(byte channel, byte note, byte velocity)
   AppleMidiSendNoteOff(note, velocity, channel);
   ipMIDISendNoteOff(note, velocity, channel);
   OSCSendNoteOff(note, velocity, channel);
+  screen_info(midi::NoteOff, note, velocity, channel);
 }
 
 void OnBleMidiReceiveAfterTouchPoly(byte channel, byte note, byte pressure)
@@ -60,6 +62,7 @@ void OnBleMidiReceiveAfterTouchPoly(byte channel, byte note, byte pressure)
   AppleMidiSendAfterTouchPoly(note, pressure, channel);
   ipMIDISendAfterTouchPoly(note, pressure, channel);
   OSCSendAfterTouchPoly(note, pressure, channel);
+  screen_info(midi::AfterTouchPoly, note, pressure, channel);
 }
 
 void OnBleMidiReceiveControlChange(byte channel, byte number, byte value)
@@ -73,6 +76,7 @@ void OnBleMidiReceiveControlChange(byte channel, byte number, byte value)
   ipMIDISendControlChange(number, value, channel);
   OSCSendControlChange(number, value, channel);
   leds_update(midi::ControlChange, channel, number, value);
+  screen_info(midi::ControlChange, number, value, channel);
 }
 
 void OnBleMidiReceiveProgramChange(byte channel, byte number)
@@ -86,6 +90,7 @@ void OnBleMidiReceiveProgramChange(byte channel, byte number)
   ipMIDISendProgramChange(number, channel);
   OSCSendProgramChange(number, channel);
   leds_update(midi::ProgramChange, channel, number, 0);
+  screen_info(midi::ProgramChange, number, 0, channel);
 }
 
 void OnBleMidiReceiveAfterTouchChannel(byte channel, byte pressure)
@@ -98,6 +103,7 @@ void OnBleMidiReceiveAfterTouchChannel(byte channel, byte pressure)
   AppleMidiSendAfterTouch(pressure, channel);
   ipMIDISendAfterTouch(pressure, channel);
   OSCSendAfterTouch(pressure, channel);
+  screen_info(midi::AfterTouchChannel, pressure, 0, channel);
 }
 
 void OnBleMidiReceivePitchBend(byte channel, int bend)
@@ -110,6 +116,7 @@ void OnBleMidiReceivePitchBend(byte channel, int bend)
   AppleMidiSendPitchBend(bend, channel);
   ipMIDISendPitchBend(bend, channel);
   OSCSendPitchBend(bend, channel);
+  screen_info(midi::PitchBend, bend, 0, channel);
 }
 
 void OnBleMidiReceiveSysEx(const byte *data, uint16_t size)

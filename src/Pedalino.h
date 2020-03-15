@@ -370,6 +370,7 @@ long  pressTime               = PED_PRESS_TIME;
 long  doublePressTime         = PED_DOUBLE_PRESS_TIME;
 long  longPressTime           = PED_LONG_PRESS_TIME;
 long  repeatPressTime         = PED_REPEAT_PRESS_TIME;
+byte  encoderSensitivity      = 5;    // 1..10
 
 
 MidiTimeCode  MTC;

@@ -37,6 +37,7 @@ void load_factory_default()
   doublePressTime    = PED_DOUBLE_PRESS_TIME;
   longPressTime      = PED_LONG_PRESS_TIME;
   repeatPressTime    = PED_REPEAT_PRESS_TIME;
+  encoderSensitivity = 5;
   tapDanceMode       = false;
   repeatOnBankSwitch = false;
   tapDanceBank       = true;
@@ -405,6 +406,16 @@ void eeprom_update_ladder()
   }
 }
 
+void eeprom_update_encoder_sensitivity(byte sensitivity = 5)
+{
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putUChar("Encoder Sensit", sensitivity);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global[Encoder Sensit]: %d\n", sensitivity);
+}
+
 void eeprom_update_profile(byte profile = currentProfile)
 {
   DPRINT("Updating NVS Profile ");
@@ -454,29 +465,31 @@ void eeprom_read_global()
     doublePressTime    = preferences.getLong("Double Time");
     longPressTime      = preferences.getLong("Long   Time");
     repeatPressTime    = preferences.getLong("Repeat Time");
+    encoderSensitivity = preferences.getUChar("Encoder Sensit");
     preferences.getBytes("Ladder", &kt, sizeof(kt));
     preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
     blynk_set_token(preferences.getString("Blynk Token"));
     preferences.end();
     DPRINT("done\n");
-    DPRINT("[NVS][Global][Device Name]:     %s\n", host.c_str());
-    DPRINT("[NVS][Global][Boot Mode]:       %d\n", bootMode);
-    DPRINT("[NVS][Global][STA SSID]:        %s\n", wifiSSID.c_str());
-    DPRINT("[NVS][Global][STA Password]:    %s\n", wifiPassword.c_str());
-    DPRINT("[NVS][Global][AP SSID]:         %s\n", ssidSoftAP.c_str());
-    DPRINT("[NVS][Global][AP Password]:     %s\n", passwordSoftAP.c_str());
-    DPRINT("[NVS][Global][Bootstrap Theme]: %s\n", theme.c_str());
-    DPRINT("[NVS][Global][Current Profile]: %d\n", currentProfile);
-    DPRINT("[NVS][Global][Tap Dance Mode]:  %d\n", tapDanceMode);
-    DPRINT("[NVS][Global][Bank Switch]:     %d\n", repeatOnBankSwitch);
-    DPRINT("[NVS][Global][Single Time]:     %d\n", pressTime);
-    DPRINT("[NVS][Global][Double Time]:     %d\n", doublePressTime);
-    DPRINT("[NVS][Global][Long   Time]:     %d\n", longPressTime);
-    DPRINT("[NVS][Global][Repeat Time]:     %d\n", repeatPressTime);
-    DPRINT("[NVS][Global][Blynk Cloud]:     %d\n", blynk_enabled());
-    DPRINT("[NVS][Global][Blynk Token]:     %s\n", blynk_get_token().c_str());
+    DPRINT("[NVS][Global][Device Name]:      %s\n", host.c_str());
+    DPRINT("[NVS][Global][Boot Mode]:        %d\n", bootMode);
+    DPRINT("[NVS][Global][STA SSID]:         %s\n", wifiSSID.c_str());
+    DPRINT("[NVS][Global][STA Password]:     %s\n", wifiPassword.c_str());
+    DPRINT("[NVS][Global][AP SSID]:          %s\n", ssidSoftAP.c_str());
+    DPRINT("[NVS][Global][AP Password]:      %s\n", passwordSoftAP.c_str());
+    DPRINT("[NVS][Global][Bootstrap Theme]:  %s\n", theme.c_str());
+    DPRINT("[NVS][Global][Current Profile]:  %d\n", currentProfile);
+    DPRINT("[NVS][Global][Tap Dance Mode]:   %d\n", tapDanceMode);
+    DPRINT("[NVS][Global][Bank Switch]:      %d\n", repeatOnBankSwitch);
+    DPRINT("[NVS][Global][Single Time]:      %d\n", pressTime);
+    DPRINT("[NVS][Global][Double Time]:      %d\n", doublePressTime);
+    DPRINT("[NVS][Global][Long   Time]:      %d\n", longPressTime);
+    DPRINT("[NVS][Global][Repeat Time]:      %d\n", repeatPressTime);
+    DPRINT("[NVS][Global][Encoder Sensit]:   %d\n", encoderSensitivity);
+    DPRINT("[NVS][Global][Blynk Cloud]:      %d\n", blynk_enabled());
+    DPRINT("[NVS][Global][Blynk Token]:      %s\n", blynk_get_token().c_str());
     for (byte i = 0; i < LADDER_STEPS; i++) {
-      DPRINT("[NVS][Global][Ladder]:          Ladder %d Threshold %d Tolerance %d\n", kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
+      DPRINT("[NVS][Global][Ladder]:           Ladder %d Threshold %d Tolerance %d\n", kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
     }
   }
   else {
@@ -566,6 +579,7 @@ void eeprom_initialize()
   eeprom_update_repeat_on_bank_switch();
   eeprom_update_press_time();
   eeprom_update_ladder();
+  eeprom_update_encoder_sensitivity();
   eeprom_update_blynk_cloud_enable();
   eeprom_update_blynk_auth_token();
   for (byte p = 0; p < PROFILES; p++)

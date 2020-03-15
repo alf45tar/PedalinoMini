@@ -1545,7 +1545,7 @@ void controller_setup()
       case PED_JOG_WHEEL:
         pedals[i].jogwheel = new MD_REncoder(PIN_D(i), PIN_A(i));
         pedals[i].jogwheel->begin();
-        pedals[i].jogwheel->setPeriod(500);
+        pedals[i].jogwheel->setPeriod((11 - encoderSensitivity) * 100);   // From 1...10 to 1000..100
         DPRINT("   Pin A%d (CLK) D%d (DT)", PIN_A(i), PIN_D(i));
         break;
     }
