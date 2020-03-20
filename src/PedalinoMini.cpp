@@ -488,9 +488,10 @@ void loop()
   controller_run();
 
   // Listen to incoming messages
-  if (USB_MIDI.read())
+  if (interfaces[PED_USBMIDI].midiIn && USB_MIDI.read())
     DPRINTMIDI("USB MIDI", USB_MIDI.getType(), USB_MIDI.getChannel(), USB_MIDI.getData1(), USB_MIDI.getData2());
-  if (DIN_MIDI.read())
+
+  if (interfaces[PED_DINMIDI].midiIn && DIN_MIDI.read())
     DPRINTMIDI("Serial MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
 
   if (wifiEnabled) {

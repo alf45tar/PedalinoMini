@@ -290,7 +290,7 @@ void ladder_config()
         }
       }
       eeprom_update_ladder();
-      eeprom_update_profile();
+      //eeprom_update_profile();
       break;
     }
   }

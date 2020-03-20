@@ -12,7 +12,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "Fonts.h"
 
 #if defined(TTGO_T_EIGHT) || defined(SSH1106WIRE)
-#include "SH1106Wire.h"
+#include <SH1106Wire.h>
 #define OLED_I2C_ADDRESS  0x3c
 #define OLED_I2C_SDA      21
 #define OLED_I2C_SCL      22
