@@ -237,6 +237,8 @@ void load_factory_default()
       interfaces[i].midiRouting = PED_DISABLE;
       interfaces[i].midiClock   = PED_DISABLE;
     };
+  interfaces[PED_USBMIDI].midiIn = PED_DISABLE;
+  interfaces[PED_DINMIDI].midiIn = PED_DISABLE;
 
   for (byte s = 0; s < SEQUENCES; s++) {
     for (byte t = 0; t < STEPS; t++) {
