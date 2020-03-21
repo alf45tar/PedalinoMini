@@ -835,16 +835,17 @@ void refresh_switch_12L_midi(byte i, bool send)
           case PED_PROGRAM_CHANGE_INC:
           case PED_PROGRAM_CHANGE_DEC:
             bank_update(b, i, 1);   // Increase
-            if (send) {
-              midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
-            }
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
+            break;
+
+          case PED_PROGRAM_CHANGE:
+            b = (b + k - 1) % BANKS;
+            if (send) midi_send(banks[b][i].midiMessage,  banks[b][i].midiValue1, banks[b][i].midiValue1, banks[b][i].midiChannel);
             break;
 
           default:
             b = (b + k - 1) % BANKS;
-            if (send) {
-              midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel);
-            }
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel);
             break;
         }
         lastUsedSwitch = i;
@@ -862,14 +863,18 @@ void refresh_switch_12L_midi(byte i, bool send)
           case PED_PROGRAM_CHANGE_INC:
           case PED_PROGRAM_CHANGE_DEC:
             bank_update(b, i, -1);    // Decrease
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
+            break;
+
+          case PED_PROGRAM_CHANGE:
+            b = (b + k - 1) % BANKS;
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiValue2, banks[b][i].midiValue2, banks[b][i].midiChannel);
             break;
 
           default:
             b = (b + k - 1) % BANKS;
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
             break;
-        }
-        if (send) {
-          midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
         }
         lastUsedSwitch = i;
         strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
@@ -883,24 +888,23 @@ void refresh_switch_12L_midi(byte i, bool send)
           case PED_BANK_SELECT_INC:
           case PED_PROGRAM_CHANGE_INC:
             bank_update(b, i, 0);   // Set to bottom value
-            if (send) {
-              midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
-            }
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
             break;
 
           case PED_BANK_SELECT_DEC:
           case PED_PROGRAM_CHANGE_DEC:
             bank_update(b, i, 2);   // Set to top value
-            if (send) {
-              midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
-            }
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel);
+            break;
+
+          case PED_PROGRAM_CHANGE:
+            b = (b + k - 1) % BANKS;
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiValue3, banks[b][i].midiValue3, banks[b][i].midiChannel);
             break;
 
           default:
             b = (b + k - 1) % BANKS;
-            if (send) {
-              midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel);
-            }
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel);
             break;
         }
         lastUsedSwitch = i;
