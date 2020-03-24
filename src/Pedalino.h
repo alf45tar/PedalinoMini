@@ -17,7 +17,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
 #define PROFILES          3
-#define BANKS            10
+#define BANKS             6
 #define PEDALS            6
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
@@ -106,7 +106,7 @@ typedef uint8_t   byte;
 #define BOUNCE_LOCK_OUT                 // This method is a lot more responsive, but does not cancel noise.
 //#define BOUNCE_WITH_PROMPT_DETECTION  // Report accurate switch time normally with no delay. Use when accurate switch transition timing is important.
 #include <Bounce2.h>                    // https://github.com/thomasfredericks/Bounce2
-
+#include "VirtualButton.hpp"
 
 #define PED_PRESS_TIME        200
 #define PED_DOUBLE_PRESS_TIME 400
@@ -171,6 +171,7 @@ typedef uint8_t   byte;
 #define PED_BANK_MINUS_2       11
 #define PED_BANK_PLUS_3        12
 #define PED_BANK_MINUS_3       13
+#define PED_VBUTTON            14
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
@@ -244,7 +245,8 @@ struct pedal {
                                              10 = Bank+2
                                              11 = Bank-2
                                              12 = Bank+3
-                                             13 = Bank-3 */
+                                             13 = Bank-3 
+                                             14 = Virtual buttons */
   byte                   autoSensing;     /* 0 = disable
                                              1 = enable   */
   byte                   mode;            /* 1 = none
@@ -326,7 +328,9 @@ struct message {
 
 MD_UISwitch_Digital bootButton(CENTER_PIN);
 
+VirtualButton::VirtualButtonConfig vbuttons;
 #ifdef __BOARD_HAS_PSRAM__
+#error TODO implement VirtualButton storage for PSRAM
 bank**      banks;
 pedal*      pedals;
 sequence**  sequences;
@@ -389,8 +393,8 @@ bool  bleEnabled              = false;
 bool  wifiConnected           = false;
 bool  bleConnected            = false;
 
-String wifiSSID("");
-String wifiPassword("");
+String wifiSSID("AnimalZoo3");
+String wifiPassword("KVDXWrUQsCxi");
 
 MD_UISwitch_Analog::uiAnalogKeys_t kt[LADDER_STEPS];
 

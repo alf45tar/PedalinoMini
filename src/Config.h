@@ -10,6 +10,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  */
 
 #include <Preferences.h>
+#include "SPIFFS.h"
 #include <nvs_flash.h>
 
 Preferences preferences;
@@ -42,6 +43,7 @@ void load_factory_default()
   repeatOnBankSwitch = false;
   tapDanceBank       = true;
   blynk_set_token("");
+  vbuttons.reset();
 
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {
@@ -418,6 +420,50 @@ void eeprom_update_encoder_sensitivity(byte sensitivity = 5)
   DPRINT("[NVS][Global[Encoder Sensit]: %d\n", sensitivity);
 }
 
+void eeprom_save_vbuttons(byte profile = currentProfile) {
+  char *fname = strdup("/vbuttons0.bin");
+  fname[9] += profile;
+  File file = SPIFFS.open(fname, FILE_WRITE);
+  if (!file) {
+    DPRINTLN("Can't open file");
+    free(fname);
+    return;
+  }
+
+  DPRINTLN("Saving %d bytes of vbuttons to %s.", sizeof(vbuttons.pedals), fname);
+  if (!file.write((uint8_t*) vbuttons.pedals, sizeof(vbuttons.pedals))) {
+    DPRINTLN("Error writing file");
+  }
+
+  file.close();
+  free(fname);
+}
+
+void eeprom_read_vbuttons(byte profile = currentProfile) {
+  char *fname = strdup("/vbuttons0.bin");
+  fname[9] += profile;
+  File file = SPIFFS.open(fname, FILE_READ);
+  if (!file) {
+    DPRINTLN("Can't open file %s", fname);
+    free(fname);
+    return;
+  }
+
+  size_t size = file.size();
+  if (size != sizeof(vbuttons.pedals)) {
+    DPRINTLN("Not restoring vbuttons, file size is %d, expected %d.", size, sizeof(vbuttons.pedals));
+  } else {
+    if (!file.readBytes((char*) vbuttons.pedals, sizeof(vbuttons.pedals))) {
+      DPRINTLN("Error reading from file");
+    }
+    DPRINTLN("Read %d bytes of vbuttons from %s.", sizeof(vbuttons.pedals), fname);
+  }
+
+
+  file.close();
+  free(fname);
+}
+
 void eeprom_update_profile(byte profile = currentProfile)
 {
   DPRINT("Updating NVS Profile ");
@@ -445,6 +491,8 @@ void eeprom_update_profile(byte profile = currentProfile)
   preferences.end();
 
   DPRINT(" ... done\n");
+
+  eeprom_save_vbuttons(profile);
 
   blynk_refresh();
 }
@@ -530,6 +578,7 @@ void eeprom_read_profile(byte profile = currentProfile)
   preferences.getBytes("Pedals", &pedals, sizeof(pedals));
   preferences.getBytes("Interfaces", &interfaces, sizeof(interfaces));
   preferences.getBytes("Sequences", &sequences, sizeof(sequences));
+
   currentBank         = preferences.getUChar("Current Bank");
   currentMidiTimeCode = preferences.getUChar("Current MTC");
   preferences.end();
@@ -551,6 +600,9 @@ void eeprom_read_profile(byte profile = currentProfile)
       pedals[i].expMax        = 0;
     }
   };
+
+  eeprom_read_vbuttons();
+  vbuttons.onReconfigure();
 
   blynk_refresh();
 }
@@ -590,8 +642,11 @@ void eeprom_initialize()
 
 void eeprom_init_or_erase()
 {
+  DPRINT("a\n");
   load_factory_default();
+  DPRINT("b\n");
   esp_err_t err = nvs_flash_init();
+  DPRINT("c\n");
   switch (err) {
     case ESP_OK:
       DPRINT("'nvs' partition was successfully initialized\n");

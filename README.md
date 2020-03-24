@@ -131,6 +131,19 @@ MIDI Clock|MIDI Time Code
 
 ![WEB Screen 7](./images/web-options-2.png "Screen 7")
 
+## Configuration REST API
+
+Download vbutton configuration: (will be saved to `vbutton0.bin`)
+```
+curl -JO http://192.168.0.119/vbuttons_config
+```
+
+Upload previously-saved configuration:
+```
+curl -v -F "file=@vbuttons0.bin" http://192.168.0.119/vbuttons_config
+```
+
+
 ## How to connect PedalinoMini™ to a WiFi network
 
 PedalinoMini™ supports IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).

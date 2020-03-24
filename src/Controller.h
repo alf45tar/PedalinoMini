@@ -467,17 +467,16 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
 
     case PED_CONTROL_CHANGE:
 
-      if (on_off) {
-        DPRINT("CONTROL CHANGE.....Code %3d......Value %3d.....Channel %2d\n", code, value, channel);
-        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(code, value, channel);
-        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(code, value, channel);
-        AppleMidiSendControlChange(code, value, channel);
-        ipMIDISendControlChange(code, value, channel);
-        BLESendControlChange(code, value, channel);
-        OSCSendControlChange(code, value, channel);
-        screen_info(midi::ControlChange, code, value, channel);
-        lastMIDIMessage[currentBank] = {PED_CONTROL_CHANGE, code, value, channel};
-      }
+      DPRINT("CONTROL CHANGE.....Code %3d......Value %3d.....Channel %2d\n", code, value, channel);
+      if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(code, value, channel);
+      if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(code, value, channel);
+      AppleMidiSendControlChange(code, value, channel);
+      ipMIDISendControlChange(code, value, channel);
+      BLESendControlChange(code, value, channel);
+      OSCSendControlChange(code, value, channel);
+      screen_info(midi::ControlChange, code, value, channel);
+      lastMIDIMessage[currentBank] = {PED_CONTROL_CHANGE, code, value, channel};
+      
       break;
 
     case PED_PROGRAM_CHANGE:
@@ -611,6 +610,63 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
   }
 }
 
+void refresh_vbutton(uint8_t pedalIdx) {
+  pedal &p = pedals[pedalIdx];
+
+  if (p.mode == PED_LADDER) {
+    if (p.footSwitch[0] == nullptr) return;
+    MD_UISwitch::keyResult_t event = p.footSwitch[0]->read();
+    switch(event) {
+      case MD_UISwitch::KEY_DOWN:
+        DPRINT("pedal %d, key down on button %d in bank %d\n", pedalIdx, p.footSwitch[0]->getKey(), currentBank);
+        vbuttons.onButton(currentBank, pedalIdx, p.footSwitch[0]->getKey());
+        return;
+      case MD_UISwitch::KEY_UP:
+        DPRINT("pedal %d, key up in bank %d\n", pedalIdx, currentBank);
+        vbuttons.onButton(currentBank, pedalIdx,  -1);
+        return;
+      default: {}
+        // no change, no action.
+    }
+  } else {
+    // Must be a 1-, 2-, or 3-button pedal.
+    bool changed = false;
+
+    bool input1High = false;
+    if (p.debouncer[0] != nullptr) {
+      changed = p.debouncer[0]->update();
+      input1High = p.debouncer[0]->read();
+    }
+
+    bool input2High = false;
+    bool changed2 = false;
+    if (p.debouncer[1] != nullptr) {
+      changed2 = p.debouncer[1]->update();
+      input2High = p.debouncer[1]->read();
+    }
+
+    uint8_t button;
+    switch (p.mode) {
+      case PED_MOMENTARY3:
+        button = (input1High && input2High) ? -1 : (input2High) ? 2 : (input1High) ? 1 : 0;
+        break;
+      case PED_MOMENTARY2:
+      case PED_LATCH2:
+        button = (!input2High) ? 1 : (!input1High) ? 0 : -1;
+        break;
+      default:
+        button = (input1High) ? -1 : 0;
+    }
+
+    if (changed || changed2) {
+      vbuttons.onButton(currentBank, pedalIdx, button);
+      return;
+    }
+  }
+
+  vbuttons.onIdle();
+}
+
 void refresh_switch_1_midi(byte i, bool send)
 {
   bool         state1, state2;
@@ -628,7 +684,7 @@ void refresh_switch_1_midi(byte i, bool send)
     if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;        // invert the value
     value = map_digital(i, input);                                            // apply the digital map function to the value
 
-    DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
+    DPRINT("A: Pedal %2d   input %d output %d\n", i + 1, input, value);
 
     b = (currentBank + 2) % BANKS;
     bank_update(b, i);
@@ -662,7 +718,7 @@ void refresh_switch_1_midi(byte i, bool send)
       if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;      // invert the value
       value = map_digital(i, input);                                          // apply the digital map function to the value
 
-      DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
+      DPRINT("B: Pedal %2d   input %d output %d\n", i + 1, input, value);
 
       if (tapDanceMode && tapDanceBank && value == LOW && send) {
         currentBank = constrain(i, 0, BANKS - 1);
@@ -729,7 +785,7 @@ void refresh_switch_1_midi(byte i, bool send)
       if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;      // invert the value
       value = map_digital(i, input);                                          // apply the digital map function to the value
 
-      DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
+      DPRINT("C: Pedal %2d   input %d output %d\n", i + 1, input, value);
 
       b = (currentBank + 1) % BANKS;
       bank_update(b, i);
@@ -805,6 +861,8 @@ void refresh_switch_12L_midi(byte i, bool send)
 
   if (pedals[i].mode == PED_LADDER) {
     if (k1 == MD_UISwitch::KEY_PRESS) {
+      uint8_t key = pedals[i].footSwitch[0]->getKey();
+      DPRINT("key was %d, k=%d, k1=%d, k2=%d\n", key, k, k1, k2);
       b = (b + pedals[i].footSwitch[0]->getKey()) % BANKS;
     }
     else return;
@@ -1259,6 +1317,11 @@ void controller_run(bool send = true)
   }
 
   for (byte i = 0; i < PEDALS; i++) {
+    if (pedals[i].function == PED_VBUTTON) {
+      refresh_vbutton(i);
+      continue;
+    }
+
     switch (pedals[i].mode) {
 
       case PED_MOMENTARY1:

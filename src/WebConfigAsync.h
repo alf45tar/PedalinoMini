@@ -23,6 +23,8 @@ inline void http_run() {};
 #include <StreamString.h>
 #include <FS.h>
 #include <SPIFFS.h>
+#include "UI.hpp"
+#include "VirtualButton.hpp"
 
 AsyncWebServer          httpServer(80);
 
@@ -54,11 +56,14 @@ void get_top_page(int p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
+    page += F("<script src='/js/jquery-3.4.1.slim.min.js' integrity='sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=' crossorigin='anonymous'></script>");
     page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-L/W5Wfqfa0sdBNIKN9cG6QA5F2qx4qICmU2VgLruv9Y=' crossorigin='anonymous'>");
   #else
+    page += F("<script src='https://code.jquery.com/jquery-3.4.1.slim.min.js' integrity='sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n' crossorigin='anonymous'></script>");
     page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css' integrity='sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh' crossorigin='anonymous'>");
   #endif
   } else {
+    page += F("<script src='https://code.jquery.com/jquery-3.4.1.slim.min.js' integrity='sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n' crossorigin='anonymous'></script>");
     page += F("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/4.4.1/");
     page += theme;
     page += F("/bootstrap.min.css' crossorigin='anonymous'>");
@@ -102,6 +107,10 @@ void get_top_page(int p = 0) {
   page += F("<li class='nav-item");
   page += (p == 6 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/options'>Options</a>");
+  page += F("</li>");
+  page += F("<li class='nav-item");
+  page += (p == 7 ? F(" active'>") : F("'>"));
+  page += F("<a class='nav-link' href='/vbuttons'>Virtual buttons</a>");
   page += F("</li>");
   page += F("</ul>");
   }
@@ -157,11 +166,9 @@ void get_footer_page() {
   page += F("<p></p>");
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/jquery-3.4.1.slim.min.js' integrity='sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=' crossorigin='anonymous'></script>");
   page += F("<script src='/js/popper.min.js' integrity='sha256-x3YZWtRjM8bJqf48dFAv/qmgL68SI4jqNWeSLMZaMGA=' crossorigin='anonymous'></script>");
   page += F("<script src='/js/bootstrap.min.js' integrity='sha256-WqU1JavFxSAMcLP2WIOI+GB2zWmShMI82mTpLDcqFUg=' crossorigin='anonymous'></script>");
 #else
-  page += F("<script src='https://code.jquery.com/jquery-3.4.1.slim.min.js' integrity='sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n' crossorigin='anonymous'></script>");
   page += F("<script src='https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js' integrity='sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo' crossorigin='anonymous'></script>");
   page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js' integrity='sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6' crossorigin='anonymous'></script>");
 #endif
@@ -982,6 +989,10 @@ void get_pedals_page() {
     page += String(PED_BPM_MINUS) + F("'");
     if (pedals[i-1].function == PED_BPM_MINUS) page += F(" selected");
     page += F(">BPM-</option>");
+    page += F("<option value='");
+    page += String(PED_VBUTTON) + F("'");
+    if (pedals[i-1].function == PED_VBUTTON) page += F(" selected");
+    page += F(">Virtual buttons</option>");
     page += F("</select>");
     page += F("</div>");
 
@@ -1379,6 +1390,228 @@ void get_sequences_page() {
   page += F("<button type='submit' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
+  page += F("</form>");
+
+  get_footer_page();
+}
+
+uint8_t virtualButtonCount(uint8_t pedal) {
+  switch(pedals[pedal].mode) {
+    case PED_MOMENTARY1:
+    case PED_LATCH1:
+      return 1;
+
+    case PED_MOMENTARY2:
+    case PED_LATCH2:
+      return 2;
+
+    case PED_MOMENTARY3:
+      return 3;
+
+    case PED_LADDER:
+      return 6;
+
+    default:
+      return 0;
+  }
+}
+
+void get_vbuttons_page(uint8_t bank) {
+  using namespace UI;
+  using namespace VirtualButton;
+
+  get_top_page(7);
+
+  page += F("<div class='btn-group d-flex justify-content-center mb-4'>");
+  for (unsigned int i = 0; i < BANKS; i++) {
+    page += F("<form method='get'><button type='button submit' class='btn ");
+    page += (bank == i) ? String(" btn-primary") : String("btn-outline-primary");
+    page += F("' name='bank' value='");
+    page += String(i) + F("'>Bank ") + String(i + 1) + F("</button></form>");
+  }
+  page += F("</div>");
+
+  scriptTemplate("vbutton_pedal", [&] {
+    form_row("", "mb-4", [&] {
+      col_(1, [&] { span(String("Pedal ${P}")); });
+      col_(1, [&] { span(String("Button ${B}")); });
+      col_(2, [&] {
+        select(String("mode_${p}_${b}"), "mode", [&] {
+          option(F("Press / Release"), String(Button::PRESS_RELEASE), false);
+          option(F("Toggle down"), String(Button::TOGGLE_DOWN), false);
+          option(F("Toggle up"), String(Button::TOGGLE_UP), false);
+          option(F("Press / Long / Double / Double Long"), String(Button::PRESS_RELEASE_DOUBLE), false);
+        });
+      });
+      col_(6, "", "actions", [&] {
+        // Action are created here by Javascript (createPedalUI)
+      });
+    });
+  });
+
+  scriptTemplate("vbutton_pedalaction", [&] {
+    page += F("<div id='actiondiv_${myid}'>");
+    form_row("", "mb-1", [&] {
+      col_(3, [&] {
+        select(String("type_${myid}"), "type text-right", [&] {
+          option(F("Do nothing"), String(VirtualButtonAction::NONE), false);
+          option(F("Send MIDI CC"), String(VirtualButtonAction::SEND_MIDI_CC), false);
+          option(F("Send MIDI Note On"), String(VirtualButtonAction::SEND_MIDI_NOTE_ON), false);
+          option(F("Send MIDI Note Off"), String(VirtualButtonAction::SEND_MIDI_NOTE_OFF), false);
+          option(F("Change MIDI CC Up"), String(VirtualButtonAction::SEND_MIDI_CC_UP), false);
+          option(F("Change MIDI CC Down"), String(VirtualButtonAction::SEND_MIDI_CC_DOWN), false);
+          option(F("Change MIDI Program Up"), String(VirtualButtonAction::SEND_MIDI_PROGRAM_UP), false);
+          option(F("Change MIDI Program Down"), String(VirtualButtonAction::SEND_MIDI_PROGRAM_DOWN),false);
+          option(F("Change Pedalino Bank Up"), String(VirtualButtonAction::DEVICE_BANK_UP),false);
+          option(F("Change Pedalino Bank Down"), String(VirtualButtonAction::DEVICE_BANK_DOWN),false);
+          option(F("Select Pedalino Bank"), String(VirtualButtonAction::DEVICE_BANK_SET),false);
+        });
+      });
+      col_(9, [&] {
+        italic("", String("actionlabel_${myid}"), "actionlabel");
+      });
+    });
+    form_row("", "mb-3", [&] {
+      col_(12, [&] {
+        form_row(String("mididiv_${myid}"), "mididiv", [&] {
+          col_(1, "", "text-right", [] { label(F("Channel")); });
+          col_(1, [&] {
+            numberInput(String("channel_${myid}"), 1, 16, 1, "channel");
+          });
+          col_(2, "", "text-right", [] { label(F("MIDI CC / Note")); });
+          col_(1, [&] {
+            numberInput(String("code_${myid}"), 1, 127, 1, "code");
+          });
+          col_(2, "", "text-right", [] { label(F("Value / Vel.")); });
+          col_(1, [&] {
+            numberInput(String("value_${myid}"), 0, 127, 0, "value");
+          });
+        });
+        form_row(String("midiprogramdiv_${myid}"), "midiprogramdiv", [&] {
+          col_(1, "", "text-right", [] { label(F("Channel")); });
+          col_(1, [&] {
+            numberInput(String("pchannel_${myid}"), 1, 16, 1, "channel");
+          });
+          col_(2, "", "text-right cc", [] { label(F("MIDI CC")); });
+          col_(1, "", "cc", [&] {
+            numberInput(String("pcc_${myid}"), 0, 127, 0, "cc");
+          });
+          col_(1, "", "text-right", [] { label(F("Minimum")); });
+          col_(1, [&] {
+            numberInput(String("pmin_${myid}"), 0, 127, 0, "min");
+          });
+          col_(1, "", "text-right", [] { label(F("Maximum")); });
+          col_(1, [&] {
+            numberInput(String("pmax_${myid}"), 0, 127, 127, "max");
+          });
+        });
+        form_row(String("pedbankdiv_${myid}"), "pedbankdiv", [&] {
+          col_(2, "", "text-right", [] { label(F("Minimum (or selected)")); });
+          col_(2, [&] {
+            bankInput(String("bmin_${myid}"), BANKS, 0, "min");
+          });
+          col_(1, "", "text-right max", [] { label(F("Maximum")); });
+          col_(2, "", "max", [&] {
+            bankInput(String("bmax_${myid}"), BANKS, BANKS - 1, "max");
+          });
+        });
+      });
+    });
+    page += F("</div>");
+  });
+
+  page += F("<script src='/js/virtualButtons.js'></script>");
+
+  page += F("<form method='post' id='mainui'>");
+
+  page += F("<input type='hidden' name='bank' value='");
+  page += bank;
+  page += F("'/>");
+
+  form_row([] {
+    col_(1, [] {
+      badge("Pedal");
+    });
+    col_(1, [] {
+      badge("Button");
+    });
+    col_(2, [] {
+      badge("Mode");
+    });
+    col_(4, "", "mb-2", [] {
+      badge("Action(s)");
+    });
+  });
+
+  bool used = false;
+  for (uint8_t pedal = 0; pedal < PEDALS; pedal++) {
+    if (pedals[pedal].function != PED_VBUTTON) continue;
+    used = true;
+
+    uint8_t count = virtualButtonCount(pedal);
+    if (count == 0) {
+      page += F("<div class='form-row'>");
+      page += F("<div class='col-4'>");
+      page += F("<span>Please configure this pedal as momentary, latch, or ladder to use virtual buttons.</span>");
+      page += F("</div>");
+      page += F("</div>");
+    } else {
+      for (uint8_t button = 0; button < count; button++) {
+        // TODO these scripts are probably better off being called near the end of the HTML response.
+        Button &b = vbuttons.pedals[pedal].banks[bank][button];
+        page += F("<script>virtualButtons.createPedalUI(");
+        page += pedal;
+        page += F(", ");
+        page += button;
+        page += F(",{\"mode\":");
+        page += b.mode;
+        page += ",\"actions\":[";
+        for (uint8_t action = 0; action < b.getActionCount(); action++) {
+          VirtualButton::VirtualButtonAction &a = b.actions[action];
+          page += F("{\"type\":");
+          page += a.type;
+          if (a.isSendMidiMessage()) {
+            page += ",\"channel\":";
+            page += a.sendMidiMessage.channel;
+            page += ",\"code\":";
+            page += a.sendMidiMessage.code;
+            page += ",\"value\":";
+            page += a.sendMidiMessage.value;
+          } else if (a.isSendMidiStateful()) {
+            page += ",\"channel\":";
+            page += a.sendMidiStateful.channel;
+            page += ",\"cc\":";
+            page += a.sendMidiStateful.cc;
+            page += ",\"min\":";
+            page += a.sendMidiStateful.min;
+            page += ",\"max\":";
+            page += a.sendMidiStateful.max;
+          } else if (a.isDeviceBank()) {
+            page += ",\"min\":";
+            page += a.deviceBank.min;
+            page += ",\"max\":";
+            page += a.deviceBank.max;
+          }
+          page += F("}");
+          if (action < b.getActionCount() - 1) {
+            page += F(",");
+          }
+        }
+        page += F("]})</script>");
+      }
+    }
+  }
+
+  if (used) {
+    form_row([] {
+      col_auto([] {
+        submitButton();
+      });
+    });
+  } else {
+    page += F("<p>Please configure at least one pedal to be 'Virtual buttons' to configure this page.</p>");
+  }
+
   page += F("</form>");
 
   get_footer_page();
@@ -1905,6 +2138,133 @@ void http_handle_options(AsyncWebServerRequest *request) {
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
+}
+
+void http_handle_vbuttons(AsyncWebServerRequest *request) {
+  http_handle_globals(request);
+
+  uint8_t bank = request->arg("bank").toInt(); // defaults to 0 when absent, which is fine.
+  get_vbuttons_page(bank);
+
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", [&] (uint8_t *buffer, size_t maxLen, size_t index) {
+    DPRINT("HTML page lenght: %d of %d\n", page.length(), maxLen);
+    page.getBytes(buffer, maxLen, index);
+    buffer[maxLen-1] = 0; // CWE-126
+    return strlen((const char *)buffer);
+  });
+
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
+
+void saveField(AsyncWebServerRequest *request, String name, uint8_t &target) {
+  String value = request->arg(name);
+  if (value.length() > 0) {
+    target = value.toInt();
+  }
+}
+
+void http_handle_post_vbuttons(AsyncWebServerRequest *request) {
+  using namespace VirtualButton;
+  uint8_t bank = request->arg(String("bank")).toInt();
+  DPRINT("Saving bank %d\n", bank);
+
+  for (uint8_t pedal = 0; pedal < PEDALS; pedal++) {
+    if (pedals[pedal].function != PED_VBUTTON) continue;
+    uint8_t count = virtualButtonCount(pedal);
+    for (uint8_t button = 0; button < count; button++) {
+      Button &b = vbuttons.pedals[pedal].banks[bank][button];
+      String mode = request->arg(String("mode_") + pedal + F("_") + button);
+      if (mode.length() > 0) {
+        b.mode = static_cast<Button::Mode> (mode.toInt());
+      }
+      for (uint8_t action = 0; action < MAX_ACTIONS; action++) {
+        VirtualButtonAction &a = b.actions[action];
+
+        String type = request->arg(String("type_") + pedal + F("_") + button + F("_") + action);
+        if (type.length() > 0) {
+          a.type = static_cast<VirtualButtonAction::Type> (type.toInt());
+        }
+
+        DPRINT("pedal %d, button %d, action %d = %d\n", pedal, button, action, a.type);
+        if (a.isSendMidiMessage()) {
+          saveField(request, String("channel_") + pedal + F("_") + button + F("_") + action, a.sendMidiMessage.channel);
+          saveField(request, String("code_") + pedal + F("_") + button + F("_") + action, a.sendMidiMessage.code);
+          saveField(request, String("value_") + pedal + F("_") + button + F("_") + action, a.sendMidiMessage.value);
+        } else if (a.isSendMidiStateful()) {
+          saveField(request, String("pchannel_") + pedal + F("_") + button + F("_") + action, a.sendMidiStateful.channel);
+          saveField(request, String("pmin_") + pedal + F("_") + button + F("_") + action, a.sendMidiStateful.min);
+          saveField(request, String("pmax_") + pedal + F("_") + button + F("_") + action, a.sendMidiStateful.max);
+          if (a.isSendMidiCCChange()) {
+            saveField(request, String("pcc_") + pedal + F("_") + button + F("_") + action, a.sendMidiStateful.cc);
+          }
+        } else if (a.isDeviceBank()) {
+          saveField(request, String("bmin_") + pedal + F("_") + button + F("_") + action, a.deviceBank.min);
+          saveField(request, String("bmax_") + pedal + F("_") + button + F("_") + action, a.deviceBank.max);
+          if (a.deviceBank.min >= BANKS) {
+            a.deviceBank.min = BANKS - 1;
+          }
+          if (a.deviceBank.max >= BANKS) {
+            a.deviceBank.max = BANKS - 1;
+          }
+        }
+      }
+    }
+  }
+
+  vbuttons.onReconfigure();
+
+  // TODO actually save the vbuttons to the profile
+  eeprom_update_profile();
+  eeprom_update_current_profile(currentProfile);
+  blynk_refresh();
+  alert = "Saved";
+
+  // Redirect after post
+  request->redirect(String("/vbuttons?bank=") + bank);
+}
+
+void http_handle_vbuttons_config(AsyncWebServerRequest *request){
+  uint8_t profile = request->arg("profile").toInt();
+  String fname = String("/vbuttons") + profile + ".bin";
+  if (SPIFFS.exists(fname)) {
+    AsyncWebServerResponse *response = request->beginResponse(SPIFFS, fname, "application/octet-stream");
+    request->send(response);
+  } else {
+    request->send(404);
+  }
+}
+
+void http_handle_vbuttons_config_upload(AsyncWebServerRequest *request, String filename, size_t index,
+                                        uint8_t *data, size_t len, bool final) {
+  static char *fname;
+  static File file;
+
+  if (index == 0) {
+    // upload is starting
+    uint8_t profile = request->arg("profile").toInt();
+    fname = strdup("/vbuttons0.bin");
+    fname[9] += profile;
+    file = SPIFFS.open(fname, FILE_WRITE);
+    if (!file) {
+      DPRINTLN("Can't open file %s", fname);
+      free(fname);
+      return;
+    }
+  }
+
+  DPRINTLN("Uploading at index %d, length %d", index, len);
+  if (!file.write(data, len)) {
+    DPRINTLN("Error writing to file");
+  }
+
+  if (final) {
+    file.close();
+    free(fname);
+
+    eeprom_read_vbuttons();
+    vbuttons.onReconfigure();
+  }
 }
 
 void http_handle_post_live(AsyncWebServerRequest *request) {
@@ -2552,6 +2912,7 @@ void http_setup() {
   httpServer.serveStatic("/js/bootstrap.min.js", SPIFFS, "/js/bootstrap.min.js").setDefaultFile("/js/bootstrap.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/jquery-3.4.1.slim.min.js", SPIFFS, "/js/jquery-3.4.1.slim.min.js").setDefaultFile("/js/jquery-3.4.1.slim.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/popper.min.js", SPIFFS, "/js/popper.min.js").setDefaultFile("/js/popper.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/virtualButtons.js", SPIFFS, "/js/virtualButtons.js").setDefaultFile("/js/virtualButtons.js");
 
   httpServer.on("/",                        http_handle_root);
   httpServer.on("/login",       HTTP_GET,   http_handle_login);
@@ -2568,7 +2929,12 @@ void http_setup() {
   httpServer.on("/interfaces",  HTTP_POST,  http_handle_post_interfaces);
   httpServer.on("/options",     HTTP_GET,   http_handle_options);
   httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
-  //httpServer.on("/css/floating-labels.css", http_handle_bootstrap_file);
+  httpServer.on("/vbuttons",     HTTP_GET,  http_handle_vbuttons);
+  httpServer.on("/vbuttons",     HTTP_POST, http_handle_post_vbuttons);
+  httpServer.on("/vbuttons_config", HTTP_GET, http_handle_vbuttons_config);
+  httpServer.on("/vbuttons_config", HTTP_POST, [](AsyncWebServerRequest *request){
+    request->send(201);
+  }, http_handle_vbuttons_config_upload);
 
   httpServer.on("/update",      HTTP_GET,   http_handle_update);
   httpServer.on("/update",      HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);
