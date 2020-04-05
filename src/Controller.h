@@ -393,6 +393,15 @@ void bank_update (byte b, byte p, int d = 1, bool enable = true)
             else banks[b][p].midiValue2++;
             banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);
             banks[b][p].midiCode = banks[b][p].midiValue2;
+            for (byte i = 0; i < BANKS; i++) {
+              for (byte j = 0; j < PEDALS; j++) {
+                if (banks[i][j].midiChannel == banks[b][p].midiChannel &&
+                   (banks[i][j].midiMessage == PED_PROGRAM_CHANGE_INC || banks[i][j].midiMessage == PED_PROGRAM_CHANGE_DEC)) {
+                  banks[i][j].midiValue2 = banks[b][p].midiValue2;
+                  banks[i][j].midiCode = banks[b][p].midiValue2;
+                }
+              }
+            }
             break;
 
           case PED_PROGRAM_CHANGE_DEC:
@@ -400,6 +409,16 @@ void bank_update (byte b, byte p, int d = 1, bool enable = true)
             else banks[b][p].midiValue2--;
             banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);
             banks[b][p].midiCode = banks[b][p].midiValue2;
+            for (byte i = 0; i < BANKS; i++) {
+              for (byte j = 0; j < PEDALS; j++) {
+                if (banks[i][j].midiChannel == banks[b][p].midiChannel &&
+                   (banks[i][j].midiMessage == PED_PROGRAM_CHANGE_INC || banks[i][j].midiMessage == PED_PROGRAM_CHANGE_DEC)) {
+                  banks[i][j].midiValue2 = banks[b][p].midiValue2;
+                  banks[i][j].midiCode = banks[b][p].midiValue2;
+                }
+              }
+            }
+
             break;
         }
         break;

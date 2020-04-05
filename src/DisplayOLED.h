@@ -712,6 +712,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       }
     }
     else {
+      String name = lastPedalName;
       switch (m1) {
         case midi::InvalidType:
           drawRect(display, 64-22, 15, 64+24, 15+23);
@@ -721,10 +722,17 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           display->setFont(ArialMT_Plain_24);
           display->drawString( 64 + x, 14 + y, String(m2));
           break;
+        case midi::NoteOn:
+        case midi::NoteOff:
+        case midi::ControlChange:
+          name.replace(String("###"), String(m3));
+        case midi::ProgramChange:
+        case midi::AfterTouchChannel:
+          name.replace(String("###"), String(m2));
         default:
           display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
           display->setFont(ArialMT_Plain_24);
-          display->drawString(64, 32, String(lastPedalName));
+          display->drawString(64, 32, name);
           break;
       }
     }
