@@ -179,16 +179,18 @@ const char bar1[]  = {49, 50, 51, 52, 53, 54, 55, 56, 57, 58};
 const char bar2[]  = {'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o'};
 //const char bar2[]  = {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#'};
 
-int m1, m2, m3, m4;
+int m1, m2, m3, m4, rmin, rmax;
 unsigned long endMillis2 = 0;
 
-
-void screen_info(int b1, int b2, int b3, int b4)
+//void screen_info(int b1, int b2, int b3, int b4, int m1 = 0, int m2 = MIDI_RESOLUTION - 1)
+void screen_info(int b1, int b2, int b3, int b4, int mi, int ma)
 {
   m1 = b1;
   m2 = b2;
   m3 = b3;
   m4 = b4;
+  rmin = mi;
+  rmax = ma;
   endMillis2 = millis() + LCD_LINE1_PERSISTENCE;
 }
 

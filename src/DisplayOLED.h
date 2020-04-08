@@ -557,7 +557,9 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     switch (m1) {
 
       case midi::ControlChange:
-        p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
+        //p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
+        m3 = constrain(m3, rmin, rmax);
+        p = map(m3, rmin, rmax, 0, 100);
         display->drawProgressBar(0, 54, 127, 8, p);
         break;
 
@@ -593,7 +595,9 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
         break;
 
       case midi::AfterTouchChannel:
-        p = map(m2, 0, MIDI_RESOLUTION - 1, 0, 100);
+        ///p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
+        m3 = constrain(m2, rmin, rmax);
+        p = map(m3, rmin, rmax, 0, 100);
         display->drawProgressBar(0, 54, 127, 8, p);
         break;
     }

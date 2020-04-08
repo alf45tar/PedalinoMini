@@ -459,7 +459,7 @@ void   blynk_disconnect();
 void   blynk_refresh();
 
 void   screen_update(bool);
-void   screen_info(int, int, int, int);
+void   screen_info(int, int, int, int, int = 0, int = MIDI_RESOLUTION - 1);
 void   leds_update(byte, byte, byte, byte);
 void   eeprom_update_current_profile(byte);
 bool   auto_reconnect(String ssid = "", String password = "");
