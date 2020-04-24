@@ -14,6 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <WiFiClient.h>
 #include <AsyncUDP.h>
 #include <AppleMidi.h>
+#include <ipMIDI.h>
 #include <OSCMessage.h>
 #include <OSCBundle.h>
 #include <OSCData.h>
@@ -154,24 +155,22 @@ void printMIDI (const char *interface, const midi::MidiType type, const midi::Ch
 }
 
 
-
 #ifdef NOWIFI
 #define apple_midi_start(...)
-#define rtpMIDI_listen(...)
-#define ipMIDI_listen(...)
+#define ip_midi_start(...)
 #define oscUDP_listen(...)
 #else
 
-// Forward messages received from WiFI MIDI interface to serial MIDI interface
+// Forward messages received from Apple MIDI interface to other interfaces
 
-void OnAppleMidiConnected(uint32_t ssrc, char* name)
+void OnAppleMidiConnected(const ssrc_t & ssrc, const char* name)
 {
   appleMidiConnected  = true;
   appleMidiSessionName = String(name);
   DPRINTLN("AppleMIDI Connected Session ID: %u Name: %s", ssrc, name);
 }
 
-void OnAppleMidiDisconnected(uint32_t ssrc)
+void OnAppleMidiDisconnected(const ssrc_t & ssrc)
 {
   appleMidiConnected  = false;
   appleMidiSessionName = "";
@@ -264,16 +263,16 @@ void OnAppleMidiReceivePitchBend(byte channel, int bend)
   screen_info(midi::PitchBend, bend, 0, channel);
 }
 
-void OnAppleMidiReceiveSysEx(const byte * data, uint16_t size)
+void OnAppleMidiReceiveSystemExclusive(byte* array, unsigned int size)
 {
   if (!interfaces[PED_RTPMIDI].midiIn) return;
 
-  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSysEx(size, data);
-  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSysEx(size, data);
-  BLESendSystemExclusive(data, size);
-  ipMIDISendSystemExclusive(data, size);
-  OSCSendSystemExclusive(data, size);
-  MTC.decodeMTCFullFrame(size, data);
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSysEx(size, array);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSysEx(size, array);
+  BLESendSystemExclusive(array, size);
+  ipMIDISendSystemExclusive(array, size);
+  OSCSendSystemExclusive(array, size);
+  MTC.decodeMTCFullFrame(size, array);
 }
 
 void OnAppleMidiReceiveTimeCodeQuarterFrame(byte data)
@@ -288,7 +287,7 @@ void OnAppleMidiReceiveTimeCodeQuarterFrame(byte data)
   MTC.decodMTCQuarterFrame(data);
 }
 
-void OnAppleMidiReceiveSongPosition(unsigned short beats)
+void OnAppleMidiReceiveSongPosition(unsigned int beats)
 {
   if (!interfaces[PED_RTPMIDI].midiIn) return;
 
@@ -393,34 +392,279 @@ void OnAppleMidiReceiveReset(void)
 
 void apple_midi_start()
 {
-    if (!wifiEnabled) return;
+  if (!wifiEnabled) return;
 
-  // Create a session and wait for a remote host to connect to us
-  AppleMIDI.begin("Pedalino(TM)");
+  AppleRTP_MIDI.setHandleConnected(OnAppleMidiConnected);
+  AppleRTP_MIDI.setHandleDisconnected(OnAppleMidiDisconnected);
 
-  AppleMIDI.OnConnected(OnAppleMidiConnected);
-  AppleMIDI.OnDisconnected(OnAppleMidiDisconnected);
+  // Connect the handle function called upon reception of a MIDI message from AppleMIDI interface
+  RTP_MIDI.setHandleNoteOn(OnAppleMidiNoteOn);
+  RTP_MIDI.setHandleNoteOff(OnAppleMidiNoteOff);
+  RTP_MIDI.setHandleAfterTouchPoly(OnAppleMidiReceiveAfterTouchPoly);
+  RTP_MIDI.setHandleControlChange(OnAppleMidiReceiveControlChange);
+  RTP_MIDI.setHandleProgramChange(OnAppleMidiReceiveProgramChange);
+  RTP_MIDI.setHandleAfterTouchChannel(OnAppleMidiReceiveAfterTouchChannel);
+  RTP_MIDI.setHandlePitchBend(OnAppleMidiReceivePitchBend);
+  RTP_MIDI.setHandleSystemExclusive(OnAppleMidiReceiveSystemExclusive);
+  RTP_MIDI.setHandleTimeCodeQuarterFrame(OnAppleMidiReceiveTimeCodeQuarterFrame);
+  RTP_MIDI.setHandleSongPosition(OnAppleMidiReceiveSongPosition);
+  RTP_MIDI.setHandleSongSelect(OnAppleMidiReceiveSongSelect);
+  RTP_MIDI.setHandleTuneRequest(OnAppleMidiReceiveTuneRequest);
+  RTP_MIDI.setHandleClock(OnAppleMidiReceiveClock);
+  RTP_MIDI.setHandleStart(OnAppleMidiReceiveStart);
+  RTP_MIDI.setHandleContinue(OnAppleMidiReceiveContinue);
+  RTP_MIDI.setHandleStop(OnAppleMidiReceiveStop);
+  RTP_MIDI.setHandleActiveSensing(OnAppleMidiReceiveActiveSensing);
+  RTP_MIDI.setHandleSystemReset(OnAppleMidiReceiveReset);
 
-  // Connect the handle function called upon reception of a MIDI message from WiFi MIDI interface
-  AppleMIDI.OnReceiveNoteOn(OnAppleMidiNoteOn);
-  AppleMIDI.OnReceiveNoteOff(OnAppleMidiNoteOff);
-  AppleMIDI.OnReceiveAfterTouchPoly(OnAppleMidiReceiveAfterTouchPoly);
-  AppleMIDI.OnReceiveControlChange(OnAppleMidiReceiveControlChange);
-  AppleMIDI.OnReceiveProgramChange(OnAppleMidiReceiveProgramChange);
-  AppleMIDI.OnReceiveAfterTouchChannel(OnAppleMidiReceiveAfterTouchChannel);
-  AppleMIDI.OnReceivePitchBend(OnAppleMidiReceivePitchBend);
-  AppleMIDI.OnReceiveSysEx(OnAppleMidiReceiveSysEx);
-  AppleMIDI.OnReceiveTimeCodeQuarterFrame(OnAppleMidiReceiveTimeCodeQuarterFrame);
-  AppleMIDI.OnReceiveSongPosition(OnAppleMidiReceiveSongPosition);
-  AppleMIDI.OnReceiveSongSelect(OnAppleMidiReceiveSongSelect);
-  AppleMIDI.OnReceiveTuneRequest(OnAppleMidiReceiveTuneRequest);
-  AppleMIDI.OnReceiveClock(OnAppleMidiReceiveClock);
-  AppleMIDI.OnReceiveStart(OnAppleMidiReceiveStart);
-  AppleMIDI.OnReceiveContinue(OnAppleMidiReceiveContinue);
-  AppleMIDI.OnReceiveStop(OnAppleMidiReceiveStop);
-  AppleMIDI.OnReceiveActiveSensing(OnAppleMidiReceiveActiveSensing);
-  AppleMIDI.OnReceiveReset(OnAppleMidiReceiveReset);
+  // Listen to all channels
+  RTP_MIDI.begin(MIDI_CHANNEL_OMNI);
 }
+
+
+// Forward messages received from ipMIDI interface to other interfaces
+
+void OnIpMidiNoteOn(byte channel, byte note, byte velocity)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendNoteOn(note, velocity, channel);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendNoteOn(note, velocity, channel);
+  BLESendNoteOn(note, velocity, channel);
+  AppleMidiSendNoteOn(note, velocity, channel);
+  OSCSendNoteOn(note, velocity, channel);
+  leds_update(midi::NoteOn, channel, note, velocity);
+  screen_info(midi::NoteOn, note, velocity, channel);
+}
+
+void OnIpMidiNoteOff(byte channel, byte note, byte velocity)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendNoteOff(note, velocity, channel);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendNoteOff(note, velocity, channel);
+  BLESendNoteOff(note, velocity, channel);
+  AppleMidiSendNoteOff(note, velocity, channel);
+  OSCSendNoteOff(note, velocity, channel);
+  screen_info(midi::NoteOff, note, velocity, channel);
+}
+
+void OnIpMidiReceiveAfterTouchPoly(byte channel, byte note, byte pressure)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendAfterTouch(note, pressure, channel);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendAfterTouch(note, pressure, channel);
+  BLESendAfterTouchPoly(note, pressure, channel);
+  AppleMidiSendAfterTouchPoly(note, pressure, channel);
+  OSCSendAfterTouchPoly(note, pressure, channel);
+  screen_info(midi::AfterTouchPoly, note, pressure, channel);
+}
+
+void OnIpMidiReceiveControlChange(byte channel, byte number, byte value)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendControlChange(number, value, channel);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendControlChange(number, value, channel);
+  BLESendControlChange(number, value, channel);
+  AppleMidiSendControlChange(number, value, channel);
+  OSCSendControlChange(number, value, channel);
+  leds_update(midi::ControlChange, channel, number, value);
+  screen_info(midi::ControlChange, number, value, channel);
+}
+
+void OnIpMidiReceiveProgramChange(byte channel, byte number)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendProgramChange(number, channel);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendProgramChange(number, channel);
+  BLESendProgramChange(number, channel);
+  OSCSendProgramChange(number, channel);
+  leds_update(midi::ProgramChange, channel, number, 0);
+  screen_info(midi::ProgramChange, number, 0, channel);
+}
+
+void OnIpMidiReceiveAfterTouchChannel(byte channel, byte pressure)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendAfterTouch(pressure, channel);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendAfterTouch(pressure, channel);
+  BLESendAfterTouch(pressure, channel);
+  AppleMidiSendAfterTouch(pressure, channel);
+  OSCSendAfterTouch(pressure, channel);
+  screen_info(midi::AfterTouchChannel, pressure, 0, channel);
+}
+
+void OnIpMidiReceivePitchBend(byte channel, int bend)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendPitchBend(bend, channel);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendPitchBend(bend, channel);
+  BLESendPitchBend(bend, channel);
+  AppleMidiSendPitchBend(bend, channel);
+  OSCSendPitchBend(bend, channel);
+  screen_info(midi::PitchBend, bend, 0, channel);
+}
+
+void OnIpMidiReceiveSystemExclusive(byte* array, unsigned int size)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSysEx(size, array);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSysEx(size, array);
+  BLESendSystemExclusive(array, size);
+  AppleMidiSendSystemExclusive(array, size);
+  OSCSendSystemExclusive(array, size);
+  MTC.decodeMTCFullFrame(size, array);
+}
+
+void OnIpMidiReceiveTimeCodeQuarterFrame(byte data)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendTimeCodeQuarterFrame(data);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendTimeCodeQuarterFrame(data);
+  BLESendTimeCodeQuarterFrame(data);
+  AppleMidiSendTimeCodeQuarterFrame(data);
+  OSCSendTimeCodeQuarterFrame(data);
+  MTC.decodMTCQuarterFrame(data);
+}
+
+void OnIpMidiReceiveSongPosition(unsigned int beats)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongPosition(beats);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongPosition(beats);
+  BLESendSongPosition(beats);
+  AppleMidiSendSongPosition(beats);
+  OSCSendSongPosition(beats);
+}
+
+void OnIpMidiReceiveSongSelect(byte songnumber)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongSelect(songnumber);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongSelect(songnumber);
+  BLESendSongSelect(songnumber);
+  AppleMidiSendSongSelect(songnumber);
+  OSCSendSongSelect(songnumber);
+}
+
+void OnIpMidiReceiveTuneRequest(void)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendTuneRequest();
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendTuneRequest();
+  BLESendTuneRequest();
+  AppleMidiSendTuneRequest();
+  OSCSendTuneRequest();
+}
+
+void OnIpMidiReceiveClock(void)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Clock);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Clock);
+  BLESendClock();
+  AppleMidiSendClock();
+  OSCSendClock();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) bpm = MTC.tapTempo();
+}
+
+void OnIpMidiReceiveStart(void)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Start);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Start);
+  BLESendStart();
+  AppleMidiSendStart();
+  OSCSendStart();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendPlay();
+}
+
+void OnIpMidiReceiveContinue(void)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Continue);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Continue);
+  BLESendContinue();
+  AppleMidiSendContinue();
+  OSCSendContinue();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendContinue();
+}
+
+void OnIpMidiReceiveStop(void)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Stop);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Stop);
+  BLESendStop();
+  AppleMidiSendStop();
+  OSCSendStop();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendStop();
+}
+
+void OnIpMidiReceiveActiveSensing(void)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::ActiveSensing);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::ActiveSensing);
+  BLESendActiveSensing();
+  AppleMidiSendActiveSensing();
+  OSCSendActiveSensing();
+}
+
+void OnIpMidiReceiveReset(void)
+{
+  if (!interfaces[PED_IPMIDI].midiIn) return;
+
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::SystemReset);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::SystemReset);
+  BLESendSystemReset();
+  AppleMidiSendSystemReset();
+  OSCSendSystemReset();
+}
+
+void ip_midi_start()
+{
+  if (!wifiEnabled) return;
+
+  // Connect the handle function called upon reception of a MIDI message from ipMIDI interface
+  IP_MIDI.setHandleNoteOn(OnIpMidiNoteOn);
+  IP_MIDI.setHandleNoteOff(OnIpMidiNoteOff);
+  IP_MIDI.setHandleAfterTouchPoly(OnIpMidiReceiveAfterTouchPoly);
+  IP_MIDI.setHandleControlChange(OnIpMidiReceiveControlChange);
+  IP_MIDI.setHandleProgramChange(OnIpMidiReceiveProgramChange);
+  IP_MIDI.setHandleAfterTouchChannel(OnIpMidiReceiveAfterTouchChannel);
+  IP_MIDI.setHandlePitchBend(OnIpMidiReceivePitchBend);
+  IP_MIDI.setHandleSystemExclusive(OnIpMidiReceiveSystemExclusive);
+  IP_MIDI.setHandleTimeCodeQuarterFrame(OnIpMidiReceiveTimeCodeQuarterFrame);
+  IP_MIDI.setHandleSongPosition(OnIpMidiReceiveSongPosition);
+  IP_MIDI.setHandleSongSelect(OnIpMidiReceiveSongSelect);
+  IP_MIDI.setHandleTuneRequest(OnIpMidiReceiveTuneRequest);
+  IP_MIDI.setHandleClock(OnIpMidiReceiveClock);
+  IP_MIDI.setHandleStart(OnIpMidiReceiveStart);
+  IP_MIDI.setHandleContinue(OnIpMidiReceiveContinue);
+  IP_MIDI.setHandleStop(OnIpMidiReceiveStop);
+  IP_MIDI.setHandleActiveSensing(OnIpMidiReceiveActiveSensing);
+  IP_MIDI.setHandleSystemReset(OnIpMidiReceiveReset);
+
+  // Listen to all channels
+  IP_MIDI.begin(MIDI_CHANNEL_OMNI);
+}
+
 
 // Forward messages received from WiFI OSC interface to serial MIDI interface
 
@@ -1066,221 +1310,6 @@ void oscOnPacket(AsyncUDPPacket packet) {
   } else {
     DPRINTLN("OSC error: %d", oscMsg.getError());
   }
-}
-
-
-// Listen to incoming ipMIDI messages from WiFi
-
-void ipMidiOnPacket(AsyncUDPPacket packet) {
-
-  byte status, type, channel;
-  byte data[2] = {0, 0};
-  byte note, velocity, pressure, number, value;
-  int  bend;
-  unsigned int beats;
-
-  if (!wifiEnabled) return;
-  if (!WiFi.isConnected()) return;
-
-  if (!interfaces[PED_IPMIDI].midiIn) return;
-
-  while (packet.available() > 0) {
-
-    packet.read(&status, 1);
-    type    = DIN_MIDI.getTypeFromStatusByte(status);
-    channel = DIN_MIDI.getChannelFromStatusByte(status);
-
-    switch (type) {
-
-      case midi::NoteOff:
-        packet.read(data, 2);
-        note     = data[0];
-        velocity = data[1];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendNoteOff(note, velocity, channel);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendNoteOff(note, velocity, channel);
-        BLESendNoteOff(note, velocity, channel);
-        AppleMidiSendNoteOff(note, velocity, channel);
-        OSCSendNoteOff(note, velocity, channel);
-        break;
-
-      case midi::NoteOn:
-        packet.read(data, 2);
-        note     = data[0];
-        velocity = data[1];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendNoteOn(note, velocity, channel);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendNoteOn(note, velocity, channel);
-        BLESendNoteOn(note, velocity, channel);
-        AppleMidiSendNoteOn(note, velocity, channel);
-        OSCSendNoteOn(note, velocity, channel);
-        break;
-
-      case midi::AfterTouchPoly:
-        packet.read(data, 2);
-        note     = data[0];
-        pressure = data[1];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendAfterTouch(note, pressure, channel);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendAfterTouch(note, pressure, channel);
-        BLESendAfterTouchPoly(note, pressure, channel);
-        AppleMidiSendAfterTouchPoly(note, pressure, channel);
-        OSCSendAfterTouchPoly(note, pressure, channel);
-        break;
-
-      case midi::ControlChange:
-        packet.read(data, 2);
-        number  = data[0];
-        value   = data[1];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendControlChange(number, value, channel);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendControlChange(number, value, channel);
-        BLESendControlChange(number, value, channel);
-        AppleMidiSendControlChange(number, value, channel);
-        OSCSendControlChange(number, value, channel);
-        break;
-
-      case midi::ProgramChange:
-        packet.read(data, 1);
-        number  = data[0];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendProgramChange(number, channel);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendProgramChange(number, channel);
-        BLESendProgramChange(number, channel);
-        AppleMidiSendProgramChange(number, channel);
-        OSCSendProgramChange(number, channel);
-        break;
-
-      case midi::AfterTouchChannel:
-        packet.read(data, 1);
-        pressure = data[0];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendAfterTouch(pressure, channel);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendAfterTouch(pressure, channel);
-        BLESendAfterTouch(pressure, channel);
-        AppleMidiSendAfterTouch(pressure, channel);
-        OSCSendAfterTouch(pressure, channel);
-        break;
-
-      case midi::PitchBend:
-        packet.read(data, 2);
-        bend = data[1] << 7 | data[0];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendPitchBend(bend, channel);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendPitchBend(bend, channel);
-        BLESendPitchBend(bend, channel);
-        AppleMidiSendPitchBend(bend, channel);
-        OSCSendPitchBend(bend, channel);
-        break;
-
-      case midi::SystemExclusive:
-        while (packet.read(data, 1) && data[0] != 0xf7);
-        break;
-
-      case midi::TimeCodeQuarterFrame:
-        packet.read(data, 1);
-        value = data[0];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendTimeCodeQuarterFrame(value);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendTimeCodeQuarterFrame(value);
-        BLESendTimeCodeQuarterFrame(value);
-        AppleMidiSendTimeCodeQuarterFrame(value);
-        OSCSendTimeCodeQuarterFrame(value);
-        MTC.decodMTCQuarterFrame(value);
-      break;
-
-      case midi::SongPosition:
-        packet.read(data, 2);
-        beats = data[1] << 7 | data[0];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongPosition(beats);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongPosition(beats);
-        BLESendSongPosition(beats);
-        AppleMidiSendSongPosition(beats);
-        OSCSendSongPosition(beats);
-        break;
-
-      case midi::SongSelect:
-        packet.read(data, 1);
-        number = data[0];
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSongSelect(number);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSongSelect(number);
-        BLESendSongSelect(number);
-        AppleMidiSendSongSelect(number);
-        OSCSendSongSelect(number);
-        break;
-
-      case midi::TuneRequest:
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::TuneRequest);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::TuneRequest);
-        BLESendTuneRequest();
-        AppleMidiSendTuneRequest();
-        OSCSendTuneRequest();
-        break;
-
-      case midi::Clock:
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Clock);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Clock);
-        BLESendClock();
-        AppleMidiSendClock();
-        OSCSendClock();
-        if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) bpm = MTC.tapTempo();
-        break;
-
-      case midi::Start:
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Start);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Start);
-        BLESendStart();
-        AppleMidiSendStart();
-        OSCSendStart();
-        if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendPlay();
-        break;
-
-      case midi::Continue:
-        if (interfaces[PED_USBMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Continue);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Continue);
-        BLESendContinue();
-        AppleMidiSendContinue();
-        OSCSendContinue();
-        if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendContinue();
-        break;
-
-      case midi::Stop:
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::Stop);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Stop);
-        BLESendStop();
-        AppleMidiSendStop();
-        OSCSendStop();
-        if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendStop();
-        break;
-
-      case midi::ActiveSensing:
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::ActiveSensing);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::ActiveSensing);
-        BLESendActiveSensing();
-        AppleMidiSendActiveSensing();
-        OSCSendActiveSensing();
-        break;
-
-      case midi::SystemReset:
-        if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::SystemReset);
-        if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::SystemReset);
-        BLESendSystemReset();
-        AppleMidiSendSystemReset();
-        OSCSendSystemReset();
-        break;
-
-      default:
-        DPRINT("ipMIDI status byte %d unknown/d", status);
-        packet.read(data, 1);
-        break;
-    }
-    leds_update(type, channel, data[0], data[1]);
-    DPRINTMIDI(packet.remoteIP().toString().c_str(), status, data);
-  }
-
-}
-
-
-// Listen to incoming AppleMIDI messages from WiFi
-
-inline void rtpMIDI_listen() {
-
-  if (!wifiEnabled) return;
-  if (!WiFi.isConnected()) return;
-
-  AppleMIDI.read();
 }
 
 #endif  // NOWIFI

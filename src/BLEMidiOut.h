@@ -10,7 +10,8 @@ __________           .___      .__  .__                 _____  .__       .__    
  */
 
 #ifdef BLE
-#include "BleMidi.h"
+#include <BLE-MIDI.h>
+#include <hardware/BLE-MIDI_ESP32.h>
 #endif
 
 #define BLE_LED         2
@@ -20,7 +21,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 // Bluetooth LE MIDI interface
 
 #ifdef BLE
-BLEMIDI_CREATE_INSTANCE(BleMIDI);
+BLEMIDI_CREATE_INSTANCE(BLEMIDI_NAMESPACE::BLEMIDI_ESP32, host.c_str(), BLE_MIDI);
 #endif
 
 bool                  bleMidiConnected = false;
@@ -50,92 +51,92 @@ unsigned long         bleLastOn        = 0;
 
 void BLESendNoteOn(byte note, byte velocity, byte channel)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendNoteOn(note, velocity, channel);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendNoteOn(note, velocity, channel);
 }
 
 void BLESendNoteOff(byte note, byte velocity, byte channel)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendNoteOff(note, velocity, channel);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendNoteOff(note, velocity, channel);
 }
 
 void BLESendAfterTouchPoly(byte note, byte pressure, byte channel)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendAfterTouch(note, pressure, channel);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendAfterTouch(note, pressure, channel);
 }
 
 void BLESendControlChange(byte number, byte value, byte channel)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendControlChange(number, value, channel);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendControlChange(number, value, channel);
 }
 
 void BLESendProgramChange(byte number, byte channel)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendProgramChange(number, channel);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendProgramChange(number, channel);
 }
 
 void BLESendAfterTouch(byte pressure, byte channel)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendAfterTouch(pressure, channel);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendAfterTouch(pressure, channel);
 }
 
 void BLESendPitchBend(int bend, byte channel)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendPitchBend(bend, channel);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendPitchBend(bend, channel);
 }
 
 void BLESendSystemExclusive(const byte* array, unsigned size)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendSysEx(array, size);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendSysEx(size, array);
 }
 
 void BLESendTimeCodeQuarterFrame(byte data)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendTimeCodeQuarterFrame(data);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendTimeCodeQuarterFrame(data);
 }
 
 void BLESendSongPosition(unsigned int beats)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendSongPosition(beats);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendSongPosition(beats);
 }
 
 void BLESendSongSelect(byte songnumber)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendSongSelect(songnumber);
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendSongSelect(songnumber);
 }
 
 void BLESendTuneRequest(void)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendTuneRequest();
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendTuneRequest();
 }
 
 void BLESendClock(void)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendClock();
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendClock();
 }
 
 void BLESendStart(void)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendStart();
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendStart();
 }
 
 void BLESendContinue(void)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendContinue();
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendContinue();
 }
 
 void BLESendStop(void)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendStop();
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendStop();
 }
 
 void BLESendActiveSensing(void)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendActiveSensing();
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendActiveSensing();
 }
 
 void BLESendSystemReset(void)
 {
-  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BleMIDI.sendReset();
+  if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendSystemReset();
 }
 
 #endif  // NOBLE

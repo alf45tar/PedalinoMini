@@ -492,11 +492,22 @@ void loop()
     DPRINTMIDI("USB MIDI", USB_MIDI.getType(), USB_MIDI.getChannel(), USB_MIDI.getData1(), USB_MIDI.getData2());
 
   if (interfaces[PED_DINMIDI].midiIn && DIN_MIDI.read())
-    DPRINTMIDI("Serial MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
+    DPRINTMIDI("DIN MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
 
+#ifdef BLE
+  if (interfaces[PED_BLEMIDI].midiIn && BLE_MIDI.read())
+    DPRINTMIDI("BLE MIDI", BLE_MIDI.getType(), BLE_MIDI.getChannel(), BLE_MIDI.getData1(), BLE_MIDI.getData2());
+#endif
+
+#ifdef WIFI
   if (wifiEnabled) {
-    // Listen to incoming AppleMIDI messages from WiFi
-    rtpMIDI_listen();
+    if (WiFi.isConnected()) {
+      if (interfaces[PED_RTPMIDI].midiIn && RTP_MIDI.read())
+        DPRINTMIDI("RTP MIDI", RTP_MIDI.getType(), RTP_MIDI.getChannel(), RTP_MIDI.getData1(), RTP_MIDI.getData2());
+      
+      if (interfaces[PED_IPMIDI].midiIn && IP_MIDI.read())
+        DPRINTMIDI("IP  MIDI", IP_MIDI.getType(), IP_MIDI.getChannel(), IP_MIDI.getData1(), IP_MIDI.getData2());
+    }
 
     http_run();
 
@@ -511,6 +522,7 @@ void loop()
     Debug.handle();
 #endif
   }
+#endif // WIFI
 
   // Update display
   display_update();

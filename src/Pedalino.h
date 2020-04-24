@@ -75,25 +75,11 @@ ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 #define MIDI_BAUD_RATE                  31250
 #define HIGH_SPEED_SERIAL_BAUD_RATE     1000000
 
-struct Serial1MIDISettings : public midi::DefaultSettings
-{
-  static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = USB_MIDI_IN_PIN;
-  static const int8_t TxPin  = USB_MIDI_OUT_PIN;
-};
-
-struct Serial2MIDISettings : public midi::DefaultSettings
-{
-  static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = DIN_MIDI_IN_PIN;
-  static const int8_t TxPin  = DIN_MIDI_OUT_PIN;
-};
-
 #define SERIAL_MIDI_USB   Serial1
 #define SERIAL_MIDI_DIN   Serial2
 
-MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, Serial1MIDISettings);
-MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MIDISettings);
+MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI);
+MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI);
 
 
 typedef uint8_t   byte;
