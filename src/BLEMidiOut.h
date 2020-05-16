@@ -44,7 +44,7 @@ unsigned long         bleLastOn        = 0;
 #define BLESendClock(...)
 #define BLESendStart(...)
 #define BLESendContinue(...)
-#define BLESendStop(...) {}
+#define BLESendStop(...)
 #define BLESendActiveSensing(...)
 #define BLESendSystemReset(...)
 #else

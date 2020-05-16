@@ -385,10 +385,22 @@ void display_progress_bar_2_update(unsigned int progress, unsigned int total)
 
 void display_progress_bar_2_label(unsigned int label, unsigned int x)
 {
+  const String l(label);
+
   display.setColor(WHITE);
   display.setFont(ArialMT_Plain_10);
-  display.setTextAlignment(TEXT_ALIGN_CENTER);
-  display.drawString(x, 42, String(label));
+  if (x <= display.getStringWidth(l) / 2) {
+    display.setTextAlignment(TEXT_ALIGN_LEFT);
+    display.drawString(0, 42, l);
+  }
+  else if (x >= (128 - display.getStringWidth(l) / 2)) {
+    display.setTextAlignment(TEXT_ALIGN_RIGHT);
+    display.drawString(129, 42, l);
+  }
+  else {
+    display.setTextAlignment(TEXT_ALIGN_CENTER);
+    display.drawString(x, 42, l);
+  }
   display.drawLine(x, 53, x, 63);
   display.display();
 }
@@ -561,6 +573,7 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
         m3 = constrain(m3, rmin, rmax);
         p = map(m3, rmin, rmax, 0, 100);
         display->drawProgressBar(0, 54, 127, 8, p);
+        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 3, 124));
         break;
 
       case midi::PitchBend:

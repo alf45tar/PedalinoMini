@@ -23,7 +23,7 @@ void OnUSBMidiNoteOn(byte channel, byte note, byte velocity)
   AppleMidiSendNoteOn(note, velocity, channel);
   OSCSendNoteOn(note, velocity, channel);
   leds_update(midi::NoteOn, channel, note, velocity);
-  screen_info(midi::NoteOff, note, velocity, channel);
+  screen_info(midi::NoteOn, note, velocity, channel);
 }
 
 void OnUSBMidiNoteOff(byte channel, byte note, byte velocity)
@@ -455,6 +455,7 @@ void serial_midi_connect()
   // Override default serial port pins
   // Without pins re-mapping Serial1 cannot be used on many ESP32 dev boards.
   // Default Serial1 pins (RX1=GPIO9 TX1=GPIO10) are mainly used for flash memory.
+  SERIAL_MIDI_USB.end();
   SERIAL_MIDI_USB.begin(MIDI_BAUD_RATE, SERIAL_8N1, USB_MIDI_IN_PIN, USB_MIDI_OUT_PIN);
   // Enable/disable MIDI Thru
   interfaces[PED_USBMIDI].midiThru ? USB_MIDI.turnThruOn() : USB_MIDI.turnThruOff();
@@ -481,6 +482,7 @@ void serial_midi_connect()
 
   // Initiate serial MIDI communications, listen to all channels
   DIN_MIDI.begin(MIDI_CHANNEL_OMNI);
+  SERIAL_MIDI_DIN.end();
   SERIAL_MIDI_DIN.begin(MIDI_BAUD_RATE, DIN_MIDI_IN_PIN, DIN_MIDI_OUT_PIN);
   // Enable/disable MIDI Thru
   interfaces[PED_DINMIDI].midiThru ? DIN_MIDI.turnThruOn() : DIN_MIDI.turnThruOff();
