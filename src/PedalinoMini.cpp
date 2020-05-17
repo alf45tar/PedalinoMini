@@ -210,7 +210,14 @@ void setup()
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
-
+  
+  if (!SPIFFS.begin()) {
+      DPRINT("SPIFFS mount FAILED\n");
+  }
+  else {
+    DPRINT("SPIFFS mount OK\n");
+  }
+  
   eeprom_init_or_erase();
   eeprom_read_global();
 

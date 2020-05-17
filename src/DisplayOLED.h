@@ -362,7 +362,7 @@ void display_progress_bar_title2(String title1, String title2)
   display.setTextAlignment(TEXT_ALIGN_CENTER);
   display.setFont(ArialMT_Plain_10);
   display.drawString(display.getWidth() / 2, 0, title1.c_str());
-  if (title2.length() < 15) display.setFont(ArialMT_Plain_16);
+  if (display.getStringWidth(title2) <= display.width()) display.setFont(ArialMT_Plain_16);
   display.drawString(display.getWidth() / 2, 10, title2.c_str());
   display.display();
 }
@@ -395,7 +395,7 @@ void display_progress_bar_2_label(unsigned int label, unsigned int x)
   }
   else if (x >= (128 - display.getStringWidth(l) / 2)) {
     display.setTextAlignment(TEXT_ALIGN_RIGHT);
-    display.drawString(129, 42, l);
+    display.drawString(display.width() + 1, 42, l);
   }
   else {
     display.setTextAlignment(TEXT_ALIGN_CENTER);

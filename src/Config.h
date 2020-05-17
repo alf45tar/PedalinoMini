@@ -11,8 +11,223 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #include <Preferences.h>
 #include <nvs_flash.h>
+#include <ArduinoJson.h>
+#include <SPIFFS.h>
 
 Preferences preferences;
+
+
+#ifdef BOARD_HAS_PSRAM
+struct SpiRamAllocator {
+  void* allocate(size_t size) {
+    return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
+  }
+  void deallocate(void* pointer) {
+    heap_caps_free(pointer);
+  }
+};
+
+using SpiRamJsonDocument = BasicJsonDocument<SpiRamAllocator>;
+#endif
+
+//
+//  Save configuration to SPIFFS file
+//
+
+void spiffs_save_config(String filename) {
+
+  DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
+  DPRINT("Memory allocated for JSON document: %d bytes\n", ESP.getMaxAllocHeap());
+
+  JsonArray jpedals = jdoc.createNestedArray("Pedals");
+  for (byte p = 0; p < PEDALS; p++) {
+      JsonObject jo = jpedals.createNestedObject();
+      jo["Pedal"]           = p + 1;
+      jo["Function"]        = pedals[p].function;
+      jo["AutoSensing"]     = pedals[p].autoSensing;
+      jo["Mode"]            = pedals[p].mode;
+      jo["PressMode"]       = pedals[p].pressMode;
+      jo["InvertPolarity"]  = pedals[p].invertPolarity;
+      jo["MapFunction"]     = pedals[p].mapFunction;
+      jo["Min"]             = pedals[p].expZero;
+      jo["Max"]             = pedals[p].expMax;
+  }
+
+  JsonArray jbanks = jdoc.createNestedArray("Banks");
+  for (byte b = 0; b < BANKS; b++) {
+    for (byte p = 0; p < PEDALS; p++) {
+      JsonObject jo = jbanks.createNestedObject();
+      jo["Bank"]            = b + 1;
+      jo["Pedal"]           = p + 1;
+      jo["Name"]            = banks[b][p].pedalName;
+      jo["Message"]         = banks[b][p].midiMessage;
+      jo["Channel"]         = banks[b][p].midiChannel;
+      jo["Code"]            = banks[b][p].midiCode;
+      jo["Value1"]          = banks[b][p].midiValue1;
+      jo["Value2"]          = banks[b][p].midiValue2;
+      jo["Value3"]          = banks[b][p].midiValue3;
+    }
+  }
+
+  JsonArray jinterfaces = jdoc.createNestedArray("Interfaces");
+  for (byte i = 0; i < INTERFACES; i++) {
+      JsonObject jo = jinterfaces.createNestedObject();
+      jo["Interface"]       = i + 1;
+      jo["Name"]            = interfaces[i].name;
+      jo["In"]              = interfaces[i].midiIn;
+      jo["Out"]             = interfaces[i].midiOut;
+      jo["Thru"]            = interfaces[i].midiThru;
+      jo["Routing"]         = interfaces[i].midiRouting;
+      jo["Clock"]           = interfaces[i].midiClock;
+  }
+
+  JsonArray jsequences = jdoc.createNestedArray("Sequences");
+  for (byte s = 0; s < SEQUENCES; s++) {
+    for (byte t = 0; t < STEPS; t++) {
+      JsonObject jo = jsequences.createNestedObject();
+      jo["Sequence"]        = s + 1;
+      jo["Step"]            = t + 1;
+      jo["Message"]         = sequences[s][t].midiMessage;
+      jo["Channel"]         = sequences[s][t].midiChannel;
+      jo["Code"]            = sequences[s][t].midiCode;
+      jo["Value1"]          = sequences[s][t].midiValue1;
+      jo["Value2"]          = sequences[s][t].midiValue2;
+      jo["Value3"]          = sequences[s][t].midiValue3;  
+    }
+  }
+  jdoc.shrinkToFit();
+  DPRINT("Memory used by JSON document: %d bytes\n", jdoc.memoryUsage());
+
+  if (SPIFFS.exists(filename) && !SPIFFS.remove(filename)) {
+    DPRINTLN("SPIFFS: can't remove file %s\n", filename.c_str());
+    return;
+  }
+
+  if ((SPIFFS.totalBytes() - SPIFFS.usedBytes()) < (measureJson(jdoc) + 1)) {
+    DPRINTLN("SPIFFS: not enough space to write file %s\n", filename.c_str());
+    return;
+  }
+
+  DPRINT("Writing %s to SPIFFS ... ", filename.c_str());
+  File file = SPIFFS.open(filename, FILE_WRITE);
+  if (!file) {
+    DPRINT("can't open file\n");
+    return;
+  }
+
+  // Serialize JSON to file
+  if (serializeJson(jdoc, file) == 0) {
+    DPRINT("serializeJson() failed to write %d bytes\n", measureJson(jdoc));
+    file.close();
+    return;
+  }
+
+  file.close();
+  DPRINT("done (%d bytes written)\n", measureJson(jdoc));
+}
+
+//
+//  Load configuration from SPIFFS file
+//
+
+void spiffs_load_config(String filename) {
+
+  DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
+  DPRINT("Memory allocated for JSON document: %d bytes\n", ESP.getMaxAllocHeap());
+
+  DPRINT("Reading %s from SPIFFS ... ", filename.c_str());
+  File file = SPIFFS.open(filename, FILE_READ);
+  if (!file) {
+    DPRINT("can't open file\n");
+    return;
+  }
+
+  DeserializationError err = deserializeJson(jdoc, file);
+  if (err) {
+    DPRINT("deserializeJson() failed with code %s\n", err.c_str());
+    return;
+  }
+
+  file.close();
+  DPRINT("done\n");
+
+  jdoc.shrinkToFit();
+  DPRINT("Memory used by JSON document: %d bytes\n", jdoc.memoryUsage());
+
+  // Get a reference to the root object
+  JsonObject jro = jdoc.as<JsonObject>();
+  // Loop through all the key-value pairs in obj
+  for (JsonPair jp : jro) {
+    if (String(jp.key().c_str()) == String("Pedals")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          int p = jo["Pedal"];
+          p--;
+          pedals[p].function        = jo["Function"];
+          pedals[p].autoSensing     = jo["AutoSensing"];
+          pedals[p].mode            = jo["Mode"];
+          pedals[p].pressMode       = jo["PressMode"];
+          pedals[p].invertPolarity  = jo["InvertPolarity"];
+          pedals[p].mapFunction     = jo["MapFunction"];
+          pedals[p].expZero         = jo["Min"];
+          pedals[p].expMax          = jo["Max"];
+        }
+      }
+    }
+    else if (String(jp.key().c_str()) == String("Banks")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          int b = jo["Bank"];
+          b--;
+          int p = jo["Pedal"];
+          p--;
+          strlcpy(banks[b][p].pedalName, jo["Name"] | "", sizeof(banks[b][p].pedalName));
+          banks[b][p].midiMessage   = jo["Message"];
+          banks[b][p].midiChannel   = jo["Channel"];
+          banks[b][p].midiCode      = jo["Code"];
+          banks[b][p].midiValue1    = jo["Value1"];
+          banks[b][p].midiValue2    = jo["Value2"];
+          banks[b][p].midiValue3    = jo["Value3"];
+        }
+      }
+    }
+    else if (String(jp.key().c_str()) == String("Interfaces")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          int i = jo["Interface"];
+          i--;
+          strlcpy(interfaces[i].name, jo["Name"] | "", sizeof(interfaces[i].name));
+          interfaces[i].midiIn        = jo["In"];
+          interfaces[i].midiOut       = jo["Out"];
+          interfaces[i].midiThru      = jo["Thru"];
+          interfaces[i].midiRouting   = jo["Routing"];
+          interfaces[i].midiClock     = jo["Clock"];
+        }
+      }
+    }
+    else if (String(jp.key().c_str()) == String("Sequences")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          int s = jo["Sequence"];
+          s--;
+          int t = jo["Step"];
+          t--;
+          sequences[s][t].midiMessage = jo["Message"];
+          sequences[s][t].midiChannel = jo["Channel"];
+          sequences[s][t].midiCode    = jo["Code"];
+          sequences[s][t].midiValue1  = jo["Value1"];
+          sequences[s][t].midiValue2  = jo["Value2"];
+          sequences[s][t].midiValue3  = jo["Value3"]; 
+        }
+      }
+    } 
+  }
+}
+
 
 //
 //  Load factory deafult value for banks, pedals and interfaces
@@ -270,6 +485,8 @@ void load_factory_default()
   kt[5].value = 5;
   kt[5].adcThreshold = 945;
   kt[5].adcTolerance = 35;
+
+  spiffs_load_config("/default.ini");
 }
 
 void eeprom_update_device_name(String name = getChipId())
@@ -445,6 +662,8 @@ void eeprom_update_profile(byte profile = currentProfile)
   preferences.end();
 
   DPRINT(" ... done\n");
+
+  spiffs_save_config("/default.ini");
 
   blynk_refresh();
 }
