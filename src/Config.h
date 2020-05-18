@@ -39,6 +39,25 @@ void spiffs_save_config(String filename) {
   DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
   DPRINT("Memory allocated for JSON document: %d bytes\n", ESP.getMaxAllocHeap());
 
+  JsonArray jglobals = jdoc.createNestedArray("Globals");
+  JsonObject jo = jglobals.createNestedObject();
+  jo["Hostname"]            = host;
+  jo["BootMode"]            = bootMode;
+  jo["SSID"]                = wifiSSID;
+  jo["Password"]            = wifiPassword;
+  jo["SSIDsoftAP"]          = ssidSoftAP;
+  jo["PasswordSoftAP"]      = passwordSoftAP;
+  jo["Theme"]               = theme;
+  jo["Profile"]             = currentProfile;
+  jo["PressTime"]           = pressTime;
+  jo["DoublePressTime"]     = doublePressTime;
+  jo["LongPressTime"]       = longPressTime;
+  jo["RepeatPressTime"]     = repeatPressTime;
+  jo["EncoderSesitivity"]   = encoderSensitivity;
+  jo["TapDanceMode"]        = tapDanceMode;
+  jo["RepeatOnBankSwitch"]  = repeatOnBankSwitch;
+  jo["TapDanceBank"]        = tapDanceBank;
+
   JsonArray jpedals = jdoc.createNestedArray("Pedals");
   for (byte p = 0; p < PEDALS; p++) {
       JsonObject jo = jpedals.createNestedObject();
@@ -158,7 +177,30 @@ void spiffs_load_config(String filename) {
   JsonObject jro = jdoc.as<JsonObject>();
   // Loop through all the key-value pairs in obj
   for (JsonPair jp : jro) {
-    if (String(jp.key().c_str()) == String("Pedals")) {
+    if (String(jp.key().c_str()) == String("Globals")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          host                = String((const char *)jo["Hostname"]);
+          bootMode            = jo["BootMode"];
+          wifiSSID            = String((const char *)jo["SSID"]);
+          wifiPassword        = String((const char *)jo["Password"]);
+          ssidSoftAP          = String((const char *)jo["SSIDsoftAP"]);
+          passwordSoftAP      = String((const char *)jo["PasswordSoftAP"]);
+          theme               = String((const char *)jo["Theme"]);
+          currentProfile      = jo["Profile"];
+          pressTime           = jo["PressTime"];
+          doublePressTime     = jo["DoublePressTime"];
+          longPressTime       = jo["LongPressTime"];
+          repeatPressTime     = jo["RepeatPressTime"];
+          encoderSensitivity  = jo["EncoderSesitivity"];
+          tapDanceMode        = jo["TapDanceMode"];
+          repeatOnBankSwitch  = jo["RepeatOnBankSwitch"];
+          tapDanceBank        = jo["TapDanceBank"];
+        }
+      }
+    }
+    else if (String(jp.key().c_str()) == String("Pedals")) {
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
