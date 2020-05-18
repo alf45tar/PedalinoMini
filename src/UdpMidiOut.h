@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
 #include <AsyncUDP.h>
-#include <AppleMidi.h>
+#include <AppleMIDI.h>
 #include <ipMIDI.h>
 #include <OSCMessage.h>
 #include <OSCBundle.h>
