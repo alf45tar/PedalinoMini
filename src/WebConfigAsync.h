@@ -103,9 +103,13 @@ void get_top_page(int p = 0) {
   page += (p == 6 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/options'>Options</a>");
   page += F("</li>");
+  page += F("<li class='nav-item");
+  page += (p == 7 ? F(" active'>") : F("'>"));
+  page += F("<a class='nav-link' href='/configurations'>Configurations</a>");
+  page += F("</li>");
   page += F("</ul>");
   }
-  if (p != 0 && p != 6)
+  if (p != 0 && p != 6 && p != 7)
   {
     page += F("<form class='form-inline my-2 my-lg-0'>");
     page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
@@ -1701,6 +1705,73 @@ void get_options_page() {
   get_footer_page();
 }
 
+
+void get_configurations_page() {
+
+  get_top_page(7);
+
+  page += F("<form method='post'>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-4'>");
+  page += F("<label for='newconfiguration'>New Configuration</label>");
+  page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
+  page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
+  page += F("Type a name for the new configuration and press Create or Upload. Once created/uploaded is available on below configuration list.<br>'default' configuration (if exist) is loaded on boot.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<p></p>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-4'>");
+  page += F("<button type='submit' name='action' value='create' class='btn btn-primary'>Create</button>");
+  page += F(" or ");
+  page += F("<button type='submit' name='action' value='upload' class='btn btn-primary'>Upload</button>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-4'>");
+  page += F("<label for='filename'>Available Configurations</label>");
+  page += F("<select class='custom-select' id='filename' name='filename'>");
+
+  File root = SPIFFS.open("/");
+  File file = root.openNextFile();
+  while (file) {
+    String c(file.name());
+      
+    if (c.length() > 4 && c.lastIndexOf(".cfg") == (c.length() - 4)) {
+      DPRINT("%s\n", c.c_str());
+      page += F("<option value='");
+      page += c + F("'>");
+      page += c.substring(1, c.length() - 4) + F("</option>");
+    }
+    file = root.openNextFile();
+  }
+  page += F("</select>");
+  page += F("<small id='filenameHelpBlock' class='form-text text-muted'>");
+  page += F("Select a configuration and an action button.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<p></p>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-12'>");
+  page += F("<button type='submit' name='action' value='load' class='btn btn-primary'>Load</button> ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button> ");
+  page += F("<button type='submit' name='action' value='download' class='btn btn-primary'>Download</button> ");
+  page += F("<button type='submit' name='action' value='delete' class='btn btn-primary'>Delete</button> ");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
+
+  get_footer_page();
+}
+
+
 size_t get_root_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
   static bool rebuild = true;
@@ -1820,6 +1891,23 @@ size_t get_options_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   return byteWritten;
 }
 
+size_t get_configurations_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  static bool rebuild = true;
+
+  if (rebuild) {
+    get_configurations_page();
+    DPRINT("HTML page lenght: %d\n", page.length());
+    rebuild = false;
+  }
+  page.getBytes(buffer, maxLen, index);
+  buffer[maxLen-1] = 0; // CWE-126
+  size_t byteWritten = strlen((const char *)buffer);
+  rebuild = (byteWritten == 0);
+  if (rebuild) page = "";
+  return byteWritten;
+}
+
 void http_handle_login(AsyncWebServerRequest *request) {
   get_login_page();
   request->send(200, "text/html", page);
@@ -1903,6 +1991,14 @@ void http_handle_options(AsyncWebServerRequest *request) {
   http_handle_globals(request);
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
+
+void http_handle_configurations(AsyncWebServerRequest *request) {
+  http_handle_globals(request);
+
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_configurations_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
 }
@@ -2229,6 +2325,67 @@ if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
   }
 }
 
+void http_handle_post_configurations(AsyncWebServerRequest *request) {
+
+  alert = request->arg("action");
+
+  if (request->arg("action") == String("create")) {
+    String configname("/" + request->arg("newconfiguration") + ".cfg");
+
+    File file = SPIFFS.open(configname, FILE_WRITE);
+    if (file) {
+      file.close();
+      spiffs_save_config(configname);
+      alert = F("Current configuration saved as ");
+      alert += request->arg("newconfiguration") + F(".");
+    } 
+    else {
+      alert = F("Cannot create ");
+      alert += request->arg("newconfiguration") + F(".");
+    }
+  }
+  else if (request->arg("action") == String("upload")) {
+    String configname("/" + request->arg("newconfiguration") + ".cfg");
+
+  }
+  else if (request->arg("action") == String("load")) {
+    String config = request->arg("filename");
+    spiffs_load_config(config);
+    config = config.substring(1, config.length() - 4);
+    alert = F("Configuration ");
+    alert += config + F(" loaded .");
+  }
+  else if (request->arg("action") == String("save")) {
+    String config = request->arg("filename");
+    spiffs_save_config(config);
+    config = config.substring(1, config.length() - 4);
+    alert = F("Current configuration saved as");
+    alert += config + F(".");
+  }
+  else if (request->arg("action") == String("download")) {
+    AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
+    request->send(response);
+    return;
+  }
+  else if (request->arg("action") == String("rename")) {
+  }
+  else if (request->arg("action") == String("delete")) {
+    String config = request->arg("filename");
+    if (SPIFFS.remove(config)) {
+      config = config.substring(1, config.length() - 4);
+      alert = F("Configuration ");
+      alert += config + F(" deleted.");
+    } 
+    else {
+      alert = F("Cannot delete ");
+      alert += config + F(".");
+    }
+  } 
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_configurations_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
+
 #ifdef WEBSOCKET
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
 
@@ -2548,25 +2705,27 @@ void http_setup() {
   httpServer.serveStatic("/js/popper.min.js", SPIFFS, "/js/popper.min.js").setDefaultFile("/js/popper.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/default.ini", SPIFFS, "/default.ini").setDefaultFile("/default.ini").setCacheControl("max-age=1");
 
-  httpServer.on("/",                        http_handle_root);
-  httpServer.on("/login",       HTTP_GET,   http_handle_login);
-  httpServer.on("/login",       HTTP_POST,  http_handle_post_login);
-  httpServer.on("/live",        HTTP_GET,   http_handle_live);
-  httpServer.on("/live",        HTTP_POST,  http_handle_post_live);
-  httpServer.on("/banks",       HTTP_GET,   http_handle_banks);
-  httpServer.on("/banks",       HTTP_POST,  http_handle_post_banks);
-  httpServer.on("/pedals",      HTTP_GET,   http_handle_pedals);
-  httpServer.on("/pedals",      HTTP_POST,  http_handle_post_pedals);
-  httpServer.on("/sequences",   HTTP_GET,   http_handle_sequences);
-  httpServer.on("/sequences",   HTTP_POST,  http_handle_post_sequences);
-  httpServer.on("/interfaces",  HTTP_GET,   http_handle_interfaces);
-  httpServer.on("/interfaces",  HTTP_POST,  http_handle_post_interfaces);
-  httpServer.on("/options",     HTTP_GET,   http_handle_options);
-  httpServer.on("/options",     HTTP_POST,  http_handle_post_options);
+  httpServer.on("/",                            http_handle_root);
+  httpServer.on("/login",           HTTP_GET,   http_handle_login);
+  httpServer.on("/login",           HTTP_POST,  http_handle_post_login);
+  httpServer.on("/live",            HTTP_GET,   http_handle_live);
+  httpServer.on("/live",            HTTP_POST,  http_handle_post_live);
+  httpServer.on("/banks",           HTTP_GET,   http_handle_banks);
+  httpServer.on("/banks",           HTTP_POST,  http_handle_post_banks);
+  httpServer.on("/pedals",          HTTP_GET,   http_handle_pedals);
+  httpServer.on("/pedals",          HTTP_POST,  http_handle_post_pedals);
+  httpServer.on("/sequences",       HTTP_GET,   http_handle_sequences);
+  httpServer.on("/sequences",       HTTP_POST,  http_handle_post_sequences);
+  httpServer.on("/interfaces",      HTTP_GET,   http_handle_interfaces);
+  httpServer.on("/interfaces",      HTTP_POST,  http_handle_post_interfaces);
+  httpServer.on("/options",         HTTP_GET,   http_handle_options);
+  httpServer.on("/options",         HTTP_POST,  http_handle_post_options);
+  httpServer.on("/configurations",  HTTP_GET,   http_handle_configurations);
+  httpServer.on("/configurations",  HTTP_POST,  http_handle_post_configurations);
   //httpServer.on("/css/floating-labels.css", http_handle_bootstrap_file);
 
-  httpServer.on("/update",      HTTP_GET,   http_handle_update);
-  httpServer.on("/update",      HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);
+  httpServer.on("/update",          HTTP_GET,   http_handle_update);
+  httpServer.on("/update",          HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);
   httpServer.onNotFound(http_handle_not_found);
 
   httpServer.begin();

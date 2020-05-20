@@ -528,7 +528,7 @@ void load_factory_default()
   kt[5].adcThreshold = 945;
   kt[5].adcTolerance = 35;
 
-  spiffs_load_config("/default.ini");
+  spiffs_load_config("/default.cfg");
 }
 
 void eeprom_update_device_name(String name = getChipId())
@@ -704,8 +704,6 @@ void eeprom_update_profile(byte profile = currentProfile)
   preferences.end();
 
   DPRINT(" ... done\n");
-
-  spiffs_save_config("/default.ini");
 
   blynk_refresh();
 }
