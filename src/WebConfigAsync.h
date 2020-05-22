@@ -35,11 +35,12 @@ AsyncWebSocketMessageBuffer *buffer = NULL;
 AsyncWebSocketClient        *wsClient = NULL;
 #endif
 
-String page       = "";
-String alert      = "";
-String uiprofile  = "1";
-String uibank     = "1";
-String uisequence = "1";
+String page         = "";
+String alert        = "";
+String alertError  = "";
+String uiprofile    = "1";
+String uibank       = "1";
+String uisequence   = "1";
 
 
 void get_top_page(int p = 0) {
@@ -147,6 +148,16 @@ void get_top_page(int p = 0) {
     page += F("</button>");
     page += F("</div>");
     alert = "";
+  }
+  if (alertError != "") {
+    page += F("<p></p>");
+    page += F("<div class='alert alert-danger alert-dismissible fade show' role='alert'>");
+    page += alertError;
+    page += F("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>");
+    page += F("<span aria-hidden='true'>&times;</span>");
+    page += F("</button>");
+    page += F("</div>");
+    alertError = "";
   }
 
   page += F("<p></p>");
@@ -1711,33 +1722,64 @@ void get_configurations_page() {
   get_top_page(7);
 
   page += F("<form method='post'>");
-
   page += F("<div class='form-row'>");
-  page += F("<div class='col-4'>");
+  page += F("<div class='col-12'>");
   page += F("<label for='newconfiguration'>New Configuration</label>");
   page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
-  page += F("Type a name for the new configuration and press Create or Upload. Once created/uploaded is available on below configuration list.<br>'default' configuration (if exist) is loaded on boot.");
+  page += F("Type a name and press 'Save as' to save current configuration with a name.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
   page += F("<p></p>");
   page += F("<div class='form-row'>");
-  page += F("<div class='col-4'>");
-  page += F("<button type='submit' name='action' value='create' class='btn btn-primary'>Create</button>");
-  page += F(" or ");
-  page += F("<button type='submit' name='action' value='upload' class='btn btn-primary'>Upload</button>");
+  page += F("<div class='col-12'>");
+  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>Save as</button>");
   page += F("</div>");
   page += F("</div>");
+  page += F("</form>");
 
   page += F("<p></p>");
   page += F("<p></p>");
 
+  //page += F("<form method='POST' action='/configurations' enctype='multipart/form-data'><input type='file' name='upload'><input type='submit' value='Upload'></form>");
+
+  page += F("<form method='POST' action='/configurations' enctype='multipart/form-data'>");
   page += F("<div class='form-row'>");
-  page += F("<div class='col-4'>");
+  page += F("<div class='col-12'>");
+  page += F("<label for='uploadconfiguration'>Upload Configuration</label>");
+  page += F("<br><input type='file' name='upload'>");
+  /*
+  page += F("<div class='custom-file'>");
+  page += F("<input type='file' class='custom-file-input' id='customFile'>");
+  page += F("<label class='custom-file-label' for='customFile'>Choose file</label>");
+  */
+  //page += F("<small id='uploadconfigurationHelpBlock' class='form-text text-muted'>");
+  //page += F("'Browse' file to 'Upload'.");
+  //page += F("</small>");
+  //page += F("</div>");
+  page += F("</div>");  
+  page += F("</div>");
+  page += F("<p></p>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-12'>");
+  page += F("<input type='submit' value='Upload' class='btn btn-primary btn-sm'>");
+  page += F("</div>");
+  page += F("</div>");
+  // Add the following code if you want the name of the file appear on select
+  //page += F("<script>$('.custom-file-input').on('change',function(){var fileName=$(this).val().split('\\').pop();$(this).siblings('.custom-file-label').addClass('selected').html(fileName);});</script>");
+  page += F("</form>");
+
+  page += F("<p></p>");
+  page += F("<p></p>");
+
+  page += F("<form method='post'>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-12'>");
   page += F("<label for='filename'>Available Configurations</label>");
   page += F("<select class='custom-select' id='filename' name='filename'>");
 
+  DPRINT("Looking for configuration files on SPIFFS root ...\n");
   File root = SPIFFS.open("/");
   File file = root.openNextFile();
   while (file) {
@@ -1751,19 +1793,20 @@ void get_configurations_page() {
     }
     file = root.openNextFile();
   }
+  DPRINT("done.\n");
   page += F("</select>");
   page += F("<small id='filenameHelpBlock' class='form-text text-muted'>");
-  page += F("Select a configuration and an action button.");
+  page += F("Select a configuration and an action button.<br>'default' configuration (if exist) is loaded on boot.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
   page += F("<p></p>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-12'>");
-  page += F("<button type='submit' name='action' value='load' class='btn btn-primary'>Load</button> ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button> ");
-  page += F("<button type='submit' name='action' value='download' class='btn btn-primary'>Download</button> ");
-  page += F("<button type='submit' name='action' value='delete' class='btn btn-primary'>Delete</button> ");
+  page += F("<button type='submit' name='action' value='load' class='btn btn-primary btn-sm'>Load</button> ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button> ");
+  page += F("<button type='submit' name='action' value='download' class='btn btn-primary btn-sm'>Download</button> ");
+  page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>Delete</button> ");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -2327,9 +2370,7 @@ if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
 
 void http_handle_post_configurations(AsyncWebServerRequest *request) {
 
-  alert = request->arg("action");
-
-  if (request->arg("action") == String("create")) {
+  if (request->arg("action") == String("new")) {
     String configname("/" + request->arg("newconfiguration") + ".cfg");
 
     File file = SPIFFS.open(configname, FILE_WRITE);
@@ -2345,8 +2386,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
     }
   }
   else if (request->arg("action") == String("upload")) {
-    String configname("/" + request->arg("newconfiguration") + ".cfg");
-
+    alert = F("No file selected. Choose file using Browse button.");
   }
   else if (request->arg("action") == String("load")) {
     String config = request->arg("filename");
@@ -2384,6 +2424,53 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_configurations_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
+}
+
+// handler for the file upload
+
+void http_handle_configuration_file_upload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+
+  //Upload handler chunks in data
+  if (!index) {
+    alert       = "";
+    alertError  = "";
+
+    String c = "/" + filename;
+    if (!(c.length() > 4 && c.lastIndexOf(".cfg") == (c.length() - 4))) c += ".cfg";   // add .cfg extension if not present
+
+    if (SPIFFS.exists(c)) {
+      alertError = F("File ");
+      alertError += c +  " already exists. Delete existing configuration before upload again.";
+      request->redirect("/configurations");
+      return;
+    }
+    // open the file on first call and store the file handle in the request object
+    request->_tempFile = SPIFFS.open(c, FILE_WRITE);
+ 
+    if (request->_tempFile) {
+      DPRINT("Upload start: %s\n", filename.c_str());
+    }
+    else {
+      alertError = F("Cannot upload file ");
+      alertError += filename +  ".";
+      DPRINT("Upload start fail: %s\n", filename.c_str());
+    }
+  }
+  
+  // stream the incoming chunk to the opened file
+  if (!request->_tempFile || request->_tempFile.write(data,len) != len) {
+    alertError = F("Upload of ");
+    alertError += filename +  " failed.";
+    DPRINT("Upload fail\n");
+  }
+
+  // if the final flag is set then this is the last frame of data
+  if (request->_tempFile && final) {
+    DPRINT("Upload end: %s, %u bytes\n", filename.c_str(), index+len);
+    request->_tempFile.close();
+    alert = F("Upload of ");
+    alert += filename +  " completed.";
+  }
 }
 
 #ifdef WEBSOCKET
@@ -2551,7 +2638,7 @@ void get_update_page() {
 #endif
 
   page += F("<p></p>");
-  page += "<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>";
+  page += F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>");
 
 #ifdef WEBCONFIG
   get_footer_page();
@@ -2561,7 +2648,7 @@ void get_update_page() {
 #endif
 }
 
- // handler for the /update form page
+// handler for the /update form page
 
 void http_handle_update (AsyncWebServerRequest *request) {
   //if (request->hasArg("theme")) theme = request->arg("theme");
@@ -2703,7 +2790,7 @@ void http_setup() {
   httpServer.serveStatic("/js/bootstrap.min.js", SPIFFS, "/js/bootstrap.min.js").setDefaultFile("/js/bootstrap.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/jquery-3.4.1.slim.min.js", SPIFFS, "/js/jquery-3.4.1.slim.min.js").setDefaultFile("/js/jquery-3.4.1.slim.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/popper.min.js", SPIFFS, "/js/popper.min.js").setDefaultFile("/js/popper.min.js").setCacheControl("max-age=600");
-  httpServer.serveStatic("/default.ini", SPIFFS, "/default.ini").setDefaultFile("/default.ini").setCacheControl("max-age=1");
+  httpServer.serveStatic("/files", SPIFFS, "/").setDefaultFile("").setAuthentication("admin", "password");
 
   httpServer.on("/",                            http_handle_root);
   httpServer.on("/login",           HTTP_GET,   http_handle_login);
@@ -2721,7 +2808,8 @@ void http_setup() {
   httpServer.on("/options",         HTTP_GET,   http_handle_options);
   httpServer.on("/options",         HTTP_POST,  http_handle_post_options);
   httpServer.on("/configurations",  HTTP_GET,   http_handle_configurations);
-  httpServer.on("/configurations",  HTTP_POST,  http_handle_post_configurations);
+  httpServer.on("/configurations",  HTTP_POST,  http_handle_post_configurations, http_handle_configuration_file_upload);
+  //httpServer.onFileUpload(http_handle_configuration_file_upload);
   //httpServer.on("/css/floating-labels.css", http_handle_bootstrap_file);
 
   httpServer.on("/update",          HTTP_GET,   http_handle_update);
