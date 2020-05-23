@@ -527,8 +527,6 @@ void load_factory_default()
   kt[5].value = 5;
   kt[5].adcThreshold = 945;
   kt[5].adcTolerance = 35;
-
-  spiffs_load_config("/default.cfg");
 }
 
 void eeprom_update_device_name(String name = getChipId())
@@ -850,10 +848,10 @@ void eeprom_initialize()
 void eeprom_init_or_erase()
 {
   load_factory_default();
-  esp_err_t err = nvs_flash_init();
+  esp_err_t err = nvs_flash_init_partition("nvs1");
   switch (err) {
     case ESP_OK:
-      DPRINT("'nvs' partition was successfully initialized\n");
+      DPRINT("'nvs1' partition was successfully initialized\n");
       if (preferences.begin("Global", true)) {
         preferences.end();
         break;
@@ -863,12 +861,12 @@ void eeprom_init_or_erase()
     case ESP_ERR_NVS_NEW_VERSION_FOUND:
       // NVS partition was truncated and needs to be erased
       ESP_ERROR_CHECK(nvs_flash_erase());
-      DPRINT("'nvs' partition formatted\n");
+      DPRINT("'nvs1' partition formatted\n");
       ESP_ERROR_CHECK(nvs_flash_init());
       eeprom_initialize();
       break;
     case ESP_ERR_NOT_FOUND:
-      DPRINT("'nvs' partition not found\n");
+      DPRINT("'nvs1' partition not found\n");
       break;
   }
 }

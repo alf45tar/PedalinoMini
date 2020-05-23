@@ -37,7 +37,7 @@ AsyncWebSocketClient        *wsClient = NULL;
 
 String page         = "";
 String alert        = "";
-String alertError  = "";
+String alertError   = "";
 String uiprofile    = "1";
 String uibank       = "1";
 String uisequence   = "1";
@@ -1772,31 +1772,45 @@ void get_configurations_page() {
 
   page += F("<p></p>");
   page += F("<p></p>");
+  
 
-  page += F("<form method='post'>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='col-12'>");
-  page += F("<label for='filename'>Available Configurations</label>");
-  page += F("<select class='custom-select' id='filename' name='filename'>");
 
   DPRINT("Looking for configuration files on SPIFFS root ...\n");
-  File root = SPIFFS.open("/");
-  File file = root.openNextFile();
+  int     availableconf = 0;
+  String  confoptions;
+  File    root = SPIFFS.open("/");
+  File    file = root.openNextFile();
   while (file) {
     String c(file.name());
       
     if (c.length() > 4 && c.lastIndexOf(".cfg") == (c.length() - 4)) {
+      availableconf++;
       DPRINT("%s\n", c.c_str());
-      page += F("<option value='");
-      page += c + F("'>");
-      page += c.substring(1, c.length() - 4) + F("</option>");
+      confoptions += F("<option value='");
+      confoptions += c + F("'>");
+      confoptions += c.substring(1, c.length() - 4) + F("</option>");
     }
     file = root.openNextFile();
   }
   DPRINT("done.\n");
+
+  page += F("<form method='post'>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-12'>");
+  page += F("<label for='filename'>Available Configurations (");
+  /*
+  SPIFFS is not a high performance FS; it is designed to balance safety, wear levelling and performance for bare flash devices.
+  If you want good performance from SPIFFS:
+    Keep the % utilisation low
+    Keep the partition size low as well.
+  */
+  page += String(availableconf) + F("/") + String(availableconf + constrain((SPIFFS.totalBytes() / 100 * 85 - SPIFFS.usedBytes()) / 25000, 0, INT_MAX));
+  page += F(")</label>");
+  page += F("<select class='custom-select' id='filename' name='filename'>");
+  page += confoptions;
   page += F("</select>");
   page += F("<small id='filenameHelpBlock' class='form-text text-muted'>");
-  page += F("Select a configuration and an action button.<br>'default' configuration (if exist) is loaded on boot.");
+  page += F("Select a configuration and an action button.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
