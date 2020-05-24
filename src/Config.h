@@ -812,6 +812,25 @@ void eeprom_read_profile(byte profile = currentProfile)
   blynk_refresh();
 }
 
+void eeprom_update_all()
+{
+  eeprom_update_device_name(host);
+  eeprom_update_boot_mode(bootMode);
+  eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
+  eeprom_update_ap_wifi_credentials(ssidSoftAP, passwordSoftAP);
+  eeprom_update_theme(theme);
+  eeprom_update_current_profile(currentProfile);
+  eeprom_update_tap_dance(tapDanceMode);
+  eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
+  eeprom_update_press_time(pressTime, doublePressTime, longPressTime, repeatPressTime);
+  eeprom_update_ladder();
+  eeprom_update_encoder_sensitivity(encoderSensitivity);
+  eeprom_update_blynk_cloud_enable(blynk_enabled());
+  eeprom_update_blynk_auth_token(blynk_get_token());
+  for (byte p = 0; p < PROFILES; p++)
+    eeprom_update_profile(p);
+}
+
 void eeprom_initialize()
 {
   // Remove all preferences under the opened namespace
@@ -848,10 +867,10 @@ void eeprom_initialize()
 void eeprom_init_or_erase()
 {
   load_factory_default();
-  esp_err_t err = nvs_flash_init_partition("nvs1");
+  esp_err_t err = nvs_flash_init_partition("nvs");
   switch (err) {
     case ESP_OK:
-      DPRINT("'nvs1' partition was successfully initialized\n");
+      DPRINT("'nvs' partition was successfully initialized\n");
       if (preferences.begin("Global", true)) {
         preferences.end();
         break;
@@ -861,12 +880,12 @@ void eeprom_init_or_erase()
     case ESP_ERR_NVS_NEW_VERSION_FOUND:
       // NVS partition was truncated and needs to be erased
       ESP_ERROR_CHECK(nvs_flash_erase());
-      DPRINT("'nvs1' partition formatted\n");
+      DPRINT("'nvs' partition formatted\n");
       ESP_ERROR_CHECK(nvs_flash_init());
       eeprom_initialize();
       break;
     case ESP_ERR_NOT_FOUND:
-      DPRINT("'nvs1' partition not found\n");
+      DPRINT("'nvs' partition not found\n");
       break;
   }
 }

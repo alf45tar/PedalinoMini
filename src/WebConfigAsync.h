@@ -23,6 +23,7 @@ inline void http_run() {};
 #include <StreamString.h>
 #include <FS.h>
 #include <SPIFFS.h>
+#include <nvs.h>
 
 AsyncWebServer          httpServer(80);
 
@@ -294,11 +295,19 @@ void get_root_page() {
   page += F("<dt>Flash Size</dt><dd>");
   page += ESP.getFlashChipSize() / (1024 * 1024);
   page += F(" MB</dd>");
-  page += F("<dt>PSRAM Free/Total</dt><dd>");
-  page += ESP.getFreePsram() / 1024;
+  page += F("<dt>PSRAM Used/Total</dt><dd>");
+  page += (ESP.getPsramSize() - ESP.getFreePsram()) / 1024;
   page += F("/");
   page += ESP.getPsramSize() / 1024;
   page += F(" kB</dd>");
+  nvs_stats_t nvs_stats;
+  if (nvs_get_stats("nvs", &nvs_stats) == ESP_OK) {
+    page += F("<dt>NVS Used/Total</dt><dd>");
+    page += nvs_stats.used_entries;
+    page += F("/");
+    page += nvs_stats.total_entries;
+    page += F(" entries</dd>");
+  }
   page += F("<dt>SPIFFS Used/Total</dt><dd>");
   page += SPIFFS.usedBytes() / 1024;
   page += F("/");
@@ -830,7 +839,9 @@ void get_banks_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -1123,7 +1134,9 @@ void get_pedals_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -1221,7 +1234,9 @@ void get_interfaces_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -1391,7 +1406,9 @@ void get_sequences_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -1707,7 +1724,9 @@ void get_options_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' class='btn btn-primary'>Save</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
   page += F("</div>");
   page += F("</div>");
 
@@ -1727,14 +1746,14 @@ void get_configurations_page() {
   page += F("<label for='newconfiguration'>New Configuration</label>");
   page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
-  page += F("Type a name and press 'Save as' to save current configuration with a name.");
+  page += F("Type a name and press 'Save as configuration' to save current setup with a name. If you use an existing configuration name will be overridden without further notice.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
   page += F("<p></p>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-12'>");
-  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>Save as</button>");
+  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>Save as configuration</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -1744,7 +1763,7 @@ void get_configurations_page() {
 
   //page += F("<form method='POST' action='/configurations' enctype='multipart/form-data'><input type='file' name='upload'><input type='submit' value='Upload'></form>");
 
-  page += F("<form method='POST' action='/configurations' enctype='multipart/form-data'>");
+  page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-12'>");
   page += F("<label for='uploadconfiguration'>Upload Configuration</label>");
@@ -1817,7 +1836,7 @@ void get_configurations_page() {
   page += F("<p></p>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-12'>");
-  page += F("<button type='submit' name='action' value='load' class='btn btn-primary btn-sm'>Load</button> ");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button> ");
   page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button> ");
   page += F("<button type='submit' name='action' value='download' class='btn btn-primary btn-sm'>Download</button> ");
   page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>Delete</button> ");
@@ -2104,10 +2123,15 @@ void http_handle_post_banks(AsyncWebServerRequest *request) {
     a = request->arg(String("value3") + String(i+1));
     banks[b][i].midiValue3 = a.toInt();
   }
-  eeprom_update_profile();
-  eeprom_update_current_profile(currentProfile);
+  if (request->arg("action") == String("apply")) {
+    alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
+  }
+  else if (request->arg("action") == String("save")) {
+    eeprom_update_profile();
+    eeprom_update_current_profile(currentProfile);
+    alert = "Changes saved.";
+  }
   blynk_refresh();
-  alert = "Saved";
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_banks_page_chunked);
   response->addHeader("Connection", "close");
@@ -2170,12 +2194,17 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     }
 
   }
-  eeprom_update_profile();
-  eeprom_update_current_profile(currentProfile);
-  autosensing_setup();
-  controller_setup();
+  if (request->arg("action") == String("apply")) {
+    alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
+  }
+  else if (request->arg("action") == String("save")) {
+    eeprom_update_profile();
+    eeprom_update_current_profile(currentProfile);
+    autosensing_setup();
+    controller_setup();
+    alert = "Changes saved.";
+  }
   blynk_refresh();
-  alert = "Saved";
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_pedals_page_chunked);
   response->addHeader("Connection", "close");
@@ -2203,10 +2232,15 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
     a = request->arg(String("clock") + String(i+1));
     interfaces[i].midiClock = (a == checked) ? PED_ENABLE : PED_DISABLE;
   }
-  eeprom_update_profile();
-  eeprom_update_current_profile(currentProfile);
+  if (request->arg("action") == String("apply")) {
+    alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
+  }
+  else if (request->arg("action") == String("save")) {
+    eeprom_update_profile();
+    eeprom_update_current_profile(currentProfile);
+    alert = "Changes saved.";
+  }
   blynk_refresh();
-  alert = "Saved";
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_interfaces_page_chunked);
   response->addHeader("Connection", "close");
@@ -2237,10 +2271,15 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
     a = request->arg(String("value3") + String(i+1));
     sequences[s][i].midiValue3 = a.toInt();
   }
-  eeprom_update_profile();
-  eeprom_update_current_profile(currentProfile);
+  if (request->arg("action") == String("apply")) {
+    alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
+  }
+  else if (request->arg("action") == String("save")) {
+    eeprom_update_profile();
+    eeprom_update_current_profile(currentProfile);
+    alert = "Changes saved.";
+  }
   blynk_refresh();
-  alert = "Saved";
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_sequences_page_chunked);
   response->addHeader("Connection", "close");
@@ -2369,8 +2408,14 @@ if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
   }
 #endif
 
-  eeprom_update_current_profile(currentProfile);
-  alert = "Saved";
+  if (request->arg("action") == String("apply")) {
+    alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
+  }
+  else if (request->arg("action") == String("save")) {
+    eeprom_update_current_profile(currentProfile);
+    alert = "Changes saved.";
+  }
+
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
@@ -2391,48 +2436,47 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
     if (file) {
       file.close();
       spiffs_save_config(configname);
-      alert = F("Current configuration saved as ");
-      alert += request->arg("newconfiguration") + F(".");
+      alert = F("Current setup saved as '");
+      alert += request->arg("newconfiguration") + F("'.");
     } 
     else {
-      alert = F("Cannot create ");
-      alert += request->arg("newconfiguration") + F(".");
+      alert = F("Cannot create '");
+      alert += request->arg("newconfiguration") + F("'.");
     }
   }
   else if (request->arg("action") == String("upload")) {
     alert = F("No file selected. Choose file using Browse button.");
   }
-  else if (request->arg("action") == String("load")) {
+  else if (request->arg("action") == String("apply")) {
     String config = request->arg("filename");
     spiffs_load_config(config);
     config = config.substring(1, config.length() - 4);
-    alert = F("Configuration ");
-    alert += config + F(" loaded .");
+    alert = F("Configuration '");
+    alert += config + F("' loaded and running. Not used for next reboot if not saved.");
   }
   else if (request->arg("action") == String("save")) {
     String config = request->arg("filename");
-    spiffs_save_config(config);
+    spiffs_load_config(config);
+    eeprom_update_all();
     config = config.substring(1, config.length() - 4);
-    alert = F("Current configuration saved as");
-    alert += config + F(".");
+    alert = F("Configuration '");
+    alert += config + F("' loaded and saved for next reboot.");
   }
   else if (request->arg("action") == String("download")) {
     AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
     request->send(response);
     return;
   }
-  else if (request->arg("action") == String("rename")) {
-  }
   else if (request->arg("action") == String("delete")) {
     String config = request->arg("filename");
     if (SPIFFS.remove(config)) {
       config = config.substring(1, config.length() - 4);
-      alert = F("Configuration ");
-      alert += config + F(" deleted.");
+      alert = F("Configuration '");
+      alert += config + F("' deleted.");
     } 
     else {
-      alert = F("Cannot delete ");
-      alert += config + F(".");
+      alert = F("Cannot delete '");
+      alert += config + F("'.");
     }
   } 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_configurations_page_chunked);
@@ -2453,8 +2497,8 @@ void http_handle_configuration_file_upload(AsyncWebServerRequest *request, Strin
     if (!(c.length() > 4 && c.lastIndexOf(".cfg") == (c.length() - 4))) c += ".cfg";   // add .cfg extension if not present
 
     if (SPIFFS.exists(c)) {
-      alertError = F("File ");
-      alertError += c +  " already exists. Delete existing configuration before upload again.";
+      alertError = F("File '");
+      alertError += c +  "' already exists. Delete existing configuration before upload again.";
       request->redirect("/configurations");
       return;
     }
@@ -2473,8 +2517,8 @@ void http_handle_configuration_file_upload(AsyncWebServerRequest *request, Strin
   
   // stream the incoming chunk to the opened file
   if (!request->_tempFile || request->_tempFile.write(data,len) != len) {
-    alertError = F("Upload of ");
-    alertError += filename +  " failed.";
+    alertError = F("Upload of '");
+    alertError += filename +  "' failed.";
     DPRINT("Upload fail\n");
   }
 
@@ -2482,8 +2526,8 @@ void http_handle_configuration_file_upload(AsyncWebServerRequest *request, Strin
   if (request->_tempFile && final) {
     DPRINT("Upload end: %s, %u bytes\n", filename.c_str(), index+len);
     request->_tempFile.close();
-    alert = F("Upload of ");
-    alert += filename +  " completed.";
+    alert = F("Upload of '");
+    alert += filename +  "' completed.";
   }
 }
 

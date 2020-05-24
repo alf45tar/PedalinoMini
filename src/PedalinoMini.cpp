@@ -53,6 +53,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #endif
 
 #include <esp32-hal-log.h>
+#include <esp_partition.h>
 #include <esp_bt_main.h>
 #include <string>
 #include "Pedalino.h"
@@ -148,6 +149,12 @@ void setup()
   DPRINT("Flash Size %d, Flash Speed %d Hz\n",ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
+  esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, "nvs");
+  if (pi != NULL) {
+    const esp_partition_t* nvs = esp_partition_get(pi);
+    DPRINT("%s Total %d\n", nvs->label, nvs->size);
+    esp_partition_iterator_release(pi);
+  }
   DPRINT("PlatformIO Built Environment: %s\n", xstr(PLATFORMIO_ENV));
 
   DPRINTLN("_________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___ ");
