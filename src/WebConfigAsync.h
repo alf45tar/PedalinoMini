@@ -682,12 +682,25 @@ void get_banks_page() {
     page += F("' name='bank' value='");
     page += String(i) + F("'>") + String(i) + F("</button></form>");
   }
-
   page += F("</div>");
 
   page += F("<p></p>");
 
   page += F("<form method='post'>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-1 text-center'>");
+  page += F("Bank Name");
+  page += F("</div>"); 
+  page += F("<div class='col-2'>");
+  page += F("<input type='text' class='form-control form-control-sm' name='bankname' maxlength='");
+  page += String(MAXBANKNAME) + F("' value='");
+  page += String(banknames[b-1]);
+  page += F("'></div>");
+  page += F("</div>"); 
+
+  page += F("<p></p>");
+
   page += F("<div class='form-row'>");
   page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Pedal</span>");
@@ -2099,6 +2112,8 @@ void http_handle_post_banks(AsyncWebServerRequest *request) {
 
   String     a;
   const byte b = constrain(uibank.toInt() - 1, 0, BANKS);
+
+  strncpy(banknames[b], request->arg(String("bankname")).c_str(), MAXBANKNAME+1);
 
   for (unsigned int i = 0; i < PEDALS; i++) {
     a = request->arg(String("name") + String(i+1));

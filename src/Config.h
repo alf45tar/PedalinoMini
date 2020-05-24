@@ -72,6 +72,13 @@ void spiffs_save_config(String filename) {
       jo["Max"]             = pedals[p].expMax;
   }
 
+  JsonArray jbnames = jdoc.createNestedArray("BankNames");
+  for (byte b = 0; b < BANKS; b++) {
+    JsonObject jo = jbnames.createNestedObject();
+    jo["Bank"]              = b + 1;
+    jo["Name"]              = banknames[b];
+  }
+
   JsonArray jbanks = jdoc.createNestedArray("Banks");
   for (byte b = 0; b < BANKS; b++) {
     for (byte p = 0; p < PEDALS; p++) {
@@ -217,6 +224,16 @@ void spiffs_load_config(String filename) {
         }
       }
     }
+    else if (String(jp.key().c_str()) == String("BankNames")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          int b = jo["Bank"];
+          b--;
+          strlcpy(banknames[b], jo["Name"] | "", sizeof(banknames[b]));
+        }
+      }
+    }
     else if (String(jp.key().c_str()) == String("Banks")) {
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
@@ -321,8 +338,8 @@ void load_factory_default()
     for (byte p = 0; p < PEDALS; p++) {
       banks[b][p].pedalName[0] = 0;
       banks[b][p].midiMessage  = PED_CONTROL_CHANGE;
-      banks[b][p].midiChannel  = b + 1;
-      banks[b][p].midiCode     = 12 + 10*b + p;
+      banks[b][p].midiChannel  = (b + 1) % 16;
+      banks[b][p].midiCode     = (12 + 10*b + p) % 128;
       banks[b][p].midiValue1   = 0;
       banks[b][p].midiValue2   = 63;
       banks[b][p].midiValue3   = 127;
@@ -374,6 +391,9 @@ void load_factory_default()
                       millis(),       // last time switch 2 status changed
                       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                       };
+
+  for (byte b = 0; b < BANKS; b++)
+    memset(banknames[b], 0, MAXBANKNAME+1);
 
   for (byte b = 0; b < BANKS; b = b + 2) {
     banks[b][0].pedalName[0] = 'A';
@@ -693,10 +713,11 @@ void eeprom_update_profile(byte profile = currentProfile)
       DPRINT("C");
       break;
   }
-  preferences.putBytes("Banks", &banks, sizeof(banks));
-  preferences.putBytes("Pedals", &pedals, sizeof(pedals));
-  preferences.putBytes("Interfaces", &interfaces, sizeof(interfaces));
-  preferences.putBytes("Sequences", &sequences, sizeof(sequences));
+  preferences.putBytes("BankNames",   &banknames,   sizeof(banknames));
+  preferences.putBytes("Banks",       &banks,       sizeof(banks));
+  preferences.putBytes("Pedals",      &pedals,      sizeof(pedals));
+  preferences.putBytes("Interfaces",  &interfaces,  sizeof(interfaces));
+  preferences.putBytes("Sequences",   &sequences,   sizeof(sequences));
   preferences.putUChar("Current Bank", currentBank);
   preferences.putUChar("Current MTC", currentMidiTimeCode);
   preferences.end();
@@ -783,10 +804,11 @@ void eeprom_read_profile(byte profile = currentProfile)
       break;
   }
   DPRINT(" ... ");
-  preferences.getBytes("Banks", &banks, sizeof(banks));
-  preferences.getBytes("Pedals", &pedals, sizeof(pedals));
-  preferences.getBytes("Interfaces", &interfaces, sizeof(interfaces));
-  preferences.getBytes("Sequences", &sequences, sizeof(sequences));
+  preferences.getBytes("BankNames",   &banknames,   sizeof(banknames));
+  preferences.getBytes("Banks",       &banks,       sizeof(banks));
+  preferences.getBytes("Pedals",      &pedals,      sizeof(pedals));
+  preferences.getBytes("Interfaces",  &interfaces,  sizeof(interfaces));
+  preferences.getBytes("Sequences",   &sequences,   sizeof(sequences));
   currentBank         = preferences.getUChar("Current Bank");
   currentMidiTimeCode = preferences.getUChar("Current MTC");
   preferences.end();

@@ -201,20 +201,6 @@ void setup()
   }
 #endif
 
-#if __BOARD_HAS_PSRAM__
-  banks = (bank**)heap_caps_malloc(BANKS*sizeof(bank*), MALLOC_CAP_SPIRAM);
-  for (byte b = 0; b < BANKS; b++)
-    banks[b] = (bank*)heap_caps_malloc(PEDALS*sizeof(bank), MALLOC_CAP_SPIRAM);
-
-  pedals = (pedal*)heap_caps_malloc(PEDALS*sizeof(pedal), MALLOC_CAP_SPIRAM);
-
-  sequences = (sequence**)heap_caps_malloc(SEQUENCES*sizeof(sequence*), MALLOC_CAP_SPIRAM);
-  for (byte s = 0; s < SEQUENCES; s++)
-    sequences[s] = (sequence*)heap_caps_malloc(STEPS*sizeof(sequence), MALLOC_CAP_SPIRAM);
-
-  lastMIDIMessage = (message*)heap_caps_malloc(BANKS*sizeof(message), MALLOC_CAP_SPIRAM);
-#endif
-
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
   

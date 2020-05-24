@@ -17,12 +17,13 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
 #define PROFILES          3
-#define BANKS            10
+#define BANKS            20
 #define PEDALS            6
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of switches in a resistor ladder
 
+#define MAXBANKNAME      10
 #define MAXPEDALNAME     10
 
 // https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
@@ -312,17 +313,11 @@ struct message {
 
 MD_UISwitch_Digital bootButton(CENTER_PIN);
 
-#ifdef __BOARD_HAS_PSRAM__
-bank**      banks;
-pedal*      pedals;
-sequence**  sequences;
-message*    lastMIDIMessage;
-#else
+char      banknames[BANKS][MAXBANKNAME+1];        // Bank Names
 bank      banks[BANKS][PEDALS];                   // Banks Setup
 pedal     pedals[PEDALS];                         // Pedals Setup
 sequence  sequences[SEQUENCES][STEPS];            // Sequences Setup
 message   lastMIDIMessage[BANKS];
-#endif
 
 interface interfaces[] = {
                            "USB MIDI   ", 0, 1, 0, 0, 0,
