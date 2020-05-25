@@ -46,6 +46,19 @@ The first cloud connected wireless IoT MIDI foot controller for guitarists and m
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
 - OTA (Over the Air) firmware update or via HTTP (<http://pedalino.local/update>)
 
+## Features version 2.0
+
+Additional features are under development and available on branch [dev-2.0](https://github.com/alf45tar/PedalinoMini/tree/dev-2.0).
+
+- Download and upload configuration (JSON)
+- Bank numbers increased from 10 to 20
+- Bank name (option to include bank number into bank name)
+- Pedal name (option to include MIDI value into pedal name)
+- New display mode
+- Updated Arduino MIDI Library to v5 using AppleMidi, ipMIDI, BLE-MIDI trasport layers
+
+More to come.
+
 ## iOS and Android App
 
 The app made with [Blynk](https://www.blynk.cc) will be released soon. The app will not for free because Blynk is charging you Blynk.Energy cost (the required energy pack cost 13.99 euro). I will not earn any buck from Blynk.
