@@ -881,31 +881,46 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
         display->drawString(128 + x, 9 + y, (currentBank >= 9  ? String("") : String('0')) + String(currentBank + 1));
       }
       else {
+        String name;
+        int offset = 0;
+
         display->setFont(ArialMT_Plain_24);
         display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-        String name(banknames[currentBank]);
+        name = banknames[currentBank];
         name.replace(String("##"), String(currentBank));
         display->drawString( 64 + x, 38 + y, name);
+
+        display->drawRect(0, 13, 128, 51);
+        //display->drawRect(0, 13, 128, 12);
+        //display->drawRect(0, 52, 128, 12);
+        display->setColor(WHITE);
+        display->fillRect(0, 13, 128, 12);
+        display->fillRect(0, 52, 128, 12);
+        display->setColor(BLACK);
         display->setFont(ArialMT_Plain_10);
         for (byte p = 0; p < PEDALS/2; p++) {
           switch (p) {
             case 0:
               display->setTextAlignment(TEXT_ALIGN_LEFT);
+              offset = 1;
               break;
             case PEDALS / 2 - 1:
               display->setTextAlignment(TEXT_ALIGN_RIGHT);
+              offset = -1;
               break;
             default:
               display->setTextAlignment(TEXT_ALIGN_CENTER);
+              offset = 0;
               break;
           }
           name = String(banks[currentBank][p].pedalName);
           name.replace(String("###"), String(""));
-          display->drawString((128 / (PEDALS / 2 - 1)) * p + x, 12 + y, name);
+          display->drawString((128 / (PEDALS / 2 - 1)) * p + offset + x, 12 + y, name);
           name = String(banks[currentBank][p + PEDALS / 2].pedalName);
           name.replace(String("###"), String(""));
-          display->drawString((128 / (PEDALS / 2 - 1)) * p + x, 54 + y, name);
+          display->drawString((128 / (PEDALS / 2 - 1)) * p + offset + x, 51 + y, name);
         }
+        display->setColor(WHITE);
       }
       ui.disableAutoTransition();
     }

@@ -1759,7 +1759,7 @@ void get_configurations_page() {
   page += F("<label for='newconfiguration'>New Configuration</label>");
   page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
-  page += F("Type a name and press 'Save as configuration' to save current setup with a name. If you use an existing configuration name will be overridden without further notice.");
+  page += F("Type a name and press 'Save as configuration' to save current setup with a name. An existing configuration with the same name will be overridden without further notice.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
@@ -1842,7 +1842,11 @@ void get_configurations_page() {
   page += confoptions;
   page += F("</select>");
   page += F("<small id='filenameHelpBlock' class='form-text text-muted'>");
-  page += F("Select a configuration and an action button.");
+  page += F("Select a configuration and an action button.<br>");
+  page += F("'Apply' to load configuration into current setup without saving it for use as default on next reboot.<br>");
+  page += F("'Save' to load and save configuration into current setup for use as default on next reboot.<br>");
+  page += F("'Download' to download configuration to local computer.<br>");
+  page += F("'Delete' to remove configuration.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
