@@ -872,12 +872,41 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       ui.enableAutoTransition();
     }
     else {
-      display->setFont(DSEG7_Classic_Bold_50);
-      display->setTextAlignment(TEXT_ALIGN_LEFT);
-      display->drawString(  0 + x, 9 + y, (currentProfile == 0 ? String('A') : (currentProfile == 1 ? String('B') : String('C'))));
-      display->drawString( 38 + x, 9 + y, String("."));
-      display->setTextAlignment(TEXT_ALIGN_RIGHT);
-      display->drawString(128 + x, 9 + y, (currentBank >= 9  ? String("") : String('0')) + String(currentBank + 1));
+      if (banknames[currentBank][0] == 0) {
+        display->setFont(DSEG7_Classic_Bold_50);
+        display->setTextAlignment(TEXT_ALIGN_LEFT);
+        display->drawString(  0 + x, 9 + y, (currentProfile == 0 ? String('A') : (currentProfile == 1 ? String('B') : String('C'))));
+        display->drawString( 38 + x, 9 + y, String("."));
+        display->setTextAlignment(TEXT_ALIGN_RIGHT);
+        display->drawString(128 + x, 9 + y, (currentBank >= 9  ? String("") : String('0')) + String(currentBank + 1));
+      }
+      else {
+        display->setFont(ArialMT_Plain_24);
+        display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+        String name(banknames[currentBank]);
+        name.replace(String("##"), String(currentBank));
+        display->drawString( 64 + x, 38 + y, name);
+        display->setFont(ArialMT_Plain_10);
+        for (byte p = 0; p < PEDALS/2; p++) {
+          switch (p) {
+            case 0:
+              display->setTextAlignment(TEXT_ALIGN_LEFT);
+              break;
+            case PEDALS / 2 - 1:
+              display->setTextAlignment(TEXT_ALIGN_RIGHT);
+              break;
+            default:
+              display->setTextAlignment(TEXT_ALIGN_CENTER);
+              break;
+          }
+          name = String(banks[currentBank][p].pedalName);
+          name.replace(String("###"), String(""));
+          display->drawString((128 / (PEDALS / 2 - 1)) * p + x, 12 + y, name);
+          name = String(banks[currentBank][p + PEDALS / 2].pedalName);
+          name.replace(String("###"), String(""));
+          display->drawString((128 / (PEDALS / 2 - 1)) * p + x, 54 + y, name);
+        }
+      }
       ui.disableAutoTransition();
     }
   }

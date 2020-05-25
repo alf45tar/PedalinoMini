@@ -1836,7 +1836,7 @@ void get_configurations_page() {
     Keep the % utilisation low
     Keep the partition size low as well.
   */
-  page += String(availableconf) + F("/") + String(availableconf + constrain((SPIFFS.totalBytes() / 100 * 85 - SPIFFS.usedBytes()) / 25000, 0, INT_MAX));
+  page += String(availableconf) + F("/") + String(availableconf + constrain((SPIFFS.totalBytes() / 100 * 85 - SPIFFS.usedBytes()) / 30000, 0, INT_MAX));
   page += F(")</label>");
   page += F("<select class='custom-select' id='filename' name='filename'>");
   page += confoptions;
