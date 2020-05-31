@@ -118,7 +118,7 @@ void spiffs_save_config(String filename) {
       jo["Code"]            = sequences[s][t].midiCode;
       jo["Value1"]          = sequences[s][t].midiValue1;
       jo["Value2"]          = sequences[s][t].midiValue2;
-      jo["Value3"]          = sequences[s][t].midiValue3;  
+      jo["Value3"]          = sequences[s][t].midiValue3;
     }
   }
   jdoc.shrinkToFit();
@@ -280,10 +280,10 @@ void spiffs_load_config(String filename) {
           sequences[s][t].midiCode    = jo["Code"];
           sequences[s][t].midiValue1  = jo["Value1"];
           sequences[s][t].midiValue2  = jo["Value2"];
-          sequences[s][t].midiValue3  = jo["Value3"]; 
+          sequences[s][t].midiValue3  = jo["Value3"];
         }
       }
-    } 
+    }
   }
 }
 
@@ -316,6 +316,10 @@ void load_factory_default()
   repeatOnBankSwitch = false;
   tapDanceBank       = true;
   blynk_set_token("");
+
+  for (byte b = 0; b < BANKS; b++) {
+      actions[b] = nullptr;
+  }
 
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {

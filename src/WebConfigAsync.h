@@ -87,31 +87,35 @@ void get_top_page(int p = 0) {
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 2 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/banks'>Banks</a>");
+  page += F("<a class='nav-link' href='/actions'>Actions</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 3 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/pedals'>Pedals</a>");
+  page += F("<a class='nav-link' href='/banks'>Banks</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 4 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/interfaces'>Interfaces</a>");
+  page += F("<a class='nav-link' href='/pedals'>Pedals</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 5 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/sequences'>Sequences</a>");
+  page += F("<a class='nav-link' href='/interfaces'>Interfaces</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 6 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/options'>Options</a>");
+  page += F("<a class='nav-link' href='/sequences'>Sequences</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 7 ? F(" active'>") : F("'>"));
+  page += F("<a class='nav-link' href='/options'>Options</a>");
+  page += F("</li>");
+  page += F("<li class='nav-item");
+  page += (p == 8 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/configurations'>Configurations</a>");
   page += F("</li>");
   page += F("</ul>");
   }
-  if (p != 0 && p != 6 && p != 7)
+  if (p != 0 && p != 7 && p != 8)
   {
     page += F("<form class='form-inline my-2 my-lg-0'>");
     page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
@@ -669,11 +673,319 @@ void get_live_page() {
   DPRINT("/live %d bytes\n", page.length());
 }
 
+void get_actions_page() {
+
+  const byte   b = constrain(uibank.toInt(), 0, BANKS);
+  action      *act;
+  unsigned int i;
+
+  get_top_page(2);
+/*
+  page += F("<small>Bank</small><br>");
+  page += F("<div class='btn-group btn-group-toggle' data-toggle='buttons'>");
+  for (unsigned int i = 1; i <= BANKS; i++) {
+    //page += F("<form method='get'>");
+    page += F("<label class='btn btn-outline-primary'>"
+              "<input type='radio' autocomplete='off' name='options' value='");
+    page += String(i);
+    page += F("'>");
+    page += String(i);
+    page += F("</label>");
+    //page += F("</form>");
+    if (uibank == String(i)) {
+      page += F("<input type='text' class='form-control' name='bankname' maxlength='");
+      page += String(MAXBANKNAME) + F("' value='");
+      page += String(banknames[b-1]);
+      page += F("'>");
+    }
+  }
+  page += F("</div>");
+*/
+
+  page += F("<div class='input-group input-group-sm'>");
+  page += F("<div class='input-group-prepend'>");
+  page += F("<div class='input-group-text'>Bank #</div>");
+  page += F("</div>");
+  page += F("<div class='btn-group'>");
+  for (i = 1; i <= BANKS; i++) {
+    page += F("<form method='get'><button type='button submit' class='btn");
+    page += (uibank == String(i) ? String(" btn-primary") : String(""));
+    page += F("' name='bank' value='");
+    page += String(i) + F("'>") + String(i) + F("</button>");
+    page += F("</form>");
+  }
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<form method='post'>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-5'>");
+  page += F("<div class='input-group input-group-sm'>");
+  page += F("<div class='input-group-prepend'>");
+  page += F("<div class='input-group-text'>Bank Name</div>");
+  page += F("</div>");
+  page += F("<input type='text' class='form-control form-control-sm' name='bankname' maxlength='");
+  page += String(MAXBANKNAME) + F("' value='");
+  page += String(banknames[uibank.toInt()-1]) + F("'>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='col-7 text-right'>");
+  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>New Action</button>");
+  if (actions[b-1] != nullptr) {
+    page += F(" ");
+    page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>Delete Selected Actions</button>");
+  }
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  if (actions[b-1] != nullptr) {
+    page += F("<div class='form-row'>");
+    page += F("<div class='col-1'>");
+    page += F("<span class='badge badge-primary'>Action</span>");
+    page += F("</div>");
+    page += F("<div class='col-1'>");
+    page += F("<span class='badge badge-primary'>Pedal</span>");
+    page += F("</div>");
+    page += F("<div class='col-1'>");
+    page += F("<span class='badge badge-primary'>Button</span>");
+    page += F("</div>");
+    page += F("<div class='col-2'>");
+    page += F("<span class='badge badge-primary'>When</span>");
+    page += F("</div>");
+    page += F("<div class='col-2'>");
+    page += F("<span class='badge badge-primary'>MIDI Message</span>");
+    page += F("</div>");
+    page += F("<div class='col-1'>");
+    page += F("<span class='badge badge-primary'>MIDI Code</span>");
+    page += F("</div>");
+    page += F("<div class='col-2'>");
+    page += F("<span class='badge badge-primary'>MIDI Value</span>");
+    page += F("</div>");
+    page += F("<div class='col-1'>");
+    page += F("<span class='badge badge-primary'>MIDI Channel</span>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<p></p>");
+  }
+
+  page += F("<div class='form-row'>");
+  i = 1;
+  act = actions[b-1];
+  while (act != nullptr) {
+    //page += F("<div class='col-1 mb-3 text-center'>");
+    //page += String(i);
+    //page += F("</div>");
+    page += F("<div class='col-1 mb-2'>");
+    page += F("<input type='text' class='form-control form-control-sm' name='name");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->name);
+    page += F("'></div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<select class='custom-select custom-select-sm' name='pedal");
+    page += String(i) + F("'>");
+    for (unsigned int p = 1; p <= PEDALS; p++) {
+      page += F("<option value='");
+      page += String(p) + F("'");
+      if (act->pedal == p) page += F(" selected");
+      page += F(">");
+      page += String(p) + F("</option>");
+    }
+    page += F("</select>");
+    page += F("</div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<select class='custom-select custom-select-sm' name='button");
+    page += String(i) + F("'>");
+    for (unsigned int b = 1; b <= LADDER_STEPS; b++) {
+      page += F("<option value='");
+      page += String(b) + F("'");
+      if (act->button == b) page += F(" selected");
+      page += F(">");
+      page += String(b) + F("</option>");
+    }
+    page += F("</select>");
+    page += F("</div>");
+
+    page += F("<div class='col-2'>");
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend'>");
+    page += F("<div class='input-group-text'>On</div>");
+    page += F("</div>");
+    page += F("<select class='custom-select custom-select-sm' name='event");
+    page += String(i) + F("'>");
+    page += F("<option value='");
+    page += String(PED_PRESS) + F("'");
+    if (act->event == PED_PRESS) page += F(" selected");
+    page += F(">");
+    page += F("Press</option>");
+    page += F("<option value='");
+    page += String(PED_RELEASE) + F("'");
+    if (act->event == PED_RELEASE) page += F(" selected");
+    page += F(">");
+    page += F("Release</option>");
+    page += F("<option value='");
+    page += String(PED_PRESS_2) + F("'");
+    if (act->event == PED_PRESS_2) page += F(" selected");
+    page += F(">");
+    page += F("Double Press</option>");
+    page += F("<option value='");
+    page += String(PED_PRESS_L) + F("'");
+    if (act->event == PED_PRESS_L) page += F(" selected");
+    page += F(">");
+    page += F("Long Press</option>");
+    page += F("</select>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='col-2'>");
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend'>");
+    page += F("<div class='input-group-text'>Send</div>");
+    page += F("</div>");
+    page += F("<select class='custom-select custom-select-sm' name='message");
+    page += String(i);
+    page += F("'>");
+    page += F("<option value='");
+    page += String(PED_PROGRAM_CHANGE) + F("'");
+    if (act->midiMessage == PED_PROGRAM_CHANGE) page += F(" selected");
+    page += F(">Program Change</option>");
+    page += F("<option value='");
+    page += String(PED_CONTROL_CHANGE) + F("'");
+    if (act->midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
+    page += F(">Control Change</option>");
+    page += F("<option value='");
+    page += String(PED_NOTE_ON_OFF) + F("'");
+    if (act->midiMessage == PED_NOTE_ON_OFF) page += F(" selected");
+    page += F(">Note On/Off</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_SELECT_INC) + F("'");
+    if (act->midiMessage == PED_BANK_SELECT_INC) page += F(" selected");
+    page += F(">Bank Select+</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_SELECT_DEC) + F("'");
+    if (act->midiMessage == PED_BANK_SELECT_DEC) page += F(" selected");
+    page += F(">Bank Select-</option>");
+    page += F("<option value='");
+    page += String(PED_PROGRAM_CHANGE_INC) + F("'");
+    if (act->midiMessage == PED_PROGRAM_CHANGE_INC) page += F(" selected");
+    page += F(">Program Change+</option>");
+    page += F("<option value='");
+    page += String(PED_PROGRAM_CHANGE_DEC) + F("'");
+    if (act->midiMessage == PED_PROGRAM_CHANGE_DEC) page += F(" selected");
+    page += F(">Program Change-</option>");
+    page += F("<option value='");
+    page += String(PED_PITCH_BEND) + F("'");
+    if (act->midiMessage == PED_PITCH_BEND) page += F(" selected");
+    page += F(">Pitch Bend</option>");
+    page += F("<option value='");
+    page += String(PED_CHANNEL_PRESSURE) + F("'");
+    if (act->midiMessage == PED_CHANNEL_PRESSURE) page += F(" selected");
+    page += F(">Channel Pressure</option>");
+    page += F("<option value='");
+    page += String(PED_MIDI_START) + F("'");
+    if (act->midiMessage == PED_MIDI_START) page += F(" selected");
+    page += F(">Start</option>");
+    page += F("<option value='");
+    page += String(PED_MIDI_STOP) + F("'");
+    if (act->midiMessage == PED_MIDI_STOP) page += F(" selected");
+    page += F(">Stop</option>");
+    page += F("<option value='");
+    page += String(PED_MIDI_CONTINUE) + F("'");
+    if (act->midiMessage == PED_MIDI_CONTINUE) page += F(" selected");
+    page += F(">Continue</option>");
+    page += F("<option value='");
+    page += String(PED_SEQUENCE) + F("'");
+    if (act->midiMessage == PED_SEQUENCE) page += F(" selected");
+    page += F(">Sequence</option>");
+    page += F("</select>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<input type='number' class='form-control form-control-sm' name='code");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiCode);
+    page += F("'></div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend'>");
+    page += F("<div class='input-group-text'>From</div>");
+    page += F("</div>");
+    page += F("<input type='number' class='form-control form-control-sm' name='from");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiValue1);
+    page += F("'></div>");
+    page += F("</div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend'>");
+    page += F("<div class='input-group-text'>To</div>");
+    page += F("</div>");
+    page += F("<input type='number' class='form-control form-control-sm' name='to");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiValue2);
+    page += F("'></div>");
+    page += F("</div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<select class='custom-select custom-select-sm' name='channel");
+    page += String(i) + F("'>");
+    for (unsigned int c = 1; c <= 16; c++) {
+      page += F("<option value='");
+      page += String(c) + F("'");
+      if (act->midiChannel == c) page += F(" selected");
+      page += F(">");
+      page += String(c) + F("</option>");
+    }
+    page += F("</select>");
+    page += F("</div>");
+
+    page += F("<div class='col-1 text-center'>");
+    page += F("<div class='form-check'>");
+    page += F("<input class='form-check-input position-static' type='checkbox' name='delete");
+    page += String(i) + F("'>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='w-100'></div>");
+    act = act->next;
+    i++;
+  }
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-auto'>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
+
+  get_footer_page();
+}
+
 void get_banks_page() {
 
   const byte b = constrain(uibank.toInt(), 0, BANKS);
 
-  get_top_page(2);
+  get_top_page(3);
 
   page += F("<div class='btn-group'>");
   for (unsigned int i = 1; i <= BANKS; i++) {
@@ -691,13 +1003,13 @@ void get_banks_page() {
   page += F("<div class='form-row'>");
   page += F("<div class='col-1 text-center'>");
   page += F("Bank Name");
-  page += F("</div>"); 
+  page += F("</div>");
   page += F("<div class='col-2'>");
   page += F("<input type='text' class='form-control form-control-sm' name='bankname' maxlength='");
   page += String(MAXBANKNAME) + F("' value='");
   page += String(banknames[b-1]);
   page += F("'></div>");
-  page += F("</div>"); 
+  page += F("</div>");
 
   page += F("<p></p>");
 
@@ -845,6 +1157,7 @@ void get_banks_page() {
     page += F("'></div>");
 
     page += F("<div class='w-100'></div>");
+
   }
   page += F("</div>");
 
@@ -864,7 +1177,7 @@ void get_banks_page() {
 
 void get_pedals_page() {
 
-  get_top_page(3);
+  get_top_page(4);
 
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
@@ -1159,7 +1472,7 @@ void get_pedals_page() {
 
 void get_interfaces_page() {
 
-  get_top_page(4);
+  get_top_page(5);
 
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
@@ -1261,7 +1574,7 @@ void get_sequences_page() {
 
   const byte s = constrain(uisequence.toInt(), 0, SEQUENCES);
 
-  get_top_page(5);
+  get_top_page(6);
 
   page += F("<div class='btn-group'>");
   for (unsigned int i = 1; i <= SEQUENCES; i++) {
@@ -1454,7 +1767,7 @@ void get_options_page() {
                                  "united",
                                  "yeti"};
 
-  get_top_page(6);
+  get_top_page(7);
 
   page += F("<form method='post'>");
 
@@ -1751,7 +2064,7 @@ void get_options_page() {
 
 void get_configurations_page() {
 
-  get_top_page(7);
+  get_top_page(8);
 
   page += F("<form method='post'>");
   page += F("<div class='form-row'>");
@@ -1790,7 +2103,7 @@ void get_configurations_page() {
   //page += F("'Browse' file to 'Upload'.");
   //page += F("</small>");
   //page += F("</div>");
-  page += F("</div>");  
+  page += F("</div>");
   page += F("</div>");
   page += F("<p></p>");
   page += F("<div class='form-row'>");
@@ -1804,7 +2117,7 @@ void get_configurations_page() {
 
   page += F("<p></p>");
   page += F("<p></p>");
-  
+
 
 
   DPRINT("Looking for configuration files on SPIFFS root ...\n");
@@ -1814,7 +2127,7 @@ void get_configurations_page() {
   File    file = root.openNextFile();
   while (file) {
     String c(file.name());
-      
+
     if (c.length() > 4 && c.lastIndexOf(".cfg") == (c.length() - 4)) {
       availableconf++;
       DPRINT("%s\n", c.c_str());
@@ -1888,6 +2201,23 @@ size_t get_live_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
   if (rebuild) {
     get_live_page();
+    DPRINT("HTML page lenght: %d\n", page.length());
+    rebuild = false;
+  }
+  page.getBytes(buffer, maxLen, index);
+  buffer[maxLen-1] = 0; // CWE-126
+  size_t byteWritten = strlen((const char *)buffer);
+  rebuild = (byteWritten == 0);
+  if (rebuild) page = "";
+  return byteWritten;
+}
+
+size_t get_actions_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  static bool rebuild = true;
+
+  if (rebuild) {
+    get_actions_page();
     DPRINT("HTML page lenght: %d\n", page.length());
     rebuild = false;
   }
@@ -2050,6 +2380,14 @@ void http_handle_live(AsyncWebServerRequest *request) {
   request->send(response);
 }
 
+void http_handle_actions(AsyncWebServerRequest *request) {
+  http_handle_globals(request);
+  if (request->hasArg("bank"))  uibank  = request->arg("bank");
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_actions_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
+
 void http_handle_banks(AsyncWebServerRequest *request) {
   http_handle_globals(request);
   if (request->hasArg("bank"))  uibank  = request->arg("bank");
@@ -2111,6 +2449,98 @@ void http_handle_post_live(AsyncWebServerRequest *request) {
   request->send(response);
 }
 
+void http_handle_post_actions(AsyncWebServerRequest *request) {
+
+  String     a;
+  const byte b = constrain(uibank.toInt() - 1, 0, BANKS);
+
+  strncpy(banknames[b], request->arg(String("bankname")).c_str(), MAXBANKNAME+1);
+
+  if (request->arg("action") == String("new")) {
+    action *act = actions[b];
+    if (act == nullptr)
+       act = actions[b] = (action*)malloc(sizeof(action));
+    else {
+      while (act->next != nullptr) act = act->next;
+      act->next = (action*)malloc(sizeof(action));
+      act = act->next;
+    }
+    act->name[0]      = 0;
+    act->pedal        = 1;
+    act->button       = 1;
+    act->midiMessage  = 1;
+    act->midiChannel  = 1;
+    act->midiCode     = 0;
+    act->midiValue1   = 0;
+    act->midiValue2   = 127;
+    act->next         = nullptr;
+    alert = "";
+  }
+  else if (request->arg("action") == String("delete")) {
+    const String checked("on");
+    unsigned int i       = 0;
+    action      *act     = actions[b];
+    action      *actPrev = nullptr;
+    action      *actNext = (act == nullptr) ? nullptr : act->next;
+
+    while (act != nullptr) {
+      i++;
+      if (request->arg(String("delete") + String(i)) == checked) {
+        if (actPrev == nullptr) {         // first
+          actions[b] = actNext;
+          actNext = (actions[b] == nullptr) ? nullptr : actions[b]->next;
+          free(act);
+          act = actions[b];
+        }
+        else if (actNext == nullptr) {    // last
+          actPrev->next = nullptr;
+          free(act);
+          act = nullptr;
+        }
+        else {                            // in the middle
+          actPrev->next = actNext;
+          free(act);
+          act = actNext;
+          actNext = (act == nullptr) ? nullptr : act->next;
+        }
+      }
+      else {                              // next action
+        actPrev = act;
+        act = act->next;
+        actNext = (act == nullptr) ? nullptr : act->next;
+      }
+    }
+    alert = F("Selected action(s) deleted.");
+  }
+  else if (request->arg("action") == String("apply")) {
+    unsigned int i      = 0;
+    action      *act    = actions[b];
+    while (act != nullptr) {
+      i++;
+      strncpy(act->name,            request->arg(String("name")     + String(i)).c_str(),    MAXACTIONNAME+1);
+      act->pedal        = constrain(request->arg(String("pedal")    + String(i)).toInt(), 0, PEDALS);
+      act->button       = constrain(request->arg(String("button")   + String(i)).toInt(), 0, LADDER_STEPS);
+      act->event        = constrain(request->arg(String("event")    + String(i)).toInt(), 0, 127);
+      act->midiMessage  = constrain(request->arg(String("message")  + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+      act->midiCode     = constrain(request->arg(String("code")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+      act->midiValue1   = constrain(request->arg(String("from")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+      act->midiValue2   = constrain(request->arg(String("to")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+      act->midiChannel  = constrain(request->arg(String("channel")  + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+      act = act->next;
+    }
+    alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
+  }
+  else if (request->arg("action") == String("save")) {
+    eeprom_update_profile();
+    eeprom_update_current_profile(currentProfile);
+    alert = "Changes saved.";
+  }
+  blynk_refresh();
+
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_actions_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
 
 void http_handle_post_banks(AsyncWebServerRequest *request) {
 
@@ -2457,7 +2887,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
       spiffs_save_config(configname);
       alert = F("Current setup saved as '");
       alert += request->arg("newconfiguration") + F("'.");
-    } 
+    }
     else {
       alert = F("Cannot create '");
       alert += request->arg("newconfiguration") + F("'.");
@@ -2492,12 +2922,12 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
       config = config.substring(1, config.length() - 4);
       alert = F("Configuration '");
       alert += config + F("' deleted.");
-    } 
+    }
     else {
       alert = F("Cannot delete '");
       alert += config + F("'.");
     }
-  } 
+  }
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_configurations_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
@@ -2523,7 +2953,7 @@ void http_handle_configuration_file_upload(AsyncWebServerRequest *request, Strin
     }
     // open the file on first call and store the file handle in the request object
     request->_tempFile = SPIFFS.open(c, FILE_WRITE);
- 
+
     if (request->_tempFile) {
       DPRINT("Upload start: %s\n", filename.c_str());
     }
@@ -2533,7 +2963,7 @@ void http_handle_configuration_file_upload(AsyncWebServerRequest *request, Strin
       DPRINT("Upload start fail: %s\n", filename.c_str());
     }
   }
-  
+
   // stream the incoming chunk to the opened file
   if (!request->_tempFile || request->_tempFile.write(data,len) != len) {
     alertError = F("Upload of '");
@@ -2874,6 +3304,8 @@ void http_setup() {
   httpServer.on("/login",           HTTP_POST,  http_handle_post_login);
   httpServer.on("/live",            HTTP_GET,   http_handle_live);
   httpServer.on("/live",            HTTP_POST,  http_handle_post_live);
+  httpServer.on("/actions",         HTTP_GET,   http_handle_actions);
+  httpServer.on("/actions",         HTTP_POST,  http_handle_post_actions);
   httpServer.on("/banks",           HTTP_GET,   http_handle_banks);
   httpServer.on("/banks",           HTTP_POST,  http_handle_post_banks);
   httpServer.on("/pedals",          HTTP_GET,   http_handle_pedals);

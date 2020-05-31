@@ -17,12 +17,14 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
 #define PROFILES          3
+#define ACTIONS         256
 #define BANKS            20
 #define PEDALS            6
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of switches in a resistor ladder
 
+#define MAXACTIONNAME    10
 #define MAXBANKNAME      10
 #define MAXPEDALNAME     10
 
@@ -140,10 +142,12 @@ typedef uint8_t   byte;
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
 #define PED_PRESS_L             4
-#define PED_PRESS_1_2           3
-#define PED_PRESS_1_L           5
-#define PED_PRESS_2_L           6
-#define PED_PRESS_1_2_L         7
+#define PED_PRESS_1_2           PED_PRESS_1 + PED_PRESS_2
+#define PED_PRESS_1_L           PED_PRESS_1 + PED_PRESS_L
+#define PED_PRESS_2_L           PED_PRESS_2 + PED_PRESS_L
+#define PED_PRESS_1_2_L         PED_PRESS_1 + PED_PRESS_2 + PED_PRESS_L
+#define PED_PRESS               1
+#define PED_RELEASE            16
 
 #define PED_MIDI                1
 #define PED_BANK_PLUS           2
@@ -195,6 +199,31 @@ typedef uint8_t   byte;
 #define ADC_RESOLUTION_BITS      10       // hardware 9 to 12-bit ADC converter resolution
                                           // software 1 to 16-bit resolution
 #define CALIBRATION_DURATION   8000       // milliseconds
+
+struct action {
+  char                   name[MAXACTIONNAME+1];
+  byte                   pedal;
+  byte                   button;
+  byte                   event;
+  byte                   midiMessage;     /*  1 = Program Change,
+                                              2 = Control Code
+                                              3 = Note On/Note Off
+                                              4 = Bank Select+
+                                              5 = Bank Select-
+                                              6 = Program Change+
+                                              7 = Program Change-
+                                              8 = Pitch Bend
+                                              9 = Channel Pressure
+                                             10 = Start
+                                             11 = Stop
+                                             12 = Continue
+                                             13 = Sequence */
+  byte                   midiChannel;     /* MIDI channel 1-16 */
+  byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
+  byte                   midiValue1;
+  byte                   midiValue2;
+  action                *next;
+};
 
 struct bank {
   char                   pedalName[MAXPEDALNAME+1];
@@ -313,10 +342,12 @@ struct message {
 
 MD_UISwitch_Digital bootButton(CENTER_PIN);
 
+action   *actions[BANKS];                         // Actions
 char      banknames[BANKS][MAXBANKNAME+1];        // Bank Names
 bank      banks[BANKS][PEDALS];                   // Banks Setup
 pedal     pedals[PEDALS];                         // Pedals Setup
 sequence  sequences[SEQUENCES][STEPS];            // Sequences Setup
+byte      currentMIDIValue[BANKS][PEDALS];
 message   lastMIDIMessage[BANKS];
 
 interface interfaces[] = {

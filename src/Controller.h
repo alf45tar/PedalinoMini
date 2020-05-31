@@ -454,7 +454,7 @@ void bank_update (byte b, byte p, int d = 1, bool enable = true)
   }
 }
 
-void midi_send(byte message, byte code, byte value, byte channel, bool on_off = true, byte range_min = 0, byte range_max = MIDI_RESOLUTION - 1)
+void midi_send(byte message, byte code, byte value, byte channel, bool on_off, byte range_min, byte range_max, byte bank, byte pedal)
 {
   switch (message) {
 
@@ -469,6 +469,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendNoteOn(code, value, channel);
         OSCSendNoteOn(code, value, channel);
         screen_info(midi::NoteOn, code, value, channel, range_min, range_max);
+        currentMIDIValue[bank][pedal] = value;
         lastMIDIMessage[currentBank] = {PED_NOTE_ON_OFF, code, value, channel};
       }
       else {
@@ -480,6 +481,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendNoteOff(code, value, channel);
         OSCSendNoteOff(code, value, channel);
         screen_info(midi::NoteOff, code, value, channel, range_min, range_max);
+        currentMIDIValue[bank][pedal] = value;
         lastMIDIMessage[currentBank] = {PED_NOTE_ON_OFF, code, value, channel};
       }
       break;
@@ -495,6 +497,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendControlChange(code, value, channel);
         OSCSendControlChange(code, value, channel);
         screen_info(midi::ControlChange, code, value, channel, range_min, range_max);
+        currentMIDIValue[bank][pedal] = value;
         lastMIDIMessage[currentBank] = {PED_CONTROL_CHANGE, code, value, channel};
       }
       break;
@@ -512,6 +515,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendProgramChange(code, channel);
         OSCSendProgramChange(code, channel);
         screen_info(midi::ProgramChange, code, 0, channel, range_min, range_max);
+        currentMIDIValue[bank][pedal] = value;
         lastMIDIMessage[currentBank] = {PED_PROGRAM_CHANGE, code, 0, channel};
       }
       break;
@@ -537,6 +541,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendControlChange(midi::BankSelect+32, code, channel);
         OSCSendControlChange(midi::BankSelect+32, code, channel);
         screen_info(midi::ControlChange, midi::BankSelect+32, code, channel, range_min, range_max);
+        currentMIDIValue[bank][pedal] = code;
       }
       break;
 
@@ -553,6 +558,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         OSCSendPitchBend(bend, channel);
         const unsigned ubend = unsigned(bend - int(MIDI_PITCHBEND_MIN));
         screen_info(midi::PitchBend, ubend & 0x7f, (ubend >> 7) & 0x7f, channel, range_min, range_max);
+        currentMIDIValue[bank][pedal] = value;
       }
       break;
 
@@ -567,6 +573,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendAfterTouch(value, channel);
         OSCSendAfterTouch(value, channel);
         screen_info(midi::AfterTouchChannel, value, 0, channel, range_min, range_max);
+        currentMIDIValue[bank][pedal] = value;
       }
       break;
 
@@ -581,6 +588,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendStart();
         OSCSendStart();
         screen_info(midi::Start, 0, 0, 0, range_min, range_max);
+        currentMIDIValue[bank][pedal] = 0;
       }
       break;
 
@@ -595,6 +603,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendStop();
         OSCSendStop();
         screen_info(midi::Stop, 0, 0, 0, range_min, range_max);
+        currentMIDIValue[bank][pedal] = 0;
       }
       break;
 
@@ -609,6 +618,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
         BLESendContinue();
         OSCSendContinue();
         screen_info(midi::Continue, 0, 0, 0, range_min, range_max);
+        currentMIDIValue[bank][pedal] = 0;
       }
       break;
 
@@ -619,12 +629,13 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off = 
       DPRINT("-------------------------------------------------------\n");
       for (byte s = 0; s < STEPS; s++)
         if (sequences[channel-1][s].midiMessage == PED_CONTROL_CHANGE)
-          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, value, sequences[channel-1][s].midiChannel, on_off, range_min, range_max);
+          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, value, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
         else if (on_off)
-          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue1, sequences[channel-1][s].midiChannel, on_off, range_min, range_max);
+          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue1, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
         else
-          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue2, sequences[channel-1][s].midiChannel, on_off, range_min, range_max);
+          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue2, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
       DPRINT("=======================================================\n");
+      currentMIDIValue[bank][pedal] = channel;
       lastMIDIMessage[currentBank] = {PED_SEQUENCE, code, value, channel};
       break;
   }
@@ -660,7 +671,8 @@ void refresh_switch_1_midi(byte i, bool send)
                             banks[b][i].midiChannel,
                             true,
                             banks[b][i].midiValue1,
-                            banks[b][i].midiValue3);
+                            banks[b][i].midiValue3,
+                            b, i);
         break;
       case HIGH:  // HIGH = release
         if (send) midi_send(banks[b][i].midiMessage,
@@ -669,7 +681,8 @@ void refresh_switch_1_midi(byte i, bool send)
                             banks[b][i].midiChannel,
                             pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2,
                             banks[b][i].midiValue1,
-                            banks[b][i].midiValue3);
+                            banks[b][i].midiValue3,
+                            b, i);
         break;
     }
     pedals[i].pedalValue[0] = value;
@@ -716,7 +729,8 @@ void refresh_switch_1_midi(byte i, bool send)
                       banks[b][i].midiChannel,
                       true,
                       banks[b][i].midiValue1,
-                      banks[b][i].midiValue3);
+                      banks[b][i].midiValue3,
+                      b, i);
             leds.invert(i);
             leds.write();
 #ifdef BLYNK
@@ -735,7 +749,8 @@ void refresh_switch_1_midi(byte i, bool send)
                       banks[b][i].midiChannel,
                       latch,
                       banks[b][i].midiValue1,
-                      banks[b][i].midiValue3);
+                      banks[b][i].midiValue3,
+                      b, i);
             if (latch) {
               leds.invert(i);
               leds.write();
@@ -771,7 +786,8 @@ void refresh_switch_1_midi(byte i, bool send)
                               banks[b][i].midiChannel,
                               true,
                               banks[b][i].midiValue1,
-                              banks[b][i].midiValue3);
+                              banks[b][i].midiValue3,
+                              b, i);
           break;
         case HIGH:  // HIGH = release
           if (send) midi_send(banks[b][i].midiMessage,
@@ -780,7 +796,8 @@ void refresh_switch_1_midi(byte i, bool send)
                               banks[b][i].midiChannel,
                               pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2,
                               banks[b][i].midiValue1,
-                              banks[b][i].midiValue3);
+                              banks[b][i].midiValue3,
+                              b, i);
           break;
       }
       pedals[i].pedalValue[1] = value;
@@ -869,17 +886,17 @@ void refresh_switch_12L_midi(byte i, bool send)
           case PED_PROGRAM_CHANGE_INC:
           case PED_PROGRAM_CHANGE_DEC:
             bank_update(b, i, 1);   // Increase
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
             break;
 
           case PED_PROGRAM_CHANGE:
             b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage,  banks[b][i].midiValue1, banks[b][i].midiValue1, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage,  banks[b][i].midiValue1, banks[b][i].midiValue1, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
             break;
 
           default:
             b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b , i);
             break;
         }
         lastUsedSwitch = i;
@@ -897,17 +914,17 @@ void refresh_switch_12L_midi(byte i, bool send)
           case PED_PROGRAM_CHANGE_INC:
           case PED_PROGRAM_CHANGE_DEC:
             bank_update(b, i, -1);    // Decrease
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
             break;
 
           case PED_PROGRAM_CHANGE:
             b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiValue2, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiValue2, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
             break;
 
           default:
             b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
             break;
         }
         lastUsedSwitch = i;
@@ -922,23 +939,23 @@ void refresh_switch_12L_midi(byte i, bool send)
           case PED_BANK_SELECT_INC:
           case PED_PROGRAM_CHANGE_INC:
             bank_update(b, i, 0);   // Set to bottom value
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b ,i);
             break;
 
           case PED_BANK_SELECT_DEC:
           case PED_PROGRAM_CHANGE_DEC:
             bank_update(b, i, 2);   // Set to top value
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
             break;
 
           case PED_PROGRAM_CHANGE:
             b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiValue3, banks[b][i].midiValue3, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiValue3, banks[b][i].midiValue3, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
             break;
 
           default:
             b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3);
+            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
             break;
         }
         lastUsedSwitch = i;
@@ -1077,7 +1094,10 @@ void refresh_switch_12L(byte i)
           midi_send(lastMIDIMessage[currentBank].midiMessage,
                     lastMIDIMessage[currentBank].midiCode,
                     lastMIDIMessage[currentBank].midiValue,
-                    lastMIDIMessage[currentBank].midiChannel);
+                    lastMIDIMessage[currentBank].midiChannel,
+                    true,
+                    0, MIDI_RESOLUTION - 1,
+                    currentBank, i);
         break;
 
       case PED_BANK_MINUS:
@@ -1120,7 +1140,10 @@ void refresh_switch_12L(byte i)
           midi_send(lastMIDIMessage[currentBank].midiMessage,
                     lastMIDIMessage[currentBank].midiCode,
                     lastMIDIMessage[currentBank].midiValue,
-                    lastMIDIMessage[currentBank].midiChannel);
+                    lastMIDIMessage[currentBank].midiChannel,
+                    true,
+                    0, MIDI_RESOLUTION - 1,
+                    currentBank, i);
         break;
 
       case PED_START:
@@ -1224,17 +1247,17 @@ void refresh_analog(byte i, bool send)
             case PED_PROGRAM_CHANGE_DEC:
             case PED_BANK_SELECT_INC:
             case PED_BANK_SELECT_DEC:
-              midi_send(banks[currentBank][i].midiMessage, value, 0, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
-              midi_send(banks[currentBank][i].midiMessage, value, 0, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
+              midi_send(banks[currentBank][i].midiMessage, value, 0, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
+              midi_send(banks[currentBank][i].midiMessage, value, 0, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
               break;
             default:
-              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
-              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
+              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
+              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
               break;
           }
         }
-        if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
-        if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
+        if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
+        if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
         pedals[i].pedalValue[0] = value;
         pedals[i].lastUpdate[0] = micros();
         lastUsedPedal = i;
@@ -1338,12 +1361,12 @@ void controller_run(bool send = true)
           case DIR_CCW:
             switch (pedals[i].function) {
               case PED_MIDI:
-                pedals[i].pedalValue[0] = constrain(pedals[i].pedalValue[0] +
+                currentMIDIValue[currentBank][i] = constrain(currentMIDIValue[currentBank][i] +
                                                     ((direction == DIR_CW) ? 1 : -1) *
                                                     _max(1, (pedals[i].jogwheel->speed() + 1) * (banks[currentBank][i].midiValue3 - banks[currentBank][i].midiValue1) / (MIDI_RESOLUTION - 1)),
                                                     pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
                                                     pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
-                DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, ((direction == DIR_CW) ? 1 : -1), pedals[i].pedalValue[0], pedals[i].jogwheel->speed());
+                DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, ((direction == DIR_CW) ? 1 : -1), currentMIDIValue[currentBank][i], pedals[i].jogwheel->speed());
                 if (send) {
                   switch (banks[currentBank][i].midiMessage) {
                     case PED_PROGRAM_CHANGE:
@@ -1351,12 +1374,12 @@ void controller_run(bool send = true)
                     case PED_PROGRAM_CHANGE_DEC:
                     case PED_BANK_SELECT_INC:
                     case PED_BANK_SELECT_DEC:
-                      midi_send(banks[currentBank][i].midiMessage, pedals[i].pedalValue[0], 0, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
-                      midi_send(banks[currentBank][i].midiMessage, pedals[i].pedalValue[0], 0, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
+                      midi_send(banks[currentBank][i].midiMessage, currentMIDIValue[currentBank][i], 0, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
+                      midi_send(banks[currentBank][i].midiMessage, currentMIDIValue[currentBank][i], 0, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
                       break;
                     default:
-                      midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
-                      midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, pedals[i].pedalValue[0], banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3);
+                      midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, currentMIDIValue[currentBank][i], banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
+                      midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, currentMIDIValue[currentBank][i], banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
                       break;
                   }
                 }

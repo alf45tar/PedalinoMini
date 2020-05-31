@@ -883,20 +883,11 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       else {
         String name;
         int offset = 0;
-
-        display->setFont(ArialMT_Plain_24);
-        display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-        name = banknames[currentBank];
-        name.replace(String("##"), String(currentBank));
-        display->drawString( 64 + x, 38 + y, name);
+        static unsigned long ms = millis();
 
         display->drawRect(0, 13, 128, 51);
-        //display->drawRect(0, 13, 128, 12);
-        //display->drawRect(0, 52, 128, 12);
-        display->setColor(WHITE);
-        display->fillRect(0, 13, 128, 12);
-        display->fillRect(0, 52, 128, 12);
-        display->setColor(BLACK);
+        display->drawRect(0, 13, 128, 12);
+        display->drawRect(0, 52, 128, 12);
         display->setFont(ArialMT_Plain_10);
         for (byte p = 0; p < PEDALS/2; p++) {
           switch (p) {
@@ -920,7 +911,30 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           name.replace(String("###"), String(""));
           display->drawString((128 / (PEDALS / 2 - 1)) * p + offset + x, 51 + y, name);
         }
-        display->setColor(WHITE);
+        if (millis() - ms < 4000) {
+          display->setFont(ArialMT_Plain_24);
+          display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+          name = banknames[currentBank];
+          name.replace(String("##"), String(currentBank));
+          display->drawString( 64 + x, 38 + y, name);
+        }
+        else if (millis() - ms < 8000) {
+          display->setFont(ArialMT_Plain_16);
+          display->setTextAlignment(TEXT_ALIGN_CENTER);
+          for (byte p = 0; p < PEDALS/2; p++) {
+            if (pedals[p].function == PED_MIDI) {
+              name = String(currentMIDIValue[currentBank][p]);
+              display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 23 + y, name);
+            }
+            if (pedals[p + PEDALS / 2].function == PED_MIDI) {
+              name = String(currentMIDIValue[currentBank][p + PEDALS / 2]);
+              display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 36 + y, name);
+            } 
+          }
+        }
+        else {
+          ms = millis();
+        }
       }
       ui.disableAutoTransition();
     }
