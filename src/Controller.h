@@ -1287,6 +1287,10 @@ void controller_delete()
     if (pedals[i].footSwitch[0] != nullptr) delete pedals[i].footSwitch[0];
     if (pedals[i].footSwitch[1] != nullptr) delete pedals[i].footSwitch[1];
     if (pedals[i].analogPedal   != nullptr) delete pedals[i].analogPedal;
+    if (pedals[i].button[0]     != nullptr) delete pedals[i].button[0];
+    if (pedals[i].button[1]     != nullptr) delete pedals[i].button[1];
+    if (pedals[i].button[2]     != nullptr) delete pedals[i].button[2];
+    if (pedals[i].buttonConfig  != nullptr) delete pedals[i].buttonConfig;
   }
 }
 
@@ -1409,8 +1413,31 @@ void controller_run(bool send = true)
         break;
     }
   }
+
+  for (byte i = 0; i < PEDALS; i++) {
+    for (byte b = 0; b < 3; b++) {
+      if (pedals[i].button[b] != nullptr) pedals[i].button[b]->check();
+    }
+  }
 }
 
+//
+// Trigger Actions on Buttons Events
+//
+void controller_handle_event(AceButton* button, uint8_t eventType, uint8_t buttonState)
+{
+  DPRINT("Pedal: %d     Button: %d    EventType: %d     ButtonState: %d\n", button->getId() / 10, button->getId() % 10, eventType, buttonState);
+
+  action *act = actions[currentBank];
+  while (act != nullptr) {
+    DPRINT("Action: %s\n", act->name);
+    if ((button->getId() == (act->pedal * 10 + act->button)) && (eventType == act->event)) {
+      switch (act->midiMessage)
+      DPRINT("Action: %s\n", act->name);
+    }
+    act = act->next;
+  }
+}
 
 //
 //  Create new MIDI controllers setup
@@ -1518,6 +1545,7 @@ void controller_setup()
     }
     DPRINT("   Channel %2d", banks[currentBank][i].midiChannel);
 
+    // Pedals setup for Banks
     switch (pedals[i].mode) {
 
       case PED_MOMENTARY1:
@@ -1612,7 +1640,60 @@ void controller_setup()
         DPRINT("   Pin A%d (CLK) D%d (DT)", PIN_A(i), PIN_D(i));
         break;
     }
-   DPRINT("\n");
+    DPRINT("\n");
+
+    // Pedals setup for Actions
+    switch (pedals[i].mode) {
+
+      case PED_MOMENTARY1:
+      case PED_LATCH1:
+
+        pedals[i].button[0] = new AceButton(PIN_D(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 1);
+        pinMode(PIN_D(i), INPUT_PULLUP);
+        pedals[i].button[0]->setEventHandler(controller_handle_event);
+        DPRINT("   Pin D%d", PIN_D(i));
+        break;
+
+      case PED_MOMENTARY2:
+      case PED_LATCH2:
+
+        pedals[i].button[0] = new AceButton(PIN_D(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 1);
+        pinMode(PIN_D(i), INPUT_PULLUP);
+        pedals[i].button[0]->setEventHandler(controller_handle_event);
+        DPRINT("   Pin D%d", PIN_D(i));
+        pedals[i].button[1] = new AceButton(PIN_A(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 2);
+        pinMode(PIN_A(i), INPUT_PULLUP);
+        pedals[i].button[1]->setEventHandler(controller_handle_event);
+        DPRINT("   Pin A%d", PIN_A(i));
+        break;
+
+      case PED_MOMENTARY3:
+
+        pedals[i].buttonConfig = new Encoded4To2ButtonConfig(PIN_D(i), PIN_A(i), pedals[i].invertPolarity ? LOW : HIGH);
+        pedals[i].button[0] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 1);
+        pedals[i].button[1] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 2);
+        pedals[i].button[2] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 3);
+        pinMode(PIN_D(i), INPUT_PULLUP);
+        DPRINT("   Pin D%d", PIN_D(i));
+        pinMode(PIN_A(i), INPUT_PULLUP);
+        DPRINT("   Pin A%d", PIN_A(i));
+        pedals[i].buttonConfig->setEventHandler(controller_handle_event);
+        break;
+
+      case PED_ANALOG:
+        break;
+
+      case PED_LADDER:
+        break;
+
+      case PED_JOG_WHEEL:
+        break;
+    }
+    pedals[i].pedalValue[0] = pedals[i].invertPolarity ? LOW : HIGH;
+    pedals[i].lastUpdate[0] = millis();
+    pedals[i].pedalValue[1] = pedals[i].pedalValue[0];
+    pedals[i].lastUpdate[1] = pedals[i].lastUpdate[0];
+    DPRINT("\n");
   }
 
   for (int i = 0; i < 100; i++) {

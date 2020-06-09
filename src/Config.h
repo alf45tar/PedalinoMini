@@ -335,7 +335,7 @@ void load_factory_default()
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
   }
   for (byte b = 0; b < BANKS; b++) {
@@ -363,7 +363,7 @@ void load_factory_default()
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
 
   pedals[PEDALS-2] = {PED_MIDI,       // function
@@ -378,7 +378,7 @@ void load_factory_default()
                       0,              // last state of switch 2
                       millis(),       // last time switch 1 status changed
                       millis(),       // last time switch 2 status changed
-                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                       };
 
   pedals[PEDALS-1] = {PED_MIDI,       // function
@@ -393,7 +393,7 @@ void load_factory_default()
                       0,              // last state of switch 2
                       millis(),       // last time switch 1 status changed
                       millis(),       // last time switch 2 status changed
-                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                       };
 
   for (byte b = 0; b < BANKS; b++)
@@ -790,6 +790,10 @@ void eeprom_read_profile(byte profile = currentProfile)
     if (pedals[i].footSwitch[0] != nullptr) delete pedals[i].footSwitch[0];
     if (pedals[i].footSwitch[1] != nullptr) delete pedals[i].footSwitch[1];
     if (pedals[i].analogPedal   != nullptr) delete pedals[i].analogPedal;
+    if (pedals[i].button[0]     != nullptr) delete pedals[i].button[0];
+    if (pedals[i].button[1]     != nullptr) delete pedals[i].button[1];
+    if (pedals[i].button[2]     != nullptr) delete pedals[i].button[2];
+    if (pedals[i].buttonConfig  != nullptr) delete pedals[i].buttonConfig;
   }
 
   DPRINT("Reading NVS Profile ");
@@ -829,6 +833,10 @@ void eeprom_read_profile(byte profile = currentProfile)
     pedals[i].footSwitch[0] = nullptr;
     pedals[i].footSwitch[1] = nullptr;
     pedals[i].analogPedal   = nullptr;
+    pedals[i].button[0]     = nullptr;
+    pedals[i].button[1]     = nullptr;
+    pedals[i].button[2]     = nullptr;
+    pedals[i].buttonConfig  = nullptr;
     if (pedals[i].autoSensing) {
       pedals[i].expZero       = ADC_RESOLUTION - 1;
       pedals[i].expMax        = 0;

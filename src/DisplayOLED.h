@@ -882,7 +882,8 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       }
       else {
         String name;
-        int offset = 0;
+        int offsetText       = 0;
+        int offsetBackground = 0;
         static unsigned long ms = millis();
 
         display->drawRect(0, 13, 128, 51);
@@ -893,23 +894,43 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           switch (p) {
             case 0:
               display->setTextAlignment(TEXT_ALIGN_LEFT);
-              offset = 1;
+              offsetText = 1;
+              offsetBackground = 0;
               break;
             case PEDALS / 2 - 1:
               display->setTextAlignment(TEXT_ALIGN_RIGHT);
-              offset = -1;
+              offsetText = -1;
+              offsetBackground = 2;
               break;
             default:
               display->setTextAlignment(TEXT_ALIGN_CENTER);
-              offset = 0;
+              offsetText = 0;
+              offsetBackground = 1;
               break;
           }
           name = String(banks[currentBank][p].pedalName);
           name.replace(String("###"), String(""));
-          display->drawString((128 / (PEDALS / 2 - 1)) * p + offset + x, 12 + y, name);
+          display->setColor(WHITE);
+          if (pedals[p].function == PED_MIDI && currentMIDIValue[currentBank][p] == banks[currentBank][p].midiValue2) {
+            display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
+                              14 + y,
+                              display->getStringWidth(name),
+                              10);
+            display->setColor(BLACK);
+          }
+          display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 12 + y, name);
+          display->setColor(WHITE);
           name = String(banks[currentBank][p + PEDALS / 2].pedalName);
           name.replace(String("###"), String(""));
-          display->drawString((128 / (PEDALS / 2 - 1)) * p + offset + x, 51 + y, name);
+          if (pedals[p + PEDALS / 2].function == PED_MIDI && currentMIDIValue[currentBank][p + PEDALS / 2] == banks[currentBank][p + PEDALS / 2].midiValue2) {
+            display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
+                              53 + y,
+                              display->getStringWidth(name),
+                              10);
+            display->setColor(BLACK);
+          }
+          display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 51 + y, name);
+          display->setColor(WHITE);
         }
         if (millis() - ms < 4000) {
           display->setFont(ArialMT_Plain_24);
@@ -929,7 +950,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
             if (pedals[p + PEDALS / 2].function == PED_MIDI) {
               name = String(currentMIDIValue[currentBank][p + PEDALS / 2]);
               display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 36 + y, name);
-            } 
+            }
           }
         }
         else {

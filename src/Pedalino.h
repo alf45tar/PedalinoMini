@@ -90,6 +90,8 @@ typedef uint8_t   byte;
 #include <ResponsiveAnalogRead.h>       // https://github.com/dxinteractive/ResponsiveAnalogRead
 #include <MD_UISwitch.h>                // https://github.com/MajicDesigns/MD_UISwitch
 #include <MD_REncoder.h>                // https://github.com/MajicDesigns/MD_REncoder
+#include <AceButton.h>                  // https://github.com/bxparks/AceButton
+using namespace ace_button;
 
 #define DEBOUNCE_INTERVAL 20
 #define BOUNCE_LOCK_OUT                 // This method is a lot more responsive, but does not cancel noise.
@@ -128,6 +130,14 @@ typedef uint8_t   byte;
 #define PED_MIDI_STOP           11
 #define PED_MIDI_CONTINUE       12
 #define PED_SEQUENCE            20
+#define PED_ACTION_BANK_PLUS    21
+#define PED_ACTION_BANK_MINUS   22
+#define PED_ACTION_START        23
+#define PED_ACTION_STOP         24
+#define PED_ACTION_CONTINUE     25
+#define PED_ACTION_TAP          26
+#define PED_ACTION_BPM_PLUS     27
+#define PED_ACTION_BPM_MINUS    29
 
 #define PED_NONE                1
 #define PED_MOMENTARY1          2
@@ -146,8 +156,6 @@ typedef uint8_t   byte;
 #define PED_PRESS_1_L           PED_PRESS_1 + PED_PRESS_L
 #define PED_PRESS_2_L           PED_PRESS_2 + PED_PRESS_L
 #define PED_PRESS_1_2_L         PED_PRESS_1 + PED_PRESS_2 + PED_PRESS_L
-#define PED_PRESS               1
-#define PED_RELEASE            16
 
 #define PED_MIDI                1
 #define PED_BANK_PLUS           2
@@ -162,6 +170,12 @@ typedef uint8_t   byte;
 #define PED_BANK_MINUS_2       11
 #define PED_BANK_PLUS_3        12
 #define PED_BANK_MINUS_3       13
+
+#define PED_EVENT_PRESS         AceButton::kEventPressed
+#define PED_EVENT_RELEASE       AceButton::kEventReleased
+#define PED_EVENT_CLICK         AceButton::kEventClicked
+#define PED_EVENT_DOUBLE_CLICK  AceButton::kEventDoubleClicked
+#define PED_EVENT_LONG_PRESS    AceButton::kEventLongPressed
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
@@ -289,6 +303,9 @@ struct pedal {
   MD_UISwitch           *footSwitch[2];
   MD_REncoder           *jogwheel;
   ResponsiveAnalogRead  *analogPedal;
+
+  AceButton               *button[3];
+  Encoded4To2ButtonConfig *buttonConfig;
 };
 
 struct interface {
