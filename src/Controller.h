@@ -1320,6 +1320,14 @@ void controller_run(bool send = true)
   }
 
   for (byte i = 0; i < PEDALS; i++) {
+    for (byte b = 0; b < 3; b++) {
+      if (pedals[i].button[b] != nullptr) pedals[i].button[b]->check();
+    }
+  }
+
+  return;
+
+  for (byte i = 0; i < PEDALS; i++) {
     switch (pedals[i].mode) {
 
       case PED_MOMENTARY1:
@@ -1413,12 +1421,6 @@ void controller_run(bool send = true)
         break;
     }
   }
-
-  for (byte i = 0; i < PEDALS; i++) {
-    for (byte b = 0; b < 3; b++) {
-      if (pedals[i].button[b] != nullptr) pedals[i].button[b]->check();
-    }
-  }
 }
 
 //
@@ -1432,7 +1434,39 @@ void controller_handle_event(AceButton* button, uint8_t eventType, uint8_t butto
   while (act != nullptr) {
     DPRINT("Action: %s\n", act->name);
     if ((button->getId() == (act->pedal * 10 + act->button)) && (eventType == act->event)) {
-      switch (act->midiMessage)
+      switch (act->midiMessage) {
+        case PED_EMPTY:
+          break;
+
+        case PED_PROGRAM_CHANGE:
+        case PED_CONTROL_CHANGE:
+        case PED_NOTE_ON_OFF:
+        case PED_PITCH_BEND:
+        case PED_CHANNEL_PRESSURE:
+        case PED_MIDI_START:
+        case PED_MIDI_STOP:
+        case PED_MIDI_CONTINUE:
+          midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+          break;
+
+
+        case PED_BANK_SELECT_INC:
+        case PED_BANK_SELECT_DEC:
+        case PED_PROGRAM_CHANGE_INC:
+        case PED_PROGRAM_CHANGE_DEC:
+
+        case PED_SEQUENCE:
+
+        case PED_ACTION_BANK_PLUS:
+        case PED_ACTION_BANK_MINUS:
+        case PED_ACTION_START:
+        case PED_ACTION_STOP:
+        case PED_ACTION_CONTINUE:
+        case PED_ACTION_TAP:
+        case PED_ACTION_BPM_PLUS:
+        case PED_ACTION_BPM_MINUS:
+          break;
+      }
       DPRINT("Action: %s\n", act->name);
     }
     act = act->next;

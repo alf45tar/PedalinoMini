@@ -41,6 +41,7 @@ String alert        = "";
 String alertError   = "";
 String uiprofile    = "1";
 String uibank       = "1";
+String uipedal      = "1";
 String uisequence   = "1";
 
 
@@ -675,9 +676,11 @@ void get_live_page() {
 
 void get_actions_page() {
 
-  const byte   b = constrain(uibank.toInt(), 0, BANKS);
+  const byte   b = constrain(uibank.toInt(), 1, BANKS);
+  const byte   p = constrain(uipedal.toInt(), 1, PEDALS);
   action      *act;
   unsigned int i;
+  byte         maxbutton;
 
   get_top_page(2);
 /*
@@ -719,6 +722,23 @@ void get_actions_page() {
 
   page += F("<p></p>");
 
+  page += F("<div class='input-group input-group-sm'>");
+  page += F("<div class='input-group-prepend'>");
+  page += F("<div class='input-group-text'>Pedal #</div>");
+  page += F("</div>");
+  page += F("<div class='btn-group'>");
+  for (i = 1; i <= PEDALS; i++) {
+    page += F("<form method='get'><button type='button submit' class='btn");
+    page += (uipedal == String(i) ? String(" btn-primary") : String(""));
+    page += F("' name='pedal' value='");
+    page += String(i) + F("'>") + String(i) + F("</button>");
+    page += F("</form>");
+  }
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
   page += F("<form method='post'>");
 
   page += F("<div class='form-row'>");
@@ -745,14 +765,15 @@ void get_actions_page() {
 
   if (actions[b-1] != nullptr) {
     page += F("<div class='form-row'>");
-    page += F("<div class='col-1'>");
-    page += F("<span class='badge badge-primary'>Action</span>");
-    page += F("</div>");
-    page += F("<div class='col-1'>");
+
+    page += F("<div class='col-1 text-center'>");
     page += F("<span class='badge badge-primary'>Pedal</span>");
     page += F("</div>");
     page += F("<div class='col-1'>");
     page += F("<span class='badge badge-primary'>Button</span>");
+    page += F("</div>");
+    page += F("<div class='col-1'>");
+    page += F("<span class='badge badge-primary'>Action</span>");
     page += F("</div>");
     page += F("<div class='col-2'>");
     page += F("<span class='badge badge-primary'>When</span>");
@@ -778,9 +799,46 @@ void get_actions_page() {
   i = 1;
   act = actions[b-1];
   while (act != nullptr) {
-    //page += F("<div class='col-1 mb-3 text-center'>");
-    //page += String(i);
-    //page += F("</div>");
+    if (uipedal != String(act->pedal + 1)) {
+      act = act->next;
+      continue;
+    }
+
+    page += F("<div class='col-1 mb-3 text-center'>");
+    page += uipedal;
+    page += F("</div>");
+
+    page += F("<div class='col-1'>");
+    page += F("<select class='custom-select custom-select-sm' name='button");
+    page += String(i) + F("'>");
+    switch (pedals[p-1].mode) {
+      case PED_MOMENTARY2:
+      case PED_LATCH2:
+        maxbutton = 2;
+        break;
+
+      case PED_MOMENTARY3:
+        maxbutton = 3;
+        break;
+
+      case PED_LADDER:
+        maxbutton = LADDER_STEPS;
+        break;
+
+      default:
+        maxbutton = 1;
+        break;
+    }
+    for (unsigned int b = 1; b <= maxbutton; b++) {
+      page += F("<option value='");
+      page += String(b) + F("'");
+      if (act->button == b - 1) page += F(" selected");
+      page += F(">");
+      page += String(b) + F("</option>");
+    }
+    page += F("</select>");
+    page += F("</div>");
+
     page += F("<div class='col-1 mb-2'>");
     page += F("<input type='text' class='form-control form-control-sm' name='name");
     page += String(i);
@@ -788,32 +846,6 @@ void get_actions_page() {
     page += String(MAXACTIONNAME) + F("' value='");
     page += String(act->name);
     page += F("'></div>");
-
-    page += F("<div class='col-1'>");
-    page += F("<select class='custom-select custom-select-sm' name='pedal");
-    page += String(i) + F("'>");
-    for (unsigned int p = 1; p <= PEDALS; p++) {
-      page += F("<option value='");
-      page += String(p) + F("'");
-      if (act->pedal == p) page += F(" selected");
-      page += F(">");
-      page += String(p) + F("</option>");
-    }
-    page += F("</select>");
-    page += F("</div>");
-
-    page += F("<div class='col-1'>");
-    page += F("<select class='custom-select custom-select-sm' name='button");
-    page += String(i) + F("'>");
-    for (unsigned int b = 1; b <= LADDER_STEPS; b++) {
-      page += F("<option value='");
-      page += String(b) + F("'");
-      if (act->button == b) page += F(" selected");
-      page += F(">");
-      page += String(b) + F("</option>");
-    }
-    page += F("</select>");
-    page += F("</div>");
 
     page += F("<div class='col-2'>");
     page += F("<div class='input-group input-group-sm'>");
@@ -860,6 +892,10 @@ void get_actions_page() {
     page += String(i);
     page += F("'>");
     page += F("<option value='");
+    page += String(PED_EMPTY) + F("'");
+    if (act->midiMessage == PED_EMPTY) page += F(" selected");
+    page += F("></option>");
+    page += F("<option value='");
     page += String(PED_PROGRAM_CHANGE) + F("'");
     if (act->midiMessage == PED_PROGRAM_CHANGE) page += F(" selected");
     page += F(">Program Change</option>");
@@ -870,7 +906,11 @@ void get_actions_page() {
     page += F("<option value='");
     page += String(PED_NOTE_ON_OFF) + F("'");
     if (act->midiMessage == PED_NOTE_ON_OFF) page += F(" selected");
-    page += F(">Note On/Off</option>");
+    page += F(">Note On</option>");
+    page += F("<option value='");
+    page += String(PED_NOTE_OFF) + F("'");
+    if (act->midiMessage == PED_NOTE_OFF) page += F(" selected");
+    page += F(">Note Off</option>");
     page += F("<option value='");
     page += String(PED_BANK_SELECT_INC) + F("'");
     if (act->midiMessage == PED_BANK_SELECT_INC) page += F(" selected");
@@ -2419,7 +2459,8 @@ void http_handle_live(AsyncWebServerRequest *request) {
 
 void http_handle_actions(AsyncWebServerRequest *request) {
   http_handle_globals(request);
-  if (request->hasArg("bank"))  uibank  = request->arg("bank");
+  if (request->hasArg("bank"))  uibank   = request->arg("bank");
+  if (request->hasArg("pedal")) uipedal  = request->arg("pedal");
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_actions_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
@@ -2427,7 +2468,8 @@ void http_handle_actions(AsyncWebServerRequest *request) {
 
 void http_handle_banks(AsyncWebServerRequest *request) {
   http_handle_globals(request);
-  if (request->hasArg("bank"))  uibank  = request->arg("bank");
+  if (request->hasArg("bank"))  uibank   = request->arg("bank");
+  if (request->hasArg("pedal")) uipedal  = request->arg("pedal");
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_banks_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
@@ -2490,6 +2532,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
 
   String     a;
   const byte b = constrain(uibank.toInt() - 1, 0, BANKS - 1);
+  const byte p = constrain(uipedal.toInt() - 1, 0, PEDALS - 1);
 
   strncpy(banknames[b], request->arg(String("bankname")).c_str(), MAXBANKNAME+1);
 
@@ -2503,10 +2546,10 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
       act = act->next;
     }
     act->name[0]      = 0;
-    act->pedal        = 1;
-    act->button       = 1;
+    act->pedal        = p;
+    act->button       = 0;
     act->event        = PED_EVENT_PRESS;
-    act->midiMessage  = 1;
+    act->midiMessage  = PED_EMPTY;
     act->midiChannel  = 1;
     act->midiCode     = 0;
     act->midiValue1   = 0;
@@ -2554,16 +2597,17 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     unsigned int i      = 0;
     action      *act    = actions[b];
     while (act != nullptr) {
-      i++;
-      strncpy(act->name,            request->arg(String("name")     + String(i)).c_str(),    MAXACTIONNAME+1);
-      act->pedal        = constrain(request->arg(String("pedal")    + String(i)).toInt(), 1, PEDALS);
-      act->button       = constrain(request->arg(String("button")   + String(i)).toInt(), 1, LADDER_STEPS);
-      act->event        = constrain(request->arg(String("event")    + String(i)).toInt(), 0, 255);
-      act->midiMessage  = constrain(request->arg(String("message")  + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
-      act->midiCode     = constrain(request->arg(String("code")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
-      act->midiValue1   = constrain(request->arg(String("from")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
-      act->midiValue2   = constrain(request->arg(String("to")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
-      act->midiChannel  = constrain(request->arg(String("channel")  + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+      if (act->pedal == p) {
+        i++;
+        strncpy(act->name,            request->arg(String("name")     + String(i)).c_str(),    MAXACTIONNAME+1);
+        act->button       = constrain(request->arg(String("button")   + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
+        act->event        = constrain(request->arg(String("event")    + String(i)).toInt(), 0, 255);
+        act->midiMessage  = constrain(request->arg(String("message")  + String(i)).toInt(), 0, 255);
+        act->midiCode     = constrain(request->arg(String("code")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+        act->midiValue1   = constrain(request->arg(String("from")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+        act->midiValue2   = constrain(request->arg(String("to")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+        act->midiChannel  = constrain(request->arg(String("channel")  + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+      }
       act = act->next;
     }
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
