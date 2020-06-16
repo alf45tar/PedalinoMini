@@ -260,7 +260,7 @@ void ladder_config()
       for (byte i = 0; i < LADDER_STEPS; i++) {
         display_progress_bar_title2("Press and hold", "Switch " + String(i+1));
         for (byte j = 0; j < i; j++)
-          display_progress_bar_2_label(j + 1, 128 * kt[j].adcThreshold / ADC_RESOLUTION);
+          display_progress_bar_2_label(j + 1, 128 * ab[j].threshold / ADC_RESOLUTION);
         unsigned long start = millis();
         while (millis() - start < 3000) {
           display_progress_bar_update(3000 - (millis() - start), 3000);
@@ -270,6 +270,8 @@ void ladder_config()
         if (analog.getValue() != ADC_RESOLUTION-1) {
           kt[i].adcThreshold = analog.getValue();
           kt[i].value = i;
+          ab[i].threshold = analog.getValue();
+          ab[i].id = i + 1;
         }
       }
       display_progress_bar_2_label(LADDER_STEPS, 128 * kt[LADDER_STEPS-1].adcThreshold / ADC_RESOLUTION);
@@ -279,13 +281,17 @@ void ladder_config()
         switch (i) {
           case 0:
             kt[0].adcTolerance = constrain(abs((kt[1].adcThreshold - kt[0].adcThreshold) / 2 - 1), 0 , 255);
+            ab[0].tolerance = constrain(abs((ab[1].threshold - ab[0].threshold) / 2 - 1), 0 , 255);
             break;
           case LADDER_STEPS - 1:
             kt[i].adcTolerance = constrain(abs((kt[i].adcThreshold - kt[i-1].adcThreshold) / 2 - 1), 0, 255);
+            ab[i].tolerance = constrain(abs((ab[i].threshold - ab[i-1].threshold) / 2 - 1), 0, 255);
             break;
           default:
             kt[i].adcTolerance = constrain(min(abs((kt[i].adcThreshold   - kt[i-1].adcThreshold) / 2 - 1),
                                                abs((kt[i+1].adcThreshold - kt[i].adcThreshold) / 2 - 1)), 0, 255);
+            ab[i].tolerance = constrain(min(abs((ab[i].threshold   - ab[i-1].threshold) / 2 - 1),
+                                            abs((ab[i+1].threshold - ab[i].threshold) / 2 - 1)), 0, 255);
             break;
         }
       }
@@ -1287,9 +1293,8 @@ void controller_delete()
     if (pedals[i].footSwitch[0] != nullptr) delete pedals[i].footSwitch[0];
     if (pedals[i].footSwitch[1] != nullptr) delete pedals[i].footSwitch[1];
     if (pedals[i].analogPedal   != nullptr) delete pedals[i].analogPedal;
-    if (pedals[i].button[0]     != nullptr) delete pedals[i].button[0];
-    if (pedals[i].button[1]     != nullptr) delete pedals[i].button[1];
-    if (pedals[i].button[2]     != nullptr) delete pedals[i].button[2];
+    for (byte s = 0; s < LADDER_STEPS; s++)
+      if (pedals[i].button[s]   != nullptr) delete pedals[i].button[s];
     if (pedals[i].buttonConfig  != nullptr) delete pedals[i].buttonConfig;
   }
 }
@@ -1320,8 +1325,111 @@ void controller_run(bool send = true)
   }
 
   for (byte i = 0; i < PEDALS; i++) {
-    for (byte b = 0; b < 3; b++) {
-      if (pedals[i].button[b] != nullptr) pedals[i].button[b]->check();
+    switch (pedals[i].mode) {
+
+      case PED_MOMENTARY1:
+      case PED_LATCH1:
+        if (pedals[i].button[0] != nullptr) pedals[i].button[0]->check();
+        break;
+
+      case PED_MOMENTARY2:
+      case PED_LATCH2:
+        if (pedals[i].button[0] != nullptr) pedals[i].button[0]->check();
+        if (pedals[i].button[1] != nullptr) pedals[i].button[1]->check();
+        break;
+
+      case PED_MOMENTARY3:
+        if (pedals[i].button[0] != nullptr) pedals[i].button[0]->check();
+        if (pedals[i].button[1] != nullptr) pedals[i].button[1]->check();
+        if (pedals[i].button[2] != nullptr) pedals[i].button[2]->check();
+        break;
+
+      case PED_ANALOG:
+        //refresh_analog(i, send);
+        break;
+
+      case PED_LADDER:
+        for (byte s = 0; s < LADDER_STEPS; s++)
+          if (pedals[i].button[s] != nullptr) pedals[i].button[s]->check();
+        break;
+
+      case PED_JOG_WHEEL:
+        uint8_t direction = pedals[i].jogwheel->read();
+        switch (direction) {
+          case DIR_NONE:
+            break;
+          case DIR_CW:
+          case DIR_CCW:
+            action *act = actions[currentBank];
+            while (act != nullptr) {
+              if (act->pedal == i) {
+                switch (act->midiMessage) {
+
+                  case PED_EMPTY:
+                    break;
+
+                  case PED_PROGRAM_CHANGE:
+                  case PED_CONTROL_CHANGE:
+                  case PED_NOTE_ON_OFF:
+                  case PED_NOTE_OFF:
+                  case PED_PITCH_BEND:
+                  case PED_CHANNEL_PRESSURE:
+                  case PED_BANK_SELECT_INC:
+                  case PED_BANK_SELECT_DEC:
+                  case PED_PROGRAM_CHANGE_INC:
+                  case PED_PROGRAM_CHANGE_DEC:
+                  case PED_SEQUENCE:
+                    currentMIDIValue[currentBank][i] = constrain(currentMIDIValue[currentBank][i] +
+                                                        ((direction == DIR_CW) ? 1 : -1) *
+                                                        _max(1, (pedals[i].jogwheel->speed() + 1) * (act->midiValue2 - act->midiValue1) / (MIDI_RESOLUTION - 1)),
+                                                        pedals[i].invertPolarity ? act->midiValue2 : act->midiValue1,
+                                                        pedals[i].invertPolarity ? act->midiValue1 : act->midiValue2);
+                    DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, ((direction == DIR_CW) ? 1 : -1), currentMIDIValue[currentBank][i], pedals[i].jogwheel->speed());
+                    if (send) {
+                      switch (act->midiMessage) {
+                        case PED_PROGRAM_CHANGE:
+                        case PED_PROGRAM_CHANGE_INC:
+                        case PED_PROGRAM_CHANGE_DEC:
+                        case PED_BANK_SELECT_INC:
+                        case PED_BANK_SELECT_DEC:
+                          midi_send(act->midiMessage, currentMIDIValue[currentBank][i], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, i);
+                          midi_send(act->midiMessage, currentMIDIValue[currentBank][i], 0, act->midiChannel, false, act->midiValue1, act->midiValue2, currentBank, i);
+                          break;
+                        default:
+                          midi_send(act->midiMessage, act->midiCode, currentMIDIValue[currentBank][i], act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, i);
+                          midi_send(act->midiMessage, act->midiCode, currentMIDIValue[currentBank][i], act->midiChannel, false, act->midiValue1, act->midiValue2, currentBank, i);
+                          break;
+                      }
+                    }
+                    pedals[i].lastUpdate[0] = micros();
+                    lastUsedPedal = i;
+                    lastUsed = i;
+                    strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
+                    break;
+
+                  case PED_BANK_PLUS:
+                  case PED_BANK_MINUS:
+                    {
+                      int b = currentBank + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].invertPolarity ? -1 : 1);
+                      b = constrain(b, pedals[i].expZero - 1, pedals[i].expMax - 1);
+                      currentBank = constrain(b, 0, BANKS - 1);
+                      break;
+                    }
+                  case PED_BPM_PLUS:
+                  case PED_BPM_MINUS:
+                    bpm = constrain(bpm + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].jogwheel->speed() + 1),
+                                    pedals[i].invertPolarity ? 300 : 40,
+                                    pedals[i].invertPolarity ? 40 : 300);
+                    MTC.setBpm(bpm);
+                    break;
+                }
+                DPRINT("Action: %s\n", act->name);
+              }
+              act = act->next;
+            }
+            break;
+        }
+        break;
     }
   }
 
@@ -1426,14 +1534,14 @@ void controller_run(bool send = true)
 //
 // Trigger Actions on Buttons Events
 //
-void controller_handle_event(AceButton* button, uint8_t eventType, uint8_t buttonState)
+void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8_t buttonState)
 {
   DPRINT("Pedal: %d     Button: %d    EventType: %d     ButtonState: %d\n", button->getId() / 10, button->getId() % 10, eventType, buttonState);
 
   action *act = actions[currentBank];
   while (act != nullptr) {
-    DPRINT("Action: %s\n", act->name);
-    if ((button->getId() == (act->pedal * 10 + act->button)) && (eventType == act->event)) {
+    if ((button->getId() == ((act->pedal + 1) * 10 + act->button + 1)) && (eventType == act->event)) {
+      DPRINT("Action: %s\n", act->name);
       switch (act->midiMessage) {
         case PED_EMPTY:
           break;
@@ -1467,7 +1575,6 @@ void controller_handle_event(AceButton* button, uint8_t eventType, uint8_t butto
         case PED_ACTION_BPM_MINUS:
           break;
       }
-      DPRINT("Action: %s\n", act->name);
     }
     act = act->next;
   }
@@ -1579,6 +1686,141 @@ void controller_setup()
     }
     DPRINT("   Channel %2d", banks[currentBank][i].midiChannel);
 
+    // Pedals setup for Actions
+    switch (pedals[i].mode) {
+
+      case PED_MOMENTARY1:
+      case PED_LATCH1:
+
+        pedals[i].buttonConfig = new ButtonConfig;
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureRepeatPress);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
+        pedals[i].buttonConfig->setClickDelay(pressTime);
+        pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
+        pedals[i].buttonConfig->setLongPressDelay(longPressTime);
+        pedals[i].buttonConfig->setRepeatPressDelay(repeatPressTime);
+        pedals[i].buttonConfig->setRepeatPressInterval(repeatPressTime);
+        pedals[i].button[0] = new AceButton(pedals[i].buttonConfig, PIN_D(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 1);
+        pinMode(PIN_D(i), INPUT_PULLUP);
+        pedals[i].button[0]->setEventHandler(controller_event_handler_button);
+        DPRINT("   Pin D%d", PIN_D(i));
+        break;
+
+      case PED_MOMENTARY2:
+      case PED_LATCH2:
+
+        pedals[i].buttonConfig = new ButtonConfig;
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureRepeatPress);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
+        pedals[i].buttonConfig->setClickDelay(pressTime);
+        pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
+        pedals[i].buttonConfig->setLongPressDelay(longPressTime);
+        pedals[i].buttonConfig->setRepeatPressDelay(repeatPressTime);
+        pedals[i].buttonConfig->setRepeatPressInterval(repeatPressTime);
+        pedals[i].button[0] = new AceButton(pedals[i].buttonConfig, PIN_D(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 1);
+        pinMode(PIN_D(i), INPUT_PULLUP);
+        pedals[i].button[0]->setEventHandler(controller_event_handler_button);
+        DPRINT("   Pin D%d", PIN_D(i));
+        pedals[i].button[1] = new AceButton(pedals[i].buttonConfig, PIN_A(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 2);
+        pinMode(PIN_A(i), INPUT_PULLUP);
+        pedals[i].button[1]->setEventHandler(controller_event_handler_button);
+        DPRINT("   Pin A%d", PIN_A(i));
+        break;
+
+      case PED_MOMENTARY3:
+
+        pedals[i].buttonConfig = new Encoded4To2ButtonConfig(PIN_D(i), PIN_A(i), pedals[i].invertPolarity ? LOW : HIGH);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureRepeatPress);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
+        pedals[i].buttonConfig->setClickDelay(pressTime);
+        pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
+        pedals[i].buttonConfig->setLongPressDelay(longPressTime);
+        pedals[i].buttonConfig->setRepeatPressDelay(repeatPressTime);
+        pedals[i].buttonConfig->setRepeatPressInterval(repeatPressTime);
+        pedals[i].button[0] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 1);
+        pedals[i].button[1] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 2);
+        pedals[i].button[2] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 3);
+        pinMode(PIN_D(i), INPUT_PULLUP);
+        DPRINT("   Pin D%d", PIN_D(i));
+        pinMode(PIN_A(i), INPUT_PULLUP);
+        DPRINT("   Pin A%d", PIN_A(i));
+        pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);
+        break;
+
+      case PED_ANALOG:
+
+        pinMode(PIN_D(i), OUTPUT);
+        digitalWrite(PIN_D(i), HIGH);
+        pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
+        pedals[i].analogPedal->setAnalogResolution(ADC_RESOLUTION);
+        pedals[i].analogPedal->enableEdgeSnap();
+        pedals[i].analogPedal->setActivityThreshold(10.0);
+        //pedals[i].analogPedal->setSnapMultiplier(0.1);
+        //analogSetPinAttenuation(PIN_A(i), ADC_11db);
+        if (lastUsedPedal == 0xFF) {
+          lastUsedPedal = i;
+          lastUsed = i;
+          strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
+        }
+        DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
+        break;
+
+      case PED_LADDER:
+
+        pinMode(PIN_D(i), OUTPUT);
+        digitalWrite(PIN_D(i), HIGH);
+        for (byte s = 0; s < LADDER_STEPS; s++)
+          ab[s].id = (i + 1) * 10 + s + 1;
+        pedals[i].buttonConfig = new LadderButtonConfig(PIN_A(i), ab, LADDER_STEPS, pedals[i].invertPolarity ? LOW : HIGH);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureLongPress);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureRepeatPress);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
+        pedals[i].buttonConfig->setClickDelay(pressTime);
+        pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
+        pedals[i].buttonConfig->setLongPressDelay(longPressTime);
+        pedals[i].buttonConfig->setRepeatPressDelay(repeatPressTime);
+        pedals[i].buttonConfig->setRepeatPressInterval(repeatPressTime);
+        for (byte s = 0; s < LADDER_STEPS; s++)
+          pedals[i].button[s] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + s + 1,  pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + s + 1);
+        pinMode(PIN_A(i), INPUT_PULLUP);
+        DPRINT("   Pin A%d", PIN_A(i));
+        pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);
+        break;
+
+      case PED_JOG_WHEEL:
+        break;
+    }
+    pedals[i].pedalValue[0] = pedals[i].invertPolarity ? LOW : HIGH;
+    pedals[i].lastUpdate[0] = millis();
+    pedals[i].pedalValue[1] = pedals[i].pedalValue[0];
+    pedals[i].lastUpdate[1] = pedals[i].lastUpdate[0];
+    DPRINT("\n");
+
+    //continue;
+
     // Pedals setup for Banks
     switch (pedals[i].mode) {
 
@@ -1674,59 +1916,6 @@ void controller_setup()
         DPRINT("   Pin A%d (CLK) D%d (DT)", PIN_A(i), PIN_D(i));
         break;
     }
-    DPRINT("\n");
-
-    // Pedals setup for Actions
-    switch (pedals[i].mode) {
-
-      case PED_MOMENTARY1:
-      case PED_LATCH1:
-
-        pedals[i].button[0] = new AceButton(PIN_D(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 1);
-        pinMode(PIN_D(i), INPUT_PULLUP);
-        pedals[i].button[0]->setEventHandler(controller_handle_event);
-        DPRINT("   Pin D%d", PIN_D(i));
-        break;
-
-      case PED_MOMENTARY2:
-      case PED_LATCH2:
-
-        pedals[i].button[0] = new AceButton(PIN_D(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 1);
-        pinMode(PIN_D(i), INPUT_PULLUP);
-        pedals[i].button[0]->setEventHandler(controller_handle_event);
-        DPRINT("   Pin D%d", PIN_D(i));
-        pedals[i].button[1] = new AceButton(PIN_A(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 2);
-        pinMode(PIN_A(i), INPUT_PULLUP);
-        pedals[i].button[1]->setEventHandler(controller_handle_event);
-        DPRINT("   Pin A%d", PIN_A(i));
-        break;
-
-      case PED_MOMENTARY3:
-
-        pedals[i].buttonConfig = new Encoded4To2ButtonConfig(PIN_D(i), PIN_A(i), pedals[i].invertPolarity ? LOW : HIGH);
-        pedals[i].button[0] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 1);
-        pedals[i].button[1] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 2);
-        pedals[i].button[2] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 3);
-        pinMode(PIN_D(i), INPUT_PULLUP);
-        DPRINT("   Pin D%d", PIN_D(i));
-        pinMode(PIN_A(i), INPUT_PULLUP);
-        DPRINT("   Pin A%d", PIN_A(i));
-        pedals[i].buttonConfig->setEventHandler(controller_handle_event);
-        break;
-
-      case PED_ANALOG:
-        break;
-
-      case PED_LADDER:
-        break;
-
-      case PED_JOG_WHEEL:
-        break;
-    }
-    pedals[i].pedalValue[0] = pedals[i].invertPolarity ? LOW : HIGH;
-    pedals[i].lastUpdate[0] = millis();
-    pedals[i].pedalValue[1] = pedals[i].pedalValue[0];
-    pedals[i].lastUpdate[1] = pedals[i].lastUpdate[0];
     DPRINT("\n");
   }
 

@@ -854,31 +854,56 @@ void get_actions_page() {
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='event");
     page += String(i) + F("'>");
-    page += F("<option value='");
-    page += String(PED_EVENT_PRESS) + F("'");
-    if (act->event == PED_EVENT_PRESS) page += F(" selected");
-    page += F(">");
-    page += F("Press</option>");
-    page += F("<option value='");
-    page += String(PED_EVENT_RELEASE) + F("'");
-    if (act->event == PED_EVENT_RELEASE) page += F(" selected");
-    page += F(">");
-    page += F("Release</option>");
-    page += F("<option value='");
-    page += String(PED_EVENT_CLICK) + F("'");
-    if (act->event == PED_EVENT_CLICK) page += F(" selected");
-    page += F(">");
-    page += F("Click</option>");
-    page += F("<option value='");
-    page += String(PED_EVENT_DOUBLE_CLICK) + F("'");
-    if (act->event == PED_EVENT_DOUBLE_CLICK) page += F(" selected");
-    page += F(">");
-    page += F("Double Click</option>");
-    page += F("<option value='");
-    page += String(PED_EVENT_LONG_PRESS) + F("'");
-    if (act->event == PED_EVENT_LONG_PRESS) page += F(" selected");
-    page += F(">");
-    page += F("Long Press</option>");
+    switch (pedals[p-1].mode) {
+      case PED_MOMENTARY1:
+      case PED_MOMENTARY2:
+      case PED_MOMENTARY3:
+      case PED_LATCH1:
+      case PED_LATCH2:
+      case PED_LADDER:
+        page += F("<option value='");
+        page += String(PED_EVENT_PRESS) + F("'");
+        if (act->event == PED_EVENT_PRESS) page += F(" selected");
+        page += F(">");
+        page += F("Press</option>");
+        page += F("<option value='");
+        page += String(PED_EVENT_RELEASE) + F("'");
+        if (act->event == PED_EVENT_RELEASE) page += F(" selected");
+        page += F(">");
+        page += F("Release</option>");
+        page += F("<option value='");
+        page += String(PED_EVENT_CLICK) + F("'");
+        if (act->event == PED_EVENT_CLICK) page += F(" selected");
+        page += F(">");
+        page += F("Click</option>");
+        page += F("<option value='");
+        page += String(PED_EVENT_DOUBLE_CLICK) + F("'");
+        if (act->event == PED_EVENT_DOUBLE_CLICK) page += F(" selected");
+        page += F(">");
+        page += F("Double Click</option>");
+        page += F("<option value='");
+        page += String(PED_EVENT_LONG_PRESS) + F("'");
+        if (act->event == PED_EVENT_LONG_PRESS) page += F(" selected");
+        page += F(">");
+        page += F("Long Press</option>");
+        break;
+
+      case PED_ANALOG:
+        page += F("<option value='");
+        page += String(PED_EVENT_MOVE) + F("'");
+        if (act->event == PED_EVENT_MOVE) page += F(" selected");
+        page += F(">");
+        page += F("Move</option>");
+        break;
+
+      case PED_JOG_WHEEL:
+        page += F("<option value='");
+        page += String(PED_EVENT_JOG) + F("'");
+        if (act->event == PED_EVENT_JOG) page += F(" selected");
+        page += F(">");
+        page += F("Jog</option>");
+        break;
+     }
     page += F("</select>");
     page += F("</div>");
     page += F("</div>");
@@ -2064,13 +2089,13 @@ void get_options_page() {
     page += String(i) + F("' name='threshold");
     page += String(i) + F("' min='0' max='");
     page += String(ADC_RESOLUTION-1) + F("' value='");
-    page += String(kt[i-1].adcThreshold) + F("'>");
+    page += String(ab[i-1].threshold) + F("'>");
     page += F("</div>");
     page += F("<div class='col-6'>");
     page += F("<input class='form-control form-control-sm' type='number' id='tolerance");
     page += String(i) + F("' name='tolerance");
     page += String(i) + F("' min='0' max='255' value='");
-    page += String(kt[i-1].adcTolerance) + F("'>");
+    page += String(ab[i-1].tolerance) + F("'>");
     page += F("</div>");
     page += F("</div>");
   }
@@ -2902,12 +2927,12 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   bool newLadder = false;
   for (byte i = 0; i < LADDER_STEPS; i++) {
     String a = request->arg(String("threshold") + String(i+1));
-    newLadder = newLadder || kt[i].adcThreshold != a.toInt();
-    kt[i].adcThreshold = a.toInt();
+    newLadder = newLadder || ab[i].threshold != a.toInt();
+    ab[i].threshold = a.toInt();
 
     a = request->arg(String("tolerance") + String(i+1));
-    newLadder = newLadder || kt[i].adcTolerance != a.toInt();
-    kt[i].adcTolerance = a.toInt();
+    newLadder = newLadder || ab[i].tolerance != a.toInt();
+    ab[i].tolerance = a.toInt();
   }
   if (newLadder) eeprom_update_ladder();
 
@@ -2981,6 +3006,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   else if (request->arg("action") == String("apply")) {
     String config = request->arg("filename");
     spiffs_load_config(config);
+    reloadProfile = true;
     config = config.substring(1, config.length() - 4);
     alert = F("Configuration '");
     alert += config + F("' loaded and running. Not used for next reboot if not saved.");
@@ -2989,6 +3015,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
     String config = request->arg("filename");
     spiffs_load_config(config);
     eeprom_update_all();
+    reloadProfile = true;
     config = config.substring(1, config.length() - 4);
     alert = F("Configuration '");
     alert += config + F("' loaded and saved for next reboot.");

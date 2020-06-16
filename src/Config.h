@@ -79,6 +79,25 @@ void spiffs_save_config(String filename) {
     jo["Name"]              = banknames[b];
   }
 
+  JsonArray jactions = jdoc.createNestedArray("Actions");
+  for (byte b = 0; b < BANKS; b++) {
+    action *act = actions[b];
+    while (act != nullptr) {
+      JsonObject jo = jactions.createNestedObject();
+      jo["Bank"]            = b + 1;
+      jo["Pedal"]           = act->pedal + 1;
+      jo["Button"]          = act->button + 1;
+      jo["Name"]            = act->name;
+      jo["Event"]           = act->event;
+      jo["Message"]         = act->midiMessage;
+      jo["Channel"]         = act->midiChannel;
+      jo["Code"]            = act->midiCode;
+      jo["Value1"]          = act->midiValue1;
+      jo["Value2"]          = act->midiValue2;
+      act = act->next;
+    }
+  }
+
   JsonArray jbanks = jdoc.createNestedArray("Banks");
   for (byte b = 0; b < BANKS; b++) {
     for (byte p = 0; p < PEDALS; p++) {
@@ -121,6 +140,16 @@ void spiffs_save_config(String filename) {
       jo["Value3"]          = sequences[s][t].midiValue3;
     }
   }
+
+  JsonArray jladder = jdoc.createNestedArray("Ladder");
+  for (byte s = 0; s < LADDER_STEPS; s++) {
+      JsonObject jo = jladder.createNestedObject();
+      jo["Step"]            = s + 1;
+      jo["Id"]              = ab[s].id;
+      jo["Threshold"]       = ab[s].threshold;
+      jo["Tolerance"]       = ab[s].tolerance;
+  }
+
   jdoc.shrinkToFit();
   DPRINT("Memory used by JSON document: %d bytes\n", jdoc.memoryUsage());
 
@@ -213,6 +242,7 @@ void spiffs_load_config(String filename) {
         for (JsonObject jo : ja) {
           int p = jo["Pedal"];
           p--;
+          p = constrain(p, 0, PEDALS - 1);
           pedals[p].function        = jo["Function"];
           pedals[p].autoSensing     = jo["AutoSensing"];
           pedals[p].mode            = jo["Mode"];
@@ -230,7 +260,59 @@ void spiffs_load_config(String filename) {
         for (JsonObject jo : ja) {
           int b = jo["Bank"];
           b--;
+          b = constrain(b, 0, BANKS - 1);
           strlcpy(banknames[b], jo["Name"] | "", sizeof(banknames[b]));
+        }
+      }
+    }
+    else if (String(jp.key().c_str()) == String("Actions")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          int b = jo["Bank"];
+          b--;
+          b = constrain(b, 0, BANKS - 1);
+          action *act = actions[b];
+          if (act == nullptr) {
+            actions[b] = (action*)malloc(sizeof(action));
+            if (!actions[b]) return;
+            actions[b]->pedal          = jo["Pedal"];
+            actions[b]->pedal--;
+            actions[b]->pedal          = constrain(actions[b]->pedal, 0, PEDALS - 1);
+            actions[b]->button         = jo["Button"];
+            actions[b]->button--;
+            actions[b]->button         = constrain(actions[b]->button, 0, LADDER_STEPS - 1);
+            strlcpy(actions[b]->name, jo["Name"] | "", sizeof(actions[b]->name));
+            actions[b]->event          = jo["Event"];
+            actions[b]->midiMessage    = jo["Message"];
+            actions[b]->midiChannel    = jo["Channel"];
+            actions[b]->midiCode       = jo["Code"];
+            actions[b]->midiValue1     = jo["Value1"];
+            actions[b]->midiValue2     = jo["Value2"];
+            actions[b]->next           = nullptr;
+          }
+          else while (act != nullptr) {
+                if (act->next == nullptr) {
+                  act->next = (action*)malloc(sizeof(action));
+                  if (!act->next) return;
+                  act = act->next;
+                  act->pedal          = jo["Pedal"];
+                  act->pedal--;
+                  act->pedal          = constrain(act->pedal, 0, PEDALS - 1);
+                  act->button         = jo["Button"];
+                  act->button--;
+                  act->button         = constrain(act->button, 0, LADDER_STEPS - 1);
+                  strlcpy(act->name, jo["Name"] | "", sizeof(act->name));
+                  act->event          = jo["Event"];
+                  act->midiMessage    = jo["Message"];
+                  act->midiChannel    = jo["Channel"];
+                  act->midiCode       = jo["Code"];
+                  act->midiValue1     = jo["Value1"];
+                  act->midiValue2     = jo["Value2"];
+                  act->next           = nullptr;
+                }
+                act = act->next;
+              }
         }
       }
     }
@@ -240,8 +322,10 @@ void spiffs_load_config(String filename) {
         for (JsonObject jo : ja) {
           int b = jo["Bank"];
           b--;
+          b = constrain(b, 0, BANKS - 1);
           int p = jo["Pedal"];
           p--;
+          p = constrain(p, 0, PEDALS - 1);
           strlcpy(banks[b][p].pedalName, jo["Name"] | "", sizeof(banks[b][p].pedalName));
           banks[b][p].midiMessage   = jo["Message"];
           banks[b][p].midiChannel   = jo["Channel"];
@@ -258,6 +342,7 @@ void spiffs_load_config(String filename) {
         for (JsonObject jo : ja) {
           int i = jo["Interface"];
           i--;
+          i = constrain(i, 0, INTERFACES - 1);
           strlcpy(interfaces[i].name, jo["Name"] | "", sizeof(interfaces[i].name));
           interfaces[i].midiIn        = jo["In"];
           interfaces[i].midiOut       = jo["Out"];
@@ -273,14 +358,29 @@ void spiffs_load_config(String filename) {
         for (JsonObject jo : ja) {
           int s = jo["Sequence"];
           s--;
+          s = constrain(s, 0, SEQUENCES - 1);
           int t = jo["Step"];
           t--;
+          t = constrain(t, 0, STEPS - 1);
           sequences[s][t].midiMessage = jo["Message"];
           sequences[s][t].midiChannel = jo["Channel"];
           sequences[s][t].midiCode    = jo["Code"];
           sequences[s][t].midiValue1  = jo["Value1"];
           sequences[s][t].midiValue2  = jo["Value2"];
           sequences[s][t].midiValue3  = jo["Value3"];
+        }
+      }
+    }
+    else if (String(jp.key().c_str()) == String("Ladder")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          int s = jo["Step"];
+          s--;
+          s = constrain(s, 0, LADDER_STEPS - 1);
+          ab[s].id            = jo["Id"];
+          ab[s].threshold     = jo["Threshold"];
+          ab[s].tolerance     = jo["Tolerance"];
         }
       }
     }
@@ -317,10 +417,6 @@ void load_factory_default()
   tapDanceBank       = true;
   blynk_set_token("");
 
-  for (byte b = 0; b < BANKS; b++) {
-      actions[b] = nullptr;
-  }
-
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {
     pedals[p] = {PED_MIDI,       // function
@@ -335,7 +431,7 @@ void load_factory_default()
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
   }
   for (byte b = 0; b < BANKS; b++) {
@@ -363,41 +459,8 @@ void load_factory_default()
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
-
-  pedals[PEDALS-2] = {PED_MIDI,       // function
-                      PED_ENABLE,     // autosensing
-                      PED_ANALOG,     // mode
-                      PED_NONE,       // press mode
-                      PED_ENABLE,     // invert polarity
-                      0,              // map function
-                      ADC_RESOLUTION * 10 / 100,  // expression pedal zero
-                      ADC_RESOLUTION * 90 / 100,  // expression pedal max
-                      0,              // last state of switch 1
-                      0,              // last state of switch 2
-                      millis(),       // last time switch 1 status changed
-                      millis(),       // last time switch 2 status changed
-                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
-                      };
-
-  pedals[PEDALS-1] = {PED_MIDI,       // function
-                      PED_ENABLE,     // autosensing
-                      PED_ANALOG,     // mode
-                      PED_NONE,       // press mode
-                      PED_ENABLE,     // invert polarity
-                      0,              // map function
-                      ADC_RESOLUTION * 10 / 100,  // expression pedal zero
-                      ADC_RESOLUTION * 90 / 100,  // expression pedal max
-                      0,              // last state of switch 1
-                      0,              // last state of switch 2
-                      millis(),       // last time switch 1 status changed
-                      millis(),       // last time switch 2 status changed
-                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
-                      };
-
-  for (byte b = 0; b < BANKS; b++)
-    memset(banknames[b], 0, MAXBANKNAME+1);
 
   for (byte b = 0; b < BANKS; b = b + 2) {
     banks[b][0].pedalName[0] = 'A';
@@ -510,6 +573,11 @@ void load_factory_default()
   }
 #endif  // TTGO_T_EIGHT
 
+  for (byte b = 0; b < BANKS; b++) {
+    memset(banknames[b], 0, MAXBANKNAME+1);
+    actions[b] = nullptr;
+  }
+
   for (byte i = 0; i < INTERFACES; i++)
     {
       interfaces[i].midiIn      = PED_ENABLE;
@@ -551,6 +619,25 @@ void load_factory_default()
   kt[5].value = 5;
   kt[5].adcThreshold = 945;
   kt[5].adcTolerance = 35;
+
+  ab[0].id = 1;
+  ab[0].threshold = 497;
+  ab[0].tolerance = 82;
+  ab[1].id = 2;
+  ab[1].threshold = 660;
+  ab[1].tolerance = 47;
+  ab[2].id = 3;
+  ab[2].threshold = 752;
+  ab[2].tolerance = 33;
+  ab[3].id = 4;
+  ab[3].threshold = 816;
+  ab[3].tolerance = 31;
+  ab[4].id = 5;
+  ab[4].threshold = 876;
+  ab[4].tolerance = 31;
+  ab[5].id = 6;
+  ab[5].threshold = 945;
+  ab[5].tolerance = 35;
 }
 
 void eeprom_update_device_name(String name = getChipId())
@@ -680,12 +767,12 @@ void eeprom_update_ladder()
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
-  preferences.putBytes("Ladder", &kt, sizeof(kt));
+  preferences.putBytes("Ladder", &ab, sizeof(ab));
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global][Ladder]:\n");
   for (byte i = 0; i < LADDER_STEPS; i++) {
-    DPRINT("Ladder %d Threshold %d Tolerance %d\n", kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
+    DPRINT("Ladder %d Threshold %d Tolerance %d\n", ab[i].id, ab[i].threshold, ab[i].tolerance);
   }
 }
 
@@ -773,7 +860,7 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][Blynk Cloud]:      %d\n", blynk_enabled());
     DPRINT("[NVS][Global][Blynk Token]:      %s\n", blynk_get_token().c_str());
     for (byte i = 0; i < LADDER_STEPS; i++) {
-      DPRINT("[NVS][Global][Ladder]:           Ladder %d Threshold %d Tolerance %d\n", kt[i].value, kt[i].adcThreshold, kt[i].adcTolerance);
+      DPRINT("[NVS][Global][Ladder]:           Ladder %d Threshold %d Tolerance %d\n", ab[i].id, ab[i].threshold, ab[i].tolerance);
     }
   }
   else {
@@ -790,9 +877,8 @@ void eeprom_read_profile(byte profile = currentProfile)
     if (pedals[i].footSwitch[0] != nullptr) delete pedals[i].footSwitch[0];
     if (pedals[i].footSwitch[1] != nullptr) delete pedals[i].footSwitch[1];
     if (pedals[i].analogPedal   != nullptr) delete pedals[i].analogPedal;
-    if (pedals[i].button[0]     != nullptr) delete pedals[i].button[0];
-    if (pedals[i].button[1]     != nullptr) delete pedals[i].button[1];
-    if (pedals[i].button[2]     != nullptr) delete pedals[i].button[2];
+    for (byte s = 0; s < LADDER_STEPS; s++)
+      if (pedals[i].button[s]   != nullptr) delete pedals[i].button[s];
     if (pedals[i].buttonConfig  != nullptr) delete pedals[i].buttonConfig;
   }
 
@@ -833,9 +919,8 @@ void eeprom_read_profile(byte profile = currentProfile)
     pedals[i].footSwitch[0] = nullptr;
     pedals[i].footSwitch[1] = nullptr;
     pedals[i].analogPedal   = nullptr;
-    pedals[i].button[0]     = nullptr;
-    pedals[i].button[1]     = nullptr;
-    pedals[i].button[2]     = nullptr;
+    for (byte s = 0; s < LADDER_STEPS; s++)
+      pedals[i].button[s]   = nullptr;
     pedals[i].buttonConfig  = nullptr;
     if (pedals[i].autoSensing) {
       pedals[i].expZero       = ADC_RESOLUTION - 1;

@@ -177,6 +177,8 @@ using namespace ace_button;
 #define PED_EVENT_CLICK         AceButton::kEventClicked
 #define PED_EVENT_DOUBLE_CLICK  AceButton::kEventDoubleClicked
 #define PED_EVENT_LONG_PRESS    AceButton::kEventLongPressed
+#define PED_EVENT_MOVE          6
+#define PED_EVENT_JOG           7
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
@@ -305,8 +307,8 @@ struct pedal {
   MD_REncoder           *jogwheel;
   ResponsiveAnalogRead  *analogPedal;
 
-  AceButton               *button[3];
-  Encoded4To2ButtonConfig *buttonConfig;
+  AceButton             *button[LADDER_STEPS];
+  ButtonConfig          *buttonConfig;
 };
 
 struct interface {
@@ -422,7 +424,8 @@ bool  bleConnected            = false;
 String wifiSSID("");
 String wifiPassword("");
 
-MD_UISwitch_Analog::uiAnalogKeys_t kt[LADDER_STEPS];
+MD_UISwitch_Analog::uiAnalogKeys_t  kt[LADDER_STEPS];
+LadderButtonConfig::AnalogButtons_t ab[LADDER_STEPS];
 
 bool powersaver = false;
 bool firmwareUpdate = false;
