@@ -773,13 +773,13 @@ void get_actions_page() {
     page += F("<span class='badge badge-primary'>Button</span>");
     page += F("</div>");
     page += F("<div class='col-1'>");
+    page += F("<span class='badge badge-primary'>Name</span>");
+    page += F("</div>");
+    page += F("<div class='col-2'>");
+    page += F("<span class='badge badge-primary'>Event</span>");
+    page += F("</div>");
+    page += F("<div class='col-2'>");
     page += F("<span class='badge badge-primary'>Action</span>");
-    page += F("</div>");
-    page += F("<div class='col-2'>");
-    page += F("<span class='badge badge-primary'>When</span>");
-    page += F("</div>");
-    page += F("<div class='col-2'>");
-    page += F("<span class='badge badge-primary'>MIDI Message</span>");
     page += F("</div>");
     page += F("<div class='col-1'>");
     page += F("<span class='badge badge-primary'>MIDI Code</span>");
@@ -2169,58 +2169,51 @@ void get_configurations_page() {
   get_top_page(8);
 
   page += F("<form method='post'>");
+
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>New Configuration</h5>");
+  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
-  page += F("<div class='col-12'>");
-  page += F("<label for='newconfiguration'>New Configuration</label>");
+  page += F("<div class='col-8'>");
   page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
-  page += F("Type a name and press 'Save as configuration' to save current setup with a name. An existing configuration with the same name will be overridden without further notice.");
+  page += F("Type a name, select what to include and press 'Save as configuration' to save current profile with a name. An existing configuration with the same name will be overridden without further notice.");
   page += F("</small>");
+  page += F("<br><button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>Save as configuration</button>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("</div>");
+  page += F("<div class='col-3'>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='actionsCheck1' name='actions1' checked>");
+  page += F("<label class='custom-control-label' for='actionsCheck1'>Actions</label>");
+  page += F("</div>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='pedalsCheck1' name='pedals1' checked>");
+  page += F("<label class='custom-control-label' for='pedalsCheck1'>Pedals</label>");
+  page += F("</div>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='interfacesCheck1' name='interfaces1' checked>");
+  page += F("<label class='custom-control-label' for='interfacesCheck1'>Interfaces</label>");
+  page += F("</div>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='sequencesCheck1' name='sequences1' checked>");
+  page += F("<label class='custom-control-label' for='sequencesCheck1'>Sequences</label>");
+  page += F("</div>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='optionsCheck1' name='options1' checked>");
+  page += F("<label class='custom-control-label' for='optionsCheck1'>Options</label>");
   page += F("</div>");
   page += F("</div>");
-  page += F("<p></p>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='col-12'>");
-  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>Save as configuration</button>");
+  page += F("</div>");
+  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
+
   page += F("</form>");
 
   page += F("<p></p>");
-  page += F("<p></p>");
-
-  //page += F("<form method='POST' action='/configurations' enctype='multipart/form-data'><input type='file' name='upload'><input type='submit' value='Upload'></form>");
-
-  page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='col-12'>");
-  page += F("<label for='uploadconfiguration'>Upload Configuration</label>");
-  page += F("<br><input type='file' name='upload'>");
-  /*
-  page += F("<div class='custom-file'>");
-  page += F("<input type='file' class='custom-file-input' id='customFile'>");
-  page += F("<label class='custom-file-label' for='customFile'>Choose file</label>");
-  */
-  //page += F("<small id='uploadconfigurationHelpBlock' class='form-text text-muted'>");
-  //page += F("'Browse' file to 'Upload'.");
-  //page += F("</small>");
-  //page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("<p></p>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='col-12'>");
-  page += F("<input type='submit' value='Upload' class='btn btn-primary btn-sm'>");
-  page += F("</div>");
-  page += F("</div>");
-  // Add the following code if you want the name of the file appear on select
-  //page += F("<script>$('.custom-file-input').on('change',function(){var fileName=$(this).val().split('\\').pop();$(this).siblings('.custom-file-label').addClass('selected').html(fileName);});</script>");
-  page += F("</form>");
-
-  page += F("<p></p>");
-  page += F("<p></p>");
-
-
 
   DPRINT("Looking for configuration files on SPIFFS root ...\n");
   int     availableconf = 0;
@@ -2242,36 +2235,104 @@ void get_configurations_page() {
   DPRINT("done.\n");
 
   page += F("<form method='post'>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='col-12'>");
-  page += F("<label for='filename'>Available Configurations (");
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Available Configurations</h5>");
   /*
   SPIFFS is not a high performance FS; it is designed to balance safety, wear levelling and performance for bare flash devices.
   If you want good performance from SPIFFS:
     Keep the % utilisation low
     Keep the partition size low as well.
   */
-  page += String(availableconf) + F("/") + String(availableconf + constrain((SPIFFS.totalBytes() / 100 * 85 - SPIFFS.usedBytes()) / 30000, 0, INT_MAX));
-  page += F(")</label>");
+  page += F("</h5>");
+  page += F("<p class='card-text'>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-8'>");
   page += F("<select class='custom-select' id='filename' name='filename'>");
   page += confoptions;
   page += F("</select>");
   page += F("<small id='filenameHelpBlock' class='form-text text-muted'>");
-  page += F("Select a configuration and an action button.<br>");
-  page += F("'Apply' to load configuration into current setup without saving it for use as default on next reboot.<br>");
-  page += F("'Save' to load and save configuration into current setup for use as default on next reboot.<br>");
+  page += F("'Apply' to load configuration into current profile.<br>");
+  page += F("'Apply & Save' to load configuration into current profile and save the profile.<br>");
   page += F("'Download' to download configuration to local computer.<br>");
   page += F("'Delete' to remove configuration.");
   page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("</div>");
+  page += F("<div class='col-3'>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='actionsCheck2' name='actions2' checked>");
+  page += F("<label class='custom-control-label' for='actionsCheck2'>Actions</label>");
+  page += F("</div>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='pedalsCheck2' name='pedals2' checked>");
+  page += F("<label class='custom-control-label' for='pedalsCheck2'>Pedals</label>");
+  page += F("</div>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='interfacesCheck2' name='interfaces2' checked>");
+  page += F("<label class='custom-control-label' for='interfacesCheck2'>Interfaces</label>");
+  page += F("</div>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='sequencesCheck2' name='sequences2' checked>");
+  page += F("<label class='custom-control-label' for='sequencesCheck2'>Sequences</label>");
+  page += F("</div>");
+  page += F("<div class='custom-control custom-switch'>");
+  page += F("<input type='checkbox' class='custom-control-input' id='optionsCheck2' name='options2' checked>");
+  page += F("<label class='custom-control-label' for='optionsCheck2'>Options</label>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("<p></p>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-12'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button> ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button> ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Apply & Save</button> ");
   page += F("<button type='submit' name='action' value='download' class='btn btn-primary btn-sm'>Download</button> ");
   page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>Delete</button> ");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
+
+  page += F("<p></p>");
+
+  //page += F("<form method='POST' action='/configurations' enctype='multipart/form-data'><input type='file' name='upload'><input type='submit' value='Upload'></form>");
+  page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
+
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Upload Configuration</h5>");
+  page += F("<p class='card-text'>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-8'>");
+  page += F("<input type='file' name='upload'>");
+  /*
+  page += F("<div class='custom-file'>");
+  page += F("<input type='file' class='custom-file-input' id='customFile'>");
+  page += F("<label class='custom-file-label' for='customFile'>Choose file</label>");
+  */
+  //page += F("<small id='uploadconfigurationHelpBlock' class='form-text text-muted'>");
+  //page += F("'Browse' file to 'Upload'.");
+  //page += F("</small>");
+  //page += F("</div>");
+  page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
+  page += F("SPIFFS is not a high performance FS. It is designed to balance safety, wear levelling and performance for bare flash devices. ");
+  page += F("If you want good performance from SPIFFS keep the % utilisation low.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("</div>");
+  page += F("<div class='col-3'>");
+  page += F("<label> </label><br>");
+  page += F("<input type='submit' value='Upload' class='btn btn-primary btn-sm'>");
+  page += F("</div>");
+  page += F("</div>");
+  // Add the following code if you want the name of the file appear on select
+  //page += F("<script>$('.custom-file-input').on('change',function(){var fileName=$(this).val().split('\\').pop();$(this).siblings('.custom-file-label').addClass('selected').html(fileName);});</script>");
+  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -3006,7 +3067,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   else if (request->arg("action") == String("apply")) {
     String config = request->arg("filename");
     spiffs_load_config(config);
-    reloadProfile = true;
+    loadConfig = true;
     config = config.substring(1, config.length() - 4);
     alert = F("Configuration '");
     alert += config + F("' loaded and running. Not used for next reboot if not saved.");

@@ -811,6 +811,23 @@ void eeprom_update_profile(byte profile = currentProfile)
   preferences.putBytes("Sequences",   &sequences,   sizeof(sequences));
   preferences.putUChar("Current Bank", currentBank);
   preferences.putUChar("Current MTC", currentMidiTimeCode);
+  for (byte b = 0; b < BANKS; b++) {
+    char    label[10];
+    byte    i = 0;
+    action *act = actions[b];
+    while (act != nullptr) {
+      memset(label, 0, 10);
+      sprintf(label, "%d.%d", b, i);
+      DPRINT("%s\n", label);
+      preferences.putBytes(label, act, sizeof(action));
+      act = act->next;
+      i++;
+    }
+    memset(label, 0, 10);
+    sprintf(label, "Size%d", b);
+    preferences.putUChar(label, i);
+    DPRINT("%s %d\n", label, i);
+  }
   preferences.end();
 
   DPRINT(" ... done\n");
@@ -905,9 +922,6 @@ void eeprom_read_profile(byte profile = currentProfile)
   preferences.getBytes("Sequences",   &sequences,   sizeof(sequences));
   currentBank         = preferences.getUChar("Current Bank");
   currentMidiTimeCode = preferences.getUChar("Current MTC");
-  preferences.end();
-
-  DPRINT("done\n");
 
   for (byte i = 0; i < PEDALS; i++) {
     pedals[i].pedalValue[0] = 0;
@@ -928,6 +942,30 @@ void eeprom_read_profile(byte profile = currentProfile)
     }
   };
 
+  for (byte b = 0; b < BANKS; b++) {
+    char label[10];
+    memset(label, 0, 10);
+    sprintf(label, "Size%d", b);
+    byte action_size = preferences.getUChar(label);
+    DPRINT("%s %d\n", label, action_size);
+    action *act = actions[b] = nullptr;
+    for (byte i = 0; i < action_size; i++) {
+      memset(label, 0, 10);
+      sprintf(label, "%d.%d", b, i);
+      DPRINT("%s\n", label);
+      action *a = (action*)malloc(sizeof(action));
+      preferences.getBytes(label, a, sizeof(action));
+      a->next = nullptr;
+      if (act == nullptr)
+        act = actions[b] = a;
+      else {
+        act->next = a;
+        act = act->next;
+      }
+    }
+  }
+  preferences.end();
+  DPRINT("done\n");
   blynk_refresh();
 }
 

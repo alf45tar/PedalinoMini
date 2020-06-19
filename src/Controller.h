@@ -1324,6 +1324,17 @@ void controller_run(bool send = true)
     return;
   }
 
+if (loadConfig && send) {
+    DPRINT("Loading configuration ...\n");
+    autosensing_setup();
+    controller_setup();
+    mtc_setup();
+#ifdef WIFI
+    OscControllerUpdate();
+#endif
+    loadConfig = false;
+    return;
+  }
   for (byte i = 0; i < PEDALS; i++) {
     switch (pedals[i].mode) {
 

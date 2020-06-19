@@ -387,6 +387,7 @@ byte  bootMode                = PED_BOOT_NORMAL;
 volatile byte currentProfile  = 0;
 volatile bool reloadProfile   = true;
 volatile bool saveProfile     = false;
+volatile bool loadConfig      = false;
 volatile bool scrollingMode   = false;  // Display scrolling mode
 byte  currentBank             = 0;
 byte  currentPedal            = 0;
