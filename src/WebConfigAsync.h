@@ -1874,20 +1874,27 @@ void get_options_page() {
   page += F("<form method='post'>");
 
   page += F("<div class='form-row'>");
-  page += F("<label for='devicename'>Device Name</label>");
+  page += F("<div class='col-6'>");
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Device Name</h5>");
+  page += F("<p class='card-text'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='devicename' name='mdnsdevicename' placeholder='' value='");
   page += host + F("'>");
   page += F("<small id='devicenameHelpBlock' class='form-text text-muted'>");
   page += F("Each device must have a different name. Enter the device name without .local. Web UI will be available at http://<i>device_name</i>.local<br>");
   page += F("Pedalino will be restarted if you change it.");
   page += F("</small>");
+  page += F("</p>");
+  page += F("</div>");
+  page += F("</div>");
   page += F("</div>");
 
-  page += F("<p></p>");
-
-  page += F("<label>Boot Mode</label>");
-
-  page += F("<div class='form-row'>");
+  page += F("<div class='col-6'>");
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Boot Mode</h5>");
+  page += F("<p class='card-text'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='bootModeWifi' name='bootmodewifi'");
   if (bootMode == PED_BOOT_NORMAL ||
@@ -1900,9 +1907,6 @@ void get_options_page() {
   page += F("RTP-MIDI, ipMIDI, OSC and web UI require WiFi.");
   page += F("</small>");
   page += F("</div>");
-  page += F("</div>");
-
-  page += F("<div class='form-row'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='bootModeAP' name='bootmodeap'");
   if (bootMode == PED_BOOT_AP ||
@@ -1913,9 +1917,6 @@ void get_options_page() {
   page += F("To enable AP Mode enable WiFi too.");
   page += F("</small>");
   page += F("</div>");
-  page += F("</div>");
-
-  page += F("<div class='form-row'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='bootModeBLE' name='bootmodeble'");
   if (bootMode == PED_BOOT_NORMAL ||
@@ -1927,11 +1928,18 @@ void get_options_page() {
   page += F("BLE MIDI requires BLE.");
   page += F("</small>");
   page += F("</div>");
+  page += F("</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
   page += F("</div>");
 
   page += F("<p></p>");
 
-  page += F("<label>WiFi Network</label>");
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>WiFi Network</h5>");
+  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='form-group col-6'>");
   page += F("<label for='wifissid'>SSID</label>");
@@ -1948,10 +1956,16 @@ void get_options_page() {
   page += wifiPassword + F("'>");
   page += F("</div>");
   page += F("</div>");
+  page += F("</p>");
+  page += F("</div>");
+  page += F("</div>");
 
   page += F("<p></p>");
 
-  page += F("<label>AP Mode</label>");
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>AP Mode</h5>");
+  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='form-group col-6'>");
   page += F("<label for='wifissid'>SSID</label>");
@@ -1968,11 +1982,18 @@ void get_options_page() {
   page += passwordSoftAP + F("'>");
   page += F("</div>");
   page += F("</div>");
+  page += F("</p>");
+  page += F("</div>");
+  page += F("</div>");
 
   page += F("<p></p>");
 
   page += F("<div class='form-row'>");
-  page += F("<label for='bootstraptheme'>Web UI Theme</label>");
+  page += F("<div class='col-6'>");
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Web UI Theme</h5>");
+  page += F("<p class='card-text'>");
   page += F("<select class='custom-select' id='bootstraptheme' name='theme'>");
   for (unsigned int i = 0; i < 22; i++) {
     page += F("<option value='");
@@ -1983,13 +2004,18 @@ void get_options_page() {
   }
   page += F("</select>");
   page += F("<small id='bootstrapthemeHelpBlock' class='form-text text-muted'>");
-  page += F("Changing default theme require internet connection because themes are served via a CDN network. Only default 'bootstrap' theme has been stored into Pedalino flash memory.");
+  page += F("Changing default theme require internet connection because themes are served via a CDN network. Only 'bootstrap' theme has been stored into Pedalino flash memory.");
   page += F("</small>");
+  page += F("</p>");
+  page += F("</div>");
+  page += F("</div>");
   page += F("</div>");
 
-  page += F("<p></p>");
-
-  page += F("<div class='form-row'>");
+  page += F("<div class='col-6'>");
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Additional Features</h5>");
+  page += F("<p class='card-text'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='tapDanceMode' name='tapdancemode'");
   if (tapDanceMode) page += F(" checked");
@@ -1999,11 +2025,6 @@ void get_options_page() {
   page += F("The first press of pedal X switch to bank X, the second press of any pedal send the MIDI event.");
   page += F("</small>");
   page += F("</div>");
-  page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='form-row'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='repeatOnBankSwitch' name='repeatonbankswitch'");
   if (repeatOnBankSwitch) page += F(" checked");
@@ -2013,10 +2034,18 @@ void get_options_page() {
   page += F("On bank switch repeat the last MIDI message that was sent for that bank");
   page += F("</small>");
   page += F("</div>");
+  page += F("</p>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
   page += F("</div>");
 
   page += F("<p></p>");
 
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Momentary Switches</h5>");
+  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='form-group col-6'>");
   page += F("<label for='pressTime'>Press Time</label>");
@@ -2057,10 +2086,16 @@ void get_options_page() {
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
+  page += F("</p>");
+  page += F("</div>");
+  page += F("</div>");
 
   page += F("<p></p>");
 
-  page += F("Ladder Network Configuration");
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Resistor Ladder Network</h5>");
+  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>#</span>");
@@ -2099,9 +2134,16 @@ void get_options_page() {
     page += F("</div>");
     page += F("</div>");
   }
+  page += F("</p>");
+  page += F("</div>");
+  page += F("</div>");
 
   page += F("<p></p>");
 
+  page += F("<div class='card'>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Encoders</h5>");
+  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='form-group col-6'>");
   page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
@@ -2117,6 +2159,9 @@ void get_options_page() {
   page += F("<small id='encoderSensitivityHelpBlock' class='form-text text-muted'>");
   page += F("Encoder sensitivity. Default value is 5.");
   page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
 
@@ -2238,13 +2283,6 @@ void get_configurations_page() {
   page += F("<div class='card'>");
   page += F("<div class='card-body'>");
   page += F("<h5 class='card-title'>Available Configurations</h5>");
-  /*
-  SPIFFS is not a high performance FS; it is designed to balance safety, wear levelling and performance for bare flash devices.
-  If you want good performance from SPIFFS:
-    Keep the % utilisation low
-    Keep the partition size low as well.
-  */
-  page += F("</h5>");
   page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-8'>");
@@ -2299,25 +2337,17 @@ void get_configurations_page() {
 
   page += F("<p></p>");
 
-  //page += F("<form method='POST' action='/configurations' enctype='multipart/form-data'><input type='file' name='upload'><input type='submit' value='Upload'></form>");
   page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
-
   page += F("<div class='card'>");
   page += F("<div class='card-body'>");
   page += F("<h5 class='card-title'>Upload Configuration</h5>");
   page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-8'>");
-  page += F("<input type='file' name='upload'>");
-  /*
   page += F("<div class='custom-file'>");
-  page += F("<input type='file' class='custom-file-input' id='customFile'>");
-  page += F("<label class='custom-file-label' for='customFile'>Choose file</label>");
-  */
-  //page += F("<small id='uploadconfigurationHelpBlock' class='form-text text-muted'>");
-  //page += F("'Browse' file to 'Upload'.");
-  //page += F("</small>");
-  //page += F("</div>");
+  page += F("<input type='file' class='custom-file-input' id='customFile' name='upload'>");
+  page += F("<label class='custom-file-label text-truncate' for='customFile'>Choose file</label>");
+  page += F("</div>");
   page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
   page += F("SPIFFS is not a high performance FS. It is designed to balance safety, wear levelling and performance for bare flash devices. ");
   page += F("If you want good performance from SPIFFS keep the % utilisation low.");
@@ -2326,15 +2356,14 @@ void get_configurations_page() {
   page += F("<div class='col-1'>");
   page += F("</div>");
   page += F("<div class='col-3'>");
-  page += F("<label> </label><br>");
   page += F("<input type='submit' value='Upload' class='btn btn-primary btn-sm'>");
   page += F("</div>");
   page += F("</div>");
-  // Add the following code if you want the name of the file appear on select
-  //page += F("<script>$('.custom-file-input').on('change',function(){var fileName=$(this).val().split('\\').pop();$(this).siblings('.custom-file-label').addClass('selected').html(fileName);});</script>");
   page += F("</p>");
   page += F("</div>");
   page += F("</div>");
+  // Add the following code if you want the name of the file appear on select
+  //page += F("<script>$('.custom-file-input').on('change', function() { let fileName = $(this).val().split('\\').pop(); $(this).next('.custom-file-label').addClass('selected').html(fileName); });</script>");
   page += F("</form>");
 
   get_footer_page();
