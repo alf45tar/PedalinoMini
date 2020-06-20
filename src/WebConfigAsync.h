@@ -116,7 +116,7 @@ void get_top_page(int p = 0) {
   page += F("</li>");
   page += F("</ul>");
   }
-  if (p != 0 && p != 7 && p != 8)
+  if (p != 0 && p != 7)
   {
     page += F("<form class='form-inline my-2 my-lg-0'>");
     page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
@@ -1875,26 +1875,24 @@ void get_options_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-6'>");
-  page += F("<div class='card'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>Device</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Device Name</h5>");
-  page += F("<p class='card-text'>");
+  page += F("<h5 class='card-title'>Name</h5>");
   page += F("<input class='form-control' type='text' maxlength='32' id='devicename' name='mdnsdevicename' placeholder='' value='");
   page += host + F("'>");
   page += F("<small id='devicenameHelpBlock' class='form-text text-muted'>");
   page += F("Each device must have a different name. Enter the device name without .local. Web UI will be available at http://<i>device_name</i>.local<br>");
   page += F("Pedalino will be restarted if you change it.");
   page += F("</small>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
   page += F("<div class='col-6'>");
-  page += F("<div class='card'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>Boot Mode</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Boot Mode</h5>");
-  page += F("<p class='card-text'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='bootModeWifi' name='bootmodewifi'");
   if (bootMode == PED_BOOT_NORMAL ||
@@ -1928,61 +1926,8 @@ void get_options_page() {
   page += F("BLE MIDI requires BLE.");
   page += F("</small>");
   page += F("</div>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='card'>");
-  page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>WiFi Network</h5>");
-  page += F("<p class='card-text'>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='form-group col-6'>");
-  page += F("<label for='wifissid'>SSID</label>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='wifissid' name='wifiSSID' placeholder='SSID' value='");
-  page += wifiSSID + F("'>");
-  page += F("<small class='form-text text-muted'>");
-  page += F("Connect to a wifi network using SSID and password.<br>");
-  page += F("Pedalino will be restarted if it is connected to a WiFi network and you change them.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='form-group col-6'>");
-  page += F("<label for='wifipassword'>Password</label>");
-  page += F("<input class='form-control' type='password' maxlength='32' id='wifipassword' name='wifiPassword' placeholder='password' value='");
-  page += wifiPassword + F("'>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</p>");
-  page += F("</div>");
-  page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='card'>");
-  page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>AP Mode</h5>");
-  page += F("<p class='card-text'>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='form-group col-6'>");
-  page += F("<label for='wifissid'>SSID</label>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='ssidsoftap' name='ssidSoftAP' placeholder='SSID' value='");
-  page += ssidSoftAP + F("'>");
-  page += F("<small class='form-text text-muted'>");
-  page += F("Access Point SSID and password.<br>");
-  page += F("Pedalino will be restarted if it is in AP mode and you changed them.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='form-group col-6'>");
-  page += F("<label for='passwordsoftap'>Password</label>");
-  page += F("<input class='form-control' type='password' maxlength='32' id='passwordsoftap' name='passwordSoftAP' placeholder='password' value='");
-  page += passwordSoftAP + F("'>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
 
@@ -1990,10 +1935,49 @@ void get_options_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-6'>");
-  page += F("<div class='card'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>WiFi Network</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Web UI Theme</h5>");
-  page += F("<p class='card-text'>");
+  page += F("<label for='wifissid'>SSID</label>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='wifissid' name='wifiSSID' placeholder='SSID' value='");
+  page += wifiSSID + F("'>");
+  page += F("<label for='wifipassword'>Password</label>");
+  page += F("<input class='form-control' type='password' maxlength='32' id='wifipassword' name='wifiPassword' placeholder='password' value='");
+  page += wifiPassword + F("'>");
+  page += F("<small class='form-text text-muted'>");
+  page += F("Connect to a wifi network using SSID and password.<br>");
+  page += F("Pedalino will be restarted if it is connected to a WiFi network and you change them.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='col-6'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>AP Mode</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<label for='wifissid'>SSID</label>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='ssidsoftap' name='ssidSoftAP' placeholder='SSID' value='");
+  page += ssidSoftAP + F("'>");
+  page += F("<label for='passwordsoftap'>Password</label>");
+  page += F("<input class='form-control' type='password' maxlength='32' id='passwordsoftap' name='passwordSoftAP' placeholder='password' value='");
+  page += passwordSoftAP + F("'>");
+  page += F("<small class='form-text text-muted'>");
+  page += F("Access Point SSID and password.<br>");
+  page += F("Pedalino will be restarted if it is in AP mode and you changed them.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<p></p>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-6'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>Web UI</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<h5 class='card-title'>Theme</h5>");
   page += F("<select class='custom-select' id='bootstraptheme' name='theme'>");
   for (unsigned int i = 0; i < 22; i++) {
     page += F("<option value='");
@@ -2006,16 +1990,14 @@ void get_options_page() {
   page += F("<small id='bootstrapthemeHelpBlock' class='form-text text-muted'>");
   page += F("Changing default theme require internet connection because themes are served via a CDN network. Only 'bootstrap' theme has been stored into Pedalino flash memory.");
   page += F("</small>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
   page += F("<div class='col-6'>");
-  page += F("<div class='card'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>Additional Features</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Additional Features</h5>");
-  page += F("<p class='card-text'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='tapDanceMode' name='tapdancemode'");
   if (tapDanceMode) page += F(" checked");
@@ -2034,7 +2016,6 @@ void get_options_page() {
   page += F("On bank switch repeat the last MIDI message that was sent for that bank");
   page += F("</small>");
   page += F("</div>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -2043,9 +2024,8 @@ void get_options_page() {
   page += F("<p></p>");
 
   page += F("<div class='card'>");
+  page += F("<h5 class='card-header'>Momentary Switches</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Momentary Switches</h5>");
-  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='form-group col-6'>");
   page += F("<label for='pressTime'>Press Time</label>");
@@ -2086,16 +2066,14 @@ void get_options_page() {
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
 
   page += F("<p></p>");
 
   page += F("<div class='card'>");
+  page += F("<h5 class='card-header'>Resistor Ladder Network</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Resistor Ladder Network</h5>");
-  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>#</span>");
@@ -2134,16 +2112,14 @@ void get_options_page() {
     page += F("</div>");
     page += F("</div>");
   }
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
 
   page += F("<p></p>");
 
   page += F("<div class='card'>");
+  page += F("<h5 class='card-header'>Encoders</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Encoders</h5>");
-  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='form-group col-6'>");
   page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
@@ -2157,11 +2133,10 @@ void get_options_page() {
   }
   page += F("</select>");
   page += F("<small id='encoderSensitivityHelpBlock' class='form-text text-muted'>");
-  page += F("Encoder sensitivity. Default value is 5.");
+  page += F("Default value is 5.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
 
@@ -2216,9 +2191,8 @@ void get_configurations_page() {
   page += F("<form method='post'>");
 
   page += F("<div class='card'>");
+  page += F("<h5 class='card-header'>New Configuration</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>New Configuration</h5>");
-  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-8'>");
   page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
@@ -2252,7 +2226,6 @@ void get_configurations_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
 
@@ -2281,9 +2254,8 @@ void get_configurations_page() {
 
   page += F("<form method='post'>");
   page += F("<div class='card'>");
+  page += F("<h5 class='card-header'>Available Configurations</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Available Configurations</h5>");
-  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-8'>");
   page += F("<select class='custom-select' id='filename' name='filename'>");
@@ -2330,7 +2302,6 @@ void get_configurations_page() {
   page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>Delete</button> ");
   page += F("</div>");
   page += F("</div>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -2339,9 +2310,8 @@ void get_configurations_page() {
 
   page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
   page += F("<div class='card'>");
+  page += F("<h5 class='card-header'>Upload Configuration</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Upload Configuration</h5>");
-  page += F("<p class='card-text'>");
   page += F("<div class='form-row'>");
   page += F("<div class='col-8'>");
   page += F("<div class='custom-file'>");
@@ -2359,7 +2329,6 @@ void get_configurations_page() {
   page += F("<input type='submit' value='Upload' class='btn btn-primary btn-sm'>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</p>");
   page += F("</div>");
   page += F("</div>");
   // Add the following code if you want the name of the file appear on select
