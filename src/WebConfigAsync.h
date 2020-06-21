@@ -2633,27 +2633,34 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     action      *actNext = (act == nullptr) ? nullptr : act->next;
 
     while (act != nullptr) {
-      i++;
-      if (request->arg(String("delete") + String(i)) == checked) {
-        if (actPrev == nullptr) {         // first
-          actions[b] = actNext;
-          actNext = (actions[b] == nullptr) ? nullptr : actions[b]->next;
-          free(act);
-          act = actions[b];
+      if (act->pedal == p) {
+        i++;
+        if (request->arg(String("delete") + String(i)) == checked) {
+          if (actPrev == nullptr) {         // first
+            actions[b] = actNext;
+            actNext = (actions[b] == nullptr) ? nullptr : actions[b]->next;
+            free(act);
+            act = actions[b];
+          }
+          else if (actNext == nullptr) {    // last
+            actPrev->next = nullptr;
+            free(act);
+            act = nullptr;
+          }
+          else {                            // in the middle
+            actPrev->next = actNext;
+            free(act);
+            act = actNext;
+            actNext = (act == nullptr) ? nullptr : act->next;
+          }
         }
-        else if (actNext == nullptr) {    // last
-          actPrev->next = nullptr;
-          free(act);
-          act = nullptr;
-        }
-        else {                            // in the middle
-          actPrev->next = actNext;
-          free(act);
-          act = actNext;
+        else {                              // next action
+          actPrev = act;
+          act = act->next;
           actNext = (act == nullptr) ? nullptr : act->next;
         }
       }
-      else {                              // next action
+      else {
         actPrev = act;
         act = act->next;
         actNext = (act == nullptr) ? nullptr : act->next;
@@ -3029,6 +3036,29 @@ if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
 void http_handle_post_configurations(AsyncWebServerRequest *request) {
 
   if (request->arg("action") == String("new")) {
+/*
+    for (byte b = 0; b < BANKS; b++) {
+      action *act = (action *)malloc(sizeof(action));
+      actions[b] = act;
+      for (byte p = 0; p < PEDALS; p++) {
+        act->pedal        = p;
+        act->button       = 0;
+        strcpy(act->name, banks[b][p].pedalName);
+        if (p < 3) act->event = PED_EVENT_PRESS;
+        else act->event       = PED_EVENT_JOG;
+        act->midiMessage  = banks[b][p].midiMessage;
+        act->midiChannel  = banks[b][p].midiChannel;
+        act->midiCode     = banks[b][p].midiCode;
+        act->midiValue1   = banks[b][p].midiValue1;
+        act->midiValue2   = banks[b][p].midiValue3;
+        if (p < 5) act->next = (action *)malloc(sizeof(action));
+        else act->next = nullptr;
+        act = act->next;
+      }
+    }
+  }
+  else if (request->arg("action") == String("u")) {
+*/
     String configname("/" + request->arg("newconfiguration") + ".cfg");
 
     File file = SPIFFS.open(configname, FILE_WRITE);
