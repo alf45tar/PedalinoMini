@@ -151,7 +151,9 @@ void mtc_continue()
 void mtc_tap()
 {
   bpm = MTC.tapTempo();
-  if (bpm > 0) MTC.setBpm(bpm);
+  if      (bpm <  40) MTC.setBpm(40);
+  else if (bpm > 300) MTC.setBpm(300);
+  else                MTC.setBpm(bpm);
 }
 
 void mtc_tap_continue()
@@ -1547,47 +1549,165 @@ if (loadConfig && send) {
 //
 void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8_t buttonState)
 {
-  DPRINT("Pedal: %d     Button: %d    EventType: %d     ButtonState: %d\n", button->getId() / 10, button->getId() % 10, eventType, buttonState);
+  byte p = constrain(button->getId() / 10 - 1, 0, PEDALS - 1);
+  byte i = constrain(button->getId() % 10 - 1, 0, LADDER_STEPS - 1);
 
-  action *act = actions[currentBank];
-  while (act != nullptr) {
-    if ((button->getId() == ((act->pedal + 1) * 10 + act->button + 1)) && (eventType == act->event)) {
-      DPRINT("Action: %s\n", act->name);
-      switch (act->midiMessage) {
-        case PED_EMPTY:
-          break;
+  DPRINT("Pedal: %d     Button: %d    EventType: %d     ButtonState: %d\n", p, i, eventType, buttonState);
 
-        case PED_PROGRAM_CHANGE:
-        case PED_CONTROL_CHANGE:
-        case PED_NOTE_ON_OFF:
-        case PED_PITCH_BEND:
-        case PED_CHANNEL_PRESSURE:
-        case PED_MIDI_START:
-        case PED_MIDI_STOP:
-        case PED_MIDI_CONTINUE:
-          midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
-          break;
+  if ((pedals[p].function != PED_NONE) && (eventType != AceButton::kEventPressed) && (eventType != AceButton::kEventRepeatPressed)) return;
 
+  switch (pedals[p].function) {
 
-        case PED_BANK_SELECT_INC:
-        case PED_BANK_SELECT_DEC:
-        case PED_PROGRAM_CHANGE_INC:
-        case PED_PROGRAM_CHANGE_DEC:
+    case PED_NONE: {
+      action *act = actions[currentBank];
+      while (act != nullptr) {
+        if ((act->pedal == p) && (act->button == i) && (act->event == eventType)) {
+          DPRINT("Action: %s\n", act->name);
+          switch (act->midiMessage) {
+            case PED_EMPTY:
+              break;
 
-        case PED_SEQUENCE:
+            case PED_PROGRAM_CHANGE:
+            case PED_CONTROL_CHANGE:
+            case PED_NOTE_ON_OFF:
+            case PED_PITCH_BEND:
+            case PED_CHANNEL_PRESSURE:
+            case PED_MIDI_START:
+            case PED_MIDI_STOP:
+            case PED_MIDI_CONTINUE:
+            case PED_SEQUENCE:
+              midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              break;
 
-        case PED_ACTION_BANK_PLUS:
-        case PED_ACTION_BANK_MINUS:
-        case PED_ACTION_START:
-        case PED_ACTION_STOP:
-        case PED_ACTION_CONTINUE:
-        case PED_ACTION_TAP:
-        case PED_ACTION_BPM_PLUS:
-        case PED_ACTION_BPM_MINUS:
-          break;
+            case PED_BANK_SELECT_INC:
+              lastBankSelect[act->midiChannel] = constrain(lastBankSelect[act->midiChannel] + 1, act->midiValue1, act->midiValue2);
+              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              break;
+
+            case PED_BANK_SELECT_DEC:
+              lastBankSelect[act->midiChannel] = constrain(lastBankSelect[act->midiChannel] - 1, act->midiValue1, act->midiValue2);
+              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              break;
+
+            case PED_PROGRAM_CHANGE_INC:
+              lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel] + 1, act->midiValue1, act->midiValue2);
+              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              break;
+
+            case PED_PROGRAM_CHANGE_DEC:
+              lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel] - 1, act->midiValue1, act->midiValue2);
+              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              break;
+
+            case PED_ACTION_BANK_PLUS:
+              currentBank = constrain(currentBank + 1, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
+              currentBank = constrain(currentBank, 0, BANKS - 1);
+              if (repeatOnBankSwitch)
+                midi_send(lastMIDIMessage[currentBank].midiMessage,
+                          lastMIDIMessage[currentBank].midiCode,
+                          lastMIDIMessage[currentBank].midiValue,
+                          lastMIDIMessage[currentBank].midiChannel,
+                          true,
+                          0, MIDI_RESOLUTION - 1,
+                          currentBank, act->pedal);
+              break;
+
+            case PED_ACTION_BANK_MINUS:
+              currentBank = constrain(currentBank - 1, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
+              currentBank = constrain(currentBank, 0, BANKS - 1);
+              if (repeatOnBankSwitch)
+                midi_send(lastMIDIMessage[currentBank].midiMessage,
+                          lastMIDIMessage[currentBank].midiCode,
+                          lastMIDIMessage[currentBank].midiValue,
+                          lastMIDIMessage[currentBank].midiChannel,
+                          true,
+                          0, MIDI_RESOLUTION - 1,
+                          currentBank, act->pedal);
+              break;
+
+            case PED_ACTION_START:
+              mtc_start();
+              break;
+
+            case PED_ACTION_STOP:
+              mtc_stop();
+              break;
+
+            case PED_ACTION_CONTINUE:
+              mtc_continue();
+              break;
+
+            case PED_ACTION_TAP:
+              mtc_tap();
+              break;
+
+            case PED_ACTION_BPM_PLUS:
+              bpm = constrain(bpm + 1, 40, 300);
+              MTC.setBpm(bpm);
+              break;
+
+            case PED_ACTION_BPM_MINUS:
+              bpm = constrain(bpm - 1, 40, 300);
+              MTC.setBpm(bpm);
+              break;
+          }
+        }
+        act = act->next;
       }
+      break;
     }
-    act = act->next;
+
+    case PED_BANK_PLUS:
+              currentBank = constrain(currentBank + 1, constrain(pedals[p].expZero - 1, 0, BANKS - 1), constrain(pedals[p].expMax - 1, 0, BANKS - 1));
+              currentBank = constrain(currentBank, 0, BANKS - 1);
+              if (repeatOnBankSwitch)
+                midi_send(lastMIDIMessage[currentBank].midiMessage,
+                          lastMIDIMessage[currentBank].midiCode,
+                          lastMIDIMessage[currentBank].midiValue,
+                          lastMIDIMessage[currentBank].midiChannel,
+                          true,
+                          0, MIDI_RESOLUTION - 1,
+                          currentBank, p);
+              break;
+
+    case PED_BANK_MINUS:
+              currentBank = constrain(currentBank - 1, constrain(pedals[p].expZero - 1, 0, BANKS - 1), constrain(pedals[p].expMax - 1, 0, BANKS - 1));
+              currentBank = constrain(currentBank, 0, BANKS - 1);
+              if (repeatOnBankSwitch)
+                midi_send(lastMIDIMessage[currentBank].midiMessage,
+                          lastMIDIMessage[currentBank].midiCode,
+                          lastMIDIMessage[currentBank].midiValue,
+                          lastMIDIMessage[currentBank].midiChannel,
+                          true,
+                          0, MIDI_RESOLUTION - 1,
+                          currentBank, p);
+              break;
+
+    case PED_START:
+              mtc_start();
+              break;
+
+    case PED_STOP:
+              mtc_stop();
+              break;
+
+    case PED_CONTINUE:
+              mtc_continue();
+              break;
+
+    case PED_TAP:
+              mtc_tap();
+              break;
+
+    case PED_BPM_PLUS:
+              bpm = constrain(bpm + 1, 40, 300);
+              MTC.setBpm(bpm);
+              break;
+
+    case PED_BPM_MINUS:
+              bpm = constrain(bpm - 1, 40, 300);
+              MTC.setBpm(bpm);
+              break;
   }
 }
 

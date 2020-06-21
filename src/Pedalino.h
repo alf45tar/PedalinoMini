@@ -265,7 +265,7 @@ struct bank {
 };
 
 struct pedal {
-  byte                   function;        /*  1 = MIDI
+  byte                   function;        /*  1 = None (use Actions)
                                               2 = Bank+
                                               3 = Bank-
                                               4 = Start
@@ -369,6 +369,8 @@ pedal     pedals[PEDALS];                         // Pedals Setup
 sequence  sequences[SEQUENCES][STEPS];            // Sequences Setup
 byte      currentMIDIValue[BANKS][PEDALS];
 message   lastMIDIMessage[BANKS];
+byte      lastProgramChange[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint16_t  lastBankSelect[16]    = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 interface interfaces[] = {
                            "USB MIDI   ", 0, 1, 0, 0, 0,

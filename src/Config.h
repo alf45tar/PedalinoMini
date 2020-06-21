@@ -187,6 +187,17 @@ void spiffs_save_config(String filename) {
 
 void spiffs_load_config(String filename) {
 
+  for (byte b = 0; b < BANKS; b++) {
+    memset(banknames[b], 0, MAXBANKNAME+1);
+    action *act = actions[b];
+    actions[b] = nullptr;
+    while (act != nullptr) {
+      action *a = act;
+      act = act->next;
+      free(a);
+    }
+  }
+
   DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
   DPRINT("Memory allocated for JSON document: %d bytes\n", ESP.getMaxAllocHeap());
 
