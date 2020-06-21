@@ -704,14 +704,21 @@ void get_actions_page() {
   }
   page += F("</div>");
 */
-
+  page += F("<div class='row'>");
+  page += F("<div class='col-8'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>Bank ");
+  page += uibank;
+  if (!String(banknames[b-1]).isEmpty()) page += String(" - ") + String(banknames[b-1]);
+  page += F("</h5>");
+  page += F("<div class='card-body'>");
   page += F("<div class='input-group input-group-sm'>");
-  page += F("<div class='input-group-prepend'>");
-  page += F("<div class='input-group-text'>Bank #</div>");
-  page += F("</div>");
-  page += F("<div class='btn-group'>");
+  //page += F("<div class='input-group-prepend'>");
+  //page += F("<div class='input-group-text'>Bank #</div>");
+  //page += F("</div>");
+  page += F("<div class='btn-group flex-wrap'>");
   for (i = 1; i <= BANKS; i++) {
-    page += F("<form method='get'><button type='button submit' class='btn");
+    page += F("<form method='get'><button type='button submit' class='btn btn-sm btn-block");
     page += (uibank == String(i) ? String(" btn-primary") : String(""));
     page += F("' name='bank' value='");
     page += String(i) + F("'>") + String(i) + F("</button>");
@@ -719,21 +726,35 @@ void get_actions_page() {
   }
   page += F("</div>");
   page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='input-group input-group-sm'>");
-  page += F("<div class='input-group-prepend'>");
-  page += F("<div class='input-group-text'>Pedal #</div>");
   page += F("</div>");
-  page += F("<div class='btn-group'>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='col-4'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>Pedal ");
+  page += uipedal + F("</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='input-group input-group-sm'>");
+  //page += F("<div class='input-group-prepend'>");
+  //page += F("<div class='input-group-text'>Pedal #</div>");
+  //page += F("</div>");
+  page += F("<div class='btn-group flex-wrap'>");
+  page += F("<form method='get'><button type='button submit' class='btn btn-sm");
+  page += (uipedal == String("All") ? String(" btn-primary") : String(""));
+  page += F("' name='pedal' value='All'>All</button>");
+  page += F("</form>");
   for (i = 1; i <= PEDALS; i++) {
-    page += F("<form method='get'><button type='button submit' class='btn");
+    page += F("<form method='get'><button type='button submit' class='btn btn-sm");
     page += (uipedal == String(i) ? String(" btn-primary") : String(""));
     page += F("' name='pedal' value='");
     page += String(i) + F("'>") + String(i) + F("</button>");
     page += F("</form>");
   }
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
