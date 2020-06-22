@@ -41,8 +41,53 @@ String alert        = "";
 String alertError   = "";
 String uiprofile    = "1";
 String uibank       = "1";
-String uipedal      = "1";
+String uipedal      = "All";
 String uisequence   = "1";
+
+
+void sort_actions() {
+
+  for (byte b = 0; b < BANKS; b++) {
+    action *act = actions[b];
+    while (act != nullptr) {
+      action *idx = act->next;
+      while (idx != nullptr) {
+        if (act->pedal > idx->pedal) {
+          action t;
+          strncpy(t.name,    idx->name, MAXACTIONNAME + 1);
+          t.pedal          = idx->pedal;
+          t.button         = idx->button;
+          t.event          = idx->event;
+          t.midiMessage    = idx->midiMessage;
+          t.midiChannel    = idx->midiChannel;
+          t.midiCode       = idx->midiCode;
+          t.midiValue1     = idx->midiValue1;
+          t.midiValue2     = idx->midiValue2;
+          strncpy(idx->name, act->name, MAXACTIONNAME + 1);
+          idx->pedal       = act->pedal;
+          idx->button      = act->button;
+          idx->event       = act->event;
+          idx->midiMessage = act->midiMessage;
+          idx->midiChannel = act->midiChannel;
+          idx->midiCode    = act->midiCode;
+          idx->midiValue1  = act->midiValue1;
+          idx->midiValue2  = act->midiValue2;
+          strncpy(act->name, t.name, MAXACTIONNAME + 1);
+          act->pedal       = t.pedal;
+          act->button      = t.button;
+          act->event       = t.event;
+          act->midiMessage = t.midiMessage;
+          act->midiChannel = t.midiChannel;
+          act->midiCode    = t.midiCode;
+          act->midiValue1  = t.midiValue1;
+          act->midiValue2  = t.midiValue2;
+        }
+        idx = idx->next;
+      }
+      act = act->next;
+    }
+  }
+}
 
 
 void get_top_page(int p = 0) {
@@ -774,7 +819,18 @@ void get_actions_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("<div class='col-7 text-right'>");
-  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>New Action</button>");
+  //page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>New Action</button>");
+  page += F("<div class='btn-group' role='group'>");
+  page += F("<button id='btnGroupNewAction' type='button' class='btn btn-primary btn-sm dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>New Action</button>");
+  page += F("<div class='dropdown-menu' aria-labelledby='btnGroupNewAction'>");
+  for (i = 1; i <= PEDALS; i++) {
+    //page += F("<a class='dropdown-item' href='newaction");
+    page += F("<button type='submit' class='dropdown-item' name='action' value='new");
+    page += String(i) + F("'>On Pedal ");
+    page += String(i) + F("</button>");
+  }
+  page += F("</div>");
+  page += F("</div>");
   if (actions[b-1] != nullptr) {
     page += F(" ");
     page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>Delete Selected Actions</button>");
@@ -820,19 +876,19 @@ void get_actions_page() {
   i = 1;
   act = actions[b-1];
   while (act != nullptr) {
-    if (uipedal != String(act->pedal + 1)) {
+    if (uipedal != String(act->pedal + 1) && !(uipedal == String("All"))) {
       act = act->next;
       continue;
     }
 
     page += F("<div class='col-1 mb-3 text-center'>");
-    page += uipedal;
+    page += String(act->pedal + 1);
     page += F("</div>");
 
     page += F("<div class='col-1'>");
     page += F("<select class='custom-select custom-select-sm' name='button");
     page += String(i) + F("'>");
-    switch (pedals[p-1].mode) {
+    switch (pedals[act->pedal].mode) {
       case PED_MOMENTARY2:
       case PED_LATCH2:
         maxbutton = 2;
@@ -875,7 +931,7 @@ void get_actions_page() {
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='event");
     page += String(i) + F("'>");
-    switch (pedals[p-1].mode) {
+    switch (pedals[act->pedal].mode) {
       case PED_MOMENTARY1:
       case PED_MOMENTARY2:
       case PED_MOMENTARY3:
@@ -2625,7 +2681,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
 
   strncpy(banknames[b], request->arg(String("bankname")).c_str(), MAXBANKNAME+1);
 
-  if (request->arg("action") == String("new")) {
+  if (request->arg("action").equals("new")) {
     action *act = actions[b];
     if (act == nullptr)
        act = actions[b] = (action*)malloc(sizeof(action));
@@ -2644,9 +2700,32 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->midiValue1   = 0;
     act->midiValue2   = 127;
     act->next         = nullptr;
+    sort_actions();
     alert = "";
   }
-  else if (request->arg("action") == String("delete")) {
+  else if (request->arg("action").startsWith("new")) {
+    action *act = actions[b];
+    if (act == nullptr)
+       act = actions[b] = (action*)malloc(sizeof(action));
+    else {
+      while (act->next != nullptr) act = act->next;
+      act->next = (action*)malloc(sizeof(action));
+      act = act->next;
+    }
+    act->name[0]      = 0;
+    act->pedal        = constrain(request->arg("action").charAt(3) - '1', 0, PEDALS - 1);
+    act->button       = 0;
+    act->event        = PED_EVENT_PRESS;
+    act->midiMessage  = PED_EMPTY;
+    act->midiChannel  = 1;
+    act->midiCode     = 0;
+    act->midiValue1   = 0;
+    act->midiValue2   = 127;
+    act->next         = nullptr;
+    sort_actions();
+    alert = "";
+  }
+  else if (request->arg("action").equals("delete")) {
     const String checked("on");
     unsigned int i       = 0;
     action      *act     = actions[b];
@@ -2654,7 +2733,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     action      *actNext = (act == nullptr) ? nullptr : act->next;
 
     while (act != nullptr) {
-      if (act->pedal == p) {
+      if (act->pedal == p || uipedal.equals("All")) {
         i++;
         if (request->arg(String("delete") + String(i)) == checked) {
           if (actPrev == nullptr) {         // first
@@ -2689,11 +2768,11 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     }
     alert = F("Selected action(s) deleted.");
   }
-  else if (request->arg("action") == String("apply")) {
+  else if (request->arg("action").equals("apply")) {
     unsigned int i      = 0;
     action      *act    = actions[b];
     while (act != nullptr) {
-      if (act->pedal == p) {
+      if (act->pedal == p || uipedal.equals("All")) {
         i++;
         strncpy(act->name,            request->arg(String("name")     + String(i)).c_str(),    MAXACTIONNAME+1);
         act->button       = constrain(request->arg(String("button")   + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
@@ -2708,7 +2787,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     }
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
   }
-  else if (request->arg("action") == String("save")) {
+  else if (request->arg("action").equals("save")) {
     eeprom_update_profile();
     eeprom_update_current_profile(currentProfile);
     alert = "Changes saved.";
