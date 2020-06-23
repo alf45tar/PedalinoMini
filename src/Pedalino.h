@@ -88,17 +88,11 @@ MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI);
 typedef uint8_t   byte;
 
 #include <ResponsiveAnalogRead.h>       // https://github.com/dxinteractive/ResponsiveAnalogRead
-#include <MD_UISwitch.h>                // https://github.com/MajicDesigns/MD_UISwitch
 #include <MD_REncoder.h>                // https://github.com/MajicDesigns/MD_REncoder
 #include <AceButton.h>                  // https://github.com/bxparks/AceButton
 using namespace ace_button;
 
-#define DEBOUNCE_INTERVAL 20
-#define BOUNCE_LOCK_OUT                 // This method is a lot more responsive, but does not cancel noise.
-//#define BOUNCE_WITH_PROMPT_DETECTION  // Report accurate switch time normally with no delay. Use when accurate switch transition timing is important.
-#include <Bounce2.h>                    // https://github.com/thomasfredericks/Bounce2
-
-
+#define DEBOUNCE_INTERVAL      20
 #define PED_PRESS_TIME        200
 #define PED_DOUBLE_PRESS_TIME 400
 #define PED_LONG_PRESS_TIME   500
@@ -302,13 +296,10 @@ struct pedal {
   int                    expMax;            // [0, ADC_RESOLUTION-1]
   int                    pedalValue[2];     // [0, MIDI_RESOLUTION-1]
   unsigned long          lastUpdate[2];     // last time the value is changed
-  Bounce                *debouncer[2];
-  MD_UISwitch           *footSwitch[2];
-  MD_REncoder           *jogwheel;
-  ResponsiveAnalogRead  *analogPedal;
-
   AceButton             *button[LADDER_STEPS];
   ButtonConfig          *buttonConfig;
+  MD_REncoder           *jogwheel;
+  ResponsiveAnalogRead  *analogPedal;
 };
 
 struct interface {
@@ -360,7 +351,10 @@ struct message {
   byte                   midiChannel;     /* MIDI channel 1-16 */
 };
 
-MD_UISwitch_Digital bootButton(CENTER_PIN);
+AceButton       bootButton;
+ButtonConfig    bootButtonConfig;
+
+LadderButtonConfig::AnalogButtons_t ab[LADDER_STEPS];
 
 action   *actions[BANKS];                         // Actions
 char      banknames[BANKS][MAXBANKNAME+1];        // Bank Names
@@ -426,9 +420,6 @@ bool  bleConnected            = false;
 
 String wifiSSID("");
 String wifiPassword("");
-
-MD_UISwitch_Analog::uiAnalogKeys_t  kt[LADDER_STEPS];
-LadderButtonConfig::AnalogButtons_t ab[LADDER_STEPS];
 
 bool powersaver = false;
 bool firmwareUpdate = false;

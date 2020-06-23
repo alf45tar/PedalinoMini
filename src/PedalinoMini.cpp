@@ -111,17 +111,29 @@ void IRAM_ATTR onButtonRight()
   last_interrupt_time = interrupt_time;
 }
 
-void IRAM_ATTR onButtonCenter()
+void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t buttonState)
 {
-  static unsigned long last_interrupt_time = 0;
-  unsigned long interrupt_time = millis();
-  // If interrupts come faster than 500ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 500) {
-    scrollingMode = !scrollingMode;
-  }
-  last_interrupt_time = interrupt_time;
-}
+  switch (eventType) {
 
+    case AceButton::kEventClicked:
+      if (!reloadProfile) {
+        currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
+        reloadProfile = true;
+      }
+      break;
+
+    case AceButton::kEventDoubleClicked:
+      if (!reloadProfile) {
+        currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
+        reloadProfile = true;
+      }
+      break;
+
+    case AceButton::kEventLongPressed:
+      scrollingMode = !scrollingMode;
+      break;
+  }
+}
 
 void setup()
 {
@@ -203,14 +215,14 @@ void setup()
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
-  
+
   if (!SPIFFS.begin()) {
       DPRINT("SPIFFS mount FAILED\n");
   }
   else {
     DPRINT("SPIFFS mount OK\n");
   }
-  
+
   eeprom_init_or_erase();
   eeprom_read_global();
 
@@ -405,15 +417,21 @@ void setup()
 
   attachInterrupt(LEFT_PIN,   onButtonLeft,   CHANGE);
 
-  //attachInterrupt(CENTER_PIN, onButtonCenter, CHANGE);
-  bootButton.begin();
-  bootButton.setPressTime(pressTime);
-  bootButton.setDoublePressTime(doublePressTime);
-  bootButton.setLongPressTime(longPressTime);
-  bootButton.setRepeatTime(repeatPressTime);
-  bootButton.enableDoublePress(true);
-  bootButton.enableLongPress(true);
-  bootButton.enableRepeat(true);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureDoubleClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureRepeatPress);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+  bootButtonConfig.setDebounceDelay(DEBOUNCE_INTERVAL);
+  bootButtonConfig.setClickDelay(pressTime);
+  bootButtonConfig.setDoubleClickDelay(doublePressTime);
+  bootButtonConfig.setLongPressDelay(longPressTime);
+  bootButtonConfig.setRepeatPressDelay(repeatPressTime);
+  bootButtonConfig.setRepeatPressInterval(repeatPressTime);
+  bootButton.init(&bootButtonConfig, CENTER_PIN);
+  bootButton.setEventHandler(boot_button_event_handler);
 
   attachInterrupt(RIGHT_PIN,  onButtonRight,  CHANGE);
 
@@ -428,23 +446,7 @@ void loop()
 {
   if (firmwareUpdate) return;
 
-  switch (bootButton.read()){
-    case MD_UISwitch::KEY_PRESS:
-      if (!reloadProfile) {
-        currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
-        reloadProfile = true;
-      }
-      break;
-    case MD_UISwitch::KEY_DPRESS:
-      if (!reloadProfile) {
-        currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
-        reloadProfile = true;
-      }
-      break;
-    case MD_UISwitch::KEY_LONGPRESS:
-      scrollingMode = !scrollingMode;
-      break;
-  }
+  bootButton.check();
 
 #ifdef WIFI
   if (!appleMidiConnected && !bleMidiConnected) WIFI_LED_OFF();
@@ -504,7 +506,7 @@ void loop()
     if (WiFi.isConnected()) {
       if (interfaces[PED_RTPMIDI].midiIn && RTP_MIDI.read())
         DPRINTMIDI("RTP MIDI", RTP_MIDI.getType(), RTP_MIDI.getChannel(), RTP_MIDI.getData1(), RTP_MIDI.getData2());
-      
+
       if (interfaces[PED_IPMIDI].midiIn && IP_MIDI.read())
         DPRINTMIDI("IP  MIDI", IP_MIDI.getType(), IP_MIDI.getChannel(), IP_MIDI.getData1(), IP_MIDI.getData2());
     }

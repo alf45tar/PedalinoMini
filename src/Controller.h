@@ -270,28 +270,22 @@ void ladder_config()
           if (analog.hasChanged()) display_progress_bar_2_update(analog.getValue(), ADC_RESOLUTION);
         }
         if (analog.getValue() != ADC_RESOLUTION-1) {
-          kt[i].adcThreshold = analog.getValue();
-          kt[i].value = i;
           ab[i].threshold = analog.getValue();
           ab[i].id = i + 1;
         }
       }
-      display_progress_bar_2_label(LADDER_STEPS, 128 * kt[LADDER_STEPS-1].adcThreshold / ADC_RESOLUTION);
+      display_progress_bar_2_label(LADDER_STEPS, 128 * ab[LADDER_STEPS-1].threshold / ADC_RESOLUTION);
       delay(1000);
 
       for (byte i = 0; i < LADDER_STEPS; i++) {
         switch (i) {
           case 0:
-            kt[0].adcTolerance = constrain(abs((kt[1].adcThreshold - kt[0].adcThreshold) / 2 - 1), 0 , 255);
             ab[0].tolerance = constrain(abs((ab[1].threshold - ab[0].threshold) / 2 - 1), 0 , 255);
             break;
           case LADDER_STEPS - 1:
-            kt[i].adcTolerance = constrain(abs((kt[i].adcThreshold - kt[i-1].adcThreshold) / 2 - 1), 0, 255);
             ab[i].tolerance = constrain(abs((ab[i].threshold - ab[i-1].threshold) / 2 - 1), 0, 255);
             break;
           default:
-            kt[i].adcTolerance = constrain(min(abs((kt[i].adcThreshold   - kt[i-1].adcThreshold) / 2 - 1),
-                                               abs((kt[i+1].adcThreshold - kt[i].adcThreshold) / 2 - 1)), 0, 255);
             ab[i].tolerance = constrain(min(abs((ab[i].threshold   - ab[i-1].threshold) / 2 - 1),
                                             abs((ab[i+1].threshold - ab[i].threshold) / 2 - 1)), 0, 255);
             break;
@@ -328,139 +322,6 @@ unsigned int map_analog(byte p, unsigned int value)
   return value;
 }
 
-void footswitch_update(byte p, byte f)
-{
-  pedals[p].footSwitch[f]->setPressTime(pressTime);
-  pedals[p].footSwitch[f]->setDoublePressTime(doublePressTime);
-  pedals[p].footSwitch[f]->setLongPressTime(longPressTime);
-  pedals[p].footSwitch[f]->setRepeatTime(repeatPressTime);
-  switch (pedals[p].pressMode) {
-    case PED_PRESS_1:
-      pedals[p].footSwitch[f]->enableDoublePress(false);
-      pedals[p].footSwitch[f]->enableLongPress(false);
-      break;
-    case PED_PRESS_2:
-    case PED_PRESS_1_2:
-      pedals[p].footSwitch[f]->enableDoublePress(true);
-      pedals[p].footSwitch[f]->enableLongPress(false);
-      break;
-    case PED_PRESS_L:
-      case PED_PRESS_1_L:
-      pedals[p].footSwitch[f]->enableDoublePress(false);
-      pedals[p].footSwitch[f]->enableLongPress(true);
-      break;
-    case PED_PRESS_1_2_L:
-    case PED_PRESS_2_L:
-      pedals[p].footSwitch[f]->enableDoublePress(true);
-      pedals[p].footSwitch[f]->enableLongPress(true);
-      break;
-  }
-  pedals[p].footSwitch[f]->enableRepeat(pedals[p].function != PED_MIDI);
-}
-
-void bank_update (byte b, byte p, int d = 1, bool enable = true)
-{
-  if (enable) {
-    byte m = banks[b][p].midiMessage;
-    switch (d) {
-      case -1:
-        // Invert direction
-        switch (m) {
-          case PED_BANK_SELECT_INC:
-            m = PED_BANK_SELECT_DEC;
-            break;
-          case PED_BANK_SELECT_DEC:
-            m = PED_BANK_SELECT_INC;
-            break;
-          case PED_PROGRAM_CHANGE_INC:
-            m = PED_PROGRAM_CHANGE_DEC;
-            break;
-          case PED_PROGRAM_CHANGE_DEC:
-            m = PED_PROGRAM_CHANGE_INC;
-            break;
-        }
-      case 1:
-        switch (m) {
-
-          case PED_BANK_SELECT_INC:
-            if (banks[b][p].midiValue2 == banks[b][p].midiValue3) banks[b][p].midiValue2 = banks[b][p].midiValue1;
-            else banks[b][p].midiValue2++;
-            banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);
-            banks[b][p].midiCode = banks[b][p].midiValue2;
-            break;
-
-          case PED_BANK_SELECT_DEC:
-            if (banks[b][p].midiValue2 == banks[b][p].midiValue1) banks[b][p].midiValue2 = banks[b][p].midiValue3;
-            else banks[b][p].midiValue2--;
-            banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);
-            banks[b][p].midiCode = banks[b][p].midiValue2;
-            break;
-
-          case PED_PROGRAM_CHANGE_INC:
-            if (banks[b][p].midiValue2 == banks[b][p].midiValue3) banks[b][p].midiValue2 = banks[b][p].midiValue1;
-            else banks[b][p].midiValue2++;
-            banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);
-            banks[b][p].midiCode = banks[b][p].midiValue2;
-            for (byte i = 0; i < BANKS; i++) {
-              for (byte j = 0; j < PEDALS; j++) {
-                if (banks[i][j].midiChannel == banks[b][p].midiChannel &&
-                   (banks[i][j].midiMessage == PED_PROGRAM_CHANGE_INC || banks[i][j].midiMessage == PED_PROGRAM_CHANGE_DEC)) {
-                  banks[i][j].midiValue2 = banks[b][p].midiValue2;
-                  banks[i][j].midiCode = banks[b][p].midiValue2;
-                }
-              }
-            }
-            break;
-
-          case PED_PROGRAM_CHANGE_DEC:
-            if (banks[b][p].midiValue2 == banks[b][p].midiValue1) banks[b][p].midiValue2 = banks[b][p].midiValue3;
-            else banks[b][p].midiValue2--;
-            banks[b][p].midiValue2 = constrain(banks[b][p].midiValue2, 0, MIDI_RESOLUTION - 1);
-            banks[b][p].midiCode = banks[b][p].midiValue2;
-            for (byte i = 0; i < BANKS; i++) {
-              for (byte j = 0; j < PEDALS; j++) {
-                if (banks[i][j].midiChannel == banks[b][p].midiChannel &&
-                   (banks[i][j].midiMessage == PED_PROGRAM_CHANGE_INC || banks[i][j].midiMessage == PED_PROGRAM_CHANGE_DEC)) {
-                  banks[i][j].midiValue2 = banks[b][p].midiValue2;
-                  banks[i][j].midiCode = banks[b][p].midiValue2;
-                }
-              }
-            }
-
-            break;
-        }
-        break;
-
-      case 0:
-        // Bottom value
-        switch (m) {
-          case PED_PROGRAM_CHANGE_INC:
-          case PED_PROGRAM_CHANGE_DEC:
-            banks[b][p].midiCode = banks[b][p].midiValue1;
-          case PED_BANK_SELECT_INC:
-          case PED_BANK_SELECT_DEC:
-            //banks[b][p].midiValue2 = banks[b][p].midiValue1;
-            banks[b][p].midiCode = banks[b][p].midiValue1;
-            break;
-        }
-        break;
-
-      case 2:
-        // Top value
-        switch (m) {
-          case PED_PROGRAM_CHANGE_INC:
-          case PED_PROGRAM_CHANGE_DEC:
-            banks[b][p].midiCode = banks[b][p].midiValue3;
-          case PED_BANK_SELECT_INC:
-          case PED_BANK_SELECT_DEC:
-            //banks[b][p].midiValue2 = banks[b][p].midiValue3;
-            banks[b][p].midiCode = banks[b][p].midiValue3;
-            break;
-        }
-        break;
-    }
-  }
-}
 
 void midi_send(byte message, byte code, byte value, byte channel, bool on_off, byte range_min, byte range_max, byte bank, byte pedal)
 {
@@ -649,567 +510,91 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
   }
 }
 
-void refresh_switch_1_midi(byte i, bool send)
+
+
+//
+// Trigger Actions on Analog Events
+//
+void controller_event_handler_analog(byte pedal, byte value)
 {
-  bool         state1, state2;
-  unsigned int input;
-  unsigned int value;
-  byte         b;
+  switch (pedals[pedal].function) {
 
-  state1 = false;
-  state2 = false;
-  if (pedals[i].debouncer[0] != nullptr) state1 = pedals[i].debouncer[0]->update();
-  if (pedals[i].debouncer[1] != nullptr) state2 = pedals[i].debouncer[1]->update();
+    case PED_NONE: {
+      action *act = actions[currentBank];
+      while (act != nullptr) {
+        if (act->pedal == pedal) {
+          lastUsedPedal = pedal;
+          lastUsed = pedal;
+          strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
+          DPRINT("Action: %s\n", act->name);
+          switch (act->midiMessage) {
+            case PED_EMPTY:
+              break;
 
-  if (state1 && state2) {                                                     // pin state changed
-    input = pedals[i].debouncer[0]->read();                                   // reads the updated pin state
-    if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;        // invert the value
-    value = map_digital(i, input);                                            // apply the digital map function to the value
+            case PED_PROGRAM_CHANGE:
+            case PED_CONTROL_CHANGE:
+            case PED_NOTE_ON_OFF:
+            case PED_PITCH_BEND:
+            case PED_CHANNEL_PRESSURE:
+            case PED_SEQUENCE:
+              midi_send(act->midiMessage, act->midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+              break;
 
-    DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
+            case PED_BANK_SELECT_INC:
+            case PED_BANK_SELECT_DEC:
+              lastBankSelect[act->midiChannel] = constrain(value, act->midiValue1, act->midiValue2);
+              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+              break;
 
-    b = (currentBank + 2) % BANKS;
-    bank_update(b, i);
-    switch (value) {
-      case LOW:   // LOW = pressed
-        if (send) midi_send(banks[b][i].midiMessage,
-                            banks[b][i].midiCode,
-                            banks[b][i].midiMessage == PED_CONTROL_CHANGE ?
-                                  (leds.get(i) ? banks[b][i].midiValue2 : banks[b][i].midiValue1) : banks[b][i].midiValue1,
-                            banks[b][i].midiChannel,
-                            true,
-                            banks[b][i].midiValue1,
-                            banks[b][i].midiValue3,
-                            b, i);
-        break;
-      case HIGH:  // HIGH = release
-        if (send) midi_send(banks[b][i].midiMessage,
-                            banks[b][i].midiCode,
-                            banks[b][i].midiValue2,
-                            banks[b][i].midiChannel,
-                            pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2,
-                            banks[b][i].midiValue1,
-                            banks[b][i].midiValue3,
-                            b, i);
-        break;
-    }
-    pedals[i].pedalValue[0] = value;
-    pedals[i].lastUpdate[0] = millis();
-    pedals[i].pedalValue[1] = pedals[i].pedalValue[0];
-    pedals[i].lastUpdate[1] = pedals[i].lastUpdate[0];
-    lastUsedSwitch = i;
-    lastUsed = i;
-    strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
-  }
-  else {
-    if (state1) {                                                             // pin state changed
-      input = pedals[i].debouncer[0]->read();                                 // reads the updated pin state
-      if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;      // invert the value
-      value = map_digital(i, input);                                          // apply the digital map function to the value
+            case PED_PROGRAM_CHANGE_INC:
+            case PED_PROGRAM_CHANGE_DEC:
+              lastProgramChange[act->midiChannel] = constrain(value, act->midiValue1, act->midiValue2);
+              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+              break;
 
-      DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
+            case PED_ACTION_BANK_PLUS:
+            case PED_ACTION_BANK_MINUS:
+              currentBank = map(value, 0, MIDI_RESOLUTION - 1, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
+              if (repeatOnBankSwitch)
+                midi_send(lastMIDIMessage[currentBank].midiMessage,
+                          lastMIDIMessage[currentBank].midiCode,
+                          lastMIDIMessage[currentBank].midiValue,
+                          lastMIDIMessage[currentBank].midiChannel,
+                          true,
+                          0, MIDI_RESOLUTION - 1,
+                          currentBank, act->pedal);
+              break;
 
-      if (tapDanceMode && tapDanceBank && value == LOW && send) {
-        currentBank = constrain(i, 0, BANKS - 1);
-        screen_info(midi::InvalidType, currentBank+1, 0, 0);
-        pedals[i].pedalValue[0] = value;
-        pedals[i].lastUpdate[0] = millis();
-        lastUsedSwitch = i;
-        lastUsed = i;
-        strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
-        DPRINT("Bank %d\n", currentBank + 1);
-        return;
-      }
-      if (tapDanceMode && tapDanceBank && value == HIGH && send) {
-        tapDanceBank = false;
-        return;
-      }
-
-      b = currentBank;
-      switch (value) {
-        case LOW:   // LOW = pressed
-          if (send) {
-            bank_update(b, i);
-            midi_send(banks[b][i].midiMessage,
-                      banks[b][i].midiCode,
-                      banks[b][i].midiMessage == PED_CONTROL_CHANGE ?
-                            (leds.get(i) ? banks[b][i].midiValue2 : banks[b][i].midiValue1) : banks[b][i].midiValue1,
-                      banks[b][i].midiChannel,
-                      true,
-                      banks[b][i].midiValue1,
-                      banks[b][i].midiValue3,
-                      b, i);
-            leds.invert(i);
-            leds.write();
-#ifdef BLYNK
-            if (blynk_cloud_connected()) Blynk.virtualWrite(71 + i, leds.get(i) ? 1 : 0);
-#endif
+            case PED_ACTION_BPM_PLUS:
+            case PED_ACTION_BPM_MINUS:
+              bpm = map(value, 0, MIDI_RESOLUTION, 40, 300);
+              MTC.setBpm(bpm);
+              break;
           }
-          break;
-        case HIGH:  // HIGH = release
-          if (send) {
-            tapDanceBank = true;
-            bool latch = pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2;
-            bank_update(banks[b][i].midiMessage, b, i, latch);
-            midi_send(banks[b][i].midiMessage,
-                      banks[b][i].midiCode,
-                      banks[b][i].midiValue2,
-                      banks[b][i].midiChannel,
-                      latch,
-                      banks[b][i].midiValue1,
-                      banks[b][i].midiValue3,
-                      b, i);
-            if (latch) {
-              leds.invert(i);
-              leds.write();
-#ifdef BLYNK
-              if (blynk_cloud_connected()) Blynk.virtualWrite(71 + i, leds.get(i) ? 1 : 0);
-#endif
-            }
-
-          }
-          break;
+        }
+        act = act->next;
       }
-      pedals[i].pedalValue[0] = value;
-      pedals[i].lastUpdate[0] = millis();
-      lastUsedSwitch = i;
-      lastUsed = i;
-      strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
-    }
-    if (state2) {                                                             // pin state changed
-      input = pedals[i].debouncer[1]->read();                                 // reads the updated pin state
-      if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;      // invert the value
-      value = map_digital(i, input);                                          // apply the digital map function to the value
-
-      DPRINT("Pedal %2d   input %d output %d\n", i + 1, input, value);
-
-      b = (currentBank + 1) % BANKS;
-      bank_update(b, i);
-      switch (value) {
-        case LOW:   // LOW = pressed
-          if (send) midi_send(banks[b][i].midiMessage,
-                              banks[b][i].midiCode,
-                              banks[b][i].midiMessage == PED_CONTROL_CHANGE ?
-                                    (leds.get(i) ? banks[b][i].midiValue2 : banks[b][i].midiValue1) : banks[b][i].midiValue1,
-                              banks[b][i].midiChannel,
-                              true,
-                              banks[b][i].midiValue1,
-                              banks[b][i].midiValue3,
-                              b, i);
-          break;
-        case HIGH:  // HIGH = release
-          if (send) midi_send(banks[b][i].midiMessage,
-                              banks[b][i].midiCode,
-                              banks[b][i].midiValue2,
-                              banks[b][i].midiChannel,
-                              pedals[i].mode == PED_LATCH1 || pedals[i].mode == PED_LATCH2,
-                              banks[b][i].midiValue1,
-                              banks[b][i].midiValue3,
-                              b, i);
-          break;
-      }
-      pedals[i].pedalValue[1] = value;
-      pedals[i].lastUpdate[1] = millis();
-      lastUsedSwitch = i;
-      lastUsed = i;
-      strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
-    }
-  }
-}
-
-void refresh_switch_12L_midi(byte i, bool send)
-{
-  MD_UISwitch::keyResult_t k1;    // Close status between T and S
-  MD_UISwitch::keyResult_t k2;    // Close status between R and S
-  MD_UISwitch::keyResult_t k3;
-  byte                     k;     /*       k1      k2
-                                     0 =  Open    Open
-                                     1 = Closed   Open
-                                     2 =  Open   Closed
-                                     3 = Closed  Closed */
-
-  byte                     b;
-
-  if (pedals[i].mode     == PED_NONE)   return;
-  if (pedals[i].mode     == PED_ANALOG) return;
-  if (pedals[i].mode     == PED_LATCH1) return;
-  if (pedals[i].mode     == PED_LATCH2) return;
-  if (pedals[i].function != PED_MIDI)   return;
-
-  switch (pedals[i].mode) {
-    case PED_LADDER:
-      pedals[i].pedalValue[0] = 0;
-      pedals[i].pedalValue[1] = 0;
       break;
-    default:
-      pedals[i].pedalValue[0] = digitalRead(PIN_D(i));
-      pedals[i].pedalValue[1] = digitalRead(PIN_A(i));
-  }
-
-  k = 0;
-  k1 = MD_UISwitch::KEY_NULL;
-  k2 = MD_UISwitch::KEY_NULL;
-  if (pedals[i].footSwitch[0] != nullptr)
-    k1 = pedals[i].footSwitch[0]->read();
-  if (pedals[i].footSwitch[1] != nullptr && (pedals[i].mode == PED_MOMENTARY2 ||
-                                             pedals[i].mode == PED_MOMENTARY3 ||
-                                             pedals[i].mode == PED_LATCH2))
-    k2 = pedals[i].footSwitch[1]->read();
-  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) && k2 == MD_UISwitch::KEY_NULL) k = 1;
-  if ((k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS) && k1 == MD_UISwitch::KEY_NULL) k = 2;
-  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
-      (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
-
-  b = currentBank;
-
-  if (pedals[i].mode == PED_LADDER) {
-    if (k1 == MD_UISwitch::KEY_PRESS) {
-      b = (b + pedals[i].footSwitch[0]->getKey()) % BANKS;
     }
-    else return;
-  }
 
-  switch (k) {
-    case 0:
-      k3 = MD_UISwitch::KEY_NULL;
+    case PED_BANK_PLUS:
+    case PED_BANK_MINUS:
+      currentBank = map(value, 0, MIDI_RESOLUTION - 1, constrain(pedals[pedal].expZero - 1, 0, BANKS - 1), constrain(pedals[pedal].expMax - 1, 0, BANKS - 1));
+      if (repeatOnBankSwitch)
+        midi_send(lastMIDIMessage[currentBank].midiMessage,
+                  lastMIDIMessage[currentBank].midiCode,
+                  lastMIDIMessage[currentBank].midiValue,
+                  lastMIDIMessage[currentBank].midiChannel,
+                  true,
+                  0, MIDI_RESOLUTION - 1,
+                  currentBank, pedal);
       break;
-    case 1:
-      k3 = k1;
+
+    case PED_BPM_PLUS:
+    case PED_BPM_MINUS:
+      bpm = map(value, 0, MIDI_RESOLUTION, 40, 300);
+      MTC.setBpm(bpm);
       break;
-    case 2:
-    case 3:
-      k3 = k2;
-      break;
-   }
-
-    switch (k3) {
-
-      case MD_UISwitch::KEY_PRESS:
-
-        DPRINT("Pedal %2d   SINGLE PRESS \n", i + 1);
-        if ((pedals[i].pressMode & PED_PRESS_1) != PED_PRESS_1) break;
-        switch (banks[b][i].midiMessage) {
-          case PED_BANK_SELECT_INC:
-          case PED_BANK_SELECT_DEC:
-          case PED_PROGRAM_CHANGE_INC:
-          case PED_PROGRAM_CHANGE_DEC:
-            bank_update(b, i, 1);   // Increase
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
-            break;
-
-          case PED_PROGRAM_CHANGE:
-            b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage,  banks[b][i].midiValue1, banks[b][i].midiValue1, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
-            break;
-
-          default:
-            b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue1, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b , i);
-            break;
-        }
-        lastUsedSwitch = i;
-        lastUsed = i;
-        strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
-        break;
-
-      case MD_UISwitch::KEY_DPRESS:
-
-        DPRINT("Pedal %2d   DOUBLE PRESS \n", i + 1);
-        if ((pedals[i].pressMode & PED_PRESS_2) != PED_PRESS_2) break;
-        switch (banks[b][i].midiMessage) {
-          case PED_BANK_SELECT_INC:
-          case PED_BANK_SELECT_DEC:
-          case PED_PROGRAM_CHANGE_INC:
-          case PED_PROGRAM_CHANGE_DEC:
-            bank_update(b, i, -1);    // Decrease
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
-            break;
-
-          case PED_PROGRAM_CHANGE:
-            b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiValue2, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
-            break;
-
-          default:
-            b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
-            break;
-        }
-        lastUsedSwitch = i;
-        strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
-        break;
-
-      case MD_UISwitch::KEY_LONGPRESS:
-
-        DPRINT("Pedal %2d   LONG   PRESS \n", i + 1);
-        if ((pedals[i].pressMode & PED_PRESS_L) != PED_PRESS_L) break;
-        switch (banks[b][i].midiMessage) {
-          case PED_BANK_SELECT_INC:
-          case PED_PROGRAM_CHANGE_INC:
-            bank_update(b, i, 0);   // Set to bottom value
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b ,i);
-            break;
-
-          case PED_BANK_SELECT_DEC:
-          case PED_PROGRAM_CHANGE_DEC:
-            bank_update(b, i, 2);   // Set to top value
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue2, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
-            break;
-
-          case PED_PROGRAM_CHANGE:
-            b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiValue3, banks[b][i].midiValue3, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
-            break;
-
-          default:
-            b = (b + k - 1) % BANKS;
-            if (send) midi_send(banks[b][i].midiMessage, banks[b][i].midiCode, banks[b][i].midiValue3, banks[b][i].midiChannel, true, banks[b][i].midiValue1, banks[b][i].midiValue3, b, i);
-            break;
-        }
-        lastUsedSwitch = i;
-        lastUsed = i;
-        strncpy(lastPedalName, banks[b][i].pedalName, MAXPEDALNAME+1);
-        break;
-
-      case MD_UISwitch::KEY_RPTPRESS:
-      case MD_UISwitch::KEY_NULL:
-      case MD_UISwitch::KEY_DOWN:
-      case MD_UISwitch::KEY_UP:
-        break;
-    }
-}
-
-
-void refresh_switch_12L(byte i)
-{
-  MD_UISwitch::keyResult_t k1;    // Close status between T and S
-  MD_UISwitch::keyResult_t k2;    // Close status between R and S
-  byte                     k;     /*       k1      k2
-                                     0 =  Open    Open
-                                     1 = Closed   Open
-                                     2 =  Open   Closed
-                                     3 = Closed  Closed */
-
-  byte f, step;
-
-  if (pedals[i].mode     == PED_NONE)   return;
-  if (pedals[i].mode     == PED_ANALOG) return;
-  if (pedals[i].function == PED_MIDI)   return;
-
-  k = 0;
-  k1 = MD_UISwitch::KEY_NULL;
-  k2 = MD_UISwitch::KEY_NULL;
-  if (pedals[i].footSwitch[0] != nullptr)
-    k1 = pedals[i].footSwitch[0]->read();
-  if (pedals[i].footSwitch[1] != nullptr && (pedals[i].mode == PED_MOMENTARY2 ||
-                                             pedals[i].mode == PED_MOMENTARY3 ||
-                                             pedals[i].mode == PED_LATCH2))
-    k2 = pedals[i].footSwitch[1]->read();
-  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) && k2 == MD_UISwitch::KEY_NULL) k = 1;
-  if ((k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS) && k1 == MD_UISwitch::KEY_NULL) k = 2;
-  if ((k1 == MD_UISwitch::KEY_PRESS || k1 == MD_UISwitch::KEY_DPRESS || k1 == MD_UISwitch::KEY_LONGPRESS) &&
-      (k2 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_DPRESS || k2 == MD_UISwitch::KEY_LONGPRESS)) k = 3;
-
-  f = pedals[i].function;
-
-  if ((pedals[i].mode == PED_LADDER) && k1 == MD_UISwitch::KEY_PRESS) {
-      switch (pedals[i].footSwitch[0]->getKey()) {
-            case 0:
-              break;
-
-            case 1:
-              break;
-
-            case 2:
-              break;
-
-            case 3:
-              break;
-
-            case 4:
-              break;
-
-            case 5:
-              break;
-        }
-    }
-
-
-  // Double press or long press invert pedal function
-  if (k > 0 && (k1 == MD_UISwitch::KEY_DPRESS    || k2 == MD_UISwitch::KEY_DPRESS ||
-                k1 == MD_UISwitch::KEY_LONGPRESS || k2 == MD_UISwitch::KEY_LONGPRESS))
-    switch (pedals[i].function) {
-      case PED_BANK_PLUS:
-        f = PED_BANK_MINUS;
-        break;
-      case PED_BANK_PLUS_2:
-        f = PED_BANK_MINUS_2;
-        break;
-      case PED_BANK_PLUS_3:
-        f = PED_BANK_MINUS_3;
-        break;
-      case PED_BANK_MINUS:
-        f = PED_BANK_PLUS;
-        break;
-      case PED_BANK_MINUS_2:
-        f = PED_BANK_PLUS_2;
-        break;
-      case PED_BANK_MINUS_3:
-        f = PED_BANK_PLUS_3;
-        break;
-    }
-
-  //if (k > 0 && (k1 == MD_UISwitch::KEY_PRESS || k2 == MD_UISwitch::KEY_PRESS)) {
-    if (k > 0) {
-    switch (f) {
-      case PED_BANK_PLUS:
-      case PED_BANK_PLUS_2:
-      case PED_BANK_PLUS_3:
-        switch (f) {
-          case PED_BANK_PLUS:
-            step = 1;
-            break;
-          case PED_BANK_PLUS_2:
-            step = 2;
-            break;
-          case PED_BANK_PLUS_3:
-            step = 3;
-            break;
-          default:
-            step = 0;
-            break;
-        }
-        switch (k) {
-          case 1:
-            if (currentBank == pedals[i].expMax - 1)
-              currentBank = pedals[i].expZero - 1;
-            else
-              currentBank = currentBank + step;
-            break;
-          case 2:
-            if (currentBank == (pedals[i].expZero - 1))
-              currentBank = pedals[i].expMax - 1;
-            else
-              currentBank = currentBank - step;
-            break;
-          case 3:
-            currentBank = pedals[i].expZero - 1;
-            break;
-        }
-        currentBank = constrain(currentBank, pedals[i].expZero - 1, pedals[i].expMax - 1);
-        currentBank = constrain(currentBank, 0, BANKS - 1);
-        if (repeatOnBankSwitch)
-          midi_send(lastMIDIMessage[currentBank].midiMessage,
-                    lastMIDIMessage[currentBank].midiCode,
-                    lastMIDIMessage[currentBank].midiValue,
-                    lastMIDIMessage[currentBank].midiChannel,
-                    true,
-                    0, MIDI_RESOLUTION - 1,
-                    currentBank, i);
-        break;
-
-      case PED_BANK_MINUS:
-      case PED_BANK_MINUS_2:
-      case PED_BANK_MINUS_3:
-        switch (f) {
-          case PED_BANK_MINUS:
-            step = 1;
-            break;
-          case PED_BANK_MINUS_2:
-            step = 2;
-            break;
-          case PED_BANK_MINUS_3:
-            step = 3;
-            break;
-          default:
-            step = 0;
-            break;
-        }
-        switch (k) {
-          case 1:
-            if (currentBank == (pedals[i].expZero - 1))
-              currentBank = pedals[i].expMax - 1;
-            else
-              currentBank = currentBank - step;
-            break;
-          case 2:
-            if (currentBank == pedals[i].expMax - 1)
-              currentBank = pedals[i].expZero - 1;
-            else
-              currentBank = currentBank + step;
-            break;
-          case 3:
-            currentBank = pedals[i].expMax - 1;
-            break;
-        }
-        currentBank = constrain(currentBank, pedals[i].expZero - 1, pedals[i].expMax - 1);
-        currentBank = constrain(currentBank, 0, BANKS - 1);
-        if (repeatOnBankSwitch)
-          midi_send(lastMIDIMessage[currentBank].midiMessage,
-                    lastMIDIMessage[currentBank].midiCode,
-                    lastMIDIMessage[currentBank].midiValue,
-                    lastMIDIMessage[currentBank].midiChannel,
-                    true,
-                    0, MIDI_RESOLUTION - 1,
-                    currentBank, i);
-        break;
-
-      case PED_START:
-        switch (k) {
-          case 1:
-            mtc_start();
-            break;
-          case 2:
-            mtc_stop();
-            break;
-          case 3:
-            mtc_tap_continue();
-            break;
-        }
-        break;
-
-      case PED_STOP:
-        switch (k) {
-          case 1:
-            mtc_stop();
-            break;
-          case 2:
-            mtc_start();
-            break;
-          case 3:
-            mtc_tap_continue();
-            break;
-        }
-        break;
-
-      case PED_CONTINUE:
-        switch (k) {
-          case 1:
-            mtc_continue();
-            break;
-          case 2:
-            mtc_stop();
-            break;
-          case 3:
-            mtc_tap();
-            break;
-        }
-        break;
-
-      case PED_TAP:
-        switch (k) {
-          case 1:
-            mtc_tap();
-            break;
-          case 2:
-            mtc_start();
-            break;
-          case 3:
-            mtc_stop();
-            break;
-        }
-        break;
-    }
   }
 }
 
@@ -1242,42 +627,13 @@ void refresh_analog(byte i, bool send)
     value = map(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
               0,
               ADC_RESOLUTION - 1,
-              pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
-              pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
+              pedals[i].invertPolarity ? MIDI_RESOLUTION - 1 : 0,
+              pedals[i].invertPolarity ? 0 : MIDI_RESOLUTION - 1);
     double velocity = (1000.0 * ((int)value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
-    switch (pedals[i].function) {
-      case PED_MIDI:
-        DPRINT("Pedal %2d   input %d output %d velocity %.2f\n", i + 1, input, value, velocity);
-        if (send) {
-          switch (banks[currentBank][i].midiMessage) {
-            case PED_PROGRAM_CHANGE:
-            case PED_PROGRAM_CHANGE_INC:
-            case PED_PROGRAM_CHANGE_DEC:
-            case PED_BANK_SELECT_INC:
-            case PED_BANK_SELECT_DEC:
-              midi_send(banks[currentBank][i].midiMessage, value, 0, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-              midi_send(banks[currentBank][i].midiMessage, value, 0, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-              break;
-            default:
-              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-              midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-              break;
-          }
-        }
-        if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-        if (send) midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, value, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-        pedals[i].pedalValue[0] = value;
-        pedals[i].lastUpdate[0] = micros();
-        lastUsedPedal = i;
-        lastUsed = i;
-        strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
-        break;
-      case PED_BPM_PLUS:
-      case PED_BPM_MINUS:
-        bpm = map(value, 0, MIDI_RESOLUTION, 40, 300);
-        MTC.setBpm(bpm);
-        break;
-    }
+    DPRINT("Pedal %2d   input %d output %d velocity %.2f\n", i + 1, input, value, velocity);
+    if (send) controller_event_handler_analog(i, value);
+    pedals[i].pedalValue[0] = value;
+    pedals[i].lastUpdate[0] = micros();
   }
  }
 
@@ -1290,14 +646,10 @@ void controller_delete()
 {
   // Delete previous setup
   for (byte i = 0; i < PEDALS; i++) {
-    if (pedals[i].debouncer[0]  != nullptr) delete pedals[i].debouncer[0];
-    if (pedals[i].debouncer[1]  != nullptr) delete pedals[i].debouncer[1];
-    if (pedals[i].footSwitch[0] != nullptr) delete pedals[i].footSwitch[0];
-    if (pedals[i].footSwitch[1] != nullptr) delete pedals[i].footSwitch[1];
     if (pedals[i].analogPedal   != nullptr) delete pedals[i].analogPedal;
+    if (pedals[i].buttonConfig  != nullptr) delete pedals[i].buttonConfig;
     for (byte s = 0; s < LADDER_STEPS; s++)
       if (pedals[i].button[s]   != nullptr) delete pedals[i].button[s];
-    if (pedals[i].buttonConfig  != nullptr) delete pedals[i].buttonConfig;
   }
 }
 
@@ -1358,7 +710,7 @@ if (loadConfig && send) {
         break;
 
       case PED_ANALOG:
-        //refresh_analog(i, send);
+        refresh_analog(i, send);
         break;
 
       case PED_LADDER:
@@ -1439,103 +791,6 @@ if (loadConfig && send) {
                 DPRINT("Action: %s\n", act->name);
               }
               act = act->next;
-            }
-            break;
-        }
-        break;
-    }
-  }
-
-  return;
-
-  for (byte i = 0; i < PEDALS; i++) {
-    switch (pedals[i].mode) {
-
-      case PED_MOMENTARY1:
-      case PED_MOMENTARY2:
-      case PED_MOMENTARY3:
-      case PED_LATCH1:
-      case PED_LATCH2:
-
-        switch (pedals[i].pressMode) {
-
-          case PED_PRESS_1:
-            if (pedals[i].function == PED_MIDI) refresh_switch_1_midi(i, send);
-            else refresh_switch_12L(i);
-            break;
-
-          case PED_PRESS_1_2:
-          case PED_PRESS_1_L:
-          case PED_PRESS_1_2_L:
-          case PED_PRESS_2:
-          case PED_PRESS_2_L:
-          case PED_PRESS_L:
-            if (pedals[i].function == PED_MIDI) refresh_switch_12L_midi(i, send);
-            else refresh_switch_12L(i);
-            break;
-        }
-        break;
-
-      case PED_ANALOG:
-        refresh_analog(i, send);
-        break;
-
-      case PED_LADDER:
-        if (pedals[i].function == PED_MIDI) refresh_switch_12L_midi(i, send);
-        else refresh_switch_12L(i);
-        break;
-
-      case PED_JOG_WHEEL:
-        uint8_t direction = pedals[i].jogwheel->read();
-        switch (direction) {
-          case DIR_NONE:
-            break;
-          case DIR_CW:
-          case DIR_CCW:
-            switch (pedals[i].function) {
-              case PED_MIDI:
-                currentMIDIValue[currentBank][i] = constrain(currentMIDIValue[currentBank][i] +
-                                                    ((direction == DIR_CW) ? 1 : -1) *
-                                                    _max(1, (pedals[i].jogwheel->speed() + 1) * (banks[currentBank][i].midiValue3 - banks[currentBank][i].midiValue1) / (MIDI_RESOLUTION - 1)),
-                                                    pedals[i].invertPolarity ? banks[currentBank][i].midiValue3 : banks[currentBank][i].midiValue1,
-                                                    pedals[i].invertPolarity ? banks[currentBank][i].midiValue1 : banks[currentBank][i].midiValue3);
-                DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, ((direction == DIR_CW) ? 1 : -1), currentMIDIValue[currentBank][i], pedals[i].jogwheel->speed());
-                if (send) {
-                  switch (banks[currentBank][i].midiMessage) {
-                    case PED_PROGRAM_CHANGE:
-                    case PED_PROGRAM_CHANGE_INC:
-                    case PED_PROGRAM_CHANGE_DEC:
-                    case PED_BANK_SELECT_INC:
-                    case PED_BANK_SELECT_DEC:
-                      midi_send(banks[currentBank][i].midiMessage, currentMIDIValue[currentBank][i], 0, banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-                      midi_send(banks[currentBank][i].midiMessage, currentMIDIValue[currentBank][i], 0, banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-                      break;
-                    default:
-                      midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, currentMIDIValue[currentBank][i], banks[currentBank][i].midiChannel, true, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-                      midi_send(banks[currentBank][i].midiMessage, banks[currentBank][i].midiCode, currentMIDIValue[currentBank][i], banks[currentBank][i].midiChannel, false, banks[currentBank][i].midiValue1, banks[currentBank][i].midiValue3, currentBank, i);
-                      break;
-                  }
-                }
-                pedals[i].lastUpdate[0] = micros();
-                lastUsedPedal = i;
-                lastUsed = i;
-                strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
-                break;
-              case PED_BANK_PLUS:
-              case PED_BANK_MINUS:
-                {
-                  int b = currentBank + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].invertPolarity ? -1 : 1);
-                  b = constrain(b, pedals[i].expZero - 1, pedals[i].expMax - 1);
-                  currentBank = constrain(b, 0, BANKS - 1);
-                  break;
-                }
-              case PED_BPM_PLUS:
-              case PED_BPM_MINUS:
-                bpm = constrain(bpm + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].jogwheel->speed() + 1),
-                                pedals[i].invertPolarity ? 300 : 40,
-                                pedals[i].invertPolarity ? 40 : 300);
-                MTC.setBpm(bpm);
-                break;
             }
             break;
         }
@@ -1954,111 +1209,16 @@ void controller_setup()
         break;
 
       case PED_JOG_WHEEL:
-        break;
-    }
-    pedals[i].pedalValue[0] = pedals[i].invertPolarity ? LOW : HIGH;
-    pedals[i].lastUpdate[0] = millis();
-    pedals[i].pedalValue[1] = pedals[i].pedalValue[0];
-    pedals[i].lastUpdate[1] = pedals[i].lastUpdate[0];
-    DPRINT("\n");
-
-    //continue;
-
-    // Pedals setup for Banks
-    switch (pedals[i].mode) {
-
-      case PED_MOMENTARY1:
-      case PED_MOMENTARY2:
-      case PED_MOMENTARY3:
-      case PED_LATCH1:
-      case PED_LATCH2:
-
-        unsigned int input;
-        unsigned int value;
-        for (byte p = 0; p < 2; p++) {
-          if (pedals[i].mode == PED_MOMENTARY1 && p == 1) continue;
-          if (pedals[i].mode == PED_LATCH1     && p == 1) continue;
-
-          pedals[i].debouncer[p] = new Bounce();
-          switch (p) {
-            case 0:
-              // Setup the button with an internal pull-up
-              pinMode(PIN_D(i), INPUT_PULLUP);
-
-              // After setting up the button, setup the Bounce instance
-              pedals[i].debouncer[0]->attach(PIN_D(i));
-              DPRINT("   Pin D%d", PIN_D(i));
-              break;
-            case 1:
-              // Setup the button with an internal pull-up
-              pinMode(PIN_A(i), INPUT_PULLUP);
-
-              // After setting up the button, setup the Bounce instance
-              pedals[i].debouncer[1]->attach(PIN_A(i));
-              DPRINT(" A%d", PIN_A(i));
-              break;
-          }
-          pedals[i].debouncer[p]->interval(DEBOUNCE_INTERVAL);
-          pedals[i].debouncer[p]->update();
-          input = pedals[i].debouncer[p]->read();                                 // reads the updated pin state
-          if (pedals[i].invertPolarity) input = (input == LOW) ? HIGH : LOW;      // invert the value
-          value = map_digital(i, input);                                          // apply the digital map function to the value
-          pedals[i].pedalValue[p] = value;
-          pedals[i].lastUpdate[p] = millis();
-
-          if (pedals[i].mode == PED_MOMENTARY1 || pedals[i].mode == PED_MOMENTARY2 || pedals[i].mode == PED_MOMENTARY3)
-          {
-            switch (p) {
-              case 0:
-                pedals[i].footSwitch[0] = new MD_UISwitch_Digital(PIN_D(i), pedals[i].invertPolarity ? HIGH : LOW);
-                break;
-              case 1:
-                pedals[i].footSwitch[1] = new MD_UISwitch_Digital(PIN_A(i), pedals[i].invertPolarity ? HIGH : LOW);
-                break;
-            }
-            pedals[i].footSwitch[p]->begin();
-            footswitch_update(i, p);
-          }
-        }
-        break;
-
-      case PED_ANALOG:
-        pinMode(PIN_D(i), OUTPUT);
-        digitalWrite(PIN_D(i), HIGH);
-        //if (pedals[i].function == PED_MIDI)
-        {
-          pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
-          pedals[i].analogPedal->setAnalogResolution(ADC_RESOLUTION);
-          pedals[i].analogPedal->enableEdgeSnap();
-          pedals[i].analogPedal->setActivityThreshold(10.0);
-          //pedals[i].analogPedal->setSnapMultiplier(0.1);
-          //analogSetPinAttenuation(PIN_A(i), ADC_11db);
-          if (lastUsedPedal == 0xFF) {
-            lastUsedPedal = i;
-            lastUsed = i;
-            strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
-          }
-        }
-        DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
-        break;
-
-      case PED_LADDER:
-        pinMode(PIN_D(i), OUTPUT);
-        digitalWrite(PIN_D(i), HIGH);
-        pedals[i].footSwitch[0] = new MD_UISwitch_Analog(PIN_A(i), kt, LADDER_STEPS);
-        pedals[i].footSwitch[0]->begin();
-        footswitch_update(i, 0);
-        pedals[i].footSwitch[0]->read();
-        DPRINT("   Pin A%d", PIN_A(i));
-        break;
-
-      case PED_JOG_WHEEL:
         pedals[i].jogwheel = new MD_REncoder(PIN_D(i), PIN_A(i));
         pedals[i].jogwheel->begin();
         pedals[i].jogwheel->setPeriod((11 - encoderSensitivity) * 100);   // From 1...10 to 1000..100
         DPRINT("   Pin A%d (CLK) D%d (DT)", PIN_A(i), PIN_D(i));
         break;
     }
+    pedals[i].pedalValue[0] = pedals[i].invertPolarity ? LOW : HIGH;
+    pedals[i].lastUpdate[0] = millis();
+    pedals[i].pedalValue[1] = pedals[i].pedalValue[0];
+    pedals[i].lastUpdate[1] = pedals[i].lastUpdate[0];
     DPRINT("\n");
   }
 

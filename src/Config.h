@@ -442,7 +442,7 @@ void load_factory_default()
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
   }
   for (byte b = 0; b < BANKS; b++) {
@@ -470,7 +470,7 @@ void load_factory_default()
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
 
   for (byte b = 0; b < BANKS; b = b + 2) {
@@ -612,25 +612,6 @@ void load_factory_default()
   }
 
   // TC-Helicon Switch 6
-  kt[0].value = 0;
-  kt[0].adcThreshold = 497;
-  kt[0].adcTolerance = 82;
-  kt[1].value = 1;
-  kt[1].adcThreshold = 660;
-  kt[1].adcTolerance = 47;
-  kt[2].value = 2;
-  kt[2].adcThreshold = 752;
-  kt[2].adcTolerance = 33;
-  kt[3].value = 3;
-  kt[3].adcThreshold = 816;
-  kt[3].adcTolerance = 31;
-  kt[4].value = 4;
-  kt[4].adcThreshold = 876;
-  kt[4].adcTolerance = 31;
-  kt[5].value = 5;
-  kt[5].adcThreshold = 945;
-  kt[5].adcTolerance = 35;
-
   ab[0].id = 1;
   ab[0].threshold = 497;
   ab[0].tolerance = 82;
@@ -865,7 +846,7 @@ void eeprom_read_global()
     longPressTime      = preferences.getLong("Long   Time");
     repeatPressTime    = preferences.getLong("Repeat Time");
     encoderSensitivity = preferences.getUChar("Encoder Sensit");
-    preferences.getBytes("Ladder", &kt, sizeof(kt));
+    preferences.getBytes("Ladder", &ab, sizeof(ab));
     preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
     blynk_set_token(preferences.getString("Blynk Token"));
     preferences.end();
@@ -900,10 +881,6 @@ void eeprom_read_profile(byte profile = currentProfile)
 {
   // Delete previous setup
   for (byte i = 0; i < PEDALS; i++) {
-    if (pedals[i].debouncer[0]  != nullptr) delete pedals[i].debouncer[0];
-    if (pedals[i].debouncer[1]  != nullptr) delete pedals[i].debouncer[1];
-    if (pedals[i].footSwitch[0] != nullptr) delete pedals[i].footSwitch[0];
-    if (pedals[i].footSwitch[1] != nullptr) delete pedals[i].footSwitch[1];
     if (pedals[i].analogPedal   != nullptr) delete pedals[i].analogPedal;
     for (byte s = 0; s < LADDER_STEPS; s++)
       if (pedals[i].button[s]   != nullptr) delete pedals[i].button[s];
@@ -939,10 +916,6 @@ void eeprom_read_profile(byte profile = currentProfile)
     pedals[i].pedalValue[1] = 0;
     pedals[i].lastUpdate[0] = millis();
     pedals[i].lastUpdate[1] = millis();
-    pedals[i].debouncer[0]  = nullptr;
-    pedals[i].debouncer[1]  = nullptr;
-    pedals[i].footSwitch[0] = nullptr;
-    pedals[i].footSwitch[1] = nullptr;
     pedals[i].analogPedal   = nullptr;
     for (byte s = 0; s < LADDER_STEPS; s++)
       pedals[i].button[s]   = nullptr;
@@ -958,12 +931,10 @@ void eeprom_read_profile(byte profile = currentProfile)
     memset(label, 0, 10);
     sprintf(label, "Size%d", b);
     byte action_size = preferences.getUChar(label);
-    DPRINT("%s %d\n", label, action_size);
     action *act = actions[b] = nullptr;
     for (byte i = 0; i < action_size; i++) {
       memset(label, 0, 10);
       sprintf(label, "%d.%d", b, i);
-      DPRINT("%s\n", label);
       action *a = (action*)malloc(sizeof(action));
       preferences.getBytes(label, a, sizeof(action));
       a->next = nullptr;
