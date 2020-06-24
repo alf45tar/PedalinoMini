@@ -26,6 +26,8 @@ inline void http_run() {};
 #include <nvs.h>
 
 AsyncWebServer          httpServer(80);
+String                  httpUsername = "admin";
+String                  httpPassword = getChipId();
 
 #ifdef WEBCONFIG
 
@@ -1710,7 +1712,7 @@ void get_options_page() {
   page += F("<form method='post'>");
 
   page += F("<div class='form-row'>");
-  page += F("<div class='col-6'>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Device</h5>");
   page += F("<div class='card-body'>");
@@ -1725,7 +1727,7 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='col-6'>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Boot Mode</h5>");
   page += F("<div class='card-body'>");
@@ -1767,16 +1769,24 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<p></p>");
-
   page += F("<div class='form-row'>");
-  page += F("<div class='col-6'>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>WiFi Network</h5>");
   page += F("<div class='card-body'>");
   page += F("<label for='wifissid'>SSID</label>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='wifissid' name='wifiSSID' placeholder='SSID' value='");
-  page += wifiSSID + F("'>");
+  //page += F("<input class='form-control' type='text' maxlength='32' id='wifissid' name='wifiSSID' placeholder='SSID' value='");
+  //page += wifiSSID + F("'>");
+  page += F("<select class='custom-select' id='wifissid' name='wifiSSID'>");
+  int n = WiFi.scanNetworks();
+  for (int i = 0; i < n; i++) {
+    page += F("<option value='");
+    page += WiFi.SSID(i) + F("'");
+    if (wifiSSID == WiFi.SSID(i)) page += F(" selected");
+    page += F(">");
+    page += WiFi.SSID(i) + F("</option>");
+  }
+  page += F("</select>");
   page += F("<label for='wifipassword'>Password</label>");
   page += F("<input class='form-control' type='password' maxlength='32' id='wifipassword' name='wifiPassword' placeholder='password' value='");
   page += wifiPassword + F("'>");
@@ -1787,7 +1797,7 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-  page += F("<div class='col-6'>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>AP Mode</h5>");
   page += F("<div class='card-body'>");
@@ -1806,14 +1816,11 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<p></p>");
-
   page += F("<div class='form-row'>");
-  page += F("<div class='col-6'>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Web UI</h5>");
+  page += F("<h5 class='card-header'>Web UI Theme</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Theme</h5>");
   page += F("<select class='custom-select' id='bootstraptheme' name='theme'>");
   for (unsigned int i = 0; i < 22; i++) {
     page += F("<option value='");
@@ -1829,8 +1836,142 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>Web UI Login</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='input-group input-group-sm mb-3'>");
+  page += F("<div class='input-group-prepend'>");
+  page += F("<div class='input-group-text'>Username</div>");
+  page += F("</div>");
+  page += F("<input class='form-control form-control-sm' type='text' maxlength='32' id='httpusername' name='httpUsername' value='");
+  page += httpUsername + F("'>");
+  page += F("</div>");
+  page += F("<div class='input-group input-group-sm mb-3'>");
+  page += F("<div class='input-group-prepend'>");
+  page += F("<div class='input-group-text'>Password</div>");
+  page += F("</div>");
+  page += F("<input class='form-control form-control-sm' type='password' maxlength='32' id='httppassword' name='httpPassword' value='");
+  page += httpPassword + F("'>");
+  page += F("</div>");
+  page += F("<small class='form-text text-muted'>");
+  page += F("Web UI administrator username and password. Leave username blank for no login request.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
 
+  page += F("<div class='card mb-3'>");
+  page += F("<h5 class='card-header'>Momentary Switches</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='form-group col-md-6 col-12 mb-3'>");
+  page += F("<label for='pressTime'>Press Time</label>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='pressTime' name='presstime' placeholder='' value='");
+  page += String(pressTime) + F("'>");
+  page += F("<small id='pressTimeModeHelpBlock' class='form-text text-muted'>");
+  page += F("Switch press time in milliseconds. Default value is 200.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='form-group col-md-6 col-12 mb-3'>");
+  page += F("<label for='doublePressTime'>Double Press Time</label>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='doublePressTime' name='doublepresstime' placeholder='' value='");
+  page += String(doublePressTime) + F("'>");
+  page += F("<small id='doublePressTimeModeHelpBlock' class='form-text text-muted'>");
+  page += F("Set double press detection time between each press time in milliseconds. Default value is 400.<br>");
+  page += F("A double press is detected if the switch is released and depressed within this time, measured from when the first press is detected.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='form-group col-md-6 col-12 mb-3'>");
+  page += F("<label for='longPressTime'>Long Press Time</label>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='longPressTime' name='longpresstime' placeholder='' value='");
+  page += String(longPressTime) + F("'>");
+  page += F("<small id='longPressTimeModeHelpBlock' class='form-text text-muted'>");
+  page += F("Set the long press time in milliseconds after which a continuous press and release is deemed a long press, measured from when the first press is detected. Default value is 500.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='form-group col-md-6 col-12 mb-3'>");
+  page += F("<label for='repeatPressTime'>Repeat Press Time</label>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='repeatPressTime' name='repeatpresstime' placeholder='' value='");
+  page += String(repeatPressTime) + F("'>");
+  page += F("<small id='repeatPressTimeModeHelpBlock' class='form-text text-muted'>");
+  page += F("Set the repeat time in milliseconds after which a continuous press and hold is treated as a stream of repeated presses, measured from when the first press is detected. Default value is 500.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='card mb-3'>");
+  page += F("<h5 class='card-header'>Resistor Ladder Network</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-1 mb-3 text-center'>");
+  page += F("<span class='badge badge-primary'>#</span>");
+  page += F("</div>");
+  page += F("<div class='col-5'>");
+  page += F("<span class='badge badge-primary'>Threshold</span>");
+  page += F("<small class='form-text text-muted'>");
+  page += F("Average analog value for the key.");
+  page += F("</small>");
+  page += F("</div>");
   page += F("<div class='col-6'>");
+  page += F("<span class='badge badge-primary'>Tolerance</span>");
+  page += F("<small class='form-text text-muted'>");
+  page += F("Tolerance range +/- around average analog value.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  for (byte i = 1; i <= LADDER_STEPS; i++) {
+    page += F("<div class='form-row'>");
+    page += F("<div class='col-1 mb-3 text-center'>");
+    page += String(i);
+    page += F("</div>");
+    page += F("<div class='col-5'>");
+    page += F("<input class='form-control form-control-sm' type='number' id='threshold");
+    page += String(i) + F("' name='threshold");
+    page += String(i) + F("' min='0' max='");
+    page += String(ADC_RESOLUTION-1) + F("' value='");
+    page += String(ab[i-1].threshold) + F("'>");
+    page += F("</div>");
+    page += F("<div class='col-6'>");
+    page += F("<input class='form-control form-control-sm' type='number' id='tolerance");
+    page += String(i) + F("' name='tolerance");
+    page += String(i) + F("' min='0' max='255' value='");
+    page += String(ab[i-1].tolerance) + F("'>");
+    page += F("</div>");
+    page += F("</div>");
+  }
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='form-row'>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>Encoders</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='form-row'>");
+  page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
+  page += F("<select class='custom-select custom-select-sm' name='encodersensitivity'>");
+  for (unsigned int s = 1; s <= 10; s++) {
+    page += F("<option value='");
+    page += String(s) + F("'");
+    if (encoderSensitivity == s) page += F(" selected");
+    page += F(">");
+    page += String(s) + F("</option>");
+  }
+  page += F("</select>");
+  page += F("<small id='encoderSensitivityHelpBlock' class='form-text text-muted'>");
+  page += F("Default value is 5.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Additional Features</h5>");
   page += F("<div class='card-body'>");
@@ -1856,127 +1997,6 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='card'>");
-  page += F("<h5 class='card-header'>Momentary Switches</h5>");
-  page += F("<div class='card-body'>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='form-group col-6'>");
-  page += F("<label for='pressTime'>Press Time</label>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='pressTime' name='presstime' placeholder='' value='");
-  page += String(pressTime) + F("'>");
-  page += F("<small id='pressTimeModeHelpBlock' class='form-text text-muted'>");
-  page += F("Switch press time in milliseconds. Default value is 200.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='form-group col-6'>");
-  page += F("<label for='doublePressTime'>Double Press Time</label>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='doublePressTime' name='doublepresstime' placeholder='' value='");
-  page += String(doublePressTime) + F("'>");
-  page += F("<small id='doublePressTimeModeHelpBlock' class='form-text text-muted'>");
-  page += F("Set double press detection time between each press time in milliseconds. Default value is 400.<br>");
-  page += F("A double press is detected if the switch is released and depressed within this time, measured from when the first press is detected.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='form-row'>");
-  page += F("<div class='form-group col-6'>");
-  page += F("<label for='longPressTime'>Long Press Time</label>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='longPressTime' name='longpresstime' placeholder='' value='");
-  page += String(longPressTime) + F("'>");
-  page += F("<small id='longPressTimeModeHelpBlock' class='form-text text-muted'>");
-  page += F("Set the long press time in milliseconds after which a continuous press and release is deemed a long press, measured from when the first press is detected. Default value is 500.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='form-group col-6'>");
-  page += F("<label for='repeatPressTime'>Repeat Press Time</label>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='repeatPressTime' name='repeatpresstime' placeholder='' value='");
-  page += String(repeatPressTime) + F("'>");
-  page += F("<small id='repeatPressTimeModeHelpBlock' class='form-text text-muted'>");
-  page += F("Set the repeat time in milliseconds after which a continuous press and hold is treated as a stream of repeated presses, measured from when the first press is detected. Default value is 500.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='card'>");
-  page += F("<h5 class='card-header'>Resistor Ladder Network</h5>");
-  page += F("<div class='card-body'>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='col-1 text-center'>");
-  page += F("<span class='badge badge-primary'>#</span>");
-  page += F("</div>");
-  page += F("<div class='col-5'>");
-  page += F("<span class='badge badge-primary'>Threshold</span>");
-  page += F("<small class='form-text text-muted'>");
-  page += F("Average analog value for the key.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='col-6'>");
-  page += F("<span class='badge badge-primary'>Tolerance</span>");
-  page += F("<small class='form-text text-muted'>");
-  page += F("Tolerance range +/- around average analog value.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("<p></p>");
-  for (byte i = 1; i <= LADDER_STEPS; i++) {
-    page += F("<div class='form-row'>");
-    page += F("<div class='col-1 mb-3 text-center'>");
-    page += String(i);
-    page += F("</div>");
-    page += F("<div class='col-5'>");
-    page += F("<input class='form-control form-control-sm' type='number' id='threshold");
-    page += String(i) + F("' name='threshold");
-    page += String(i) + F("' min='0' max='");
-    page += String(ADC_RESOLUTION-1) + F("' value='");
-    page += String(ab[i-1].threshold) + F("'>");
-    page += F("</div>");
-    page += F("<div class='col-6'>");
-    page += F("<input class='form-control form-control-sm' type='number' id='tolerance");
-    page += String(i) + F("' name='tolerance");
-    page += String(i) + F("' min='0' max='255' value='");
-    page += String(ab[i-1].tolerance) + F("'>");
-    page += F("</div>");
-    page += F("</div>");
-  }
-  page += F("</div>");
-  page += F("</div>");
-
-  page += F("<p></p>");
-
-  page += F("<div class='card'>");
-  page += F("<h5 class='card-header'>Encoders</h5>");
-  page += F("<div class='card-body'>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='form-group col-6'>");
-  page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
-  page += F("<select class='custom-select custom-select-sm' name='encodersensitivity'>");
-  for (unsigned int s = 1; s <= 10; s++) {
-    page += F("<option value='");
-    page += String(s) + F("'");
-    if (encoderSensitivity == s) page += F(" selected");
-    page += F(">");
-    page += String(s) + F("</option>");
-  }
-  page += F("</select>");
-  page += F("<small id='encoderSensitivityHelpBlock' class='form-text text-muted'>");
-  page += F("Default value is 5.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-
-  page += F("<p></p>");
 
 #ifdef BLYNK
   page += F("<div class='form-row'>");
@@ -2347,6 +2367,7 @@ void http_handle_globals(AsyncWebServerRequest *request) {
 }
 
 void http_handle_root(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_root_page_chunked);
   response->addHeader("Connection", "close");
@@ -2354,6 +2375,7 @@ void http_handle_root(AsyncWebServerRequest *request) {
 }
 
 void http_handle_live(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_live_page_chunked);
   response->addHeader("Connection", "close");
@@ -2361,6 +2383,7 @@ void http_handle_live(AsyncWebServerRequest *request) {
 }
 
 void http_handle_actions(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
   if (request->hasArg("bank"))  uibank   = request->arg("bank");
   if (request->hasArg("pedal")) uipedal  = request->arg("pedal");
@@ -2370,6 +2393,7 @@ void http_handle_actions(AsyncWebServerRequest *request) {
 }
 
 void http_handle_pedals(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_pedals_page_chunked);
   response->addHeader("Connection", "close");
@@ -2377,6 +2401,7 @@ void http_handle_pedals(AsyncWebServerRequest *request) {
 }
 
 void http_handle_interfaces(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_interfaces_page_chunked);
   response->addHeader("Connection", "close");
@@ -2384,6 +2409,7 @@ void http_handle_interfaces(AsyncWebServerRequest *request) {
 }
 
 void http_handle_sequences(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
   if (request->hasArg("sequence"))  uisequence  = request->arg("sequence");
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_sequences_page_chunked);
@@ -2392,16 +2418,16 @@ void http_handle_sequences(AsyncWebServerRequest *request) {
 }
 
 void http_handle_options(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
-
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
 }
 
 void http_handle_configurations(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
-
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_configurations_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
@@ -2723,21 +2749,27 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
        else newBootMode = PED_BOOT_NORMAL;
   if (newBootMode != bootMode) {
     bootMode = newBootMode;
-    eeprom_update_boot_mode(bootMode);
+    //eeprom_update_boot_mode(bootMode);
   }
 
   if (request->arg("wifiSSID") != wifiSSID || request->arg("wifiPassword") != wifiPassword) {
     wifiSSID      = request->arg("wifiSSID");
     wifiPassword  = request->arg("wifiPassword");
-    eeprom_update_sta_wifi_credentials();
     restartRequired = (bootMode == PED_BOOT_NORMAL || bootMode == PED_BOOT_WIFI);
+    if (restartRequired) eeprom_update_sta_wifi_credentials();
   }
 
   if (request->arg("ssidSoftAP") != ssidSoftAP || request->arg("passwordSoftAP") != passwordSoftAP) {
     ssidSoftAP      = request->arg("ssidSoftAP");
     passwordSoftAP  = request->arg("passwordSoftAP");
-    eeprom_update_ap_wifi_credentials(ssidSoftAP, passwordSoftAP);
     restartRequired = (bootMode == PED_BOOT_AP || bootMode == PED_BOOT_AP_NO_BLE);
+    if (restartRequired) eeprom_update_ap_wifi_credentials(ssidSoftAP, passwordSoftAP);
+  }
+
+  if (request->arg("httpUsername") != httpUsername || request->arg("httpPassword") != httpPassword) {
+    httpUsername  = request->arg("httpUsername");
+    httpPassword  = request->arg("httpPassword");
+    restartRequired = false;
   }
 
   bool pressTimeChanged = false;
@@ -2763,19 +2795,18 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     controller_setup();
   }
 
-  if (pressTimeChanged)
-    eeprom_update_press_time(pressTime, doublePressTime,longPressTime, repeatPressTime);
+  //if (pressTimeChanged) eeprom_update_press_time(pressTime, doublePressTime,longPressTime, repeatPressTime);
 
   bool newTapDanceMode = (request->arg("tapdancemode") == checked);
   if (newTapDanceMode != tapDanceMode) {
     tapDanceBank = newTapDanceMode;
-    eeprom_update_tap_dance(tapDanceMode);
+    //eeprom_update_tap_dance(tapDanceMode);
   }
 
   bool newRepeatOnBankSwitch = (request->arg("repeatonbankswitch") == checked);
   if (newRepeatOnBankSwitch != repeatOnBankSwitch) {
     repeatOnBankSwitch = newRepeatOnBankSwitch;
-    eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
+    //eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
   }
 
   bool newLadder = false;
@@ -2788,30 +2819,30 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     newLadder = newLadder || ab[i].tolerance != a.toInt();
     ab[i].tolerance = a.toInt();
   }
-  if (newLadder) eeprom_update_ladder();
+  // if (newLadder) eeprom_update_ladder();
 
 if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
     encoderSensitivity = request->arg("encodersensitivity").toInt();
-    eeprom_update_encoder_sensitivity(encoderSensitivity);
+    //eeprom_update_encoder_sensitivity(encoderSensitivity);
     controller_setup();
   }
 #ifdef BLINK
   bool newBlynkCloud = (request->arg("blynkcloud") == checked);
   if (newBlynkCloud & !blynk_enabled()) {
     blynk_enable();
-    eeprom_update_blynk_cloud_enable(true);
+    //eeprom_update_blynk_cloud_enable(true);
     //blynk_connect();
     //blynk_refresh();
   }
   if (!newBlynkCloud & blynk_enabled()) {
     blynk_disconnect();
     blynk_disable();
-    eeprom_update_blynk_cloud_enable(false);
+    //eeprom_update_blynk_cloud_enable(false);
   }
 
   if (request->arg("blynkauthtoken") != String(blynkAuthToken)) {
     blynk_disconnect();
-    eeprom_update_blynk_auth_token(request->arg("blynkauthtoken"));
+    //eeprom_update_blynk_auth_token(request->arg("blynkauthtoken"));
     blynk_set_token(request->arg("blynkauthtoken"));
     //blynk_connect();
     //blynk_refresh();
@@ -2822,7 +2853,7 @@ if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
   }
   else if (request->arg("action") == String("save")) {
-    eeprom_update_current_profile(currentProfile);
+    eeprom_update_globals();
     alert = "Changes saved.";
   }
 

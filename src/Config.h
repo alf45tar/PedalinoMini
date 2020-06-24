@@ -16,6 +16,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 Preferences preferences;
 
+extern String httpUsername;
+extern String httpPassword;
 
 #ifdef BOARD_HAS_PSRAM
 struct SpiRamAllocator {
@@ -416,6 +418,8 @@ void load_factory_default()
   wifiPassword       = "";
   ssidSoftAP         = String("Pedalino-") + getChipId();
   passwordSoftAP     = getChipId();
+  httpUsername       = "admin";
+  httpPassword       = getChipId();
   theme              = "bootstrap";
   currentProfile     = 0;
   pressTime          = PED_PRESS_TIME;
@@ -676,6 +680,18 @@ void eeprom_update_ap_wifi_credentials(String ssid = String("Pedalino-") + getCh
   DPRINT("[NVS][Global][AP Password]: %s\n", pass.c_str());
 }
 
+void eeprom_update_login_credentials(String username = "admin", String password = getChipId())
+{
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putString("HTTP Username", username);
+  preferences.putString("HTTP Password", password);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global][HTTP Username]: %s\n", username);
+  DPRINT("[NVS][Global][HTTP Password]: %s\n", password);
+}
+
 void eeprom_update_current_profile(byte profile = 0)
 {
   DPRINT("Updating NVS ... ");
@@ -810,7 +826,6 @@ void eeprom_update_profile(byte profile = currentProfile)
     while (act != nullptr) {
       memset(label, 0, 10);
       sprintf(label, "%d.%d", b, i);
-      DPRINT("%s\n", label);
       preferences.putBytes(label, act, sizeof(action));
       act = act->next;
       i++;
@@ -818,7 +833,6 @@ void eeprom_update_profile(byte profile = currentProfile)
     memset(label, 0, 10);
     sprintf(label, "Size%d", b);
     preferences.putUChar(label, i);
-    DPRINT("%s %d\n", label, i);
   }
   preferences.end();
 
@@ -837,6 +851,8 @@ void eeprom_read_global()
     wifiPassword       = preferences.getString("STA Password");
     ssidSoftAP         = preferences.getString("AP SSID");
     passwordSoftAP     = preferences.getString("AP Password");
+    httpUsername       = preferences.getString("HTTP Username");
+    httpPassword       = preferences.getString("HTTP Password");
     theme              = preferences.getString("Bootstrap Theme");
     currentProfile     = preferences.getUChar("Current Profile");
     tapDanceMode       = preferences.getBool("Tap Dance Mode");
@@ -857,6 +873,8 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][STA Password]:     %s\n", wifiPassword.c_str());
     DPRINT("[NVS][Global][AP SSID]:          %s\n", ssidSoftAP.c_str());
     DPRINT("[NVS][Global][AP Password]:      %s\n", passwordSoftAP.c_str());
+    DPRINT("[NVS][Global][HTTP Username]:    %s\n", httpUsername.c_str());
+    DPRINT("[NVS][Global][HTTP Password]:    %s\n", httpPassword.c_str());
     DPRINT("[NVS][Global][Bootstrap Theme]:  %s\n", theme.c_str());
     DPRINT("[NVS][Global][Current Profile]:  %d\n", currentProfile);
     DPRINT("[NVS][Global][Tap Dance Mode]:   %d\n", tapDanceMode);
@@ -951,12 +969,13 @@ void eeprom_read_profile(byte profile = currentProfile)
   blynk_refresh();
 }
 
-void eeprom_update_all()
+void eeprom_update_globals()
 {
   eeprom_update_device_name(host);
   eeprom_update_boot_mode(bootMode);
   eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
   eeprom_update_ap_wifi_credentials(ssidSoftAP, passwordSoftAP);
+  eeprom_update_login_credentials(httpUsername, httpPassword);
   eeprom_update_theme(theme);
   eeprom_update_current_profile(currentProfile);
   eeprom_update_tap_dance(tapDanceMode);
@@ -966,6 +985,11 @@ void eeprom_update_all()
   eeprom_update_encoder_sensitivity(encoderSensitivity);
   eeprom_update_blynk_cloud_enable(blynk_enabled());
   eeprom_update_blynk_auth_token(blynk_get_token());
+}
+
+void eeprom_update_all()
+{
+  eeprom_update_globals();
   for (byte p = 0; p < PROFILES; p++)
     eeprom_update_profile(p);
 }
@@ -990,6 +1014,7 @@ void eeprom_initialize()
   eeprom_update_boot_mode();
   eeprom_update_sta_wifi_credentials();
   eeprom_update_ap_wifi_credentials();
+  eeprom_update_login_credentials();
   eeprom_update_theme();
   eeprom_update_current_profile();
   eeprom_update_tap_dance();
