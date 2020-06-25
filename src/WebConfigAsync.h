@@ -2307,16 +2307,13 @@ void http_handle_globals(AsyncWebServerRequest *request) {
   if (request->hasArg("profile")) {
     uiprofile = request->arg("profile");
     currentProfile = constrain(uiprofile.toInt() - 1, 0, PROFILES - 1);
+    reloadProfile = true;
     eeprom_read_profile(currentProfile);
-    autosensing_setup();
-    controller_setup();
-    mtc_setup();
   }
 
   if (request->hasArg("theme") ) {
     if(request->arg("theme") != theme) {
       theme = request->arg("theme");
-      eeprom_update_theme(theme);
     }
   }
 }
@@ -2872,7 +2869,10 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   }
   else if (request->arg("action") == String("apply")) {
     String config = request->arg("filename");
+    delete_actions();
+    controller_delete();
     spiffs_load_config(config);
+    sort_actions();
     create_banks();
     loadConfig = true;
     config = config.substring(1, config.length() - 4);
@@ -2881,9 +2881,13 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   }
   else if (request->arg("action") == String("save")) {
     String config = request->arg("filename");
+    controller_delete();
+    delete_actions();
     spiffs_load_config(config);
+    sort_actions();
     create_banks();
-    eeprom_update_all();
+    eeprom_update_globals();
+    eeprom_update_profile();
     reloadProfile = true;
     config = config.substring(1, config.length() - 4);
     alert = F("Configuration '");

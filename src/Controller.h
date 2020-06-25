@@ -9,6 +9,20 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+void delete_actions() {
+
+  for (byte b = 0; b < BANKS; b++) {
+    memset(banknames[b], 0, MAXBANKNAME+1);
+    action *act = actions[b];
+    actions[b] = nullptr;
+    while (act != nullptr) {
+      action *a = act;
+      act = act->next;
+      free(a);
+    }
+  }
+}
+
 void sort_actions() {
 
   for (byte b = 0; b < BANKS; b++) {
@@ -16,7 +30,7 @@ void sort_actions() {
     while (act != nullptr) {
       action *idx = act->next;
       while (idx != nullptr) {
-        if ((act->pedal > idx->pedal) || ((act->pedal = idx->pedal) && (act->button > idx->button))) {
+        if ((act->pedal > idx->pedal) || ((act->pedal == idx->pedal) && (act->button > idx->button))) {
           action t;
           strncpy(t.name,    idx->name, MAXACTIONNAME + 1);
           t.pedal          = idx->pedal;
@@ -706,16 +720,28 @@ void refresh_analog(byte i, bool send)
 void controller_setup();
 
 //
-//  Delete controllers
+//  Delete previous setup
 //
 void controller_delete()
 {
-  // Delete previous setup
   for (byte i = 0; i < PEDALS; i++) {
-    if (pedals[i].analogPedal   != nullptr) delete pedals[i].analogPedal;
-    if (pedals[i].buttonConfig  != nullptr) delete pedals[i].buttonConfig;
+    if (pedals[i].analogPedal   != nullptr)  {
+      delete pedals[i].analogPedal;
+      pedals[i].analogPedal = nullptr;
+    }
+    if (pedals[i].jogwheel      != nullptr)  {
+      delete pedals[i].jogwheel;
+      pedals[i].jogwheel = nullptr;
+    }
+    if (pedals[i].buttonConfig  != nullptr)  {
+      delete pedals[i].buttonConfig;
+      pedals[i].buttonConfig = nullptr;
+    }
     for (byte s = 0; s < LADDER_STEPS; s++)
-      if (pedals[i].button[s]   != nullptr) delete pedals[i].button[s];
+      if (pedals[i].button[s]   != nullptr)  {
+        delete pedals[i].button[s];
+        pedals[i].button[s] = nullptr;
+      }
   }
 }
 
@@ -785,6 +811,7 @@ if (loadConfig && send) {
         break;
 
       case PED_JOG_WHEEL:
+        if (pedals[i].jogwheel == nullptr) break;
         uint8_t direction = pedals[i].jogwheel->read();
         switch (direction) {
           case DIR_NONE:

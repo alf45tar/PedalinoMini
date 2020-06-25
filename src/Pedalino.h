@@ -460,6 +460,8 @@ extern AsyncWebSocket   webSocket;
 extern AsyncEventSource events;
 #endif
 
+void   controller_delete();
+void   delete_actions();
 void   sort_actions();
 void   create_banks();
 void   wifi_connect();

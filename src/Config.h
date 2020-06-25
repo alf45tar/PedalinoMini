@@ -46,9 +46,11 @@ void spiffs_save_config(String filename) {
   jo["Hostname"]            = host;
   jo["BootMode"]            = bootMode;
   jo["SSID"]                = wifiSSID;
-  jo["Password"]            = wifiPassword;
+  jo["WiFiPassword"]        = wifiPassword;
   jo["SSIDsoftAP"]          = ssidSoftAP;
   jo["PasswordSoftAP"]      = passwordSoftAP;
+  jo["HTTPUsername"]        = httpUsername;
+  jo["HTTPPassword"]        = httpPassword;
   jo["Theme"]               = theme;
   jo["Profile"]             = currentProfile;
   jo["PressTime"]           = pressTime;
@@ -173,17 +175,6 @@ void spiffs_save_config(String filename) {
 
 void spiffs_load_config(String filename) {
 
-  for (byte b = 0; b < BANKS; b++) {
-    memset(banknames[b], 0, MAXBANKNAME+1);
-    action *act = actions[b];
-    actions[b] = nullptr;
-    while (act != nullptr) {
-      action *a = act;
-      act = act->next;
-      free(a);
-    }
-  }
-
   DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
   DPRINT("Memory allocated for JSON document: %d bytes\n", ESP.getMaxAllocHeap());
 
@@ -214,22 +205,24 @@ void spiffs_load_config(String filename) {
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
-          host                = String((const char *)jo["Hostname"]);
-          bootMode            = jo["BootMode"];
-          wifiSSID            = String((const char *)jo["SSID"]);
-          wifiPassword        = String((const char *)jo["Password"]);
-          ssidSoftAP          = String((const char *)jo["SSIDsoftAP"]);
-          passwordSoftAP      = String((const char *)jo["PasswordSoftAP"]);
-          theme               = String((const char *)jo["Theme"]);
-          currentProfile      = jo["Profile"];
-          pressTime           = jo["PressTime"];
-          doublePressTime     = jo["DoublePressTime"];
-          longPressTime       = jo["LongPressTime"];
-          repeatPressTime     = jo["RepeatPressTime"];
-          encoderSensitivity  = jo["EncoderSesitivity"];
-          tapDanceMode        = jo["TapDanceMode"];
-          repeatOnBankSwitch  = jo["RepeatOnBankSwitch"];
-          tapDanceBank        = jo["TapDanceBank"];
+          host                = String((const char *)(jo["Hostname"]       | host.c_str()));
+          bootMode            = jo["BootMode"]                             | bootMode;
+          wifiSSID            = String((const char *)(jo["SSID"]           | wifiSSID.c_str()));
+          wifiPassword        = String((const char *)(jo["WiFiPassword"]   | wifiPassword.c_str()));
+          ssidSoftAP          = String((const char *)(jo["SSIDsoftAP"]     | ssidSoftAP.c_str()));
+          passwordSoftAP      = String((const char *)(jo["PasswordSoftAP"] | passwordSoftAP.c_str()));
+          httpUsername        = String((const char *)(jo["HTTPUsername"]   | httpUsername.c_str()));
+          httpPassword        = String((const char *)(jo["HTTPPassword"]   | httpPassword.c_str()));
+          theme               = String((const char *)(jo["Theme"]          | theme.c_str()));
+          currentProfile      = jo["Profile"]                              | currentProfile;
+          pressTime           = jo["PressTime"]                            | pressTime;
+          doublePressTime     = jo["DoublePressTime"]                      | doublePressTime;
+          longPressTime       = jo["LongPressTime"]                        | longPressTime;
+          repeatPressTime     = jo["RepeatPressTime"]                      | repeatPressTime;
+          encoderSensitivity  = jo["EncoderSesitivity"]                    | encoderSensitivity;
+          tapDanceMode        = jo["TapDanceMode"]                         | tapDanceMode;
+          repeatOnBankSwitch  = jo["RepeatOnBankSwitch"]                   | repeatOnBankSwitch;
+          tapDanceBank        = jo["TapDanceBank"]                         | tapDanceBank;
         }
       }
     }
@@ -272,7 +265,8 @@ void spiffs_load_config(String filename) {
           action *act = actions[b];
           if (act == nullptr) {
             actions[b] = (action*)malloc(sizeof(action));
-            if (!actions[b]) return;
+            assert(actions[b] != nullptr);
+            //if (!actions[b]) return;
             actions[b]->pedal          = jo["Pedal"];
             actions[b]->pedal--;
             actions[b]->pedal          = constrain(actions[b]->pedal, 0, PEDALS - 1);
@@ -291,7 +285,8 @@ void spiffs_load_config(String filename) {
           else while (act != nullptr) {
                 if (act->next == nullptr) {
                   act->next = (action*)malloc(sizeof(action));
-                  if (!act->next) return;
+                  assert(act->next != nullptr);
+                  //if (!act->next) return;
                   act = act->next;
                   act->pedal          = jo["Pedal"];
                   act->pedal--;
@@ -436,6 +431,7 @@ void load_factory_default()
     memset(banknames[b], 0, MAXBANKNAME+1);
     actions[b] = nullptr;
   }
+  create_banks();
 
   for (byte i = 0; i < INTERFACES; i++)
     {
@@ -656,12 +652,31 @@ void eeprom_update_profile(byte profile = currentProfile)
       DPRINT("C");
       break;
   }
+
+  pedal pedals_copy[PEDALS];
+  memcpy(pedals_copy, pedals, sizeof(pedals));
+  for (byte i = 0; i < PEDALS; i++) {
+    pedals_copy[i].pedalValue[0] = 0;
+    pedals_copy[i].pedalValue[1] = 0;
+    pedals_copy[i].lastUpdate[0] = 0;
+    pedals_copy[i].lastUpdate[1] = 0;
+    pedals_copy[i].analogPedal   = nullptr;
+    pedals_copy[i].jogwheel      = nullptr;
+    pedals_copy[i].buttonConfig  = nullptr;
+    for (byte s = 0; s < LADDER_STEPS; s++)
+      pedals_copy[i].button[s]   = nullptr;
+    if (pedals[i].autoSensing) {
+      pedals[i].expZero       = ADC_RESOLUTION - 1;
+      pedals[i].expMax        = 0;
+    }
+  };
+  preferences.putBytes("Pedals",      &pedals_copy, sizeof(pedals));
   preferences.putBytes("BankNames",   &banknames,   sizeof(banknames));
-  preferences.putBytes("Pedals",      &pedals,      sizeof(pedals));
   preferences.putBytes("Interfaces",  &interfaces,  sizeof(interfaces));
   preferences.putBytes("Sequences",   &sequences,   sizeof(sequences));
   preferences.putUChar("Current Bank", currentBank);
   preferences.putUChar("Current MTC", currentMidiTimeCode);
+
   for (byte b = 0; b < BANKS; b++) {
     char    label[10];
     byte    i = 0;
@@ -678,9 +693,7 @@ void eeprom_update_profile(byte profile = currentProfile)
     preferences.putUChar(label, i);
   }
   preferences.end();
-
   DPRINT(" ... done\n");
-
   blynk_refresh();
 }
 
@@ -740,13 +753,8 @@ void eeprom_read_global()
 
 void eeprom_read_profile(byte profile = currentProfile)
 {
-  // Delete previous setup
-  for (byte i = 0; i < PEDALS; i++) {
-    if (pedals[i].analogPedal   != nullptr) delete pedals[i].analogPedal;
-    for (byte s = 0; s < LADDER_STEPS; s++)
-      if (pedals[i].button[s]   != nullptr) delete pedals[i].button[s];
-    if (pedals[i].buttonConfig  != nullptr) delete pedals[i].buttonConfig;
-  }
+  controller_delete();
+  delete_actions();
 
   DPRINT("Reading NVS Profile ");
   switch (profile) {
@@ -763,40 +771,26 @@ void eeprom_read_profile(byte profile = currentProfile)
       DPRINT("C");
       break;
   }
-  DPRINT(" ... ");
-  preferences.getBytes("BankNames",   &banknames,   sizeof(banknames));
   preferences.getBytes("Pedals",      &pedals,      sizeof(pedals));
+  preferences.getBytes("BankNames",   &banknames,   sizeof(banknames));
   preferences.getBytes("Interfaces",  &interfaces,  sizeof(interfaces));
   preferences.getBytes("Sequences",   &sequences,   sizeof(sequences));
   currentBank         = preferences.getUChar("Current Bank");
   currentMidiTimeCode = preferences.getUChar("Current MTC");
-
-  for (byte i = 0; i < PEDALS; i++) {
-    pedals[i].pedalValue[0] = 0;
-    pedals[i].pedalValue[1] = 0;
-    pedals[i].lastUpdate[0] = millis();
-    pedals[i].lastUpdate[1] = millis();
-    pedals[i].analogPedal   = nullptr;
-    for (byte s = 0; s < LADDER_STEPS; s++)
-      pedals[i].button[s]   = nullptr;
-    pedals[i].buttonConfig  = nullptr;
-    if (pedals[i].autoSensing) {
-      pedals[i].expZero       = ADC_RESOLUTION - 1;
-      pedals[i].expMax        = 0;
-    }
-  };
 
   for (byte b = 0; b < BANKS; b++) {
     char label[10];
     memset(label, 0, 10);
     sprintf(label, "Size%d", b);
     byte action_size = preferences.getUChar(label);
-    action *act = actions[b] = nullptr;
+    action *act = nullptr;
     for (byte i = 0; i < action_size; i++) {
       memset(label, 0, 10);
       sprintf(label, "%d.%d", b, i);
       action *a = (action*)malloc(sizeof(action));
-      preferences.getBytes(label, a, sizeof(action));
+      assert(a != nullptr);
+      int n = preferences.getBytes(label, a, sizeof(action));
+      assert(n == sizeof(action));
       a->next = nullptr;
       if (act == nullptr)
         act = actions[b] = a;
