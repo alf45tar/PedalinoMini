@@ -9,7 +9,9 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-String theme = "bootstrap";
+String theme        = "bootstrap";
+String httpUsername = "admin";
+String httpPassword = getChipId();
 
 #ifdef NOWIFI
 inline void http_run() {};
@@ -26,8 +28,6 @@ inline void http_run() {};
 #include <nvs.h>
 
 AsyncWebServer          httpServer(80);
-String                  httpUsername = "admin";
-String                  httpPassword = getChipId();
 
 #ifdef WEBCONFIG
 
@@ -45,51 +45,6 @@ String uiprofile    = "1";
 String uibank       = "1";
 String uipedal      = "All";
 String uisequence   = "1";
-
-
-void sort_actions() {
-
-  for (byte b = 0; b < BANKS; b++) {
-    action *act = actions[b];
-    while (act != nullptr) {
-      action *idx = act->next;
-      while (idx != nullptr) {
-        if (act->pedal > idx->pedal) {
-          action t;
-          strncpy(t.name,    idx->name, MAXACTIONNAME + 1);
-          t.pedal          = idx->pedal;
-          t.button         = idx->button;
-          t.event          = idx->event;
-          t.midiMessage    = idx->midiMessage;
-          t.midiChannel    = idx->midiChannel;
-          t.midiCode       = idx->midiCode;
-          t.midiValue1     = idx->midiValue1;
-          t.midiValue2     = idx->midiValue2;
-          strncpy(idx->name, act->name, MAXACTIONNAME + 1);
-          idx->pedal       = act->pedal;
-          idx->button      = act->button;
-          idx->event       = act->event;
-          idx->midiMessage = act->midiMessage;
-          idx->midiChannel = act->midiChannel;
-          idx->midiCode    = act->midiCode;
-          idx->midiValue1  = act->midiValue1;
-          idx->midiValue2  = act->midiValue2;
-          strncpy(act->name, t.name, MAXACTIONNAME + 1);
-          act->pedal       = t.pedal;
-          act->button      = t.button;
-          act->event       = t.event;
-          act->midiMessage = t.midiMessage;
-          act->midiChannel = t.midiChannel;
-          act->midiCode    = t.midiCode;
-          act->midiValue1  = t.midiValue1;
-          act->midiValue2  = t.midiValue2;
-        }
-        idx = idx->next;
-      }
-      act = act->next;
-    }
-  }
-}
 
 
 void get_top_page(int p = 0) {
@@ -2476,6 +2431,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->midiValue2   = 127;
     act->next         = nullptr;
     sort_actions();
+    create_banks();
     alert = "";
   }
   else if (request->arg("action").startsWith("new")) {
@@ -2498,6 +2454,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->midiValue2   = 127;
     act->next         = nullptr;
     sort_actions();
+    create_banks();
     alert = "";
   }
   else if (request->arg("action").equals("delete")) {
@@ -2541,6 +2498,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
         actNext = (act == nullptr) ? nullptr : act->next;
       }
     }
+    create_banks();
     alert = F("Selected action(s) deleted.");
   }
   else if (request->arg("action").equals("apply")) {
@@ -2560,6 +2518,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
       }
       act = act->next;
     }
+    create_banks();
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
   }
   else if (request->arg("action").equals("save")) {
@@ -2914,6 +2873,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   else if (request->arg("action") == String("apply")) {
     String config = request->arg("filename");
     spiffs_load_config(config);
+    create_banks();
     loadConfig = true;
     config = config.substring(1, config.length() - 4);
     alert = F("Configuration '");
@@ -2922,6 +2882,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   else if (request->arg("action") == String("save")) {
     String config = request->arg("filename");
     spiffs_load_config(config);
+    create_banks();
     eeprom_update_all();
     reloadProfile = true;
     config = config.substring(1, config.length() - 4);
@@ -3314,7 +3275,7 @@ void http_setup() {
   httpServer.serveStatic("/js/bootstrap.min.js", SPIFFS, "/js/bootstrap.min.js").setDefaultFile("/js/bootstrap.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/jquery-3.4.1.slim.min.js", SPIFFS, "/js/jquery-3.4.1.slim.min.js").setDefaultFile("/js/jquery-3.4.1.slim.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/popper.min.js", SPIFFS, "/js/popper.min.js").setDefaultFile("/js/popper.min.js").setCacheControl("max-age=600");
-  httpServer.serveStatic("/files", SPIFFS, "/").setDefaultFile("").setAuthentication("admin", "password");
+  httpServer.serveStatic("/files", SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
   httpServer.on("/",                            http_handle_root);
   httpServer.on("/login",           HTTP_GET,   http_handle_login);
@@ -3333,8 +3294,6 @@ void http_setup() {
   httpServer.on("/options",         HTTP_POST,  http_handle_post_options);
   httpServer.on("/configurations",  HTTP_GET,   http_handle_configurations);
   httpServer.on("/configurations",  HTTP_POST,  http_handle_post_configurations, http_handle_configuration_file_upload);
-  //httpServer.onFileUpload(http_handle_configuration_file_upload);
-  //httpServer.on("/css/floating-labels.css", http_handle_bootstrap_file);
 
   httpServer.on("/update",          HTTP_GET,   http_handle_update);
   httpServer.on("/update",          HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);

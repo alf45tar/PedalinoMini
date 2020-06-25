@@ -1,10 +1,10 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
                                                                                    (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
@@ -247,7 +247,6 @@ void blynk_refresh_bank()
     Blynk.virtualWrite(BLYNK_MIDICODE,              banks[currentBank][currentPedal].midiCode);
     Blynk.virtualWrite(BLYNK_MIDIVALUE1,            banks[currentBank][currentPedal].midiValue1);
     Blynk.virtualWrite(BLYNK_MIDIVALUE2,            banks[currentBank][currentPedal].midiValue2);
-    Blynk.virtualWrite(BLYNK_MIDIVALUE3,            banks[currentBank][currentPedal].midiValue3);
     switch (banks[currentBank][currentPedal].midiMessage) {
       case PED_PROGRAM_CHANGE:
         Blynk.setProperty(BLYNK_MIDICODE, "label", "MIDI Program Change");
@@ -380,7 +379,7 @@ BLYNK_WRITE(BLYNK_PROFILE) {
   }
   else {
     currentProfile = constrain(profile - 1, 0, PROFILES - 1);
-    reloadProfile = true;  
+    reloadProfile = true;
   }
 }
 
@@ -572,7 +571,7 @@ BLYNK_WRITE(BLYNK_CLOCK_CONTINUE) {
   PRINT_VIRTUAL_PIN(request.pin);
   DPRINT(" - Clock Continue %d\n", pressed);
   if (pressed)
-    if(MTC.getMode() == MidiTimeCode::SynchroClockMaster || MTC.getMode() == MidiTimeCode::SynchroMTCMaster) 
+    if(MTC.getMode() == MidiTimeCode::SynchroClockMaster || MTC.getMode() == MidiTimeCode::SynchroMTCMaster)
       MTC.sendContinue();
 }
 
@@ -603,7 +602,7 @@ BLYNK_WRITE(BLYNK_PEDAL_NAME) {
   String name = param.asStr();
   PRINT_VIRTUAL_PIN(request.pin);
   DPRINT(" - Pedal Name : %s\n", name.c_str());
-  strncpy(banks[currentBank][currentPedal].pedalName, name.c_str(), constrain(name.length(), 0, MAXPEDALNAME+1));
+  strncpy(banks[currentBank][currentPedal].pedalName, name.c_str(), constrain(name.length(), 0, MAXACTIONNAME+1));
   blynk_refresh_live();
 }
 
@@ -659,14 +658,6 @@ BLYNK_WRITE(BLYNK_MIDIVALUE2) {
   DPRINT(" - MIDI Value 2 %d\n", code);
   banks[currentBank][currentPedal].midiValue2 = constrain(code, 0, 127);
 }
-
-BLYNK_WRITE(BLYNK_MIDIVALUE3) {
-  int code = param.asInt();
-  PRINT_VIRTUAL_PIN(request.pin);
-  DPRINT(" - MIDI Value 3 %d\n", code);
-  banks[currentBank][currentPedal].midiValue3 = constrain(code, 0, 127);
-}
-
 
 BLYNK_WRITE(BLYNK_PEDAL) {
   int pedal = param.asInt();

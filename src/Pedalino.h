@@ -26,7 +26,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #define MAXACTIONNAME    10
 #define MAXBANKNAME      10
-#define MAXPEDALNAME     10
 
 // https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 // GPIOs 34 to 39 are GPIs – input only pins.
@@ -237,25 +236,12 @@ struct action {
 };
 
 struct bank {
-  char                   pedalName[MAXPEDALNAME+1];
-  byte                   midiMessage;     /*  1 = Program Change,
-                                              2 = Control Code
-                                              3 = Note On/Note Off
-                                              4 = Bank Select+
-                                              5 = Bank Select-
-                                              6 = Program Change+
-                                              7 = Program Change-
-                                              8 = Pitch Bend
-                                              9 = Channel Pressure
-                                             10 = Start
-                                             11 = Stop
-                                             12 = Continue
-                                             13 = Sequence */
-  byte                   midiChannel;     /* MIDI channel 1-16 */
-  byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
-  byte                   midiValue1;      /* Single click */
-  byte                   midiValue2;      /* Double click */
-  byte                   midiValue3;      /* Long click */
+  char                   pedalName[MAXACTIONNAME+1];
+  byte                   midiMessage;
+  byte                   midiChannel;
+  byte                   midiCode;
+  byte                   midiValue1;
+  byte                   midiValue2;
 };
 
 struct pedal {
@@ -356,9 +342,9 @@ ButtonConfig    bootButtonConfig;
 
 LadderButtonConfig::AnalogButtons_t ab[LADDER_STEPS];
 
-action   *actions[BANKS];                         // Actions
 char      banknames[BANKS][MAXBANKNAME+1];        // Bank Names
-bank      banks[BANKS][PEDALS];                   // Banks Setup
+action   *actions[BANKS];                         // Actions
+bank      banks[BANKS][PEDALS];                   // The first action of every pedal
 pedal     pedals[PEDALS];                         // Pedals Setup
 sequence  sequences[SEQUENCES][STEPS];            // Sequences Setup
 byte      currentMIDIValue[BANKS][PEDALS];
@@ -391,7 +377,7 @@ byte  currentInterface        = PED_USBMIDI;
 byte  lastUsedSwitch          = 0xFF;
 byte  lastUsedPedal           = 0xFF;
 byte  lastUsed                = 0xFF;   // Pedal or switch
-char  lastPedalName[MAXPEDALNAME+1] = "";
+char  lastPedalName[MAXACTIONNAME+1] = "";
 bool  selectBank              = true;
 byte  currentMidiTimeCode     = PED_MTC_NONE;
 byte  timeSignature           = PED_TIMESIGNATURE_4_4;
@@ -474,6 +460,8 @@ extern AsyncWebSocket   webSocket;
 extern AsyncEventSource events;
 #endif
 
+void   sort_actions();
+void   create_banks();
 void   wifi_connect();
 void   blynk_enable();
 void   blynk_disable();

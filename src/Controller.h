@@ -9,6 +9,74 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+void sort_actions() {
+
+  for (byte b = 0; b < BANKS; b++) {
+    action *act = actions[b];
+    while (act != nullptr) {
+      action *idx = act->next;
+      while (idx != nullptr) {
+        if ((act->pedal > idx->pedal) || ((act->pedal = idx->pedal) && (act->button > idx->button))) {
+          action t;
+          strncpy(t.name,    idx->name, MAXACTIONNAME + 1);
+          t.pedal          = idx->pedal;
+          t.button         = idx->button;
+          t.event          = idx->event;
+          t.midiMessage    = idx->midiMessage;
+          t.midiChannel    = idx->midiChannel;
+          t.midiCode       = idx->midiCode;
+          t.midiValue1     = idx->midiValue1;
+          t.midiValue2     = idx->midiValue2;
+          strncpy(idx->name, act->name, MAXACTIONNAME + 1);
+          idx->pedal       = act->pedal;
+          idx->button      = act->button;
+          idx->event       = act->event;
+          idx->midiMessage = act->midiMessage;
+          idx->midiChannel = act->midiChannel;
+          idx->midiCode    = act->midiCode;
+          idx->midiValue1  = act->midiValue1;
+          idx->midiValue2  = act->midiValue2;
+          strncpy(act->name, t.name, MAXACTIONNAME + 1);
+          act->pedal       = t.pedal;
+          act->button      = t.button;
+          act->event       = t.event;
+          act->midiMessage = t.midiMessage;
+          act->midiChannel = t.midiChannel;
+          act->midiCode    = t.midiCode;
+          act->midiValue1  = t.midiValue1;
+          act->midiValue2  = t.midiValue2;
+        }
+        idx = idx->next;
+      }
+      act = act->next;
+    }
+  }
+}
+
+void create_banks() {
+
+  for (byte b = 0; b < BANKS; b++) {
+    for (byte p = 0; p < PEDALS; p++) {
+      action *act = actions[b];
+      while ((act != nullptr) && (act->pedal != p)) act = act->next;
+      if ((act == nullptr)) {
+        memset(banks[b][p].pedalName, 0, MAXACTIONNAME + 1);
+        banks[b][p].midiMessage = PED_EMPTY;
+        banks[b][p].midiChannel = 0;
+        banks[b][p].midiCode    = 0;
+        banks[b][p].midiValue1  = 0;
+        banks[b][p].midiValue2  = 0;
+      } else {
+        strncpy(banks[b][p].pedalName, act->name, MAXACTIONNAME + 1);
+        banks[b][p].midiMessage = act->midiMessage;
+        banks[b][p].midiChannel = act->midiChannel;
+        banks[b][p].midiCode    = act->midiCode;
+        banks[b][p].midiValue1  = act->midiValue1;
+        banks[b][p].midiValue2  = act->midiValue2;
+      }
+    }
+  }
+}
 
 void leds_update(byte type, byte channel, byte data1, byte data2)
 {
@@ -510,8 +578,6 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
   }
 }
 
-
-
 //
 // Trigger Actions on Analog Events
 //
@@ -986,7 +1052,7 @@ void controller_setup()
   lastUsedSwitch = 0xFF;
   lastUsedPedal  = 0xFF;
   lastUsed       = 0xFF;
-  memset(lastPedalName, 0, MAXPEDALNAME+1);
+  memset(lastPedalName, 0, MAXACTIONNAME+1);
   controller_delete();
 
   analogReadResolution(ADC_RESOLUTION_BITS);
@@ -1176,7 +1242,7 @@ void controller_setup()
         if (lastUsedPedal == 0xFF) {
           lastUsedPedal = i;
           lastUsed = i;
-          strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXPEDALNAME+1);
+          strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXACTIONNAME+1);
         }
         DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
         break;

@@ -904,7 +904,7 @@ void OscControllerUpdate()
 
 void OnOscPedalName(OSCMessage &msg)
 {
-  if (msg.getString(0, banks[currentBank][currentPedal].pedalName, MAXPEDALNAME) > 0) {
+  if (msg.getString(0, banks[currentBank][currentPedal].pedalName, MAXACTIONNAME) > 0) {
     DPRINT("OSC message /pedal_name %s received from %s\n", banks[currentBank][currentPedal].pedalName, oscControllerIP.toString().c_str());
   } else {
     DPRINT("OSC error: %d\n", msg.getError());
