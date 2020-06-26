@@ -112,7 +112,7 @@ using namespace ace_button;
 #define PED_EMPTY               midi::InvalidType
 #define PED_PROGRAM_CHANGE      midi::ProgramChange
 #define PED_CONTROL_CHANGE      midi::ControlChange
-#define PED_NOTE_ON_OFF         midi::NoteOn
+#define PED_NOTE_ON             midi::NoteOn
 #define PED_NOTE_OFF            midi::NoteOff
 #define PED_BANK_SELECT_INC     4
 #define PED_BANK_SELECT_DEC     5

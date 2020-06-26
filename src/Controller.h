@@ -117,7 +117,7 @@ void leds_update(byte type, byte channel, byte data1, byte data2)
             }
           }
           break;
-        case PED_NOTE_ON_OFF:
+        case PED_NOTE_ON:
           // Invert the status only on NoteOn
           if (type == midi::NoteOn && banks[currentBank][i].midiCode == data1) {
             leds.invert(i);
@@ -409,7 +409,8 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
 {
   switch (message) {
 
-    case PED_NOTE_ON_OFF:
+    case PED_NOTE_ON:
+    case PED_NOTE_OFF:
 
       if (on_off && value > 0) {
         DPRINT("NOTE ON.....Note %3d.....Velocity %3d.....Channel %2d\n", code, value, channel);
@@ -421,7 +422,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         OSCSendNoteOn(code, value, channel);
         screen_info(midi::NoteOn, code, value, channel, range_min, range_max);
         currentMIDIValue[bank][pedal] = value;
-        lastMIDIMessage[currentBank] = {PED_NOTE_ON_OFF, code, value, channel};
+        lastMIDIMessage[currentBank] = {PED_NOTE_ON, code, value, channel};
       }
       else {
         DPRINT("NOTE OFF....Note %3d......Velocity %3d.....Channel %2d\n", code, value, channel);
@@ -433,7 +434,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         OSCSendNoteOff(code, value, channel);
         screen_info(midi::NoteOff, code, value, channel, range_min, range_max);
         currentMIDIValue[bank][pedal] = value;
-        lastMIDIMessage[currentBank] = {PED_NOTE_ON_OFF, code, value, channel};
+        lastMIDIMessage[currentBank] = {PED_NOTE_OFF, code, value, channel};
       }
       break;
 
@@ -613,7 +614,8 @@ void controller_event_handler_analog(byte pedal, byte value)
 
             case PED_PROGRAM_CHANGE:
             case PED_CONTROL_CHANGE:
-            case PED_NOTE_ON_OFF:
+            case PED_NOTE_ON:
+            case PED_NOTE_OFF:
             case PED_PITCH_BEND:
             case PED_CHANNEL_PRESSURE:
             case PED_SEQUENCE:
@@ -828,7 +830,7 @@ if (loadConfig && send) {
 
                   case PED_PROGRAM_CHANGE:
                   case PED_CONTROL_CHANGE:
-                  case PED_NOTE_ON_OFF:
+                  case PED_NOTE_ON:
                   case PED_NOTE_OFF:
                   case PED_PITCH_BEND:
                   case PED_CHANNEL_PRESSURE:
@@ -921,7 +923,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 
             case PED_PROGRAM_CHANGE:
             case PED_CONTROL_CHANGE:
-            case PED_NOTE_ON_OFF:
+            case PED_NOTE_ON:
+            case PED_NOTE_OFF:
             case PED_PITCH_BEND:
             case PED_CHANNEL_PRESSURE:
             case PED_MIDI_START:
@@ -1141,8 +1144,11 @@ void controller_setup()
       case PED_CONTROL_CHANGE:
         DPRINT("CONTROL_CHANGE     %3d", banks[currentBank][i].midiCode);
         break;
-      case PED_NOTE_ON_OFF:
-        DPRINT("NOTE_ON_OFF        %3d", banks[currentBank][i].midiCode);
+      case PED_NOTE_ON:
+        DPRINT("NOTE_ON            %3d", banks[currentBank][i].midiCode);
+        break;
+      case PED_NOTE_OFF:
+        DPRINT("NOTE_OFF           %3d", banks[currentBank][i].midiCode);
         break;
       case PED_BANK_SELECT_INC:
         DPRINT("BANK_SELECT_INC    %3d", banks[currentBank][i].midiCode);
@@ -1189,8 +1195,8 @@ void controller_setup()
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureLongPress,   (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureRepeatPress, (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
         pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
         pedals[i].buttonConfig->setClickDelay(pressTime);
         pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
@@ -1212,8 +1218,8 @@ void controller_setup()
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureLongPress,   (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureRepeatPress, (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
         pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
         pedals[i].buttonConfig->setClickDelay(pressTime);
         pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
@@ -1238,8 +1244,8 @@ void controller_setup()
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureLongPress,   (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureRepeatPress, (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
         pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
         pedals[i].buttonConfig->setClickDelay(pressTime);
         pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);

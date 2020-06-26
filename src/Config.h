@@ -52,7 +52,6 @@ void spiffs_save_config(String filename) {
   jo["HTTPUsername"]        = httpUsername;
   jo["HTTPPassword"]        = httpPassword;
   jo["Theme"]               = theme;
-  jo["Profile"]             = currentProfile;
   jo["PressTime"]           = pressTime;
   jo["DoublePressTime"]     = doublePressTime;
   jo["LongPressTime"]       = longPressTime;
@@ -214,7 +213,6 @@ void spiffs_load_config(String filename) {
           httpUsername        = String((const char *)(jo["HTTPUsername"]   | httpUsername.c_str()));
           httpPassword        = String((const char *)(jo["HTTPPassword"]   | httpPassword.c_str()));
           theme               = String((const char *)(jo["Theme"]          | theme.c_str()));
-          currentProfile      = jo["Profile"]                              | currentProfile;
           pressTime           = jo["PressTime"]                            | pressTime;
           doublePressTime     = jo["DoublePressTime"]                      | doublePressTime;
           longPressTime       = jo["LongPressTime"]                        | longPressTime;

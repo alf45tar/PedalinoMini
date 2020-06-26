@@ -254,7 +254,7 @@ void blynk_refresh_bank()
       case PED_CONTROL_CHANGE:
         Blynk.setProperty(BLYNK_MIDICODE, "label", "MIDI Control Change");
         break;
-      case PED_NOTE_ON_OFF:
+      case PED_NOTE_ON:
         Blynk.setProperty(BLYNK_MIDICODE, "label", "MIDI Note");
         break;
       default:
@@ -619,8 +619,8 @@ BLYNK_WRITE(BLYNK_MIDIMESSAGE) {
       DPRINTLN("Control Change");
       Blynk.setProperty(BLYNK_MIDICODE, "label", "MIDI Control Change");
       break;
-    case PED_NOTE_ON_OFF:
-      DPRINTLN("Note On/Off");
+    case PED_NOTE_ON:
+      DPRINTLN("Note On");
       Blynk.setProperty(BLYNK_MIDICODE, "label", "MIDI Note");
       break;
     default:

@@ -965,8 +965,8 @@ void get_actions_page() {
     if (act->midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
     page += F(">Control Change</option>");
     page += F("<option value='");
-    page += String(PED_NOTE_ON_OFF) + F("'");
-    if (act->midiMessage == PED_NOTE_ON_OFF) page += F(" selected");
+    page += String(PED_NOTE_ON) + F("'");
+    if (act->midiMessage == PED_NOTE_ON) page += F(" selected");
     page += F(">Note On</option>");
     page += F("<option value='");
     page += String(PED_NOTE_OFF) + F("'");
@@ -1532,9 +1532,13 @@ void get_sequences_page() {
     if (sequences[s-1][i-1].midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
     page += F(">Control Change</option>");
     page += F("<option value='");
-    page += String(PED_NOTE_ON_OFF) + F("'");
-    if (sequences[s-1][i-1].midiMessage == PED_NOTE_ON_OFF) page += F(" selected");
-    page += F(">Note On/Off</option>");
+    page += String(PED_NOTE_ON) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_NOTE_ON) page += F(" selected");
+    page += F(">Note On</option>");
+    page += F("<option value='");
+    page += String(PED_NOTE_OFF) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_NOTE_OFF) page += F(" selected");
+    page += F(">Note Off</option>");
     page += F("<option value='");
     page += String(PED_BANK_SELECT_INC) + F("'");
     if (sequences[s-1][i-1].midiMessage == PED_BANK_SELECT_INC) page += F(" selected");
@@ -2415,6 +2419,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     else {
       while (act->next != nullptr) act = act->next;
       act->next = (action*)malloc(sizeof(action));
+      assert(act->next != nullptr);
       act = act->next;
     }
     act->name[0]      = 0;
@@ -2438,6 +2443,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     else {
       while (act->next != nullptr) act = act->next;
       act->next = (action*)malloc(sizeof(action));
+      assert(act->next != nullptr);
       act = act->next;
     }
     act->name[0]      = 0;
@@ -2498,7 +2504,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     create_banks();
     alert = F("Selected action(s) deleted.");
   }
-  else if (request->arg("action").equals("apply")) {
+  else if (request->arg("action").equals("apply") || request->arg("action").equals("save")) {
     unsigned int i      = 0;
     action      *act    = actions[b];
     while (act != nullptr) {
@@ -2517,11 +2523,11 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     }
     create_banks();
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
-  }
-  else if (request->arg("action").equals("save")) {
-    eeprom_update_profile();
-    eeprom_update_current_profile(currentProfile);
-    alert = "Changes saved.";
+    if (request->arg("action").equals("save")) {
+      eeprom_update_profile();
+      eeprom_update_current_profile(currentProfile);
+      alert = "Changes saved.";
+    }
   }
   blynk_refresh();
 
@@ -2827,45 +2833,27 @@ if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
 void http_handle_post_configurations(AsyncWebServerRequest *request) {
 
   if (request->arg("action") == String("new")) {
-/*
-    for (byte b = 0; b < BANKS; b++) {
-      action *act = (action *)malloc(sizeof(action));
-      actions[b] = act;
-      for (byte p = 0; p < PEDALS; p++) {
-        act->pedal        = p;
-        act->button       = 0;
-        strcpy(act->name, banks[b][p].pedalName);
-        if (p < 3) act->event = PED_EVENT_PRESS;
-        else act->event       = PED_EVENT_JOG;
-        act->midiMessage  = banks[b][p].midiMessage;
-        act->midiChannel  = banks[b][p].midiChannel;
-        act->midiCode     = banks[b][p].midiCode;
-        act->midiValue1   = banks[b][p].midiValue1;
-        act->midiValue2   = banks[b][p].midiValue3;
-        if (p < 5) act->next = (action *)malloc(sizeof(action));
-        else act->next = nullptr;
-        act = act->next;
+    if (request->arg("newconfiguration").isEmpty())  {
+      alertError = F("Configuration not saved. No configuration name provided.");
+    }
+    else {
+      String configname("/" + request->arg("newconfiguration") + ".cfg");
+
+      File file = SPIFFS.open(configname, FILE_WRITE);
+      if (file) {
+        file.close();
+        spiffs_save_config(configname);
+        alert = F("Current profile setup saved as '");
+        alert += request->arg("newconfiguration") + F("'.");
+      }
+      else {
+        alertError = F("Cannot create '");
+        alertError += request->arg("newconfiguration") + F("'.");
       }
     }
   }
-  else if (request->arg("action") == String("u")) {
-*/
-    String configname("/" + request->arg("newconfiguration") + ".cfg");
-
-    File file = SPIFFS.open(configname, FILE_WRITE);
-    if (file) {
-      file.close();
-      spiffs_save_config(configname);
-      alert = F("Current setup saved as '");
-      alert += request->arg("newconfiguration") + F("'.");
-    }
-    else {
-      alert = F("Cannot create '");
-      alert += request->arg("newconfiguration") + F("'.");
-    }
-  }
   else if (request->arg("action") == String("upload")) {
-    alert = F("No file selected. Choose file using Browse button.");
+    alertError = F("No file selected. Choose file using Browse button.");
   }
   else if (request->arg("action") == String("apply")) {
     String config = request->arg("filename");
@@ -2877,7 +2865,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
     loadConfig = true;
     config = config.substring(1, config.length() - 4);
     alert = F("Configuration '");
-    alert += config + F("' loaded and running. Not used for next reboot if not saved.");
+    alert += config + F("' loaded into current profile and running. Profile not saved.");
   }
   else if (request->arg("action") == String("save")) {
     String config = request->arg("filename");
@@ -2891,7 +2879,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
     reloadProfile = true;
     config = config.substring(1, config.length() - 4);
     alert = F("Configuration '");
-    alert += config + F("' loaded and saved for next reboot.");
+    alert += config + F("' loaded and saved into current profile.");
   }
   else if (request->arg("action") == String("download")) {
     AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
@@ -2906,8 +2894,8 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
       alert += config + F("' deleted.");
     }
     else {
-      alert = F("Cannot delete '");
-      alert += config + F("'.");
+      alertError = F("Cannot delete '");
+      alertError += config + F("'.");
     }
   }
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_configurations_page_chunked);
