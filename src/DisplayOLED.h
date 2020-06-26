@@ -940,16 +940,24 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           display->drawString( 64 + x, 38 + y, name);
         }
         else if (millis() - ms < 8000) {
-          display->setFont(ArialMT_Plain_16);
-          display->setTextAlignment(TEXT_ALIGN_CENTER);
+          //display->setFont(ArialMT_Plain_16);
+          //display->setTextAlignment(TEXT_ALIGN_CENTER);
           for (byte p = 0; p < PEDALS/2; p++) {
             if (pedals[p].function == PED_MIDI) {
-              name = String(currentMIDIValue[currentBank][p]);
-              display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 23 + y, name);
+              //name = String(currentMIDIValue[currentBank][p]);
+              //display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 23 + y, name);
+              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 26 + y, 39, 10, map(currentMIDIValue[currentBank][p],
+                                                                                             banks[currentBank][p].midiValue1,
+                                                                                             banks[currentBank][p].midiValue2,
+                                                                                             0, 100));
             }
             if (pedals[p + PEDALS / 2].function == PED_MIDI) {
-              name = String(currentMIDIValue[currentBank][p + PEDALS / 2]);
-              display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 36 + y, name);
+              //name = String(currentMIDIValue[currentBank][p + PEDALS / 2]);
+              //display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 36 + y, name);
+              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 10, map(currentMIDIValue[currentBank][p + PEDALS / 2],
+                                                                                             banks[currentBank][p + PEDALS / 2].midiValue1,
+                                                                                             banks[currentBank][p + PEDALS / 2].midiValue2,
+                                                                                             0, 100));
             }
           }
         }

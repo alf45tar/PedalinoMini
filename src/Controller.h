@@ -1183,7 +1183,7 @@ void controller_setup()
     }
     DPRINT("   Channel %2d", banks[currentBank][i].midiChannel);
 
-    // Pedals setup for Actions
+    // Pedals setup
     switch (pedals[i].mode) {
 
       case PED_MOMENTARY1:
@@ -1287,10 +1287,10 @@ void controller_setup()
         for (byte s = 0; s < LADDER_STEPS; s++)
           ab[s].id = (i + 1) * 10 + s + 1;
         pedals[i].buttonConfig = new LadderButtonConfig(PIN_A(i), ab, LADDER_STEPS, pedals[i].invertPolarity ? LOW : HIGH);
-        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureClick,       pedals[i].pressMode & PED_PRESS_1 == PED_PRESS_1);
-        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureDoubleClick, pedals[i].pressMode & PED_PRESS_2 == PED_PRESS_2);
-        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureLongPress,   pedals[i].pressMode & PED_PRESS_L == PED_PRESS_L);
-        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureRepeatPress, pedals[i].pressMode & PED_PRESS_L == PED_PRESS_L);
+        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureClick,       (pedals[i].pressMode & PED_PRESS_1) == PED_PRESS_1);
+        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureDoubleClick, (pedals[i].pressMode & PED_PRESS_2) == PED_PRESS_2);
+        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureLongPress,   (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
+        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureRepeatPress, (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);

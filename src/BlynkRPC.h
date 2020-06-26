@@ -703,7 +703,7 @@ BLYNK_WRITE(BLYNK_PEDAL_MODE) {
   }
   pedals[currentPedal].mode = mode;
   autosensing_setup();
-  controller_setup();
+  loadConfig = true;
   blynk_refresh_live();
 }
 
@@ -712,7 +712,7 @@ BLYNK_WRITE(BLYNK_PEDAL_FUNCTION) {
   PRINT_VIRTUAL_PIN(request.pin);
   DPRINT(" - Function %d\n", function);
   pedals[currentPedal].function = function;
-  controller_setup();
+  loadConfig = true;
 }
 
 BLYNK_WRITE(BLYNK_PEDAL_AUTOSENSING) {
@@ -720,8 +720,7 @@ BLYNK_WRITE(BLYNK_PEDAL_AUTOSENSING) {
   PRINT_VIRTUAL_PIN(request.pin);
   DPRINT(" - Autosensing %d\n", autosensing);
   pedals[currentPedal].autoSensing = autosensing;
-  autosensing_setup();
-  controller_setup();
+  loadConfig = true;
   blynk_refresh();
 }
 
@@ -737,7 +736,7 @@ BLYNK_WRITE(BLYNK_PEDAL_SINGLEPRESS) {
       pedals[currentPedal].pressMode |= B00000001;
       break;
   }
-  controller_setup();
+  loadConfig = true;
 }
 
 BLYNK_WRITE(BLYNK_PEDAL_DOUBLEPRESS) {
@@ -752,7 +751,7 @@ BLYNK_WRITE(BLYNK_PEDAL_DOUBLEPRESS) {
       pedals[currentPedal].pressMode |= B00000010;
       break;
   }
-  controller_setup();
+  loadConfig = true;
 }
 
 BLYNK_WRITE(BLYNK_PEDAL_LONGPRESS) {
@@ -767,7 +766,7 @@ BLYNK_WRITE(BLYNK_PEDAL_LONGPRESS) {
       pedals[currentPedal].pressMode |= B00000100;
       break;
   }
-  controller_setup();
+  loadConfig = true;
 }
 
 BLYNK_WRITE(BLYNK_PEDAL_POLARITY) {

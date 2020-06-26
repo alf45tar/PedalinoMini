@@ -2414,8 +2414,10 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
 
   if (request->arg("action").equals("new")) {
     action *act = actions[b];
-    if (act == nullptr)
+    if (act == nullptr) {
        act = actions[b] = (action*)malloc(sizeof(action));
+       assert(act != nullptr);
+    }
     else {
       while (act->next != nullptr) act = act->next;
       act->next = (action*)malloc(sizeof(action));
@@ -2593,13 +2595,13 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
 
   }
   if (request->arg("action") == String("apply")) {
+    loadConfig = true;
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
   }
   else if (request->arg("action") == String("save")) {
     eeprom_update_profile();
     eeprom_update_current_profile(currentProfile);
-    autosensing_setup();
-    controller_setup();
+    loadConfig = true;
     alert = "Changes saved.";
   }
   blynk_refresh();
@@ -2739,22 +2741,22 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   if (request->arg("presstime").toInt() != pressTime) {
     pressTime = request->arg("presstime").toInt();
     pressTimeChanged = true;
-    controller_setup();
+    loadConfig = true;
   }
   if (request->arg("doublepresstime").toInt() != doublePressTime) {
     doublePressTime = request->arg("doublepresstime").toInt();
     pressTimeChanged = true;
-    controller_setup();
+    loadConfig = true;
   }
   if (request->arg("longpresstime").toInt() != longPressTime) {
     longPressTime = request->arg("longpresstime").toInt();
     pressTimeChanged = true;
-    controller_setup();
+    loadConfig = true;
   }
   if (request->arg("repeatpresstime").toInt() != repeatPressTime) {
     repeatPressTime = request->arg("repeatpresstime").toInt();
     pressTimeChanged = true;
-    controller_setup();
+    loadConfig = true;
   }
 
   //if (pressTimeChanged) eeprom_update_press_time(pressTime, doublePressTime,longPressTime, repeatPressTime);
@@ -2786,7 +2788,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
     encoderSensitivity = request->arg("encodersensitivity").toInt();
     //eeprom_update_encoder_sensitivity(encoderSensitivity);
-    controller_setup();
+    loadConfig = true;
   }
 #ifdef BLINK
   bool newBlynkCloud = (request->arg("blynkcloud") == checked);
