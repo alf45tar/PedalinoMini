@@ -79,7 +79,7 @@ void create_banks() {
         banks[b][p].midiChannel = 0;
         banks[b][p].midiCode    = 0;
         banks[b][p].midiValue1  = 0;
-        banks[b][p].midiValue2  = 0;
+        banks[b][p].midiValue2  = 127;
       } else {
         strncpy(banks[b][p].pedalName, act->name, MAXACTIONNAME + 1);
         banks[b][p].midiMessage = act->midiMessage;
@@ -405,7 +405,7 @@ unsigned int map_analog(byte p, unsigned int value)
 }
 
 
-void midi_send(byte message, byte code, byte value, byte channel, bool on_off, byte range_min, byte range_max, byte bank, byte pedal)
+void midi_send(byte message, byte code, byte value, byte channel, bool on_off, byte range_min, byte range_max, byte bank, byte pedal, byte button = 0)
 {
   switch (message) {
 
@@ -421,7 +421,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         BLESendNoteOn(code, value, channel);
         OSCSendNoteOn(code, value, channel);
         screen_info(midi::NoteOn, code, value, channel, range_min, range_max);
-        currentMIDIValue[bank][pedal] = value;
+        currentMIDIValue[bank][pedal][button] = value;
         lastMIDIMessage[currentBank] = {PED_NOTE_ON, code, value, channel};
       }
       else {
@@ -433,7 +433,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         BLESendNoteOff(code, value, channel);
         OSCSendNoteOff(code, value, channel);
         screen_info(midi::NoteOff, code, value, channel, range_min, range_max);
-        currentMIDIValue[bank][pedal] = value;
+        currentMIDIValue[bank][pedal][button] = value;
         lastMIDIMessage[currentBank] = {PED_NOTE_OFF, code, value, channel};
       }
       break;
@@ -449,7 +449,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         BLESendControlChange(code, value, channel);
         OSCSendControlChange(code, value, channel);
         screen_info(midi::ControlChange, code, value, channel, range_min, range_max);
-        currentMIDIValue[bank][pedal] = value;
+        currentMIDIValue[bank][pedal][button] = value;
         lastMIDIMessage[currentBank] = {PED_CONTROL_CHANGE, code, value, channel};
       }
       break;
@@ -467,7 +467,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         BLESendProgramChange(code, channel);
         OSCSendProgramChange(code, channel);
         screen_info(midi::ProgramChange, code, 0, channel, range_min, range_max);
-        currentMIDIValue[bank][pedal] = value;
+        currentMIDIValue[bank][pedal][button] = value;
         lastMIDIMessage[currentBank] = {PED_PROGRAM_CHANGE, code, 0, channel};
       }
       break;
@@ -493,7 +493,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         BLESendControlChange(midi::BankSelect+32, code, channel);
         OSCSendControlChange(midi::BankSelect+32, code, channel);
         screen_info(midi::ControlChange, midi::BankSelect+32, code, channel, range_min, range_max);
-        currentMIDIValue[bank][pedal] = code;
+        currentMIDIValue[bank][pedal][button] = code;
       }
       break;
 
@@ -510,7 +510,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         OSCSendPitchBend(bend, channel);
         const unsigned ubend = unsigned(bend - int(MIDI_PITCHBEND_MIN));
         screen_info(midi::PitchBend, ubend & 0x7f, (ubend >> 7) & 0x7f, channel, range_min, range_max);
-        currentMIDIValue[bank][pedal] = value;
+        currentMIDIValue[bank][pedal][button] = value;
       }
       break;
 
@@ -525,7 +525,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         BLESendAfterTouch(value, channel);
         OSCSendAfterTouch(value, channel);
         screen_info(midi::AfterTouchChannel, value, 0, channel, range_min, range_max);
-        currentMIDIValue[bank][pedal] = value;
+        currentMIDIValue[bank][pedal][button] = value;
       }
       break;
 
@@ -540,7 +540,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         BLESendStart();
         OSCSendStart();
         screen_info(midi::Start, 0, 0, 0, range_min, range_max);
-        currentMIDIValue[bank][pedal] = 0;
+        currentMIDIValue[bank][pedal][button] = 0;
       }
       break;
 
@@ -555,7 +555,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         BLESendStop();
         OSCSendStop();
         screen_info(midi::Stop, 0, 0, 0, range_min, range_max);
-        currentMIDIValue[bank][pedal] = 0;
+        currentMIDIValue[bank][pedal][button] = 0;
       }
       break;
 
@@ -570,7 +570,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         BLESendContinue();
         OSCSendContinue();
         screen_info(midi::Continue, 0, 0, 0, range_min, range_max);
-        currentMIDIValue[bank][pedal] = 0;
+        currentMIDIValue[bank][pedal][button] = 0;
       }
       break;
 
@@ -587,7 +587,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         else
           midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue2, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
       DPRINT("=======================================================\n");
-      currentMIDIValue[bank][pedal] = channel;
+      currentMIDIValue[bank][pedal][button] = channel;
       lastMIDIMessage[currentBank] = {PED_SEQUENCE, code, value, channel};
       break;
   }
@@ -839,12 +839,12 @@ if (loadConfig && send) {
                   case PED_PROGRAM_CHANGE_INC:
                   case PED_PROGRAM_CHANGE_DEC:
                   case PED_SEQUENCE:
-                    currentMIDIValue[currentBank][i] = constrain(currentMIDIValue[currentBank][i] +
-                                                        ((direction == DIR_CW) ? 1 : -1) *
-                                                        _max(1, (pedals[i].jogwheel->speed() + 1) * (act->midiValue2 - act->midiValue1) / (MIDI_RESOLUTION - 1)),
-                                                        pedals[i].invertPolarity ? act->midiValue2 : act->midiValue1,
-                                                        pedals[i].invertPolarity ? act->midiValue1 : act->midiValue2);
-                    DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, ((direction == DIR_CW) ? 1 : -1), currentMIDIValue[currentBank][i], pedals[i].jogwheel->speed());
+                    currentMIDIValue[currentBank][i][0] = constrain(currentMIDIValue[currentBank][i][0] +
+                                                           ((direction == DIR_CW) ? 1 : -1) *
+                                                           _max(1, (pedals[i].jogwheel->speed() + 1) * (act->midiValue2 - act->midiValue1) / (MIDI_RESOLUTION - 1)),
+                                                           pedals[i].invertPolarity ? act->midiValue2 : act->midiValue1,
+                                                           pedals[i].invertPolarity ? act->midiValue1 : act->midiValue2);
+                    DPRINT("Pedal %2d   input %d output %d velocity %d\n", i + 1, ((direction == DIR_CW) ? 1 : -1), currentMIDIValue[currentBank][i][0], pedals[i].jogwheel->speed());
                     if (send) {
                       switch (act->midiMessage) {
                         case PED_PROGRAM_CHANGE:
@@ -852,12 +852,12 @@ if (loadConfig && send) {
                         case PED_PROGRAM_CHANGE_DEC:
                         case PED_BANK_SELECT_INC:
                         case PED_BANK_SELECT_DEC:
-                          midi_send(act->midiMessage, currentMIDIValue[currentBank][i], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, i);
-                          midi_send(act->midiMessage, currentMIDIValue[currentBank][i], 0, act->midiChannel, false, act->midiValue1, act->midiValue2, currentBank, i);
+                          midi_send(act->midiMessage, currentMIDIValue[currentBank][i][0], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, i);
+                          midi_send(act->midiMessage, currentMIDIValue[currentBank][i][0], 0, act->midiChannel, false, act->midiValue1, act->midiValue2, currentBank, i);
                           break;
                         default:
-                          midi_send(act->midiMessage, act->midiCode, currentMIDIValue[currentBank][i], act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, i);
-                          midi_send(act->midiMessage, act->midiCode, currentMIDIValue[currentBank][i], act->midiChannel, false, act->midiValue1, act->midiValue2, currentBank, i);
+                          midi_send(act->midiMessage, act->midiCode, currentMIDIValue[currentBank][i][0], act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, i);
+                          midi_send(act->midiMessage, act->midiCode, currentMIDIValue[currentBank][i][0], act->midiChannel, false, act->midiValue1, act->midiValue2, currentBank, i);
                           break;
                       }
                     }
@@ -912,9 +912,9 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
       action *act = actions[currentBank];
       while (act != nullptr) {
         if ((act->pedal == p) && (act->button == i) && (act->event == eventType)) {
-          pedals[i].lastUpdate[0] = micros();
-          lastUsedPedal = i;
-          lastUsed = i;
+          pedals[p].lastUpdate[0] = micros();
+          lastUsedPedal = p;
+          lastUsed = p;
           strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
           DPRINT("Action: %s\n", act->name);
           switch (act->midiMessage) {
@@ -922,7 +922,6 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
             case PED_PROGRAM_CHANGE:
-            case PED_CONTROL_CHANGE:
             case PED_NOTE_ON:
             case PED_NOTE_OFF:
             case PED_PITCH_BEND:
@@ -931,27 +930,34 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
             case PED_MIDI_STOP:
             case PED_MIDI_CONTINUE:
             case PED_SEQUENCE:
-              midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
+              break;
+
+            case PED_CONTROL_CHANGE:
+              if ((pedals[p].mode == PED_MOMENTARY1) && (currentMIDIValue[currentBank][p][i] == act->midiValue1))
+                midi_send(act->midiMessage, act->midiCode, act->midiValue2, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
+              else
+                midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
               break;
 
             case PED_BANK_SELECT_INC:
               lastBankSelect[act->midiChannel] = constrain(lastBankSelect[act->midiChannel] + 1, act->midiValue1, act->midiValue2);
-              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
               break;
 
             case PED_BANK_SELECT_DEC:
               lastBankSelect[act->midiChannel] = constrain(lastBankSelect[act->midiChannel] - 1, act->midiValue1, act->midiValue2);
-              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
               break;
 
             case PED_PROGRAM_CHANGE_INC:
               lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel] + 1, act->midiValue1, act->midiValue2);
-              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
               break;
 
             case PED_PROGRAM_CHANGE_DEC:
               lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel] - 1, act->midiValue1, act->midiValue2);
-              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, currentPedal);
+              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
               break;
 
             case PED_ACTION_BANK_PLUS:
