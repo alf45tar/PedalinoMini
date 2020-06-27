@@ -113,20 +113,28 @@ void IRAM_ATTR onButtonRight()
 
 void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t buttonState)
 {
+  DPRINT("Pedal: Boot    Button: %d    EventType: %d     ButtonState: %d\n", button, eventType, buttonState);
+
   switch (eventType) {
 
     case AceButton::kEventClicked:
+      /*
       if (!reloadProfile) {
         currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
         reloadProfile = true;
       }
+      */
+      currentBank = (currentBank == BANKS - 1 ? 0 : currentBank + 1);
       break;
 
     case AceButton::kEventDoubleClicked:
+      /*
       if (!reloadProfile) {
         currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
         reloadProfile = true;
       }
+      */
+        currentBank = (currentBank == 0 ? BANKS - 1 : currentBank - 1);
       break;
 
     case AceButton::kEventLongPressed:

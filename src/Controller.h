@@ -762,6 +762,16 @@ void controller_run(bool send = true)
   if (reloadProfile && send) {
     DPRINT("Loading profile ...\n");
     eeprom_read_profile(currentProfile);
+    for (byte b = 0; b < BANKS; b++) {
+      lastMIDIMessage[b] = {PED_EMPTY, 0, 0, 1};
+      for (byte p = 0; p < PEDALS; p++)
+        for (byte i = 0; i < LADDER_STEPS; i++)
+          currentMIDIValue[b][p][i] = 0;
+    }
+    for (byte i = 0; i < 16; i++) {
+      lastProgramChange[i] = 0;
+      lastBankSelect[i]    = 0;
+    }
     autosensing_setup();
     controller_setup();
     mtc_setup();
@@ -934,7 +944,10 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
             case PED_CONTROL_CHANGE:
-              if ((pedals[p].mode == PED_MOMENTARY1) && (currentMIDIValue[currentBank][p][i] == act->midiValue1))
+              if ((pedals[p].mode == PED_MOMENTARY1 ||
+                   pedals[p].mode == PED_MOMENTARY2 ||
+                   pedals[p].mode == PED_MOMENTARY3 ||
+                   pedals[p].mode == PED_LADDER)    && (currentMIDIValue[currentBank][p][i] == act->midiValue1))
                 midi_send(act->midiMessage, act->midiCode, act->midiValue2, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
               else
                 midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);

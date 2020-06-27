@@ -563,7 +563,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
-  if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2) {
+  if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
     //byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
     int p;
     switch (m1) {
@@ -663,7 +663,7 @@ void drawRect(OLEDDisplay *display, int16_t x0, int16_t y0, int16_t x1, int16_t 
 
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
-  if (millis() < endMillis2) {
+  if (millis() < endMillis2 && lastPedalName[0] != ':') {
     ui.disableAutoTransition();
     ui.switchToFrame(0);
     if (lastPedalName[0] == 0) {
@@ -908,7 +908,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
               offsetBackground = 1;
               break;
           }
-          name = String(banks[currentBank][p].pedalName);
+          name = String((banks[currentBank][p].pedalName[0] == ':') ? &banks[currentBank][p].pedalName[1] : banks[currentBank][p].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p][0]));
           display->setColor(WHITE);
           if (pedals[p].function == PED_MIDI && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
@@ -920,7 +920,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           }
           display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 12 + y, name);
           display->setColor(WHITE);
-          name = String(banks[currentBank][p + PEDALS / 2].pedalName);
+          name = String((banks[currentBank][p + PEDALS / 2].pedalName[0] == ':') ? &banks[currentBank][p + PEDALS / 2].pedalName[1] : banks[currentBank][p + PEDALS / 2].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p + PEDALS / 2][0]));
           if (pedals[p + PEDALS / 2].function == PED_MIDI && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
             display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
@@ -932,7 +932,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 51 + y, name);
           display->setColor(WHITE);
         }
-        if ((millis() - ms < 4000) && (banknames[currentBank][0] != '.') || (banknames[currentBank][0] == ':')) {
+        if (((millis() - ms < 4000) && (banknames[currentBank][0] != '.')) || (banknames[currentBank][0] == ':')) {
           display->drawRect(0, 24, 128, 29);
           display->setFont(ArialMT_Plain_24);
           display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
@@ -952,18 +952,20 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
             if ((pedals[p].function == PED_MIDI) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
               //name = String(currentMIDIValue[currentBank][p]);
               //display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 23 + y, name);
-              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 26 + y, 39, 11, map(currentMIDIValue[currentBank][p][0],
-                                                                                             banks[currentBank][p].midiValue1,
-                                                                                             banks[currentBank][p].midiValue2,
-                                                                                             0, 100));
+              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 26 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p][0],
+                                                                                                       banks[currentBank][p].midiValue1,
+                                                                                                       banks[currentBank][p].midiValue2,
+                                                                                                       0, 100),
+                                                                                                   0, 100));
             }
             if ((pedals[p + PEDALS / 2].function == PED_MIDI) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
               //name = String(currentMIDIValue[currentBank][p + PEDALS / 2]);
               //display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 36 + y, name);
-              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 11, map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
-                                                                                             banks[currentBank][p + PEDALS / 2].midiValue1,
-                                                                                             banks[currentBank][p + PEDALS / 2].midiValue2,
-                                                                                             0, 100));
+              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
+                                                                                                       banks[currentBank][p + PEDALS / 2].midiValue1,
+                                                                                                       banks[currentBank][p + PEDALS / 2].midiValue2,
+                                                                                                       0, 100),
+                                                                                                   0, 100));
             }
           }
         }
