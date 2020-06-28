@@ -132,9 +132,7 @@ void spiffs_save_config(String filename) {
   for (byte s = 0; s < LADDER_STEPS; s++) {
       JsonObject jo = jladder.createNestedObject();
       jo["Step"]            = s + 1;
-      jo["Id"]              = ab[s].id;
-      jo["Threshold"]       = ab[s].threshold;
-      jo["Tolerance"]       = ab[s].tolerance;
+      jo["Level"]           = ladderLevels[s];
   }
 
   jdoc.shrinkToFit();
@@ -348,9 +346,7 @@ void spiffs_load_config(String filename) {
           int s = jo["Step"];
           s--;
           s = constrain(s, 0, LADDER_STEPS - 1);
-          ab[s].id            = jo["Id"];
-          ab[s].threshold     = jo["Threshold"];
-          ab[s].tolerance     = jo["Tolerance"];
+          ladderLevels[s]             = jo["Level"];
         }
       }
     }
@@ -454,24 +450,13 @@ void load_factory_default()
   }
 
   // TC-Helicon Switch 6
-  ab[0].id = 1;
-  ab[0].threshold = 497;
-  ab[0].tolerance = 82;
-  ab[1].id = 2;
-  ab[1].threshold = 660;
-  ab[1].tolerance = 47;
-  ab[2].id = 3;
-  ab[2].threshold = 752;
-  ab[2].tolerance = 33;
-  ab[3].id = 4;
-  ab[3].threshold = 816;
-  ab[3].tolerance = 31;
-  ab[4].id = 5;
-  ab[4].threshold = 876;
-  ab[4].tolerance = 31;
-  ab[5].id = 6;
-  ab[5].threshold = 945;
-  ab[5].tolerance = 35;
+  ladderLevels[0] = 497;
+  ladderLevels[1] = 660;
+  ladderLevels[2] = 752;
+  ladderLevels[3] = 816;
+  ladderLevels[4] = 876;
+  ladderLevels[5] = 945;
+  ladderLevels[6] = ADC_RESOLUTION - 1;
 }
 
 void eeprom_update_device_name(String name = getChipId())
@@ -613,12 +598,12 @@ void eeprom_update_ladder()
 {
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
-  preferences.putBytes("Ladder", &ab, sizeof(ab));
+  preferences.putBytes("Ladder", ladderLevels, sizeof(ladderLevels));
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global][Ladder]:\n");
   for (byte i = 0; i < LADDER_STEPS; i++) {
-    DPRINT("Ladder %d Threshold %d Tolerance %d\n", ab[i].id, ab[i].threshold, ab[i].tolerance);
+    DPRINT("Level %d: %d\n", i + 1, ladderLevels[i]);
   }
 }
 
@@ -716,7 +701,7 @@ void eeprom_read_global()
     longPressTime      = preferences.getLong("Long   Time");
     repeatPressTime    = preferences.getLong("Repeat Time");
     encoderSensitivity = preferences.getUChar("Encoder Sensit");
-    preferences.getBytes("Ladder", &ab, sizeof(ab));
+    preferences.getBytes("Ladder", ladderLevels, sizeof(ladderLevels));
     preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
     blynk_set_token(preferences.getString("Blynk Token"));
     preferences.end();
@@ -741,7 +726,7 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][Blynk Cloud]:      %d\n", blynk_enabled());
     DPRINT("[NVS][Global][Blynk Token]:      %s\n", blynk_get_token().c_str());
     for (byte i = 0; i < LADDER_STEPS; i++) {
-      DPRINT("[NVS][Global][Ladder]:           Ladder %d Threshold %d Tolerance %d\n", ab[i].id, ab[i].threshold, ab[i].tolerance);
+      DPRINT("[NVS][Global][Ladder]:           Ladder %d Level %d\n", i + 1, ladderLevels[i]);
     }
   }
   else {

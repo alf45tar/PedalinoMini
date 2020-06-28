@@ -344,7 +344,7 @@ void ladder_config()
       for (byte i = 0; i < LADDER_STEPS; i++) {
         display_progress_bar_title2("Press and hold", "Switch " + String(i+1));
         for (byte j = 0; j < i; j++)
-          display_progress_bar_2_label(j + 1, 128 * ab[j].threshold / ADC_RESOLUTION);
+          display_progress_bar_2_label(j + 1, 128 * ladderLevels[j] / ADC_RESOLUTION);
         unsigned long start = millis();
         while (millis() - start < 3000) {
           display_progress_bar_update(3000 - (millis() - start), 3000);
@@ -352,27 +352,12 @@ void ladder_config()
           if (analog.hasChanged()) display_progress_bar_2_update(analog.getValue(), ADC_RESOLUTION);
         }
         if (analog.getValue() != ADC_RESOLUTION-1) {
-          ab[i].threshold = analog.getValue();
-          ab[i].id = i + 1;
+          ladderLevels[i] = analog.getValue();
         }
       }
-      display_progress_bar_2_label(LADDER_STEPS, 128 * ab[LADDER_STEPS-1].threshold / ADC_RESOLUTION);
+      display_progress_bar_2_label(LADDER_STEPS, 128 * ladderLevels[LADDER_STEPS-1] / ADC_RESOLUTION);
       delay(1000);
 
-      for (byte i = 0; i < LADDER_STEPS; i++) {
-        switch (i) {
-          case 0:
-            ab[0].tolerance = constrain(abs((ab[1].threshold - ab[0].threshold) / 2 - 1), 0 , 255);
-            break;
-          case LADDER_STEPS - 1:
-            ab[i].tolerance = constrain(abs((ab[i].threshold - ab[i-1].threshold) / 2 - 1), 0, 255);
-            break;
-          default:
-            ab[i].tolerance = constrain(min(abs((ab[i].threshold   - ab[i-1].threshold) / 2 - 1),
-                                            abs((ab[i+1].threshold - ab[i].threshold) / 2 - 1)), 0, 255);
-            break;
-        }
-      }
       eeprom_update_ladder();
       //eeprom_update_profile();
       break;
@@ -1303,9 +1288,12 @@ void controller_setup()
 
         pinMode(PIN_D(i), OUTPUT);
         digitalWrite(PIN_D(i), HIGH);
-        for (byte s = 0; s < LADDER_STEPS; s++)
-          ab[s].id = (i + 1) * 10 + s + 1;
-        pedals[i].buttonConfig = new LadderButtonConfig(PIN_A(i), ab, LADDER_STEPS, pedals[i].invertPolarity ? LOW : HIGH);
+        for (byte s = 0; s < LADDER_STEPS; s++) {
+          pedals[i].button[s] = new AceButton((i + 1) * 10 + s + 1);
+          assert(pedals[i].button[s] != nullptr);
+         }
+        pedals[i].buttonConfig = new LadderButtonConfig(PIN_A(i), LADDER_STEPS +  1, ladderLevels, LADDER_STEPS, pedals[i].button, pedals[i].invertPolarity ? LOW : HIGH);
+        assert(pedals[i].buttonConfig != nullptr);
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureClick,       (pedals[i].pressMode & PED_PRESS_1) == PED_PRESS_1);
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureDoubleClick, (pedals[i].pressMode & PED_PRESS_2) == PED_PRESS_2);
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureLongPress,   (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
@@ -1319,8 +1307,7 @@ void controller_setup()
         pedals[i].buttonConfig->setLongPressDelay(longPressTime);
         pedals[i].buttonConfig->setRepeatPressDelay(repeatPressTime);
         pedals[i].buttonConfig->setRepeatPressInterval(repeatPressTime);
-        for (byte s = 0; s < LADDER_STEPS; s++)
-          pedals[i].button[s] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + s + 1,  pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + s + 1);
+
         pinMode(PIN_A(i), INPUT_PULLUP);
         DPRINT("   Pin A%d", PIN_A(i));
         pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);

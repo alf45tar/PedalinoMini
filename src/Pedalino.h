@@ -337,11 +337,6 @@ struct message {
   byte                   midiChannel;     /* MIDI channel 1-16 */
 };
 
-AceButton       bootButton;
-ButtonConfig    bootButtonConfig;
-
-LadderButtonConfig::AnalogButtons_t ab[LADDER_STEPS];
-
 char      banknames[BANKS][MAXBANKNAME+1];        // Bank Names
 action   *actions[BANKS];                         // Actions
 bank      banks[BANKS][PEDALS];                   // The first action of every pedal
@@ -360,6 +355,10 @@ interface interfaces[] = {
                            "BLE MIDI   ", 1, 1, 0, 0, 0,
                            "OSC        ", 1, 1, 0, 0, 0
                           };                       // Interfaces Setup
+
+AceButton       bootButton;
+ButtonConfig    bootButtonConfig;
+uint16_t        ladderLevels[LADDER_STEPS+1] = {497, 660, 752, 816, 876, 945, ADC_RESOLUTION - 1};  // TC-Helicon Switch 6
 
 bool  tapDanceMode            = false;
 bool  repeatOnBankSwitch      = false;

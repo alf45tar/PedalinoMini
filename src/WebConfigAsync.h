@@ -1864,55 +1864,36 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='card mb-3'>");
+  page += F("<div class='form-row'>");
+
+  page += F("<div class='col-md-6 col-12 mb-3'>");
+
+  page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Resistor Ladder Network</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='form-row'>");
-  page += F("<div class='col-1 mb-3 text-center'>");
-  page += F("<span class='badge badge-primary'>#</span>");
-  page += F("</div>");
-  page += F("<div class='col-5'>");
-  page += F("<span class='badge badge-primary'>Threshold</span>");
-  page += F("<small class='form-text text-muted'>");
-  page += F("Average analog value for the key.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='col-6'>");
-  page += F("<span class='badge badge-primary'>Tolerance</span>");
-  page += F("<small class='form-text text-muted'>");
-  page += F("Tolerance range +/- around average analog value.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("</div>");
   for (byte i = 1; i <= LADDER_STEPS; i++) {
-    page += F("<div class='form-row'>");
-    page += F("<div class='col-1 mb-3 text-center'>");
+    page += F("<div class='input-group input-group-sm mb-3'>");
+    page += F("<div class='input-group-prepend'>");
+    page += F("<div class='input-group-text'>Level ");
     page += String(i);
     page += F("</div>");
-    page += F("<div class='col-5'>");
+    page += F("</div>");
     page += F("<input class='form-control form-control-sm' type='number' id='threshold");
     page += String(i) + F("' name='threshold");
     page += String(i) + F("' min='0' max='");
     page += String(ADC_RESOLUTION-1) + F("' value='");
-    page += String(ab[i-1].threshold) + F("'>");
-    page += F("</div>");
-    page += F("<div class='col-6'>");
-    page += F("<input class='form-control form-control-sm' type='number' id='tolerance");
-    page += String(i) + F("' name='tolerance");
-    page += String(i) + F("' min='0' max='255' value='");
-    page += String(ab[i-1].tolerance) + F("'>");
-    page += F("</div>");
-    page += F("</div>");
+    page += String(ladderLevels[i-1]) + F("'>");
+    page += F("</div>");;
   }
   page += F("</div>");
   page += F("</div>");
+  page += F("</div>");
 
-  page += F("<div class='form-row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
-  page += F("<div class='card h-100'>");
+
+  page += F("<div class='card h-40 mb-3'>");
   page += F("<h5 class='card-header'>Encoders</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='form-row'>");
   page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
   page += F("<select class='custom-select custom-select-sm' name='encodersensitivity'>");
   for (unsigned int s = 1; s <= 10; s++) {
@@ -1928,10 +1909,8 @@ void get_options_page() {
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("<div class='col-md-6 col-12 mb-3'>");
-  page += F("<div class='card h-100'>");
+
+  page += F("<div class='card h-60'>");
   page += F("<h5 class='card-header'>Additional Features</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='custom-control custom-switch'>");
@@ -2776,12 +2755,8 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   bool newLadder = false;
   for (byte i = 0; i < LADDER_STEPS; i++) {
     String a = request->arg(String("threshold") + String(i+1));
-    newLadder = newLadder || ab[i].threshold != a.toInt();
-    ab[i].threshold = a.toInt();
-
-    a = request->arg(String("tolerance") + String(i+1));
-    newLadder = newLadder || ab[i].tolerance != a.toInt();
-    ab[i].tolerance = a.toInt();
+    newLadder = newLadder || ladderLevels[i] != a.toInt();
+    ladderLevels[i] = a.toInt();
   }
   // if (newLadder) eeprom_update_ladder();
 
