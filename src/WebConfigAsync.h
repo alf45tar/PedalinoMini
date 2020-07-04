@@ -651,6 +651,7 @@ void get_actions_page() {
   const byte   p = constrain(uipedal.toInt(), 1, PEDALS);
   action      *act;
   unsigned int i;
+  bool         same_pedal;
   byte         maxbutton;
 
   get_top_page(2);
@@ -660,19 +661,20 @@ void get_actions_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Bank ");
   page += uibank;
-  if (!String(banknames[b-1]).isEmpty()) page += String(" - ") + String(banknames[b-1]);
   page += F("</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='input-group input-group-sm'>");
-  //page += F("<div class='input-group-prepend'>");
-  //page += F("<div class='input-group-text'>Bank #</div>");
-  //page += F("</div>");
   page += F("<div class='btn-group flex-wrap'>");
   for (i = 1; i <= BANKS; i++) {
     page += F("<form method='get'><button type='button submit' class='btn btn-sm btn-block");
     page += (uibank == String(i) ? String(" btn-primary") : String(""));
     page += F("' name='bank' value='");
-    page += String(i) + F("'>") + String(i) + F("</button>");
+    page += String(i) + F("'>");
+    if (String(banknames[i-1]).isEmpty())
+      page += String(i);
+    else
+      page += String(banknames[i-1]);
+    page += F("</button>");
     page += F("</form>");
   }
   page += F("</div>");
@@ -687,9 +689,6 @@ void get_actions_page() {
   page += uipedal + F("</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='input-group input-group-sm'>");
-  //page += F("<div class='input-group-prepend'>");
-  //page += F("<div class='input-group-text'>Pedal #</div>");
-  //page += F("</div>");
   page += F("<div class='btn-group flex-wrap'>");
   page += F("<form method='get'><button type='button submit' class='btn btn-sm");
   page += (uipedal == String("All") ? String(" btn-primary") : String(""));
@@ -715,7 +714,7 @@ void get_actions_page() {
   page += F("<h5 class='card-header'>Actions</h5>");
   page += F("<div class='card-body'>");
 
-  page += F("<div class='form-row mb-3'>");
+  page += F("<div class='form-row'>");
   page += F("<div class='col-5'>");
   page += F("<div class='input-group input-group-sm'>");
   page += F("<div class='input-group-prepend'>");
@@ -744,50 +743,28 @@ void get_actions_page() {
   page += F("</div>");
   page += F("</div>");
 
-  if (actions[b-1] != nullptr) {
-    page += F("<div class='form-row'>");
-
-    page += F("<div class='col-1 text-center'>");
-    page += F("<span class='badge badge-primary'>Pedal</span>");
-    page += F("</div>");
-    page += F("<div class='col-1'>");
-    page += F("<span class='badge badge-primary'>Button</span>");
-    page += F("</div>");
-    page += F("<div class='col-1'>");
-    page += F("<span class='badge badge-primary'>Name</span>");
-    page += F("</div>");
-    page += F("<div class='col-2'>");
-    page += F("<span class='badge badge-primary'>Event</span>");
-    page += F("</div>");
-    page += F("<div class='col-2'>");
-    page += F("<span class='badge badge-primary'>Action</span>");
-    page += F("</div>");
-    page += F("<div class='col-1'>");
-    page += F("<span class='badge badge-primary'>MIDI Code</span>");
-    page += F("</div>");
-    page += F("<div class='col-2'>");
-    page += F("<span class='badge badge-primary'>MIDI Value</span>");
-    page += F("</div>");
-    page += F("<div class='col-1'>");
-    page += F("<span class='badge badge-primary'>MIDI Channel</span>");
-    page += F("</div>");
-    page += F("</div>");
-  }
-
   i = 1;
   act = actions[b-1];
+  same_pedal = false;
   while (act != nullptr) {
     if (uipedal != String(act->pedal + 1) && !(uipedal == String("All"))) {
       act = act->next;
       continue;
     }
 
+    if (!same_pedal) {
+      page += F("<div class='card mt-3'>");
+      page += F("<div class='card-body'>");
+      page += F("<h5 class='card-title'>Pedal ");
+      page += String(act->pedal + 1) + F("</h5>");
+    }
     page += F("<div class='form-row mt-2'>");
-    page += F("<div class='col-1 text-center'>");
-    page += String(act->pedal + 1);
-    page += F("</div>");
 
-    page += F("<div class='col-1'>");
+    page += F("<div class='col-2'>");
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend w-50'>");
+    page += F("<div class='input-group-text w-100'>Button</div>");
+    page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='button");
     page += String(i) + F("'>");
     switch (pedals[act->pedal].mode) {
@@ -818,18 +795,22 @@ void get_actions_page() {
     page += F("</select>");
     page += F("</div>");
 
-    page += F("<div class='col-1'>");
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend w-50'>");
+    page += F("<div class='input-group-text w-100'>Tag</div>");
+    page += F("</div>");
     page += F("<input type='text' class='form-control form-control-sm' name='name");
     page += String(i);
     page += F("' maxlength='");
     page += String(MAXACTIONNAME) + F("' value='");
     page += String(act->name);
     page += F("'></div>");
+    page += F("</div>");
 
-    page += F("<div class='col-2'>");
+    page += F("<div class='col-4'>");
     page += F("<div class='input-group input-group-sm'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>On</div>");
+    page += F("<div class='input-group-prepend w-25'>");
+    page += F("<div class='input-group-text w-100'>On</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='event");
     page += String(i) + F("'>");
@@ -885,12 +866,12 @@ void get_actions_page() {
      }
     page += F("</select>");
     page += F("</div>");
-    page += F("</div>");
+    //page += F("</div>");
 
-    page += F("<div class='col-2'>");
+    //page += F("<div class='col-2'>");
     page += F("<div class='input-group input-group-sm'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>Send</div>");
+    page += F("<div class='input-group-prepend w-25'>");
+    page += F("<div class='input-group-text w-100'>Send</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='message");
     page += String(i);
@@ -991,38 +972,11 @@ void get_actions_page() {
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-1'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='code");
-    page += String(i);
-    page += F("' min='0' max='127' value='");
-    page += String(act->midiCode);
-    page += F("'></div>");
-
-    page += F("<div class='col-1'>");
+    page += F("<div class='col-3'>");
     page += F("<div class='input-group input-group-sm'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>From</div>");
+    page += F("<div class='input-group-prepend w-50'>");
+    page += F("<div class='input-group-text w-100'>Channel</div>");
     page += F("</div>");
-    page += F("<input type='number' class='form-control form-control-sm' name='from");
-    page += String(i);
-    page += F("' min='0' max='127' value='");
-    page += String(act->midiValue1);
-    page += F("'></div>");
-    page += F("</div>");
-
-    page += F("<div class='col-1'>");
-    page += F("<div class='input-group input-group-sm'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>To</div>");
-    page += F("</div>");
-    page += F("<input type='number' class='form-control form-control-sm' name='to");
-    page += String(i);
-    page += F("' min='0' max='127' value='");
-    page += String(act->midiValue2);
-    page += F("'></div>");
-    page += F("</div>");
-
-    page += F("<div class='col-1'>");
     page += F("<select class='custom-select custom-select-sm' name='channel");
     page += String(i) + F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
@@ -1035,6 +989,41 @@ void get_actions_page() {
     page += F("</select>");
     page += F("</div>");
 
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend w-50'>");
+    page += F("<div class='input-group-text w-100'>Code</div>");
+    page += F("</div>");
+    page += F("<input type='number' class='form-control form-control-sm' name='code");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiCode);
+    page += F("'></div>");
+    page += F("</div>");
+
+    page += F("<div class='col-2'>");
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend w-50'>");
+    page += F("<div class='input-group-text w-100'>From</div>");
+    page += F("</div>");
+    page += F("<input type='number' class='form-control form-control-sm' name='from");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiValue1);
+    page += F("'></div>");
+    //page += F("</div>");
+
+    //page += F("<div class='col-1'>");
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend w-50'>");
+    page += F("<div class='input-group-text w-100'>To</div>");
+    page += F("</div>");
+    page += F("<input type='number' class='form-control form-control-sm' name='to");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiValue2);
+    page += F("'></div>");
+    page += F("</div>");
+
     page += F("<div class='col-1 text-center'>");
     page += F("<div class='form-check'>");
     page += F("<input class='form-check-input position-static' type='checkbox' name='delete");
@@ -1044,6 +1033,12 @@ void get_actions_page() {
 
     page += F("<div class='w-100'></div>");
     page += F("</div>");
+
+    same_pedal = (act->next != nullptr && act->pedal == act->next->pedal);
+    if (!same_pedal) {
+      page += F("</div>");
+      page += F("</div>");
+    }
     act = act->next;
     i++;
   }
