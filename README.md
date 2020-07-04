@@ -6,10 +6,10 @@
 [![Build Status](https://travis-ci.org/alf45tar/PedalinoMini.svg?branch=master)](https://travis-ci.org/alf45tar/PedalinoMini)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/14609917402d4d498a78faa014539473)](https://www.codacy.com/manual/alf45tar/PedalinoMini?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=alf45tar/PedalinoMini&amp;utm_campaign=Badge_Grade)
 
-The first cloud connected wireless IoT MIDI foot controller for guitarists and more.
+Wireless MIDI foot controller for guitarists and more.
 
 - Plug-and-play with any MIDI-compatible app on iOS 8 and above as well as OS X Yosemite and above.
-- High customizable using iOS or Android app
+- High customizable using web interface
 - Bluetooth, WiFI, USB and legacy MIDI interfaces
 - No extra drivers to connect Windows, macOS, iOS (iPad/iPhone) and Android
 - Bluetooth LE MIDI (iOS and macOS compatible)
@@ -29,8 +29,8 @@ The first cloud connected wireless IoT MIDI foot controller for guitarists and m
 ## Features
 
 - Support for digital foot switches (momentary or latch), analog expression pedals and jog wheels (rotary encoders)
-- 10 banks of 6 controllers each
-- 3 user configuration profiles
+- 20 banks of 6 controllers each. One controller port can support up to 6 indipendent switches for a total of 36 switches.
+- 3 user profiles
 - 16 sequences of 10 steps each
 - Each port can connect 1 expression pedal or up to 6 foot switches for a maximum of 36 foot switches.
 - MIDI output via AppleMIDI (also known as RTP-MIDI) or ipMIDI via Wi-Fi
@@ -46,19 +46,6 @@ The first cloud connected wireless IoT MIDI foot controller for guitarists and m
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
 - OTA (Over the Air) firmware update or via HTTP (<http://pedalino.local/update>)
 
-## iOS and Android App
-
-The app made with [Blynk](https://www.blynk.cc) will be released soon. The app will not for free because Blynk is charging you Blynk.Energy cost (the required energy pack cost 13.99 euro). I will not earn any buck from Blynk.
-
-Unfortunately there is no way to try before buying. Until they will not change their business model I am not suggesting any purchase because I cannot guarantee that the app will fit any purpose.
-
-Blynk is the best solution I found to develop an iOS/Android app. With a resonable upfront cost you can receiving my app updates or you can decide to modify my app yourself according to your needs.
-
-Blynk app is connected to PedalinoMini™ through Blynk cloud. A small delay is present. I think to solve it when BLE connection will be fully supported by Blynk.
-
-<img src="./images/ios-live.png" width="200"/> <img src="./images/ios-bank.png" width="200"/> <img src="./images/ios-pedal.png" width="200"/> <img src="./images/ios-interface.png" width="200"/>
-
-Enabling Blynk could reduce responsiveness due to a Blynk [bug](https://community.blynk.cc/t/esp32-4x-slower-than-esp8266/38420).
 
 ## Bill of materials
 
@@ -114,22 +101,6 @@ Home screen|Device info|MIDI message
 MIDI Clock|MIDI Time Code
 -----|-----
 ![OLED Screen 4](./images/oled-midi-clock.png "Screen 4")|![OLED Screen 5](./images/oled-mtc.png "Screen 5")
-
-## WEB user interface
-
-![WEB Screen 1](./images/web-home.png "Screen 1")
-
-![WEB Screen 2](./images/web-banks.png "Screen 2")
-
-![WEB Screen 3](./images/web-pedals.png "Screen 3")
-
-![WEB Screen 4](./images/web-interfaces.png "Screen 4")
-
-![WEB Screen 5](./images/web-sequences.png "Screen 5")
-
-![WEB Screen 6](./images/web-options-1.png "Screen 6")
-
-![WEB Screen 7](./images/web-options-2.png "Screen 7")
 
 ## How to connect PedalinoMini™ to a WiFi network
 
@@ -201,9 +172,129 @@ Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware 
 - Web UI config is disabled in Normal (1) and Access Point with Bluetooth (4) due to memory limit.
 - OTA/HTTP Firmware Update is available only when firmware is less than 2 MB.
 
+
+## Pedals
+
+Once PedalinoMini is connected to a WiFI network the next step is to configure which pedals are connected to your PedalinoMini.
+
+![WEBUI PEDALS](./images/webui-pedals.png "Pedals")
+
+____________|Description
+:-----------|:----------
+Mode|Select one of the following: NONE, MOMENTARY, LATCH, ANALOG, JOG WHEEL, MOMENTARY 2, MOMENTARY 3, LATCH 2, LADDER.
+Function|Define a global function for the pedal. Global pedal function override any action and it is used in any bank of the profile. An example of global pedal function can be BANK+ (move to next bank) or BANK- (move to previous bank). Other function available here are: MTC Start (MIDI Time Code or MIDI Clock Start), MTC Stop (MIDI Time Code or MIDI Clock Stop), MTC Continue (MIDI Time Code or MIDI Clock Continue), TAP (tap tempo), BPM+ (increase tempo) and BPM- (decrease tempo). Leave blank to use Actions.
+Analog|Mapping between analog pedal movement and response. Accepted values: LINEAR (as is response), LOG (great acceleration but than flat), ANTILOG (start slow with a rapid increase).
+Min|It depends of pedal mode and/or pedal function (see below).
+Max|It depends of pedal mode and/or pedal function (see below).
+Invert Polarity|Normally open (NO) and normally closed (NC) momentary switches are supported and configurable by software if the foot switch do not have a polarity switch. On analog pedal it invert the range.
+Single Press|Enable single press (including PRESS, RELEASE and CLICK events). If single press is disabled PRESS, RELEASE and CLICK events are disabled.
+Double Press|Enable double press. If double press is enabled CLICK event is postponed until double press timeout (by default 400ms). If double press is disabled DOUBLE CLICK events are disabled.
+Long Press|Enable long press. If long press is disabled LONG PRESS events are disabled.
+Analog Calibration|Enable analog pedal continuous calibration. Min and Max values are managed by PedalinoMini. After each power on cycle move the expression pedals to its full range and PedalinoMini will calibrate it. During the first full movement of the pedal MIDI events could be not precise because PedalinoMini is still learning the full range of the pedal.
+
+
+Mode|Function|Min|Max
+:--------:|:------------:|:--|:--
+ANALOG|any|Minumum digital value (after analog-to-digital conversion) that can reach the connected expression pedal. Acceptable values are from 0 to 1023|Maximum digital value (after analog-to-digital conversion) that can reach the connected expression pedal. Acceptable values are from 0 to 1023.
+any|BANK+|Bank # lower limit (from 1 to 20).|Bank # upper limit (from 1 to 20).
+any|BANK-|Bank # lower limit (from 1 to 20).|Bank # upper limit (from 1 to 20).
+any|TAP|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
+any|BPM+|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
+any|BPM-|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
+
+## Actions menu
+
+Once Pedals setup is completed proceed with Actions setup.
+
+1. Select a bank on top left
+2. Select a pedal on top right or "All"
+2. (Optional) Enter the Bank Name
+3. Click on New Action and select a pedal on the dropdown menu. The pedal number of an action cannot be changed anymore without delete and recreate the action.
+
+![WEBUI PEDALS](./images/webui-actions.png "Actions")
+
+________|Description
+:-------|:----------
+Button|Every pedal support at least one "button" except for MOMENTARY 2/LATCH 2 (2 buttons), MOMENTARY 3 (3 buttons) and LADDER (6 buttons). Each button is indipendent and every action can be linked to any button.
+Tag|Action name to display when action is triggered.
+On|Momentary switches, latches and ladder have 5 different events that can trigger an action: PRESS, RELEASE, CLICK, DOUBLE CLICK and LONG PRESS. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
+Send|The action to be triggered on event. It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.
+
+Action|MIDI Channel|MIDI Code|From|To
+:-----|:----------:|:-------:|:--:|:--:
+PROGRAM CHANGE|Channel|PC#|-|-
+CONTROL CHANGE|Channel|CC#|From Value|To Value
+NOTE ON|Channel|Note|Velocity|-
+NOTE OFF|Channel|Note|Velocity (+)|-
+BANK SELECT+|Channel|MSB|From LSB|To LSB
+BANK SELECT-|Channel|MSB|From LSB|To LSB
+PROGRAM CHANGE+|Channel|-|From PC#|To PC#
+PROGRAM CHANGE-|Channel|-|From PC#|To PC#
+PITCH BEND|Channel|-|-|-
+CHANNEL PRESSURE|Channel|-|-|-
+START|-|-|-|-
+STOP|-|-|-|-
+CONTINUE|-|-|-|-
+BANK+|-|-|From Bank|To Bank
+BANK-|-|-|From Bank|To Bank
+MTC START|-|-|-|-
+MTC STOP|-|-|-|-
+MTC CONTINUE|-|-|-|-
+TAP|-|-|-|-
+BPM+|-|-|-|-
+BPM-|-|-|-|-
+SEQUENCE|-|Sequence #|-|-
+
+- (-) Not used
+- (+) if velocity is not zero it is equivalent to NOTE ON
+- MSB is the Most Significat Byte. It is a fixed value from 0 to 127.
+- LSB is the Less Significat Byte. It is the variable value from 0 to 127.
+
+## Interface menu
+
+![WEBUI INTERFACES](./images/webui-interfaces.png "Interfaces")
+
+The supported interfaces are:
+
+Interface|Description
+:--------|:----------
+USB MIDI| Plug&play USB MIDI interface. Requires additional hardware (see schematic).
+Legacy MIDI| Legacy serial MIDI interface with 5 pins DIN connectors. Require additional hardware (see schematic).
+RTP-MIDI| RTP-MIDI also know as AppleMIDI or Network MIDI. It is based on UDP protocol and it requires WiFi.
+ipMIDI| ipMIDI is based on UDP protocol and it requires WiFi.
+BLE MIDI| Requires Bluetooth Low Energy (BLE).
+OSC| OSC messages are based on UDP protocol and it requires WiFi.
+
+For each interface 4 checkboxes are availble:
+
+______|Description
+:-----|:----------
+IN|Enable/disable receiving MIDI messages from the interface
+OUT|Enable/disable sending MIDI messages to the interface
+THRU|Enable/disable so called MIDI Thru (every message received from the IN port is automatically sent to the OUT port of the same interface)
+CLOCK|Enable/disable receiving and sending CLOCK MIDI message
+
+Routing between different interfaces is enabled between every IN enabled interfaces to any OUT enabled interfaces. Do not confuse routing (different interfaces) with MIDI Thru (between IN and OUT of same interface).
+
+## Configurations
+
+![WEBUI CONFIGURATIONS](./images/webui-configurations.png "Configurations")
+
+Some example configurations are provides. More to come.
+
+### iRig BlueBoard
+
+PedalinoMini™ can simultate an IK Multimedio iRig Blueboard using 'blueboard' configuration. Midi Mode 1 is on bank 1 and Midi Mode 2 is on bank 2.
+
+### Fender Mustang Amplifier
+
+Using PedalinoMini™ with 3 momentary switches and 3 jog wheels we can control a Fender Mustang I/II/III/IV Amplifier via MIDI. Additional [software](https://github.com/alf45tar/mustang-midi-bridge-win) is required. The bonus configuration is called 'mustang2'.
+
 ## Display mode
 
 On start the live performance display is selected. On live performace mode the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
+
+If you setup a bank name in Actions menu a different display mode is activated.
 
 ## How to switch profiles
 
@@ -215,52 +306,7 @@ During normal operation
 
 On TTGO T-Eight replace BOOT button with CENTER button.
 
-## Factory default configuration
+## Factory default configuration and first configuration
 
-All profiles has the same configuration.
-
-### Bank 1
-
-Pedal|Type|Name|On Press|On Release|Midi Channel
------|----|----|--------|----------|------------
-1|Momentary|A|Note On<br>C3 (60) Velocity 100|Note Off|1
-2|Momentary|B|Note On<br>D3 (62) Velocity 100|Note Off|1
-3|Momentary|C|Note On<br>E3 (64) Velocity 100|Note Off|1
-4|Momentary|D|Note On<br>F3 (65) Velocity 100|Note Off|1
-5|Analog|E|Control Change<br>CC#12 Value 0-127||1
-6|Analog|F|Control Change<br>CC#13 Value 0-127||1
-
-### Bank 2
-
-Pedal|Type|Name|On Press|On Release|Midi Channel
------|----|----|--------|----------|------------
-1|Momentary|A|Control Change<br>CC#20 Value 127|Control Change<br>CC#20 Value 0|1
-2|Momentary|B|Control Change<br>CC#21 Value 127|Control Change<br>CC#21 Value 0|1
-3|Momentary|C|Control Change<br>CC#22 Value 127|Control Change<br>CC#22 Value 0|1
-4|Momentary|D|Control Change<br>CC#23 Value 127|Control Change<br>CC#23 Value 0|1
-5|Analog|E|Control Change<br>CC#12 Value 0-127||1
-6|Analog|F|Control Change<br>CC#13 Value 0-127||1
-
-### Bank 3-4
-
-Bank 3 is the same as bank 1 but on Midi channel 2
-
-Bank 4 is the same as bank 2 but on Midi channel 2
-
-### Bank 5-6
-
-Bank 5 is the same as bank 1 but on Midi channel 3
-
-Bank 6 is the same as bank 2 but on Midi channel 3
-
-### Bank 7-8
-
-Bank 7 is the same as bank 1 but on Midi channel 4
-
-Bank 8 is the same as bank 2 but on Midi channel 4
-
-### Bank 9-10
-
-Bank 9 is the same as bank 1 but on Midi channel 5
-
-Bank 10 is the same as bank 2 but on Midi channel 5
+The factory default configuration is quite simple: 6 momentary pedals, one actions on press, all MIDI interfaces interface enabled.
+More customized configuration are available online here.
