@@ -73,7 +73,7 @@ void get_top_page(int p = 0) {
 
   page += F("<body>");
   if (p >= 0) {
-  page += F("<div class='container-fluid mt-3'>");
+  page += F("<div class='container-fluid mt-3 mb-3'>");
 
   page += F("<nav class='navbar navbar-expand-md navbar-light bg-light mb-3'>");
   page += F("<a class='navbar-brand' href='/'>");

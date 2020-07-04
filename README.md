@@ -204,7 +204,7 @@ any|BPM-|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
 
 ## Actions menu
 
-Once Pedals setup is completed proceed with Actions setup.
+Once Pedals setup is completed proceed with Actions setup to define which event trigger an action.
 
 1. Select a bank on top left
 2. Select a pedal on top right or "All"
@@ -217,7 +217,7 @@ ________|Description
 :-------|:----------
 Button|Every pedal support at least one "button" except for MOMENTARY 2/LATCH 2 (2 buttons), MOMENTARY 3 (3 buttons) and LADDER (6 buttons). Each button is indipendent and every action can be linked to any button.
 Tag|Action name to display when action is triggered.
-On|Momentary switches, latches and ladder have 5 different events that can trigger an action: PRESS, RELEASE, CLICK, DOUBLE CLICK and LONG PRESS. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
+On|Momentary switches, latches and ladders have 5 different events that can trigger an action: PRESS, RELEASE, CLICK, DOUBLE CLICK and LONG PRESS. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
 Send|The action to be triggered on event. It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.
 
 Action|MIDI Channel|MIDI Code|From|To
@@ -259,7 +259,7 @@ The supported interfaces are:
 Interface|Description
 :--------|:----------
 USB MIDI| Plug&play USB MIDI interface. Requires additional hardware (see schematic).
-Legacy MIDI| Legacy serial MIDI interface with 5 pins DIN connectors. Require additional hardware (see schematic).
+Legacy MIDI| Legacy serial MIDI interface with 5 pins DIN connectors. Requires additional hardware (see schematic).
 RTP-MIDI| RTP-MIDI also know as AppleMIDI or Network MIDI. It is based on UDP protocol and it requires WiFi.
 ipMIDI| ipMIDI is based on UDP protocol and it requires WiFi.
 BLE MIDI| Requires Bluetooth Low Energy (BLE).
@@ -275,6 +275,12 @@ THRU|Enable/disable so called MIDI Thru (every message received from the IN port
 CLOCK|Enable/disable receiving and sending CLOCK MIDI message
 
 Routing between different interfaces is enabled between every IN enabled interfaces to any OUT enabled interfaces. Do not confuse routing (different interfaces) with MIDI Thru (between IN and OUT of same interface).
+
+## Options menu
+
+![WEBUI OPTIONS 1](./images/webui-options1.png "Options 1")
+
+![WEBUI OPTIONS 2](./images/webui-options2.png "Options 2")
 
 ## Configurations
 
