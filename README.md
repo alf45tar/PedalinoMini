@@ -175,7 +175,7 @@ Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware 
 
 ## Pedals
 
-Once PedalinoMini is connected to a WiFI network the next step is to configure which pedals are connected to your PedalinoMini.
+Once PedalinoMini™ is connected to a WiFI network is time to configure which pedals are connected to each port.
 
 ![WEBUI PEDALS](./images/webui-pedals.png "Pedals")
 
@@ -190,7 +190,7 @@ Invert Polarity|Normally open (NO) and normally closed (NC) momentary switches a
 Single Press|Enable single press (including PRESS, RELEASE and CLICK events). If single press is disabled PRESS, RELEASE and CLICK events are disabled.
 Double Press|Enable double press. If double press is enabled CLICK event is postponed until double press timeout (by default 400ms). If double press is disabled DOUBLE CLICK events are disabled.
 Long Press|Enable long press. If long press is disabled LONG PRESS events are disabled.
-Analog Calibration|Enable analog pedal continuous calibration. Min and Max values are managed by PedalinoMini. After each power on cycle move the expression pedals to its full range and PedalinoMini will calibrate it. During the first full movement of the pedal MIDI events could be not precise because PedalinoMini is still learning the full range of the pedal.
+Analog Calibration|Enable analog pedal continuous calibration. Min and Max values are managed by PedalinoMini™. After each power on cycle move the expression pedals to its full range and PedalinoMini™ will calibrate it. During the first full movement of the pedal MIDI events could be not precise because PedalinoMini™ is still learning the full range of the pedal.
 
 
 Mode|Function|Min|Max
@@ -204,7 +204,7 @@ any|BPM-|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
 
 ## Actions menu
 
-Once Pedals setup is completed proceed with Actions setup to define which event trigger an action.
+Once Pedals setup is complete proceed with Actions setup to define which pedal event trigger an action.
 
 1. Select a bank on top left
 2. Select a pedal on top right or "All"
@@ -265,7 +265,7 @@ ipMIDI| ipMIDI is based on UDP protocol and it requires WiFi.
 BLE MIDI| Requires Bluetooth Low Energy (BLE).
 OSC| OSC messages are based on UDP protocol and it requires WiFi.
 
-For each interface 4 checkboxes are availble:
+For each interface there are 4 filtering options:
 
 ______|Description
 :-----|:----------
@@ -290,7 +290,7 @@ Some example configurations are provides. More to come.
 
 ### iRig BlueBoard
 
-PedalinoMini™ can simultate an IK Multimedio iRig Blueboard using 'blueboard' configuration. Midi Mode 1 is on bank 1 and Midi Mode 2 is on bank 2.
+PedalinoMini™ can simultate an IK Multimedia iRig Blueboard using 'blueboard' configuration. Midi Mode 1 is on bank 1 and Midi Mode 2 is on bank 2.
 
 ### Fender Mustang Amplifier
 
