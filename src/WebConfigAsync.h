@@ -59,12 +59,12 @@ void get_top_page(int p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-L/W5Wfqfa0sdBNIKN9cG6QA5F2qx4qICmU2VgLruv9Y=' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-aAr2Zpq8MZ+YA/D6JtRD3xtrwpEz2IqOS+pWD/7XKIw=' crossorigin='anonymous'>");
   #else
-    page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css' integrity='sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css' integrity='sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk' crossorigin='anonymous'>");
   #endif
   } else {
-    page += F("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/4.4.1/");
+    page += F("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/4.5.0/");
     page += theme;
     page += F("/bootstrap.min.css' crossorigin='anonymous'>");
   }
@@ -73,10 +73,9 @@ void get_top_page(int p = 0) {
 
   page += F("<body>");
   if (p >= 0) {
-  page += F("<p></p>");
-  page += F("<div class='container-fluid'>");
+  page += F("<div class='container-fluid mt-3'>");
 
-  page += F("<nav class='navbar navbar-expand-md navbar-light bg-light'>");
+  page += F("<nav class='navbar navbar-expand-md navbar-light bg-light mb-3'>");
   page += F("<a class='navbar-brand' href='/'>");
   page += F("<img src='/logo.png' width='30' height='30' class='d-inline-block align-top' alt=''></a>");
   page += F("<button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarNavDropdown' aria-controls='navbarNavDropdown' aria-expanded='false' aria-label='Toggle navigation'>");
@@ -122,31 +121,12 @@ void get_top_page(int p = 0) {
     page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
     page += currentProfile == 1 ? F("<a class='btn btn-primary' href='?profile=2' role='button'>B</a>") : F("<a class='btn btn-outline-primary' href='?profile=2' role='button'>B</a>");
     page += currentProfile == 2 ? F("<a class='btn btn-primary' href='?profile=3' role='button'>C</a>") : F("<a class='btn btn-outline-primary' href='?profile=3' role='button'>C</a>");
-
-    //page += F("<button class='btn btn-primary my-2 my-sm-0' type='button'>Save</button>");
-/*
-    page += F("<div class='btn-group my-2 my-sm-0'>");
-    page += F("<button type='button' class='btn btn-info'>Profile ");
-    uiprofile = String(currentProfile + 1);
-    page += String((char)('A' + uiprofile.toInt() - 1));
-    page += F("</button>");
-    page += F("<button type='button' class='btn btn-info dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
-    page += F("<span class='sr-only'>Toggle Dropdown</span>");
-    page += F("</button>");
-    page += F("<div class='dropdown-menu' aria-labelledby='navbarDropdownMenuLink'>");
-    page += F("<a class='dropdown-item' href='?profile=1'>A</a>");
-    page += F("<a class='dropdown-item' href='?profile=2'>B</a>");
-    page += F("<a class='dropdown-item' href='?profile=3'>C</a>");
-    page += F("</div>");
-    page += F("</div>");
-*/
     page += F("</form>");
   }
   page += F("</div>");
   page += F("</nav>");
 
   if (alert != "") {
-    page += F("<p></p>");
     page += F("<div class='alert alert-success alert-dismissible fade show' role='alert'>");
     page += alert;
     page += F("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>");
@@ -156,7 +136,6 @@ void get_top_page(int p = 0) {
     alert = "";
   }
   if (alertError != "") {
-    page += F("<p></p>");
     page += F("<div class='alert alert-danger alert-dismissible fade show' role='alert'>");
     page += alertError;
     page += F("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>");
@@ -165,26 +144,19 @@ void get_top_page(int p = 0) {
     page += F("</div>");
     alertError = "";
   }
-
-  page += F("<p></p>");
 }
 
 void get_footer_page() {
 
-  //page += F("<nav class='navbar align-items-end navbar-light bg-light'>");
-  //page += F("<a class='navbar-text' href='https://github.com/alf45tar/PedalinoMini'>https://github.com/alf45tar/PedalinoMini</a>");
-  //page += F("</nav>");
-
-  page += F("<p></p>");
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/jquery-3.4.1.slim.min.js' integrity='sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/jquery-3.5.1.slim.min.js' integrity='sha256-xG3AUc6BxK8rIJarv4ha5Lp0Z/9dsPAQbO7pKM82WKM=' crossorigin='anonymous'></script>");
   page += F("<script src='/js/popper.min.js' integrity='sha256-x3YZWtRjM8bJqf48dFAv/qmgL68SI4jqNWeSLMZaMGA=' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-WqU1JavFxSAMcLP2WIOI+GB2zWmShMI82mTpLDcqFUg=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-OFRAJNoaD8L3Br5lglV7VyLRf0itmoBzWUoM+Sji4/8=' crossorigin='anonymous'></script>");
 #else
-  page += F("<script src='https://code.jquery.com/jquery-3.4.1.slim.min.js' integrity='sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n' crossorigin='anonymous'></script>");
+  page += F("<script src='https://code.jquery.com/jquery-3.5.1.slim.min.js' integrity='sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj' crossorigin='anonymous'></script>");
   page += F("<script src='https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js' integrity='sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo' crossorigin='anonymous'></script>");
-  page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js' integrity='sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6' crossorigin='anonymous'></script>");
+  page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js' integrity='sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI' crossorigin='anonymous'></script>");
 #endif
   page += F("</body>");
   page += F("</html>");
@@ -228,9 +200,8 @@ void get_root_page() {
   get_top_page();
 
   page += F("<h4 class='display-4'>Wireless MIDI foot controller</h4>");
-  page += F("<p></p>");
 
-  page += F("<div class='row'>");
+  page += F("<div class='row' mt-3>");
 
   page += F("<div class='col-6 col-sm-3'>");
   page += F("<h3>Product</h3>");
@@ -683,28 +654,8 @@ void get_actions_page() {
   byte         maxbutton;
 
   get_top_page(2);
-/*
-  page += F("<small>Bank</small><br>");
-  page += F("<div class='btn-group btn-group-toggle' data-toggle='buttons'>");
-  for (unsigned int i = 1; i <= BANKS; i++) {
-    //page += F("<form method='get'>");
-    page += F("<label class='btn btn-outline-primary'>"
-              "<input type='radio' autocomplete='off' name='options' value='");
-    page += String(i);
-    page += F("'>");
-    page += String(i);
-    page += F("</label>");
-    //page += F("</form>");
-    if (uibank == String(i)) {
-      page += F("<input type='text' class='form-control' name='bankname' maxlength='");
-      page += String(MAXBANKNAME) + F("' value='");
-      page += String(banknames[b-1]);
-      page += F("'>");
-    }
-  }
-  page += F("</div>");
-*/
-  page += F("<div class='row'>");
+
+  page += F("<div class='row mb-3'>");
   page += F("<div class='col-8'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Bank ");
@@ -758,15 +709,13 @@ void get_actions_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<p></p>");
-
   page += F("<form method='post'>");
 
-  page += F("<div class='card'>");
+  page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>Actions</h5>");
   page += F("<div class='card-body'>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='form-row mb-3'>");
   page += F("<div class='col-5'>");
   page += F("<div class='input-group input-group-sm'>");
   page += F("<div class='input-group-prepend'>");
@@ -778,12 +727,10 @@ void get_actions_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("<div class='col-7 text-right'>");
-  //page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>New Action</button>");
   page += F("<div class='btn-group' role='group'>");
   page += F("<button id='btnGroupNewAction' type='button' class='btn btn-primary btn-sm dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>New Action</button>");
   page += F("<div class='dropdown-menu' aria-labelledby='btnGroupNewAction'>");
   for (i = 1; i <= PEDALS; i++) {
-    //page += F("<a class='dropdown-item' href='newaction");
     page += F("<button type='submit' class='dropdown-item' name='action' value='new");
     page += String(i) + F("'>Pedal ");
     page += String(i) + F("</button>");
@@ -796,8 +743,6 @@ void get_actions_page() {
   }
   page += F("</div>");
   page += F("</div>");
-
-  page += F("<p></p>");
 
   if (actions[b-1] != nullptr) {
     page += F("<div class='form-row'>");
@@ -827,11 +772,8 @@ void get_actions_page() {
     page += F("<span class='badge badge-primary'>MIDI Channel</span>");
     page += F("</div>");
     page += F("</div>");
-
-    page += F("<p></p>");
   }
 
-  page += F("<div class='form-row'>");
   i = 1;
   act = actions[b-1];
   while (act != nullptr) {
@@ -840,7 +782,8 @@ void get_actions_page() {
       continue;
     }
 
-    page += F("<div class='col-1 mb-3 text-center'>");
+    page += F("<div class='form-row mt-2'>");
+    page += F("<div class='col-1 text-center'>");
     page += String(act->pedal + 1);
     page += F("</div>");
 
@@ -875,7 +818,7 @@ void get_actions_page() {
     page += F("</select>");
     page += F("</div>");
 
-    page += F("<div class='col-1 mb-2'>");
+    page += F("<div class='col-1'>");
     page += F("<input type='text' class='form-control form-control-sm' name='name");
     page += String(i);
     page += F("' maxlength='");
@@ -1100,20 +1043,18 @@ void get_actions_page() {
     page += F("</div>");
 
     page += F("<div class='w-100'></div>");
+    page += F("</div>");
     act = act->next;
     i++;
   }
   page += F("</div>");
-
-  page += F("<p></p>");
+  page += F("</div>");
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
   page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
-  page += F("</div>");
-  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -1129,14 +1070,14 @@ void get_pedals_page() {
   page += F("<div class='form-row'>");
 
   for (unsigned int i = 1; i <= PEDALS; i++) {
-    page += F("<div class='col-sm-6 col-md-4 col-lg-2 col-12 mb-3'>");
+    page += F("<div class='col-sm-6 col-md-4 col-xl-2 col-12 mb-3'>");
     page += F("<div class='card'>");
     page += F("<h5 class='card-header'>Pedal ");
     page += String(i) + F("</h5>");
     page += F("<div class='card-body'>");
-    page += F("<div class='input-group input-group-sm mb-3'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>Mode</div>");
+    page += F("<div class='input-group input-group-sm mb-2'>");
+    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-text w-100'>Mode</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='mode");
     page += String(i);
@@ -1180,9 +1121,9 @@ void get_pedals_page() {
     page += F("</select>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-3'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>Function</div>");
+    page += F("<div class='input-group input-group-sm mb-2'>");
+    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-text w-100'>Function</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='function");
     page += String(i);
@@ -1226,9 +1167,9 @@ void get_pedals_page() {
     page += F("</select>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-3'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>Analog</div>");
+    page += F("<div class='input-group input-group-sm mb-2'>");
+    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-text w-100'>Analog</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='map");
     page += String(i);
@@ -1248,9 +1189,9 @@ void get_pedals_page() {
     page += F("</select>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-3'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>Min</div>");
+    page += F("<div class='input-group input-group-sm mb-2'>");
+    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-text w-100'>Min</div>");
     page += F("</div>");
     page += F("<input type='number' class='form-control form-control-sm' name='min");
     page += String(i);
@@ -1259,9 +1200,9 @@ void get_pedals_page() {
     page += String(pedals[i-1].expZero);
     page += F("'></div>");
 
-    page += F("<div class='input-group input-group-sm mb-3'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>Max</div>");
+    page += F("<div class='input-group input-group-sm mb-2'>");
+    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-text w-100'>Max</div>");
     page += F("</div>");
     page += F("<input type='number' class='form-control form-control-sm' name='max");
     page += String(i);
@@ -1414,7 +1355,7 @@ void get_sequences_page() {
 
   get_top_page(6);
 
-  page += F("<div class='btn-group'>");
+  page += F("<div class='btn-group mb-3'>");
   for (unsigned int i = 1; i <= SEQUENCES; i++) {
     page += F("<form method='get'><button type='button submit' class='btn");
     page += (uisequence == String(i) ? String(" btn-primary") : String(""));
@@ -1423,10 +1364,8 @@ void get_sequences_page() {
   }
   page += F("</div>");
 
-  page += F("<p></p>");
-
   page += F("<form method='post'>");
-  page += F("<div class='form-row'>");
+  page += F("<div class='form-row mb-3'>");
   page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Order</span>");
   page += F("</div>");
@@ -1450,9 +1389,7 @@ void get_sequences_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<p></p>");
-
-  page += F("<div class='form-row'>");
+  page += F("<div class='form-row mb-3'>");
   for (unsigned int i = 1; i <= STEPS; i++) {
     page += F("<div class='col-1 mb-3 text-center'>");
     page += String(i);
@@ -1569,8 +1506,6 @@ void get_sequences_page() {
     page += F("<div class='w-100'></div>");
   }
   page += F("</div>");
-
-  page += F("<p></p>");
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
@@ -1743,15 +1678,15 @@ void get_options_page() {
   page += F("<h5 class='card-header'>Web UI Login</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='input-group input-group-sm mb-3'>");
-  page += F("<div class='input-group-prepend'>");
-  page += F("<div class='input-group-text'>Username</div>");
+  page += F("<div class='input-group-prepend w-25'>");
+  page += F("<div class='input-group-text w-100'>Username</div>");
   page += F("</div>");
   page += F("<input class='form-control form-control-sm' type='text' maxlength='32' id='httpusername' name='httpUsername' value='");
   page += httpUsername + F("'>");
   page += F("</div>");
   page += F("<div class='input-group input-group-sm mb-3'>");
-  page += F("<div class='input-group-prepend'>");
-  page += F("<div class='input-group-text'>Password</div>");
+  page += F("<div class='input-group-prepend w-25'>");
+  page += F("<div class='input-group-text w-100'>Password</div>");
   page += F("</div>");
   page += F("<input class='form-control form-control-sm' type='password' maxlength='32' id='httppassword' name='httpPassword' value='");
   page += httpPassword + F("'>");
@@ -1880,7 +1815,7 @@ void get_options_page() {
   page += F("</div>");
 
 #ifdef BLYNK
-  page += F("<div class='form-row'>");
+  page += F("<div class='form-row mb-3'>");
   page += F("<div class='custom-control custom-switch'>");
   page += F("<input type='checkbox' class='custom-control-input' id='blynkCloud' name='blynkcloud'");
   if (blynk_enabled()) page += F(" checked");
@@ -1892,9 +1827,7 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<p></p>");
-
-  page += F("<div class='form-row'>");
+  page += F("<div class='form-row mb-3'>");
   page += F("<label for='authtoken'>Blynk Auth Token</label>");
   page += F("<input class='form-control' type='text' maxlength='32' id='authtoken' name='blynkauthtoken' placeholder='Blynk Auth Token is 32 characters long. Copy and paste from email.' value='");
   page += blynk_get_token() + F("'>");
@@ -1903,8 +1836,6 @@ void get_options_page() {
   page += F("Don’t share your Auth Token with anyone, unless you want someone to have access to your Pedalino.");
   page += F("</small>");
   page += F("</div>");
-
-  page += F("<p></p>");
 #endif
 
   page += F("<div class='form-row'>");
@@ -1927,7 +1858,7 @@ void get_configurations_page() {
 
   page += F("<form method='post'>");
 
-  page += F("<div class='card'>");
+  page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>New Configuration</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='form-row'>");
@@ -1968,8 +1899,6 @@ void get_configurations_page() {
 
   page += F("</form>");
 
-  page += F("<p></p>");
-
   DPRINT("Looking for configuration files on SPIFFS root ...\n");
   int     availableconf = 0;
   String  confoptions;
@@ -1990,7 +1919,7 @@ void get_configurations_page() {
   DPRINT("done.\n");
 
   page += F("<form method='post'>");
-  page += F("<div class='card'>");
+  page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>Available Configurations</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='form-row'>");
@@ -2030,7 +1959,7 @@ void get_configurations_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-  page += F("<p></p>");
+
   page += F("<div class='form-row'>");
   page += F("<div class='col-12'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button> ");
@@ -2042,8 +1971,6 @@ void get_configurations_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
-
-  page += F("<p></p>");
 
   page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
   page += F("<div class='card'>");
@@ -3185,7 +3112,7 @@ void http_setup() {
   httpServer.serveStatic("/logo.png", SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
   httpServer.serveStatic("/css/bootstrap.min.css", SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/bootstrap.min.js", SPIFFS, "/js/bootstrap.min.js").setDefaultFile("/js/bootstrap.min.js").setCacheControl("max-age=600");
-  httpServer.serveStatic("/js/jquery-3.4.1.slim.min.js", SPIFFS, "/js/jquery-3.4.1.slim.min.js").setDefaultFile("/js/jquery-3.4.1.slim.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/jquery-3.5.1.slim.min.js", SPIFFS, "/js/jquery-3.5.1.slim.min.js").setDefaultFile("/js/jquery-3.5.1.slim.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/popper.min.js", SPIFFS, "/js/popper.min.js").setDefaultFile("/js/popper.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/files", SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
