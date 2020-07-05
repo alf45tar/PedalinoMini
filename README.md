@@ -306,7 +306,7 @@ Display|Description
 ![](./images/oled-display4.mov)|If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
 .|A double hashtag sign (##) in bank name is replaced with then current bank number.
 .|If action tag start with colon (:) the display is not switched when an event occurs
-![](./images/oled-display7.png)![](./images/oled-display8.png)|A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
+![](./images/oled-display7.mov)|A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
 
 ## How to switch profiles
 
