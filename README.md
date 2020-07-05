@@ -31,23 +31,23 @@ Wireless MIDI foot controller for guitarists and more.
 ## Features
 
 - Support for digital foot switches (momentary or latch), analog expression pedals and jog wheels (rotary encoders)
-- 20 banks of 6 controllers each. One controller port can support up to 6 indipendent switches for a total of 36 switches.
+- 6 controllers ports. One controller port can support up to 6 indipendent switches for a total of 36 switches.
+- 20 banks
 - 3 user profiles
 - 16 sequences of 10 steps each
-- Each port can connect 1 expression pedal or up to 6 foot switches for a maximum of 36 foot switches.
+- Each port can connect 1 expression pedal or 1 jog wheel or up to 6 foot switches via a resitors ladder (TC HELICON Switch-6).
 - MIDI output via AppleMIDI (also known as RTP-MIDI) or ipMIDI via Wi-Fi
 - Send almost every MIDI messages: Program Change, Control Code, Note On/Off, Channel Pressure, Pitch Bend, Bank Select, Start, Stop, Continue or a sequence of the previous messages
 - MIDI channel, MIDI note, MIDI control code, MIDI program change can be configured by each pedal and by each bank
-- Switch debouncing and analog noise suppression without decreasing responsiveness
-- Up to 6 switches connected via a resitors ladder (TC HELICON Switch-6). Any resistors ladder can be calibrated just pressing footswitches in sequence.
+- Switch debouncing and analog noise suppression without decreasing responsivenes
 - Invert polarity via software
 - Individual automatic calibration of expression pedals. Manual fine tuning is not usually requested.
 - Transform a linear expression pedal into log expression pedal and vice versa
+- Resistors ladder calibrated is easy as pressing footswitches in sequence.
 - 6 status leds that can be controlled by MIDI remote devices too
 - Responsive and mobile-first configuration web interface (<http://pedalino.local>)
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
 - OTA (Over the Air) firmware update or via HTTP (<http://pedalino.local/update>)
-
 
 ## Bill of materials
 
@@ -93,16 +93,6 @@ Serial1 of ESP32 (re-mapped to pin 18 RX and 19 TX) is connected to Serial1 (pin
 Arduino Pro Micro is powered by the USB MIDI connection.
 
 IMPORTANT: ESP32 board and Arduino Pro Micro must share GND.
-
-## OLED display screenshots
-
-Home screen|Device info|MIDI message
------|-----|-----
-![OLED Screen 1](./images/oled-home.png "Screen 1")|![OLED Screen 2](./images/oled-device.png "Screen 2")|![OLED Screen 3](./images/oled-midi.png "Screen 3")
-
-MIDI Clock|MIDI Time Code
------|-----
-![OLED Screen 4](./images/oled-midi-clock.png "Screen 4")|![OLED Screen 5](./images/oled-mtc.png "Screen 5")
 
 ## How to connect PedalinoMini™ to a WiFi network
 
@@ -177,7 +167,7 @@ Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware 
 
 ## Pedals
 
-Once PedalinoMini™ is connected to a WiFI network is time to configure which pedals are connected to each port.
+Once PedalinoMini™ is connected to a WiFI network is time to configure which pedal is connected to each port.
 
 ![WEBUI PEDALS](./images/webui-pedals.png "Pedals")
 
@@ -196,7 +186,7 @@ Analog Calibration|Enable analog pedal continuous calibration. Min and Max value
 
 
 Mode|Function|Min|Max
-:--------:|:------------:|:--|:--
+:--:|:------:|:--|:--
 ANALOG|any|Minumum digital value (after analog-to-digital conversion) that can reach the connected expression pedal. Acceptable values are from 0 to 1023|Maximum digital value (after analog-to-digital conversion) that can reach the connected expression pedal. Acceptable values are from 0 to 1023.
 any|BANK+|Bank # lower limit (from 1 to 20).|Bank # upper limit (from 1 to 20).
 any|BANK-|Bank # lower limit (from 1 to 20).|Bank # upper limit (from 1 to 20).
@@ -280,11 +270,15 @@ Routing between different interfaces is enabled between every IN enabled interfa
 
 ## Options menu
 
+PedalinoMini™ have a lot of options well documented in the Options page.
+
 ![WEBUI OPTIONS 1](./images/webui-options1.png "Options 1")
 
 ![WEBUI OPTIONS 2](./images/webui-options2.png "Options 2")
 
 ## Configurations
+
+The complete profile setup can be saved as configuration to be used later or just for backup reason in case of hardware failure. Configuration files can be downloaded and shared with others PedalinoMini™ users.
 
 ![WEBUI CONFIGURATIONS](./images/webui-configurations.png "Configurations")
 
@@ -303,7 +297,7 @@ PedalinoMini™ can control a Fender Mustang I/II/III/IV Amplifier via MIDI. Add
 Where|What|Display|Description
 :---:|:--:|-------|:----------
 Bank Name|Empty|![](./images/oled-display1.png)|If the current bank name is empty the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
-Bank Name|Any|![](./images/oled-display2.mov)|When a bank name is defined in Actions menu a new display mode is activated. Every time the current bank has a bank name the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. On new display mode the bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
+Bank Name|Any|![](./images/oled-display2.mov)|If current bank name is not empty the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. On new display mode the bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
 Bank Name|:|![](./images/oled-display3.png)|If the bank name start with colon (:) the bank name is always shown (if no event occurs).
 Bank Name|.|![](./images/oled-display4.mov)|If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
 Bank Name|##|![](./images/oled-display5.mov)|A double hashtag sign (##) in bank name is replaced with then current bank number.
