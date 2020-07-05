@@ -298,27 +298,15 @@ PedalinoMini™ can control a Fender Mustang I/II/III/IV Amplifier via MIDI. Add
 
 ## Display mode
 
-On start the live performance display is selected. On live performace mode the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
-
-![DISPLAY 1](./images/oled-display1.png "Display 1")
-
-When a bank name is defined in Actions menu a new display mode is activated. Every time the current bank has a bank name the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. On new display mode the bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
-
-![](./images/oled.mov)
-
-It is possible to customize the standard behaviour descrived above using some modifier.
-
-- If the bank name start with colon (:) the bank name is always shown (if no event occurs).
-
-  ![DISPLAY 1](./images/oled-display2.png "Display 2")
-
-- If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
-
-  ![DISPLAY 1](./images/oled-display3.png "Display 3")
-
-- A double hashtag sign (##) in bank name is replaced with then current bank number.
-- If action tag start with colon (:) the display is not switched when an event occurs
-- A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
+Display|Description
+-------|-----------
+![](./images/oled-display1.png)|On start the live performance display is selected. On live performace mode the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
+![](./images/oled-display2.mov)|When a bank name is defined in Actions menu a new display mode is activated. Every time the current bank has a bank name the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. On new display mode the bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
+![](./images/oled-display3.png "")|If the bank name start with colon (:) the bank name is always shown (if no event occurs).
+![](./images/oled-display4.mov)|If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
+.|A double hashtag sign (##) in bank name is replaced with then current bank number.
+.|If action tag start with colon (:) the display is not switched when an event occurs
+![](./images/oled-display7.png)![](./images/oled-display8.png)|A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
 
 ## How to switch profiles
 
