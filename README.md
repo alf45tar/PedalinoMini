@@ -290,17 +290,35 @@ Some example configurations are provides. More to come.
 
 ### iRig BlueBoard
 
-PedalinoMini™ can simultate an IK Multimedia iRig Blueboard using 'blueboard' configuration. Midi Mode 1 is on bank 1 and Midi Mode 2 is on bank 2.
+PedalinoMini™ can emulate an [IK Multimedia iRig Blueboard](https://www.ikmultimedia.com/products/irigblueboard/) using 'blueboard' configuration. Midi Mode 1 is on bank 1 and Midi Mode 2 is on bank 2. PedalinoMini™ emulation works on any MIDI interface and not only "MIDI over Bluetooth" as the original iRig Blueboard.
 
 ### Fender Mustang Amplifier
 
-Using PedalinoMini™ with 3 momentary switches and 3 jog wheels we can control a Fender Mustang I/II/III/IV Amplifier via MIDI. Additional [software](https://github.com/alf45tar/mustang-midi-bridge-win) is required. The bonus configuration is called 'mustang2'.
+PedalinoMini™ can control a Fender Mustang I/II/III/IV Amplifier via MIDI. Additional [software](https://github.com/alf45tar/mustang-midi-bridge-win) is required to translate MIDI messages to the proprietary USB protocol used by Fender Mustang amplifiers. The bonus configuration is called 'mustang2' and works with 3 momentary switches and 3 jog wheels.
 
 ## Display mode
 
 On start the live performance display is selected. On live performace mode the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
 
-If you setup a bank name in Actions menu a different display mode is activated.
+![DISPLAY 1](./images/oled-display1.png "Display 1")
+
+When a bank name is defined in Actions menu a new display mode is activated. Every time the current bank has a bank name the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. On new display mode the bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
+
+![](./images/oled.mov)
+
+It is possible to customize the standard behaviour descrived above using some modifier.
+
+- If the bank name start with colon (:) the bank name is always shown (if no event occurs).
+
+  ![DISPLAY 1](./images/oled-display2.png "Display 2")
+
+- If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
+
+  ![DISPLAY 1](./images/oled-display3.png "Display 3")
+
+- A double hashtag sign (##) in bank name is replaced with then current bank number.
+- If action tag start with colon (:) the display is not switched when an event occurs
+- A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
 
 ## How to switch profiles
 
@@ -315,4 +333,4 @@ On TTGO T-Eight replace BOOT button with CENTER button.
 ## Factory default configuration and first configuration
 
 The factory default configuration is quite simple: 6 momentary pedals, one actions on press, all MIDI interfaces interface enabled.
-More customized configuration are available online here.
+More customized configuration are available here.
