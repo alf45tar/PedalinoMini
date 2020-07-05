@@ -1,6 +1,6 @@
 [![](./images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
 
-Version 2.0 is out! Hardware is the same but a lot of news on software. Check it out.
+Version 2.0 is out! Hardware is the same but there are a lot of new feautures and stability improvment. Check it out.
 
 # PedalinoMini™
 
@@ -300,7 +300,6 @@ Bank Name|Empty|![](./images/oled-display1.png)|If the current bank name is empt
 Bank Name|Any|![](./images/oled-display2.mov)|If current bank name is not empty the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. On new display mode the bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
 Bank Name|:|![](./images/oled-display3.png)|If the bank name start with colon (:) the bank name is always shown (if no event occurs).
 Bank Name|.|![](./images/oled-display4.mov)|If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
-Bank Name|##|![](./images/oled-display5.mov)|A double hashtag sign (##) in bank name is replaced with then current bank number.
 Action Tag|:|![](./images/oled-display6.mov)|If action tag start with colon (:) the display is not switched when an event occurs
 Action Tag|###|![](./images/oled-display7.mov)|A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
 
@@ -314,7 +313,7 @@ During normal operation
 
 On TTGO T-Eight replace BOOT button with CENTER button.
 
-## Factory default configuration and first configuration
+## Factory default configuration
 
 The factory default configuration is quite simple: 6 momentary pedals, one actions on press, all MIDI interfaces interface enabled.
-More customized configuration are available here.
+More configuration are available here.
