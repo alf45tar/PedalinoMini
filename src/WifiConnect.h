@@ -67,7 +67,6 @@ void stop_services()
 {
   MDNS.end();
   ArduinoOTA.end();
-  ipMIDI.close();
   oscUDPin.close();
   oscUDPout.close();
 }
@@ -108,11 +107,11 @@ void start_services()
   }
 #endif
 
-  ipMIDI.listenMulticast(ipMIDImulticast, ipMIDIdestPort);
-  ipMIDI.onPacket(ipMidiOnPacket);
-  DPRINT("ipMIDI server started\n");
+  // ipMIDI
+  ip_midi_start();
+  DPRINT("ipMIDI started\n");
 
-  // RTP-MDI
+  // RTP-MIDI
   apple_midi_start();
   DPRINT("RTP-MIDI started\n");
 

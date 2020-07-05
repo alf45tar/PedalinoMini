@@ -14,20 +14,22 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
 #include <AsyncUDP.h>
-#include <AppleMidi.h>
+#include <AppleMIDI.h>
+#include <ipMIDI.h>
 #include <OSCMessage.h>
 #include <OSCBundle.h>
 #include <OSCData.h>
 
 // WiFi MIDI interface to comunicate with AppleMIDI/RTP-MDI devices
 
-APPLEMIDI_CREATE_INSTANCE(WiFiUDP, AppleMIDI); // see definition in AppleMidi_Defs.h
+//APPLEMIDI_CREATE_INSTANCE(WiFiUDP, AppleMIDI); // see definition in AppleMidi_Defs.h
+USING_NAMESPACE_APPLEMIDI
+APPLEMIDI_CREATE_INSTANCE(WiFiUDP, RTP_MIDI, "PedalinoMini", DEFAULT_CONTROL_PORT);
 
-// ipMIDI
+// WiFi interface to comunicate with ipMIDI devices
 
-AsyncUDP                ipMIDI;
-IPAddress               ipMIDImulticast(225, 0, 0, 37);
-const unsigned int      ipMIDIdestPort = 21928;
+IPMIDI_CREATE_INSTANCE(WiFiUDP, IP_MIDI, 21928);
+
 
 // WiFi OSC comunication
 
@@ -108,92 +110,92 @@ unsigned long           wifiLastOn         = 0;
 
 void AppleMidiSendNoteOn(byte note, byte velocity, byte channel)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendNoteOn(note, velocity, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendNoteOn(note, velocity, channel);
 }
 
 void AppleMidiSendNoteOff(byte note, byte velocity, byte channel)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendNoteOff(note, velocity, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendNoteOff(note, velocity, channel);
 }
 
 void AppleMidiSendAfterTouchPoly(byte note, byte pressure, byte channel)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendPolyPressure(note, pressure, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendPolyPressure(note, pressure, channel);
 }
 
 void AppleMidiSendControlChange(byte number, byte value, byte channel)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendControlChange(number, value, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendControlChange(number, value, channel);
 }
 
 void AppleMidiSendProgramChange(byte number, byte channel)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendProgramChange(number, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendProgramChange(number, channel);
 }
 
 void AppleMidiSendAfterTouch(byte pressure, byte channel)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendAfterTouch(pressure, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendAfterTouch(pressure, channel);
 }
 
 void AppleMidiSendPitchBend(int bend, byte channel)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendPitchBend(bend, channel);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendPitchBend(bend, channel);
 }
 
-void AppleMidiSendSystemExclusive(const byte* array, unsigned size)
+void AppleMidiSendSystemExclusive(const byte* array, unsigned int size)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSysEx(array, size);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendSysEx(size, array);
 }
 
 void AppleMidiSendTimeCodeQuarterFrame(byte data)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendTimeCodeQuarterFrame(data);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendTimeCodeQuarterFrame(data);
 }
 
 void AppleMidiSendSongPosition(unsigned int beats)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSongPosition(beats);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendSongPosition(beats);
 }
 
 void AppleMidiSendSongSelect(byte songnumber)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendSongSelect(songnumber);
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendSongSelect(songnumber);
 }
 
 void AppleMidiSendTuneRequest(void)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendTuneRequest();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendTuneRequest();
 }
 
 void AppleMidiSendClock(void)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendClock();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendClock();
 }
 
 void AppleMidiSendStart(void)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendStart();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendStart();
 }
 
 void AppleMidiSendContinue(void)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendContinue();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendContinue();
 }
 
 void AppleMidiSendStop(void)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendStop();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendStop();
 }
 
 void AppleMidiSendActiveSensing(void)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendActiveSensing();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendActiveSensing();
 }
 
 void AppleMidiSendSystemReset(void)
 {
-  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) AppleMIDI.sendReset();
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendSystemReset();
 }
 
 void AppleMidiSendRealTimeMessage(byte type)
@@ -233,153 +235,128 @@ void AppleMidiSendRealTimeMessage(byte type)
 
 // Send messages to WiFi ipMIDI interface
 
-void ipMIDISendChannelMessage1(byte type, byte channel, byte data1)
-{
-  byte midiPacket[2];
-
-  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
-
-  midiPacket[0] = (type & 0xf0) | ((channel - 1) & 0x0f);
-  midiPacket[1] = data1;
-  ipMIDI.writeTo(midiPacket, 2, ipMIDImulticast, ipMIDIdestPort);
-}
-
-void ipMIDISendChannelMessage2(byte type, byte channel, byte data1, byte data2)
-{
-  byte midiPacket[3];
-
-  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
-
-  midiPacket[0] = (type & 0xf0) | ((channel - 1) & 0x0f);
-  midiPacket[1] = data1;
-  midiPacket[2] = data2;
-  ipMIDI.writeTo(midiPacket, 3, ipMIDImulticast, ipMIDIdestPort);
-}
-
-void ipMIDISendSystemCommonMessage1(byte type, byte data1)
-{
-  byte midiPacket[2];
-
-  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
-
-  midiPacket[0] = type;
-  midiPacket[1] = data1;
-  ipMIDI.writeTo(midiPacket, 2, ipMIDImulticast, ipMIDIdestPort);
-}
-
-void ipMIDISendSystemCommonMessage2(byte type, byte data1, byte data2)
-{
-  byte  midiPacket[3];
-
-  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
-
-  midiPacket[0] = type;
-  midiPacket[1] = data1;
-  midiPacket[2] = data2;
-  ipMIDI.writeTo(midiPacket, 3, ipMIDImulticast, ipMIDIdestPort);
-}
-
-void ipMIDISendRealTimeMessage(byte type)
-{
-  byte midiPacket[1];
-
-  if (!wifiEnabled || !interfaces[PED_IPMIDI].midiOut) return;
-
-  midiPacket[0] = type;
-  ipMIDI.writeTo(midiPacket, 1, ipMIDImulticast, ipMIDIdestPort);
-}
-
 void ipMIDISendNoteOn(byte note, byte velocity, byte channel)
 {
-  ipMIDISendChannelMessage2(midi::NoteOn, channel, note, velocity);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendNoteOn(note, velocity, channel);
 }
 
 void ipMIDISendNoteOff(byte note, byte velocity, byte channel)
 {
-  ipMIDISendChannelMessage2(midi::NoteOff, channel, note, velocity);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendNoteOff(note, velocity, channel);
 }
 
 void ipMIDISendAfterTouchPoly(byte note, byte pressure, byte channel)
 {
-  ipMIDISendChannelMessage2(midi::AfterTouchPoly, channel, note, pressure);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendPolyPressure(note, pressure, channel);
 }
 
 void ipMIDISendControlChange(byte number, byte value, byte channel)
 {
-  ipMIDISendChannelMessage2(midi::ControlChange, channel, number, value);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendControlChange(number, value, channel);
 }
 
 void ipMIDISendProgramChange(byte number, byte channel)
 {
-  ipMIDISendChannelMessage1(midi::ProgramChange, channel, number);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendProgramChange(number, channel);
 }
 
 void ipMIDISendAfterTouch(byte pressure, byte channel)
 {
-  ipMIDISendChannelMessage1(midi::AfterTouchChannel, channel, pressure);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendAfterTouch(pressure, channel);
 }
 
 void ipMIDISendPitchBend(int bend, byte channel)
 {
-  const unsigned ubend = unsigned(bend - int(MIDI_PITCHBEND_MIN));
-  ipMIDISendChannelMessage2(midi::PitchBend, channel, ubend & 0x7f, (ubend >> 7) & 0x7f);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendPitchBend(bend, channel);
 }
 
-void ipMIDISendSystemExclusive(const byte* array, unsigned size)
+void ipMIDISendSystemExclusive(const byte* array, unsigned int size)
 {
-  //
-  //  to be implemented
-  //
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendSysEx(size, array);
 }
 
 void ipMIDISendTimeCodeQuarterFrame(byte data)
 {
-  ipMIDISendSystemCommonMessage1(midi::TimeCodeQuarterFrame, data);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendTimeCodeQuarterFrame(data);
 }
 
 void ipMIDISendSongPosition(unsigned int beats)
 {
-  ipMIDISendSystemCommonMessage2(midi::SongPosition, beats >> 4, beats & 0x0f);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendSongPosition(beats);
 }
 
 void ipMIDISendSongSelect(byte songnumber)
 {
-  ipMIDISendSystemCommonMessage1(midi::SongSelect, songnumber);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendSongSelect(songnumber);
 }
 
 void ipMIDISendTuneRequest(void)
 {
-  ipMIDISendRealTimeMessage(midi::TuneRequest);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendTuneRequest();
 }
 
 void ipMIDISendClock(void)
 {
-  ipMIDISendRealTimeMessage(midi::Clock);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendClock();
 }
 
 void ipMIDISendStart(void)
 {
-  ipMIDISendRealTimeMessage(midi::Start);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendStart();
 }
 
 void ipMIDISendContinue(void)
 {
-  ipMIDISendRealTimeMessage(midi::Continue);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendContinue();
 }
 
 void ipMIDISendStop(void)
 {
-  ipMIDISendRealTimeMessage(midi::Stop);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendStop();
 }
 
 void ipMIDISendActiveSensing(void)
 {
-  ipMIDISendRealTimeMessage(midi::ActiveSensing);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendActiveSensing();
 }
 
 void ipMIDISendSystemReset(void)
 {
-  ipMIDISendRealTimeMessage(midi::SystemReset);
+  if (wifiEnabled && interfaces[PED_IPMIDI].midiOut) IP_MIDI.sendSystemReset();
+}
+
+void ipMIDISendRealTimeMessage(byte type)
+{
+  switch (type) {
+
+      case midi::TuneRequest:
+        ipMIDISendTuneRequest();
+        break;
+
+      case midi::Clock:
+        ipMIDISendClock();
+        break;
+
+      case midi::Start:
+        ipMIDISendStart();
+        break;
+
+      case midi::Continue:
+        ipMIDISendContinue();
+        break;
+
+      case midi::Stop:
+        ipMIDISendStop();
+        break;
+
+      case midi::ActiveSensing:
+        ipMIDISendActiveSensing();
+        break;
+
+      case midi::SystemReset:
+        ipMIDISendSystemReset();
+        break;
+    }
 }
 
 

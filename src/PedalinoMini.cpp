@@ -53,6 +53,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #endif
 
 #include <esp32-hal-log.h>
+#include <esp_partition.h>
 #include <esp_bt_main.h>
 #include <string>
 #include "Pedalino.h"
@@ -110,17 +111,37 @@ void IRAM_ATTR onButtonRight()
   last_interrupt_time = interrupt_time;
 }
 
-void IRAM_ATTR onButtonCenter()
+void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t buttonState)
 {
-  static unsigned long last_interrupt_time = 0;
-  unsigned long interrupt_time = millis();
-  // If interrupts come faster than 500ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 500) {
-    scrollingMode = !scrollingMode;
-  }
-  last_interrupt_time = interrupt_time;
-}
+  DPRINT("Pedal: Boot    Button: %d    EventType: %d     ButtonState: %d\n", button, eventType, buttonState);
 
+  switch (eventType) {
+
+    case AceButton::kEventClicked:
+      /*
+      if (!reloadProfile) {
+        currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
+        reloadProfile = true;
+      }
+      */
+      currentBank = (currentBank == BANKS - 1 ? 0 : currentBank + 1);
+      break;
+
+    case AceButton::kEventDoubleClicked:
+      /*
+      if (!reloadProfile) {
+        currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
+        reloadProfile = true;
+      }
+      */
+        currentBank = (currentBank == 0 ? BANKS - 1 : currentBank - 1);
+      break;
+
+    case AceButton::kEventLongPressed:
+      scrollingMode = !scrollingMode;
+      break;
+  }
+}
 
 void setup()
 {
@@ -148,6 +169,12 @@ void setup()
   DPRINT("Flash Size %d, Flash Speed %d Hz\n",ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
+  esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, "nvs");
+  if (pi != NULL) {
+    const esp_partition_t* nvs = esp_partition_get(pi);
+    DPRINT("%s Total %d\n", nvs->label, nvs->size);
+    esp_partition_iterator_release(pi);
+  }
   DPRINT("PlatformIO Built Environment: %s\n", xstr(PLATFORMIO_ENV));
 
   DPRINTLN("_________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___ ");
@@ -194,22 +221,15 @@ void setup()
   }
 #endif
 
-#if __BOARD_HAS_PSRAM__
-  banks = (bank**)heap_caps_malloc(BANKS*sizeof(bank*), MALLOC_CAP_SPIRAM);
-  for (byte b = 0; b < BANKS; b++)
-    banks[b] = (bank*)heap_caps_malloc(PEDALS*sizeof(bank), MALLOC_CAP_SPIRAM);
-
-  pedals = (pedal*)heap_caps_malloc(PEDALS*sizeof(pedal), MALLOC_CAP_SPIRAM);
-
-  sequences = (sequence**)heap_caps_malloc(SEQUENCES*sizeof(sequence*), MALLOC_CAP_SPIRAM);
-  for (byte s = 0; s < SEQUENCES; s++)
-    sequences[s] = (sequence*)heap_caps_malloc(STEPS*sizeof(sequence), MALLOC_CAP_SPIRAM);
-
-  lastMIDIMessage = (message*)heap_caps_malloc(BANKS*sizeof(message), MALLOC_CAP_SPIRAM);
-#endif
-
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
+
+  if (!SPIFFS.begin()) {
+      DPRINT("SPIFFS mount FAILED\n");
+  }
+  else {
+    DPRINT("SPIFFS mount OK\n");
+  }
 
   eeprom_init_or_erase();
   eeprom_read_global();
@@ -405,15 +425,21 @@ void setup()
 
   attachInterrupt(LEFT_PIN,   onButtonLeft,   CHANGE);
 
-  //attachInterrupt(CENTER_PIN, onButtonCenter, CHANGE);
-  bootButton.begin();
-  bootButton.setPressTime(pressTime);
-  bootButton.setDoublePressTime(doublePressTime);
-  bootButton.setLongPressTime(longPressTime);
-  bootButton.setRepeatTime(repeatPressTime);
-  bootButton.enableDoublePress(true);
-  bootButton.enableLongPress(true);
-  bootButton.enableRepeat(true);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureDoubleClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureRepeatPress);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+  bootButtonConfig.setDebounceDelay(DEBOUNCE_INTERVAL);
+  bootButtonConfig.setClickDelay(pressTime);
+  bootButtonConfig.setDoubleClickDelay(doublePressTime);
+  bootButtonConfig.setLongPressDelay(longPressTime);
+  bootButtonConfig.setRepeatPressDelay(repeatPressTime);
+  bootButtonConfig.setRepeatPressInterval(repeatPressTime);
+  bootButton.init(&bootButtonConfig, CENTER_PIN);
+  bootButton.setEventHandler(boot_button_event_handler);
 
   attachInterrupt(RIGHT_PIN,  onButtonRight,  CHANGE);
 
@@ -428,23 +454,7 @@ void loop()
 {
   if (firmwareUpdate) return;
 
-  switch (bootButton.read()){
-    case MD_UISwitch::KEY_PRESS:
-      if (!reloadProfile) {
-        currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
-        reloadProfile = true;
-      }
-      break;
-    case MD_UISwitch::KEY_DPRESS:
-      if (!reloadProfile) {
-        currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
-        reloadProfile = true;
-      }
-      break;
-    case MD_UISwitch::KEY_LONGPRESS:
-      scrollingMode = !scrollingMode;
-      break;
-  }
+  bootButton.check();
 
 #ifdef WIFI
   if (!appleMidiConnected && !bleMidiConnected) WIFI_LED_OFF();
@@ -492,11 +502,22 @@ void loop()
     DPRINTMIDI("USB MIDI", USB_MIDI.getType(), USB_MIDI.getChannel(), USB_MIDI.getData1(), USB_MIDI.getData2());
 
   if (interfaces[PED_DINMIDI].midiIn && DIN_MIDI.read())
-    DPRINTMIDI("Serial MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
+    DPRINTMIDI("DIN MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
 
+#ifdef BLE
+  if (interfaces[PED_BLEMIDI].midiIn && BLE_MIDI.read())
+    DPRINTMIDI("BLE MIDI", BLE_MIDI.getType(), BLE_MIDI.getChannel(), BLE_MIDI.getData1(), BLE_MIDI.getData2());
+#endif
+
+#ifdef WIFI
   if (wifiEnabled) {
-    // Listen to incoming AppleMIDI messages from WiFi
-    rtpMIDI_listen();
+    if (WiFi.isConnected()) {
+      if (interfaces[PED_RTPMIDI].midiIn && RTP_MIDI.read())
+        DPRINTMIDI("RTP MIDI", RTP_MIDI.getType(), RTP_MIDI.getChannel(), RTP_MIDI.getData1(), RTP_MIDI.getData2());
+
+      if (interfaces[PED_IPMIDI].midiIn && IP_MIDI.read())
+        DPRINTMIDI("IP  MIDI", IP_MIDI.getType(), IP_MIDI.getChannel(), IP_MIDI.getData1(), IP_MIDI.getData2());
+    }
 
     http_run();
 
@@ -511,6 +532,7 @@ void loop()
     Debug.handle();
 #endif
   }
+#endif // WIFI
 
   // Update display
   display_update();

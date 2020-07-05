@@ -12,8 +12,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 #undef CLASSIC_BT_ENABLED
 
 #ifdef BLE
-#include <esp_bt.h>
-#include <BleMidi.h>
+#include <BLE-MIDI.h>
+#include <hardware/BLE-MIDI_ESP32.h>
 
 void OnBleMidiConnected() {
   bleMidiConnected = true;
@@ -119,16 +119,16 @@ void OnBleMidiReceivePitchBend(byte channel, int bend)
   screen_info(midi::PitchBend, bend, 0, channel);
 }
 
-void OnBleMidiReceiveSysEx(const byte *data, uint16_t size)
+void OnBleMidiReceiveSystemExclusive(byte *array, unsigned int size)
 {
   if (!interfaces[PED_BLEMIDI].midiIn) return;
 
-  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSysEx(size, data);
-  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSysEx(size, data);
-  if (interfaces[PED_BLEMIDI].midiThru) BLESendSystemExclusive(data, size);
-  AppleMidiSendSystemExclusive(data, size);
-  ipMIDISendSystemExclusive(data, size);
-  OSCSendSystemExclusive(data, size);
+  if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendSysEx(size, array);
+  if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendSysEx(size, array);
+  if (interfaces[PED_BLEMIDI].midiThru) BLESendSystemExclusive(array, size);
+  AppleMidiSendSystemExclusive(array, size);
+  ipMIDISendSystemExclusive(array, size);
+  OSCSendSystemExclusive(array, size);
 }
 
 void OnBleMidiReceiveTimeCodeQuarterFrame(byte data)
@@ -143,7 +143,7 @@ void OnBleMidiReceiveTimeCodeQuarterFrame(byte data)
   OSCSendTimeCodeQuarterFrame(data);
 }
 
-void OnBleMidiReceiveSongPosition(unsigned short beats)
+void OnBleMidiReceiveSongPosition(unsigned int beats)
 {
   if (!interfaces[PED_BLEMIDI].midiIn) return;
 
@@ -239,7 +239,7 @@ void OnBleMidiReceiveActiveSensing(void)
   OSCSendActiveSensing();
 }
 
-void OnBleMidiReceiveReset(void)
+void OnBleMidiReceiveSystemReset(void)
 {
   if (!interfaces[PED_BLEMIDI].midiIn) return;
 
@@ -255,31 +255,31 @@ void ble_midi_start_service()
 {
   if (!bleEnabled) return;
 
-  // Create a session and wait for a remote host to connect to us
-  BleMIDI.begin(host.c_str());
+  // Initiate BLE MIDI communications, listen to all channels
+  BLE_MIDI.begin(MIDI_CHANNEL_OMNI);
 
-  BleMIDI.onConnected(OnBleMidiConnected);
-  BleMIDI.onDisconnected(OnBleMidiDisconnected);
+  BLEBLE_MIDI.onConnected(OnBleMidiConnected);
+  BLEBLE_MIDI.onDisconnected(OnBleMidiDisconnected);
 
   // Connect the handle function called upon reception of a MIDI message from BLE MIDI interface
-  BleMIDI.setHandleNoteOn(OnBleMidiNoteOn);
-  BleMIDI.setHandleNoteOff(OnBleMidiNoteOff);
-  BleMIDI.setHandleAfterTouchPoly(OnBleMidiReceiveAfterTouchPoly);
-  BleMIDI.setHandleControlChange(OnBleMidiReceiveControlChange);
-  BleMIDI.setHandleProgramChange(OnBleMidiReceiveProgramChange);
-  BleMIDI.setHandleAfterTouchChannel(OnBleMidiReceiveAfterTouchChannel);
-  BleMIDI.setHandlePitchBend(OnBleMidiReceivePitchBend);
-  BleMIDI.setHandleSysEx(OnBleMidiReceiveSysEx);
-  BleMIDI.setHandleTimeCodeQuarterFrame(OnBleMidiReceiveTimeCodeQuarterFrame);
-  BleMIDI.setHandleSongPosition(OnBleMidiReceiveSongPosition);
-  BleMIDI.setHandleSongSelect(OnBleMidiReceiveSongSelect);
-  BleMIDI.setHandleTuneRequest(OnBleMidiReceiveTuneRequest);
-  BleMIDI.setHandleClock(OnBleMidiReceiveClock);
-  BleMIDI.setHandleStart(OnBleMidiReceiveStart);
-  BleMIDI.setHandleContinue(OnBleMidiReceiveContinue);
-  BleMIDI.setHandleStop(OnBleMidiReceiveStop);
-  BleMIDI.setHandleActiveSensing(OnBleMidiReceiveActiveSensing);
-  BleMIDI.setHandleReset(OnBleMidiReceiveReset);
+  BLE_MIDI.setHandleNoteOn(OnBleMidiNoteOn);
+  BLE_MIDI.setHandleNoteOff(OnBleMidiNoteOff);
+  BLE_MIDI.setHandleAfterTouchPoly(OnBleMidiReceiveAfterTouchPoly);
+  BLE_MIDI.setHandleControlChange(OnBleMidiReceiveControlChange);
+  BLE_MIDI.setHandleProgramChange(OnBleMidiReceiveProgramChange);
+  BLE_MIDI.setHandleAfterTouchChannel(OnBleMidiReceiveAfterTouchChannel);
+  BLE_MIDI.setHandlePitchBend(OnBleMidiReceivePitchBend);
+  BLE_MIDI.setHandleSystemExclusive(OnBleMidiReceiveSystemExclusive);
+  BLE_MIDI.setHandleTimeCodeQuarterFrame(OnBleMidiReceiveTimeCodeQuarterFrame);
+  BLE_MIDI.setHandleSongPosition(OnBleMidiReceiveSongPosition);
+  BLE_MIDI.setHandleSongSelect(OnBleMidiReceiveSongSelect);
+  BLE_MIDI.setHandleTuneRequest(OnBleMidiReceiveTuneRequest);
+  BLE_MIDI.setHandleClock(OnBleMidiReceiveClock);
+  BLE_MIDI.setHandleStart(OnBleMidiReceiveStart);
+  BLE_MIDI.setHandleContinue(OnBleMidiReceiveContinue);
+  BLE_MIDI.setHandleStop(OnBleMidiReceiveStop);
+  BLE_MIDI.setHandleActiveSensing(OnBleMidiReceiveActiveSensing);
+  BLE_MIDI.setHandleSystemReset(OnBleMidiReceiveSystemReset);
 }
 
 #endif  // BLE

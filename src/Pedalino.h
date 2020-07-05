@@ -17,13 +17,15 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
 #define PROFILES          3
-#define BANKS            10
+#define ACTIONS         256
+#define BANKS            20
 #define PEDALS            6
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of switches in a resistor ladder
 
-#define MAXPEDALNAME     10
+#define MAXACTIONNAME    10
+#define MAXBANKNAME      10
 
 // https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 // GPIOs 34 to 39 are GPIs – input only pins.
@@ -75,39 +77,21 @@ ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 #define MIDI_BAUD_RATE                  31250
 #define HIGH_SPEED_SERIAL_BAUD_RATE     1000000
 
-struct Serial1MIDISettings : public midi::DefaultSettings
-{
-  static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = USB_MIDI_IN_PIN;
-  static const int8_t TxPin  = USB_MIDI_OUT_PIN;
-};
-
-struct Serial2MIDISettings : public midi::DefaultSettings
-{
-  static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = DIN_MIDI_IN_PIN;
-  static const int8_t TxPin  = DIN_MIDI_OUT_PIN;
-};
-
 #define SERIAL_MIDI_USB   Serial1
 #define SERIAL_MIDI_DIN   Serial2
 
-MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, Serial1MIDISettings);
-MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MIDISettings);
+MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI);
+MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI);
 
 
 typedef uint8_t   byte;
 
 #include <ResponsiveAnalogRead.h>       // https://github.com/dxinteractive/ResponsiveAnalogRead
-#include <MD_UISwitch.h>                // https://github.com/MajicDesigns/MD_UISwitch
 #include <MD_REncoder.h>                // https://github.com/MajicDesigns/MD_REncoder
+#include <AceButton.h>                  // https://github.com/bxparks/AceButton
+using namespace ace_button;
 
-#define DEBOUNCE_INTERVAL 20
-#define BOUNCE_LOCK_OUT                 // This method is a lot more responsive, but does not cancel noise.
-//#define BOUNCE_WITH_PROMPT_DETECTION  // Report accurate switch time normally with no delay. Use when accurate switch transition timing is important.
-#include <Bounce2.h>                    // https://github.com/thomasfredericks/Bounce2
-
-
+#define DEBOUNCE_INTERVAL      20
 #define PED_PRESS_TIME        200
 #define PED_DOUBLE_PRESS_TIME 400
 #define PED_LONG_PRESS_TIME   500
@@ -125,20 +109,29 @@ typedef uint8_t   byte;
 #define PED_BOOT_LADDER_CONFIG  7
 #define PED_FACTORY_DEFAULT     8
 
-#define PED_EMPTY               0
-#define PED_PROGRAM_CHANGE      1
-#define PED_CONTROL_CHANGE      2
-#define PED_NOTE_ON_OFF         3
+#define PED_EMPTY               midi::InvalidType
+#define PED_PROGRAM_CHANGE      midi::ProgramChange
+#define PED_CONTROL_CHANGE      midi::ControlChange
+#define PED_NOTE_ON             midi::NoteOn
+#define PED_NOTE_OFF            midi::NoteOff
 #define PED_BANK_SELECT_INC     4
 #define PED_BANK_SELECT_DEC     5
 #define PED_PROGRAM_CHANGE_INC  6
 #define PED_PROGRAM_CHANGE_DEC  7
-#define PED_PITCH_BEND          8
-#define PED_CHANNEL_PRESSURE    9
-#define PED_MIDI_START          10
-#define PED_MIDI_STOP           11
-#define PED_MIDI_CONTINUE       12
+#define PED_PITCH_BEND          midi::PitchBend
+#define PED_CHANNEL_PRESSURE    midi::AfterTouchChannel
+#define PED_MIDI_START          midi::Start
+#define PED_MIDI_STOP           midi::Stop
+#define PED_MIDI_CONTINUE       midi::Continue
 #define PED_SEQUENCE            20
+#define PED_ACTION_BANK_PLUS    21
+#define PED_ACTION_BANK_MINUS   22
+#define PED_ACTION_START        23
+#define PED_ACTION_STOP         24
+#define PED_ACTION_CONTINUE     25
+#define PED_ACTION_TAP          26
+#define PED_ACTION_BPM_PLUS     27
+#define PED_ACTION_BPM_MINUS    29
 
 #define PED_NONE                1
 #define PED_MOMENTARY1          2
@@ -153,10 +146,10 @@ typedef uint8_t   byte;
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
 #define PED_PRESS_L             4
-#define PED_PRESS_1_2           3
-#define PED_PRESS_1_L           5
-#define PED_PRESS_2_L           6
-#define PED_PRESS_1_2_L         7
+#define PED_PRESS_1_2           PED_PRESS_1 + PED_PRESS_2
+#define PED_PRESS_1_L           PED_PRESS_1 + PED_PRESS_L
+#define PED_PRESS_2_L           PED_PRESS_2 + PED_PRESS_L
+#define PED_PRESS_1_2_L         PED_PRESS_1 + PED_PRESS_2 + PED_PRESS_L
 
 #define PED_MIDI                1
 #define PED_BANK_PLUS           2
@@ -171,6 +164,14 @@ typedef uint8_t   byte;
 #define PED_BANK_MINUS_2       11
 #define PED_BANK_PLUS_3        12
 #define PED_BANK_MINUS_3       13
+
+#define PED_EVENT_PRESS         AceButton::kEventPressed
+#define PED_EVENT_RELEASE       AceButton::kEventReleased
+#define PED_EVENT_CLICK         AceButton::kEventClicked
+#define PED_EVENT_DOUBLE_CLICK  AceButton::kEventDoubleClicked
+#define PED_EVENT_LONG_PRESS    AceButton::kEventLongPressed
+#define PED_EVENT_MOVE          6
+#define PED_EVENT_JOG           7
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
@@ -209,8 +210,11 @@ typedef uint8_t   byte;
                                           // software 1 to 16-bit resolution
 #define CALIBRATION_DURATION   8000       // milliseconds
 
-struct bank {
-  char                   pedalName[MAXPEDALNAME+1];
+struct action {
+  char                   name[MAXACTIONNAME+1];
+  byte                   pedal;
+  byte                   button;
+  byte                   event;
   byte                   midiMessage;     /*  1 = Program Change,
                                               2 = Control Code
                                               3 = Note On/Note Off
@@ -226,13 +230,22 @@ struct bank {
                                              13 = Sequence */
   byte                   midiChannel;     /* MIDI channel 1-16 */
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
-  byte                   midiValue1;      /* Single click */
-  byte                   midiValue2;      /* Double click */
-  byte                   midiValue3;      /* Long click */
+  byte                   midiValue1;
+  byte                   midiValue2;
+  action                *next;
+};
+
+struct bank {
+  char                   pedalName[MAXACTIONNAME+1];
+  byte                   midiMessage;
+  byte                   midiChannel;
+  byte                   midiCode;
+  byte                   midiValue1;
+  byte                   midiValue2;
 };
 
 struct pedal {
-  byte                   function;        /*  1 = MIDI
+  byte                   function;        /*  1 = None (use Actions)
                                               2 = Bank+
                                               3 = Bank-
                                               4 = Start
@@ -269,8 +282,8 @@ struct pedal {
   int                    expMax;            // [0, ADC_RESOLUTION-1]
   int                    pedalValue[2];     // [0, MIDI_RESOLUTION-1]
   unsigned long          lastUpdate[2];     // last time the value is changed
-  Bounce                *debouncer[2];
-  MD_UISwitch           *footSwitch[2];
+  AceButton             *button[LADDER_STEPS];
+  ButtonConfig          *buttonConfig;
   MD_REncoder           *jogwheel;
   ResponsiveAnalogRead  *analogPedal;
 };
@@ -324,19 +337,15 @@ struct message {
   byte                   midiChannel;     /* MIDI channel 1-16 */
 };
 
-MD_UISwitch_Digital bootButton(CENTER_PIN);
-
-#ifdef __BOARD_HAS_PSRAM__
-bank**      banks;
-pedal*      pedals;
-sequence**  sequences;
-message*    lastMIDIMessage;
-#else
-bank      banks[BANKS][PEDALS];                   // Banks Setup
+char      banknames[BANKS][MAXBANKNAME+1];        // Bank Names
+action   *actions[BANKS];                         // Actions
+bank      banks[BANKS][PEDALS];                   // The first action of every pedal
 pedal     pedals[PEDALS];                         // Pedals Setup
 sequence  sequences[SEQUENCES][STEPS];            // Sequences Setup
+byte      currentMIDIValue[BANKS][PEDALS][LADDER_STEPS];
 message   lastMIDIMessage[BANKS];
-#endif
+byte      lastProgramChange[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint16_t  lastBankSelect[16]    = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 interface interfaces[] = {
                            "USB MIDI   ", 0, 1, 0, 0, 0,
@@ -347,6 +356,10 @@ interface interfaces[] = {
                            "OSC        ", 1, 1, 0, 0, 0
                           };                       // Interfaces Setup
 
+AceButton       bootButton;
+ButtonConfig    bootButtonConfig;
+uint16_t        ladderLevels[LADDER_STEPS+1] = {497, 660, 752, 816, 876, 945, ADC_RESOLUTION - 1};  // TC-Helicon Switch 6
+
 bool  tapDanceMode            = false;
 bool  repeatOnBankSwitch      = false;
 bool  tapDanceBank            = true;
@@ -355,6 +368,7 @@ byte  bootMode                = PED_BOOT_NORMAL;
 volatile byte currentProfile  = 0;
 volatile bool reloadProfile   = true;
 volatile bool saveProfile     = false;
+volatile bool loadConfig      = false;
 volatile bool scrollingMode   = false;  // Display scrolling mode
 byte  currentBank             = 0;
 byte  currentPedal            = 0;
@@ -362,7 +376,7 @@ byte  currentInterface        = PED_USBMIDI;
 byte  lastUsedSwitch          = 0xFF;
 byte  lastUsedPedal           = 0xFF;
 byte  lastUsed                = 0xFF;   // Pedal or switch
-char  lastPedalName[MAXPEDALNAME+1] = "";
+char  lastPedalName[MAXACTIONNAME+1] = "";
 bool  selectBank              = true;
 byte  currentMidiTimeCode     = PED_MTC_NONE;
 byte  timeSignature           = PED_TIMESIGNATURE_4_4;
@@ -391,8 +405,6 @@ bool  bleConnected            = false;
 
 String wifiSSID("");
 String wifiPassword("");
-
-MD_UISwitch_Analog::uiAnalogKeys_t kt[LADDER_STEPS];
 
 bool powersaver = false;
 bool firmwareUpdate = false;
@@ -447,6 +459,10 @@ extern AsyncWebSocket   webSocket;
 extern AsyncEventSource events;
 #endif
 
+void   controller_delete();
+void   delete_actions();
+void   sort_actions();
+void   create_banks();
 void   wifi_connect();
 void   blynk_enable();
 void   blynk_disable();
