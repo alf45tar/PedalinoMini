@@ -8,7 +8,7 @@ cache:
     directories:
         - "~/.platformio"
 env:
-    - PLATFORMIO_CI_SRC=.
+    - PLATFORMIO_CI_SRC=. src/partitions_ota.csv src/partitions_no_ota.csv
 
 install:
     - pip install -U platformio
