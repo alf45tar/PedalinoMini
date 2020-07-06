@@ -94,51 +94,6 @@ Arduino Pro Micro is powered by the USB MIDI connection.
 
 IMPORTANT: ESP32 board and Arduino Pro Micro must share GND.
 
-## How to connect PedalinoMini™ to a WiFi network
-
-PedalinoMini™ supports IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).
-
-PedalinoMini™ implements Wi-Fi Protected Setup (WPS) and Smart Config technology ([Espressif’s ESP-TOUCH protocol](https://www.espressif.com/en/products/software/esp-touch/overview)). WPS needs access to the WPS button on the WiFi router. Smart Config requires a smartphone with one the following apps:
-
-- [ESP8266 SmartConfig](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch) for Android
-- [Espressif Esptouch](https://itunes.apple.com/us/app/espressif-esptouch/id1071176700?mt=8) for iOS
-
-If the WiFi network is not available PedalinoMini™ will create an hotspot for you. Once connected to the PedalinoMini™ hotspot, you can use the web interface to set the SSID and password of an access point that you would like to connect to.
-
-- On power on Pedalino will try to connect to the last know access point
-- If it cannot connect to the last used access point within 15 seconds it enters into Smart Config mode
-- Start one of the suggested apps to configure SSID and password
-- If it doesn't receive any SSID and password during the next 15 seconds it enters into WPS mode
-- Press WPS button on your WiFi router
-- If it doesn't receive any SSID and password during the next 15 seconds it switch to AP mode
-- In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
-- Reboot Pedalino to restart the procedure.
-
-```C++
-void wifi_connect()
-{
-  auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
-  if (!WiFi.isConnected())
-    smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
-  if (!WiFi.isConnected())
-    wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
-  if (!WiFi.isConnected())
-    ap_mode_start();          // switch to AP mode until next reboot
-}
-```
-
-## How to connect to PedalinoMini™ web user intertace
-
-The responsive and mobile-first configuration web user interface is available on http://_device-name_.local address (the address is case insensitive). The device identification name is unique per device. Every device/board has a different device name. For example I am using http://8e2de6b4.local to connect to my PedalinoMini™.
-
-In order to know your device name and/or the IP address press for at least half a second the BOOT button and check the display.
-
-As alternative method you can use the IP address. If you are using the AP mode the IP address is 192.168.1.4 and the connection address is http://192.168.1.4 for everyone.
-
-The default username and password to connect to web user interface are _admin_ as username and your _device-name_ in __uppercase__ as password. For example I am using _admin_ as username and _8E2DE6B4_ as password.
-
-Device name, username and password can be changed via web user interface in the Options page.
-
 ## Booting modes
 
 PedalinoMini™ has 8 booting modes:
@@ -176,6 +131,50 @@ Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware 
 - Web UI config is disabled in Normal (1) and Access Point with Bluetooth (4) due to memory limit.
 - OTA/HTTP Firmware Update is available only when firmware is less than 2 MB.
 
+## How to connect PedalinoMini™ to a WiFi network
+
+PedalinoMini™ supports IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).
+
+PedalinoMini™ implements Wi-Fi Protected Setup (WPS) and Smart Config technology ([Espressif’s ESP-TOUCH protocol](https://www.espressif.com/en/products/software/esp-touch/overview)). WPS needs access to the WPS button on the WiFi router. Smart Config requires a smartphone with one the following apps:
+
+- [ESP8266 SmartConfig](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch) for Android
+- [Espressif Esptouch](https://itunes.apple.com/us/app/espressif-esptouch/id1071176700?mt=8) for iOS
+
+If the WiFi network is not available PedalinoMini™ will create an hotspot for you. Once connected to the PedalinoMini™ hotspot, you can use the web interface to set the SSID and password of an access point that you would like to connect to.
+
+- On power on Pedalino will try to connect to the last know access point
+- If it cannot connect to the last used access point within 15 seconds it enters into Smart Config mode
+- Start one of the suggested apps to configure SSID and password
+- If it doesn't receive any SSID and password during the next 15 seconds it enters into WPS mode
+- Press WPS button on your WiFi router
+- If it doesn't receive any SSID and password during the next 15 seconds it switch to AP mode
+- In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
+- Reboot Pedalino to restart the procedure.
+
+```C++
+void wifi_connect()
+{
+  auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
+  if (!WiFi.isConnected())
+    smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+  if (!WiFi.isConnected())
+    wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
+  if (!WiFi.isConnected())
+    ap_mode_start();          // switch to AP mode until next reboot
+}
+```
+
+## How to connect to web user intertace
+
+The responsive and mobile-first configuration web user interface is available on http://_device-name_.local address (the address is case insensitive). The device identification name is unique per device. Every device/board has a different device name. For example I am using http://8e2de6b4.local to connect to my PedalinoMini™.
+
+In order to know your device name and/or the IP address press for at least half a second the BOOT button and check the display.
+
+As alternative method you can use the IP address. If you are using the AP mode the IP address is 192.168.1.4 and the connection address is http://192.168.1.4 for everyone.
+
+The default username and password to connect to web user interface are _admin_ as username and your _device-name_ in __uppercase__ as password. For example I am using _admin_ as username and _8E2DE6B4_ as password.
+
+Device name, username and password can be changed via web user interface in the Options page.
 
 ## Pedals
 
