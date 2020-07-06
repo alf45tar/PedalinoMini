@@ -1,4 +1,4 @@
-Version 2.0 is out! Hardware is the same but there are a lot of new feautures and stability improvment. Check it out.
+> Version 2.0 is out! Hardware is the same but there are a lot of new feautures and stability improvment. Check it out.
 
 [![](./images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
 
