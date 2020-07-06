@@ -9,12 +9,10 @@ cache:
         - "~/.platformio"
 env:
     - PLATFORMIO_CI_SRC=.
-    - PLATFORMIO_CI_SRC=src/partitions_ota.csv
-    - PLATFORMIO_CI_SRC=src/partitions_no_ota.csv
 
 install:
     - pip install -U platformio
     - platformio update
 
 script:
-    - platformio ci --project-conf=platformio.ini
+    - platformio ci --project-conf=platformio.ini . src/partitions_ota.csv src/partitions_no_ota.csv
