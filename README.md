@@ -166,13 +166,13 @@ void wifi_connect()
 
 ## How to connect to web user intertace
 
-The responsive and mobile-first configuration web user interface is available on http://_device-name_.local address (the address is case insensitive). The device identification name is unique per device. Every device/board has a different device name. For example I am using http://8e2de6b4.local to connect to my PedalinoMini™.
+The responsive and mobile-first configuration web user interface is available on `http://_device-name_.local` address (the address is case insensitive). The device identification name is unique per device. Every device/board has a different device name. For example I am using `http://8e2de6b4.local` to connect to my PedalinoMini™.
 
 In order to know your device name and/or the IP address press for at least half a second the BOOT button and check the display.
 
-As alternative method you can use the IP address. If you are using the AP mode the IP address is always 192.168.1.4 and the connection address is http://192.168.1.4 for everyone.
+As alternative method you can use the IP address. If you are using the AP mode the IP address is always `192.168.1.4` and the connection address is `http://192.168.1.4` for everyone.
 
-The default username and password to connect to web user interface are _admin_ as username and your _device-name_ in __uppercase__ as password. For example I am using _admin_ as username and _8E2DE6B4_ as password.
+The default username and password to connect to web user interface are `admin` as username and your `device-name` in __uppercase__ as password. For example I am using `admin` as username and `8E2DE6B4` as password.
 
 Device name, username and password can be changed via web user interface in the Options page.
 
