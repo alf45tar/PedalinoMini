@@ -127,6 +127,18 @@ void wifi_connect()
 }
 ```
 
+## How to connect to PedalinoMini™ web user intertace
+
+The responsive and mobile-first configuration web user interface is available on http://_device-name_.local address (the address is case insensitive). The device identification name is unique per device. Every device/board has a different device name. For example I am using http://8e2de6b4.local to connect to my PedalinoMini™.
+
+In order to know your device name and/or the IP address press for at least half a second the BOOT button and check the display.
+
+As alternative method you can use the IP address. If you are using the AP mode the IP address is 192.168.1.4 and the connection address is http://192.168.1.4 for everyone.
+
+The default username and password to connect to web user interface are _admin_ as username and your _device-name_ in __uppercase__ as password. For example I am using _admin_ as username and _8E2DE6B4_ as password.
+
+Device name, username and password can be changed via web user interface in the Options page.
+
 ## Booting modes
 
 PedalinoMini™ has 8 booting modes:
@@ -167,7 +179,7 @@ Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware 
 
 ## Pedals
 
-Once PedalinoMini™ is connected to a WiFI network is time to configure which pedal is connected to each port.
+Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal/controller is connected to each of the 6 available ports.
 
 ![WEBUI PEDALS](./images/webui-pedals.png "Pedals")
 
@@ -196,7 +208,7 @@ any|BPM-|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
 
 ## Actions
 
-Once Pedals setup is complete proceed with Actions setup to define which pedal event trigger an action.
+Once Pedals setup is complete proceed with Actions setup to define which event (press, release, double press, long press, rotate or jog) trigger an action.
 
 1. Select a bank on top left
 2. Select a pedal on top right or "All"
