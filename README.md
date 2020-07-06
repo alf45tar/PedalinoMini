@@ -1,6 +1,6 @@
-[![](./images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
-
 Version 2.0 is out! Hardware is the same but there are a lot of new feautures and stability improvment. Check it out.
+
+[![](./images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
 
 # PedalinoMini™
 
@@ -166,7 +166,7 @@ void wifi_connect()
 
 ## How to connect to web user intertace
 
-The responsive and mobile-first configuration web user interface is available on `http://_device-name_.local` address (the address is case insensitive). The device identification name is unique per device. Every device/board has a different device name. For example I am using `http://8e2de6b4.local` to connect to my PedalinoMini™.
+The responsive and mobile-first configuration web user interface is available on `http://device-name.local` address (the address is case insensitive). The device identification name is unique per device. Every device/board has a different device name. For example I am using `http://8e2de6b4.local` to connect to my PedalinoMini™.
 
 In order to know your device name and/or the IP address press for at least half a second the BOOT button and check the display.
 
