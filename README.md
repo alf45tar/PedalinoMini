@@ -194,7 +194,7 @@ any|TAP|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
 any|BPM+|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
 any|BPM-|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
 
-## Actions menu
+## Actions
 
 Once Pedals setup is complete proceed with Actions setup to define which pedal event trigger an action.
 
@@ -242,7 +242,7 @@ SEQUENCE|-|Sequence #|-|-
 - MSB is the Most Significat Byte. It is a fixed value from 0 to 127.
 - LSB is the Less Significat Byte. It is the variable value from 0 to 127.
 
-## Interface menu
+## Interfaces
 
 ![WEBUI INTERFACES](./images/webui-interfaces.png "Interfaces")
 
@@ -268,9 +268,9 @@ CLOCK|Enable/disable receiving and sending CLOCK MIDI message
 
 Routing between different interfaces is enabled between every IN enabled interfaces to any OUT enabled interfaces. Do not confuse routing (different interfaces) with MIDI Thru (between IN and OUT of same interface).
 
-## Options menu
+## Options
 
-PedalinoMini™ have a lot of options well documented in the Options page.
+PedalinoMini™ has a lot of options well documented in the Options page.
 
 ![WEBUI OPTIONS 1](./images/webui-options1.png "Options 1")
 
