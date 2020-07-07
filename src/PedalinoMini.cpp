@@ -113,7 +113,7 @@ void IRAM_ATTR onButtonRight()
 
 void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t buttonState)
 {
-  DPRINT("Pedal: Boot    Button: %d    EventType: %d     ButtonState: %d\n", button, eventType, buttonState);
+  DPRINT("Pedal: Boot    Button: %d    EventType: %d     ButtonState: %d\n", button->getId(), eventType, buttonState);
 
   switch (eventType) {
 

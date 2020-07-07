@@ -648,7 +648,7 @@ void get_live_page() {
 void get_actions_page() {
 
   const byte   b = constrain(uibank.toInt(), 1, BANKS);
-  const byte   p = constrain(uipedal.toInt(), 1, PEDALS);
+  //const byte   p = constrain(uipedal.toInt(), 1, PEDALS);
   action      *act;
   unsigned int i;
   bool         same_pedal;
@@ -2580,26 +2580,20 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     restartRequired = false;
   }
 
-  bool pressTimeChanged = false;
-
   if (request->arg("presstime").toInt() != pressTime) {
     pressTime = request->arg("presstime").toInt();
-    pressTimeChanged = true;
     loadConfig = true;
   }
   if (request->arg("doublepresstime").toInt() != doublePressTime) {
     doublePressTime = request->arg("doublepresstime").toInt();
-    pressTimeChanged = true;
     loadConfig = true;
   }
   if (request->arg("longpresstime").toInt() != longPressTime) {
     longPressTime = request->arg("longpresstime").toInt();
-    pressTimeChanged = true;
     loadConfig = true;
   }
   if (request->arg("repeatpresstime").toInt() != repeatPressTime) {
     repeatPressTime = request->arg("repeatpresstime").toInt();
-    pressTimeChanged = true;
     loadConfig = true;
   }
 

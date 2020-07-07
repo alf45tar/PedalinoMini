@@ -1172,6 +1172,8 @@ void OnOscMasterSlave(OSCMessage &msg)
           currentMidiTimeCode = PED_MTC_MASTER_24;
           MTC.sendPosition(0, 0, 0, 0);
           break;
+        default:
+          break;
       }
       break;
 
@@ -1185,6 +1187,8 @@ void OnOscMasterSlave(OSCMessage &msg)
         case MidiTimeCode::SynchroMTCMaster:
           MTC.setMode(MidiTimeCode::SynchroMTCSlave);
           currentMidiTimeCode = PED_MTC_SLAVE;
+          break;
+        default:
           break;
       }
       break;

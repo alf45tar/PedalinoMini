@@ -511,8 +511,8 @@ void eeprom_update_login_credentials(String username = "admin", String password 
   preferences.putString("HTTP Password", password);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("[NVS][Global][HTTP Username]: %s\n", username);
-  DPRINT("[NVS][Global][HTTP Password]: %s\n", password);
+  DPRINT("[NVS][Global][HTTP Username]: %s\n", username.c_str());
+  DPRINT("[NVS][Global][HTTP Password]: %s\n", password.c_str());
 }
 
 void eeprom_update_current_profile(byte profile = 0)
@@ -558,10 +558,10 @@ void eeprom_update_press_time(long p1 = PED_PRESS_TIME,
   preferences.putLong("Repeat Time", p4);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("[NVS][Global[Single Time]: %d\n", p1);
-  DPRINT("[NVS][Global[Double Time]: %d\n", p2);
-  DPRINT("[NVS][Global[Long   Time]: %d\n", p3);
-  DPRINT("[NVS][Global[Repeat Time]: %d\n", p4);
+  DPRINT("[NVS][Global[Single Time]: %ld\n", p1);
+  DPRINT("[NVS][Global[Double Time]: %ld\n", p2);
+  DPRINT("[NVS][Global[Long   Time]: %ld\n", p3);
+  DPRINT("[NVS][Global[Repeat Time]: %ld\n", p4);
 }
 
 void eeprom_update_blynk_cloud_enable(bool enable = false)
@@ -718,10 +718,10 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][Current Profile]:  %d\n", currentProfile);
     DPRINT("[NVS][Global][Tap Dance Mode]:   %d\n", tapDanceMode);
     DPRINT("[NVS][Global][Bank Switch]:      %d\n", repeatOnBankSwitch);
-    DPRINT("[NVS][Global][Single Time]:      %d\n", pressTime);
-    DPRINT("[NVS][Global][Double Time]:      %d\n", doublePressTime);
-    DPRINT("[NVS][Global][Long   Time]:      %d\n", longPressTime);
-    DPRINT("[NVS][Global][Repeat Time]:      %d\n", repeatPressTime);
+    DPRINT("[NVS][Global][Single Time]:      %ld\n", pressTime);
+    DPRINT("[NVS][Global][Double Time]:      %ld\n", doublePressTime);
+    DPRINT("[NVS][Global][Long   Time]:      %ld\n", longPressTime);
+    DPRINT("[NVS][Global][Repeat Time]:      %ld\n", repeatPressTime);
     DPRINT("[NVS][Global][Encoder Sensit]:   %d\n", encoderSensitivity);
     DPRINT("[NVS][Global][Blynk Cloud]:      %d\n", blynk_enabled());
     DPRINT("[NVS][Global][Blynk Token]:      %s\n", blynk_get_token().c_str());
