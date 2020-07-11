@@ -505,8 +505,10 @@ void loop()
     DPRINTMIDI("DIN MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
 
 #ifdef BLE
-  if (interfaces[PED_BLEMIDI].midiIn && BLE_MIDI.read())
-    DPRINTMIDI("BLE MIDI", BLE_MIDI.getType(), BLE_MIDI.getChannel(), BLE_MIDI.getData1(), BLE_MIDI.getData2());
+  if (bleEnabled) {
+    if (interfaces[PED_BLEMIDI].midiIn && BLE_MIDI.read())
+      DPRINTMIDI("BLE MIDI", BLE_MIDI.getType(), BLE_MIDI.getChannel(), BLE_MIDI.getData1(), BLE_MIDI.getData2());
+  }
 #endif
 
 #ifdef WIFI
