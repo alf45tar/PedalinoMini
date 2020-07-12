@@ -886,9 +886,6 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
         int offsetBackground = 0;
         static unsigned long ms = millis();
 
-        //display->drawRect(0, 13, 128, 51);
-        //display->drawRect(0, 13, 128, 12);
-        //display->drawRect(0, 52, 128, 12);
         display->setFont(ArialMT_Plain_10);
         for (byte p = 0; p < PEDALS/2; p++) {
           switch (p) {
@@ -938,7 +935,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
           name = (banknames[currentBank][0] == ':') ? &banknames[currentBank][1] : banknames[currentBank];
           name.replace(String("##"), String(currentBank));
-          display->drawString( 64 + x, 38 + y, name);
+          display->drawString( 64 + x, 37 + y, name);
         }
         else if (((millis() - ms < 8000) || (banknames[currentBank][0] == '.')) && (banknames[currentBank][0] != ':')) {
           name = (banknames[currentBank][0] == '.') ? &banknames[currentBank][1] : banknames[currentBank];
@@ -946,12 +943,8 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           display->setFont(ArialMT_Plain_10);
           display->setTextAlignment(TEXT_ALIGN_RIGHT);
           display->drawString(128 + x, y, name);
-          //display->setFont(ArialMT_Plain_16);
-          //display->setTextAlignment(TEXT_ALIGN_CENTER);
           for (byte p = 0; p < PEDALS/2; p++) {
             if ((pedals[p].function == PED_MIDI) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
-              //name = String(currentMIDIValue[currentBank][p]);
-              //display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 23 + y, name);
               display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 25 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p][0],
                                                                                                        banks[currentBank][p].midiValue1,
                                                                                                        banks[currentBank][p].midiValue2,
@@ -959,8 +952,6 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
                                                                                                    0, 100));
             }
             if ((pedals[p + PEDALS / 2].function == PED_MIDI) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
-              //name = String(currentMIDIValue[currentBank][p + PEDALS / 2]);
-              //display->drawString((128 / (PEDALS / 2)) * (p + 0.5) + x, 36 + y, name);
               display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue1,
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue2,
