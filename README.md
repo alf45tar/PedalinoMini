@@ -164,7 +164,7 @@ void wifi_connect()
 }
 ```
 
-## How to connect to web user intertace
+## How to connect to the web user intertace
 
 The responsive and mobile-first configuration web user interface is available on `http://device-name.local` address (the address is case insensitive). The device identification name is unique per device. Every device/board has a different device name. For example I am using `http://8e2de6b4.local` to connect to my PedalinoMini™.
 
@@ -261,12 +261,12 @@ The supported interfaces are:
 
 Interface|Description
 :--------|:----------
-USB MIDI| Plug&play USB MIDI interface. Requires additional hardware (see schematic).
-Legacy MIDI| Legacy serial MIDI interface with 5 pins DIN connectors. Requires additional hardware (see schematic).
-RTP-MIDI| RTP-MIDI also know as AppleMIDI or Network MIDI. It is based on UDP protocol and it requires WiFi.
-ipMIDI| ipMIDI is based on UDP protocol and it requires WiFi.
-BLE MIDI| Requires Bluetooth Low Energy (BLE).
-OSC| OSC messages are based on UDP protocol and it requires WiFi.
+USB MIDI|Plug&play USB MIDI interface. Requires additional hardware (see schematic).
+Legacy MIDI|Legacy serial MIDI interface with 5 pins DIN connectors. Requires additional hardware (see schematic).
+RTP-MIDI|RTP-MIDI also know as AppleMIDI or Network MIDI. It is based on UDP protocol and it requires WiFi.
+ipMIDI|ipMIDI is a multicast UDP protocol and it requires WiFi. ipMIDI works only if both end points are connected to the same 2.4 GHz WiFi network. Same router is not enough when one end point is connected to a 5 GHz WiFi netowrk or to a different 2.4 GHz WiFI network hosted by the same router.
+BLE MIDI|Requires Bluetooth Low Energy (BLE).
+OSC|OSC messages are based on UDP protocol and it requires WiFi.
 
 For each interface there are 4 filtering options:
 
