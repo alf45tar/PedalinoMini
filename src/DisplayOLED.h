@@ -412,11 +412,12 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   static uint8_t  level   = bat.level(voltage);
 #endif
 
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+
 #ifdef WIFI
     if (wifiEnabled) {
       static int      signal  = WiFi.RSSI();
-
-      display->setTextAlignment(TEXT_ALIGN_LEFT);
+      
       display->setFont(wifiSignal);
       signal = (4*signal + WiFi.RSSI()) / 5;
       if      (signal < -90) display->drawString(0, 0, String(0));
@@ -886,6 +887,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
         int offsetBackground = 0;
         static unsigned long ms = millis();
 
+        // Display pedals name
         display->setFont(ArialMT_Plain_10);
         for (byte p = 0; p < PEDALS/2; p++) {
           switch (p) {
@@ -905,9 +907,9 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
               offsetBackground = 1;
               break;
           }
+          // Top line
           name = String((banks[currentBank][p].pedalName[0] == ':') ? &banks[currentBank][p].pedalName[1] : banks[currentBank][p].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p][0]));
-          display->setColor(WHITE);
           if (pedals[p].function == PED_MIDI && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
             display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
                               12 + y,
@@ -915,8 +917,10 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
                               10);
             display->setColor(BLACK);
           }
+          else
+            display->setColor(WHITE);
           display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 10 + y, name);
-          display->setColor(WHITE);
+          // Bottom line
           name = String((banks[currentBank][p + PEDALS / 2].pedalName[0] == ':') ? &banks[currentBank][p + PEDALS / 2].pedalName[1] : banks[currentBank][p + PEDALS / 2].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p + PEDALS / 2][0]));
           if (pedals[p + PEDALS / 2].function == PED_MIDI && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
@@ -926,18 +930,23 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
                               10);
             display->setColor(BLACK);
           }
+          else
+            display->setColor(WHITE);
           display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 51 + y, name);
           display->setColor(WHITE);
         }
+        // Center area
         if (((millis() - ms < 4000) && (banknames[currentBank][0] != '.')) || (banknames[currentBank][0] == ':')) {
+          // Display bank name
           display->drawRect(0, 23, 128, 29);
-          display->setFont(ArialMT_Plain_24);
-          display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
           name = (banknames[currentBank][0] == ':') ? &banknames[currentBank][1] : banknames[currentBank];
           name.replace(String("##"), String(currentBank));
+          display->setFont(ArialMT_Plain_24);
+          display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
           display->drawString( 64 + x, 37 + y, name);
         }
         else if (((millis() - ms < 8000) || (banknames[currentBank][0] == '.')) && (banknames[currentBank][0] != ':')) {
+          // Display pedal values
           name = (banknames[currentBank][0] == '.') ? &banknames[currentBank][1] : banknames[currentBank];
           name.replace(String("##"), String(currentBank));
           display->setFont(ArialMT_Plain_10);
