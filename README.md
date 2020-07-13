@@ -72,7 +72,7 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 
 ## How to build and upload
 
-[PlatformIO](https://platformio.org) 4.1 is the recommended IDE for Pedalino build and upload.
+[PlatformIO](https://platformio.org) is the recommended IDE for Pedalino build and upload.
 
 1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode)
 2. Run the following commands from View->Command Palette (Ctrl+Shift+P)
@@ -106,7 +106,7 @@ Mode|Name|Description
 4|Access Point with Bluetooth|PedalinoMini™ skip the WiFi procedure on boot and create a WiFi Access Point.<br>PedalinoMini™ will wait for BLE-MIDI connection.<br>Web UI config is disabled.
 5|Access Point without Bluetooth|PedalinoMini™ skips the WiFi procedure on boot and create a WiFi Access Point.<br>BLE is disabled.
 6|Reset WiFi credentials|Forget the last connected access point.<br>On next boot PedalinoMini™ can be connected to a new AP.
-7|Ladder Config|Learn mode for your ladder pedal. Any resistors ladder can be calibrated just pressing footswitches in sequence.<br>Select at least one Ladder pedal before to proceed with configuration.
+7|Ladder Config|Learn mode for your ladder pedal. Any resistors ladder can be calibrated just pressing footswitches in sequence.<br>Configure at least one pedal as Ladder before to proceed with configuration.
 8|Reset to factory default|
 
 The last booting mode (1-5) is selected if you don't press any button on boot.
