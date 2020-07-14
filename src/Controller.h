@@ -925,7 +925,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
             case PED_MIDI_STOP:
             case PED_MIDI_CONTINUE:
             case PED_SEQUENCE:
-              midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
+              midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
             case PED_CONTROL_CHANGE:
@@ -933,29 +933,29 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
                    pedals[p].mode == PED_MOMENTARY2 ||
                    pedals[p].mode == PED_MOMENTARY3 ||
                    pedals[p].mode == PED_LADDER)    && (currentMIDIValue[currentBank][p][i] == act->midiValue1))
-                midi_send(act->midiMessage, act->midiCode, act->midiValue2, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
+                midi_send(act->midiMessage, act->midiCode, act->midiValue2, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               else
-                midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
+                midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
             case PED_BANK_SELECT_INC:
               lastBankSelect[act->midiChannel] = constrain(lastBankSelect[act->midiChannel] + 1, act->midiValue1, act->midiValue2);
-              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
+              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
             case PED_BANK_SELECT_DEC:
               lastBankSelect[act->midiChannel] = constrain(lastBankSelect[act->midiChannel] - 1, act->midiValue1, act->midiValue2);
-              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
+              midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
             case PED_PROGRAM_CHANGE_INC:
               lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel] + 1, act->midiValue1, act->midiValue2);
-              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
+              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
             case PED_PROGRAM_CHANGE_DEC:
               lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel] - 1, act->midiValue1, act->midiValue2);
-              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p);
+              midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
             case PED_ACTION_BANK_PLUS:
@@ -968,7 +968,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
                           lastMIDIMessage[currentBank].midiChannel,
                           true,
                           0, MIDI_RESOLUTION - 1,
-                          currentBank, act->pedal);
+                          currentBank, act->pedal, act->button);
               break;
 
             case PED_ACTION_BANK_MINUS:
@@ -981,7 +981,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
                           lastMIDIMessage[currentBank].midiChannel,
                           true,
                           0, MIDI_RESOLUTION - 1,
-                          currentBank, act->pedal);
+                          currentBank, act->pedal, act->button);
               break;
 
             case PED_ACTION_START:
@@ -1026,7 +1026,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
                           lastMIDIMessage[currentBank].midiChannel,
                           true,
                           0, MIDI_RESOLUTION - 1,
-                          currentBank, p);
+                          currentBank, p, i);
               break;
 
     case PED_BANK_MINUS:
@@ -1039,7 +1039,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
                           lastMIDIMessage[currentBank].midiChannel,
                           true,
                           0, MIDI_RESOLUTION - 1,
-                          currentBank, p);
+                          currentBank, p, i);
               break;
 
     case PED_START:
