@@ -1287,7 +1287,7 @@ void controller_setup()
       case PED_LADDER:
 
         for (byte s = 0; s < LADDER_STEPS; s++) {
-          pedals[i].button[s] = new AceButton((i + 1) * 10 + s + 1);
+          pedals[i].button[s] = new AceButton(s, pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + s + 1);
           assert(pedals[i].button[s] != nullptr);
          }
         pedals[i].buttonConfig = new LadderButtonConfig(PIN_A(i), LADDER_STEPS +  1, ladderLevels, LADDER_STEPS, pedals[i].button, pedals[i].invertPolarity ? LOW : HIGH);
@@ -1309,7 +1309,6 @@ void controller_setup()
         digitalWrite(PIN_D(i), HIGH);
         pinMode(PIN_A(i), INPUT_PULLUP);
         DPRINT("   Pin D%d", PIN_D(i));
-        pinMode(PIN_A(i), INPUT_PULLUP);
         DPRINT("   Pin A%d", PIN_A(i));
         pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);
         break;
