@@ -1256,12 +1256,12 @@ void controller_setup()
         pedals[i].buttonConfig->setLongPressDelay(longPressTime);
         pedals[i].buttonConfig->setRepeatPressDelay(repeatPressTime);
         pedals[i].buttonConfig->setRepeatPressInterval(repeatPressTime);
-        pedals[i].button[0] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 1);
-        pedals[i].button[1] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 2);
-        pedals[i].button[2] = new AceButton(pedals[i].buttonConfig, (i + 1) * 10 + 3);
+        pedals[i].button[0] = new AceButton(pedals[i].buttonConfig, 1, pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 1);
+        pedals[i].button[1] = new AceButton(pedals[i].buttonConfig, 2, pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 2);
+        pedals[i].button[2] = new AceButton(pedals[i].buttonConfig, 3, pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 3);
         pinMode(PIN_D(i), INPUT_PULLUP);
-        DPRINT("   Pin D%d", PIN_D(i));
         pinMode(PIN_A(i), INPUT_PULLUP);
+        DPRINT("   Pin D%d", PIN_D(i));
         DPRINT("   Pin A%d", PIN_A(i));
         pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);
         break;
@@ -1286,8 +1286,6 @@ void controller_setup()
 
       case PED_LADDER:
 
-        pinMode(PIN_D(i), OUTPUT);
-        digitalWrite(PIN_D(i), HIGH);
         for (byte s = 0; s < LADDER_STEPS; s++) {
           pedals[i].button[s] = new AceButton((i + 1) * 10 + s + 1);
           assert(pedals[i].button[s] != nullptr);
@@ -1307,7 +1305,10 @@ void controller_setup()
         pedals[i].buttonConfig->setLongPressDelay(longPressTime);
         pedals[i].buttonConfig->setRepeatPressDelay(repeatPressTime);
         pedals[i].buttonConfig->setRepeatPressInterval(repeatPressTime);
-
+        pinMode(PIN_D(i), OUTPUT);
+        digitalWrite(PIN_D(i), HIGH);
+        pinMode(PIN_A(i), INPUT_PULLUP);
+        DPRINT("   Pin D%d", PIN_D(i));
         pinMode(PIN_A(i), INPUT_PULLUP);
         DPRINT("   Pin A%d", PIN_A(i));
         pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);
