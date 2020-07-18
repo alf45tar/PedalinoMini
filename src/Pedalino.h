@@ -280,7 +280,7 @@ struct pedal {
   byte                   mapFunction;
   int                    expZero;           // [0, ADC_RESOLUTION-1]
   int                    expMax;            // [0, ADC_RESOLUTION-1]
-  int                    pedalValue[2];     // [0, MIDI_RESOLUTION-1]
+  int                    pedalValue[2];     // [0, ADC_RESOLUTION-1]
   unsigned long          lastUpdate[2];     // last time the value is changed
   AceButton             *button[LADDER_STEPS];
   ButtonConfig          *buttonConfig;

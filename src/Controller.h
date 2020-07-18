@@ -581,7 +581,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
 //
 // Trigger Actions on Analog Events
 //
-void controller_event_handler_analog(byte pedal, byte value)
+void controller_event_handler_analog(byte pedal, int value)
 {
   switch (pedals[pedal].function) {
 
@@ -589,6 +589,12 @@ void controller_event_handler_analog(byte pedal, byte value)
       action *act = actions[currentBank];
       while (act != nullptr) {
         if (act->pedal == pedal) {
+          value = map(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
+                      0,
+                      ADC_RESOLUTION - 1,
+                      pedals[pedal].invertPolarity ? act->midiValue2 : act->midiValue1,
+                      pedals[pedal].invertPolarity ? act->midiValue1 : act->midiValue2);
+          value = constrain(value, act->midiValue1, act->midiValue2);
           lastUsedPedal = pedal;
           lastUsed = pedal;
           strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
@@ -622,6 +628,7 @@ void controller_event_handler_analog(byte pedal, byte value)
             case PED_ACTION_BANK_PLUS:
             case PED_ACTION_BANK_MINUS:
               currentBank = map(value, 0, MIDI_RESOLUTION - 1, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
+              currentBank = constrain(currentBank, 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
                           lastMIDIMessage[currentBank].midiCode,
@@ -641,12 +648,13 @@ void controller_event_handler_analog(byte pedal, byte value)
         }
         act = act->next;
       }
+      }
       break;
-    }
 
     case PED_BANK_PLUS:
     case PED_BANK_MINUS:
       currentBank = map(value, 0, MIDI_RESOLUTION - 1, constrain(pedals[pedal].expZero - 1, 0, BANKS - 1), constrain(pedals[pedal].expMax - 1, 0, BANKS - 1));
+      currentBank = constrain(currentBank, 0, BANKS - 1);
       if (repeatOnBankSwitch)
         midi_send(lastMIDIMessage[currentBank].midiMessage,
                   lastMIDIMessage[currentBank].midiCode,
@@ -691,12 +699,7 @@ void refresh_analog(byte i, bool send)
   pedals[i].analogPedal->update(value);                     // update the responsive analog average
   if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
     value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
-    value = map(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
-              0,
-              ADC_RESOLUTION - 1,
-              pedals[i].invertPolarity ? MIDI_RESOLUTION - 1 : 0,
-              pedals[i].invertPolarity ? 0 : MIDI_RESOLUTION - 1);
-    double velocity = (1000.0 * ((int)value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
+    double velocity = (1000.0 * (value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
     DPRINT("Pedal %2d   input %d output %d velocity %.2f\n", i + 1, input, value, velocity);
     if (send) controller_event_handler_analog(i, value);
     pedals[i].pedalValue[0] = value;

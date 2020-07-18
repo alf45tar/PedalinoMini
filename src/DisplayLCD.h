@@ -300,7 +300,7 @@ void screen_update(bool force = false) {
     if (lastUsedPedal >= 0 && lastUsedPedal < PEDALS) {
       //strncpy(&buf[strlen(buf)], &bar2[0], map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 10));
       //strncpy(&buf[strlen(buf)], "          ", 10 - map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 10));
-      f = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 50);
+      f = map(pedals[lastUsedPedal].pedalValue[0], 0, ADC_RESOLUTION - 1, 0, 50);
       p = f % 5;
       f = f / 5;
       strncpy(&buf[strlen(buf)], &bar2[0], f);
