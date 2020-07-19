@@ -330,12 +330,15 @@ void autosensing_setup()
 
 void ladder_config()
 {
+  int input = 0;
+
   for (byte p = 0; p < PEDALS; p++) {
     if (pedals[p].mode == PED_LADDER) {
       ResponsiveAnalogRead analog(PIN_A(p), true);
 
       analogReadResolution(ADC_RESOLUTION_BITS);
       analogSetAttenuation(ADC_11db);
+      //analogSetClockDiv(255);
       analog.setAnalogResolution(ADC_RESOLUTION);
       analog.enableEdgeSnap();
       pinMode(PIN_D(p), OUTPUT);
@@ -348,7 +351,8 @@ void ladder_config()
         unsigned long start = millis();
         while (millis() - start < 3000) {
           display_progress_bar_update(3000 - (millis() - start), 3000);
-          analog.update();
+          input = (9 * input + analogRead(PIN_A(p))) / 10;
+          analog.update(input);
           if (analog.hasChanged()) display_progress_bar_2_update(analog.getValue(), ADC_RESOLUTION);
         }
         if (analog.getValue() != ADC_RESOLUTION-1) {
@@ -357,9 +361,8 @@ void ladder_config()
       }
       display_progress_bar_2_label(LADDER_STEPS, 128 * ladderLevels[LADDER_STEPS-1] / ADC_RESOLUTION);
       delay(1000);
-
+      ladderLevels[LADDER_STEPS] = pedals[p].invertPolarity ? 0 : ADC_RESOLUTION - 1;
       eeprom_update_ladder();
-      //eeprom_update_profile();
       break;
     }
   }
@@ -1279,6 +1282,7 @@ void controller_setup()
         pedals[i].analogPedal->setActivityThreshold(10.0);
         //pedals[i].analogPedal->setSnapMultiplier(0.1);
         //analogSetPinAttenuation(PIN_A(i), ADC_11db);
+        analogSetClockDiv(255);
         if (lastUsedPedal == 0xFF) {
           lastUsedPedal = i;
           lastUsed = i;
@@ -1300,8 +1304,8 @@ void controller_setup()
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureLongPress,   (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
         set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureRepeatPress, (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
         pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
         pedals[i].buttonConfig->setClickDelay(pressTime);
         pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
@@ -1311,6 +1315,7 @@ void controller_setup()
         pinMode(PIN_D(i), OUTPUT);
         digitalWrite(PIN_D(i), HIGH);
         pinMode(PIN_A(i), INPUT_PULLUP);
+        //analogSetClockDiv(8);
         DPRINT("   Pin D%d", PIN_D(i));
         DPRINT("   Pin A%d", PIN_A(i));
         pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);

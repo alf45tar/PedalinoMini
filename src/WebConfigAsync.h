@@ -1744,7 +1744,7 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Resistor Ladder Network</h5>");
   page += F("<div class='card-body'>");
-  for (byte i = 1; i <= LADDER_STEPS; i++) {
+  for (byte i = 1; i <= LADDER_STEPS + 1; i++) {
     page += F("<div class='input-group input-group-sm mb-3'>");
     page += F("<div class='input-group-prepend'>");
     page += F("<div class='input-group-text'>Level ");

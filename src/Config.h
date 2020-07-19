@@ -450,12 +450,12 @@ void load_factory_default()
   }
 
   // TC-Helicon Switch 6
-  ladderLevels[0] = 497;
-  ladderLevels[1] = 660;
-  ladderLevels[2] = 752;
-  ladderLevels[3] = 816;
-  ladderLevels[4] = 876;
-  ladderLevels[5] = 945;
+  ladderLevels[0] = 352;
+  ladderLevels[1] = 533;
+  ladderLevels[2] = 640;
+  ladderLevels[3] = 723;
+  ladderLevels[4] = 806;
+  ladderLevels[5] = 908;
   ladderLevels[6] = ADC_RESOLUTION - 1;
 }
 
@@ -602,7 +602,7 @@ void eeprom_update_ladder()
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global][Ladder]:\n");
-  for (byte i = 0; i < LADDER_STEPS; i++) {
+  for (byte i = 0; i < LADDER_STEPS + 1; i++) {
     DPRINT("Level %d: %d\n", i + 1, ladderLevels[i]);
   }
 }
