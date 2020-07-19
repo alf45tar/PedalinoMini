@@ -362,6 +362,7 @@ void setup()
       DPRINT("\nLadder Config\n");
       eeprom_read_profile();
       ladder_config();
+      ESP.restart();
       break;
 
     case PED_FACTORY_DEFAULT:

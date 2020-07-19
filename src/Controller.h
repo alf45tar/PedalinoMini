@@ -263,6 +263,8 @@ void autosensing_setup()
   int ring;   // ring connected to an input analog pin
   /*        */// sleeve connected to GND
 
+  return;
+
   DPRINT("Pedal autosensing...\n");
   analogReadResolution(ADC_RESOLUTION_BITS);
   analogSetAttenuation(ADC_11db);
@@ -1282,7 +1284,6 @@ void controller_setup()
         pedals[i].analogPedal->setActivityThreshold(10.0);
         //pedals[i].analogPedal->setSnapMultiplier(0.1);
         //analogSetPinAttenuation(PIN_A(i), ADC_11db);
-        analogSetClockDiv(255);
         if (lastUsedPedal == 0xFF) {
           lastUsedPedal = i;
           lastUsed = i;
@@ -1315,7 +1316,6 @@ void controller_setup()
         pinMode(PIN_D(i), OUTPUT);
         digitalWrite(PIN_D(i), HIGH);
         pinMode(PIN_A(i), INPUT_PULLUP);
-        //analogSetClockDiv(8);
         DPRINT("   Pin D%d", PIN_D(i));
         DPRINT("   Pin A%d", PIN_A(i));
         pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);
