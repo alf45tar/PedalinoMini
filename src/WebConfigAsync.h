@@ -2367,6 +2367,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
       }
       act = act->next;
     }
+    sort_actions();
     create_banks();
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
     if (request->arg("action").equals("save")) {
