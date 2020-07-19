@@ -188,6 +188,11 @@ void setup()
   DPRINT("\nHostname: %s\n", host.c_str());
   DPRINT("PSRAM%sfound\n", psramFound() ? " " : " not ");
 
+  SERIAL_MIDI_USB.end();
+  SERIAL_MIDI_USB.begin(MIDI_BAUD_RATE, SERIAL_8N1, USB_MIDI_IN_PIN, USB_MIDI_OUT_PIN);
+  SERIAL_MIDI_DIN.end();
+  SERIAL_MIDI_DIN.begin(MIDI_BAUD_RATE, SERIAL_8N1, DIN_MIDI_IN_PIN, DIN_MIDI_OUT_PIN);
+
 #ifdef BLE
   if (bleEnabled) {
     // Release Bluetooth Classic memory
