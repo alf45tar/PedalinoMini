@@ -9,6 +9,8 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#include <algorithm>
+
 void delete_actions() {
 
   for (byte b = 0; b < BANKS; b++) {
@@ -364,6 +366,7 @@ void ladder_config()
       display_progress_bar_2_label(LADDER_STEPS, 128 * ladderLevels[LADDER_STEPS-1] / ADC_RESOLUTION);
       delay(1000);
       ladderLevels[LADDER_STEPS] = pedals[p].invertPolarity ? 0 : ADC_RESOLUTION - 1;
+      std::sort(ladderLevels, ladderLevels+LADDER_STEPS+1);
       eeprom_update_ladder();
       break;
     }
