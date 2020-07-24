@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 void delete_actions() {
 
   for (byte b = 0; b < BANKS; b++) {
-    memset(banknames[b], 0, MAXBANKNAME+1);
+    //memset(banknames[b], 0, MAXBANKNAME+1);
     action *act = actions[b];
     actions[b] = nullptr;
     while (act != nullptr) {

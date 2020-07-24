@@ -36,33 +36,43 @@ using SpiRamJsonDocument = BasicJsonDocument<SpiRamAllocator>;
 //  Save configuration to SPIFFS file
 //
 
-void spiffs_save_config(String filename) {
+void spiffs_save_config(String filename, bool saveActions = true, bool savePedals = true, bool saveInterfaces = true, bool saveSequences = true, bool saveOptions  = true) {
 
   DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
   DPRINT("Memory allocated for JSON document: %d bytes\n", ESP.getMaxAllocHeap());
 
-  JsonArray jglobals = jdoc.createNestedArray("Globals");
-  JsonObject jo = jglobals.createNestedObject();
-  jo["Hostname"]            = host;
-  jo["BootMode"]            = bootMode;
-  jo["SSID"]                = wifiSSID;
-  jo["WiFiPassword"]        = wifiPassword;
-  jo["SSIDsoftAP"]          = ssidSoftAP;
-  jo["PasswordSoftAP"]      = passwordSoftAP;
-  jo["HTTPUsername"]        = httpUsername;
-  jo["HTTPPassword"]        = httpPassword;
-  jo["Theme"]               = theme;
-  jo["PressTime"]           = pressTime;
-  jo["DoublePressTime"]     = doublePressTime;
-  jo["LongPressTime"]       = longPressTime;
-  jo["RepeatPressTime"]     = repeatPressTime;
-  jo["EncoderSesitivity"]   = encoderSensitivity;
-  jo["TapDanceMode"]        = tapDanceMode;
-  jo["RepeatOnBankSwitch"]  = repeatOnBankSwitch;
-  jo["TapDanceBank"]        = tapDanceBank;
+  if (saveOptions) {
+    JsonArray jglobals = jdoc.createNestedArray("Globals");
+    JsonObject jo = jglobals.createNestedObject();
+    jo["Hostname"]            = host;
+    jo["BootMode"]            = bootMode;
+    jo["SSID"]                = wifiSSID;
+    jo["WiFiPassword"]        = wifiPassword;
+    jo["SSIDsoftAP"]          = ssidSoftAP;
+    jo["PasswordSoftAP"]      = passwordSoftAP;
+    jo["HTTPUsername"]        = httpUsername;
+    jo["HTTPPassword"]        = httpPassword;
+    jo["Theme"]               = theme;
+    jo["PressTime"]           = pressTime;
+    jo["DoublePressTime"]     = doublePressTime;
+    jo["LongPressTime"]       = longPressTime;
+    jo["RepeatPressTime"]     = repeatPressTime;
+    jo["EncoderSesitivity"]   = encoderSensitivity;
+    jo["TapDanceMode"]        = tapDanceMode;
+    jo["RepeatOnBankSwitch"]  = repeatOnBankSwitch;
+    jo["TapDanceBank"]        = tapDanceBank;
 
-  JsonArray jpedals = jdoc.createNestedArray("Pedals");
-  for (byte p = 0; p < PEDALS; p++) {
+    JsonArray jladder = jdoc.createNestedArray("Ladder");
+    for (byte s = 0; s < LADDER_STEPS; s++) {
+      JsonObject jo = jladder.createNestedObject();
+      jo["Step"]            = s + 1;
+      jo["Level"]           = ladderLevels[s];
+    }
+  }
+
+  if (savePedals) {
+    JsonArray jpedals = jdoc.createNestedArray("Pedals");
+    for (byte p = 0; p < PEDALS; p++) {
       JsonObject jo = jpedals.createNestedObject();
       jo["Pedal"]           = p + 1;
       jo["Function"]        = pedals[p].function;
@@ -73,36 +83,40 @@ void spiffs_save_config(String filename) {
       jo["MapFunction"]     = pedals[p].mapFunction;
       jo["Min"]             = pedals[p].expZero;
       jo["Max"]             = pedals[p].expMax;
-  }
-
-  JsonArray jbnames = jdoc.createNestedArray("BankNames");
-  for (byte b = 0; b < BANKS; b++) {
-    JsonObject jo = jbnames.createNestedObject();
-    jo["Bank"]              = b + 1;
-    jo["Name"]              = banknames[b];
-  }
-
-  JsonArray jactions = jdoc.createNestedArray("Actions");
-  for (byte b = 0; b < BANKS; b++) {
-    action *act = actions[b];
-    while (act != nullptr) {
-      JsonObject jo = jactions.createNestedObject();
-      jo["Bank"]            = b + 1;
-      jo["Pedal"]           = act->pedal + 1;
-      jo["Button"]          = act->button + 1;
-      jo["Name"]            = act->name;
-      jo["Event"]           = act->event;
-      jo["Message"]         = act->midiMessage;
-      jo["Channel"]         = act->midiChannel;
-      jo["Code"]            = act->midiCode;
-      jo["Value1"]          = act->midiValue1;
-      jo["Value2"]          = act->midiValue2;
-      act = act->next;
     }
   }
 
-  JsonArray jinterfaces = jdoc.createNestedArray("Interfaces");
-  for (byte i = 0; i < INTERFACES; i++) {
+  if (saveActions) {
+    JsonArray jbnames = jdoc.createNestedArray("BankNames");
+    for (byte b = 0; b < BANKS; b++) {
+      JsonObject jo = jbnames.createNestedObject();
+      jo["Bank"]              = b + 1;
+      jo["Name"]              = banknames[b];
+    }
+
+    JsonArray jactions = jdoc.createNestedArray("Actions");
+    for (byte b = 0; b < BANKS; b++) {
+      action *act = actions[b];
+      while (act != nullptr) {
+        JsonObject jo = jactions.createNestedObject();
+        jo["Bank"]            = b + 1;
+        jo["Pedal"]           = act->pedal + 1;
+        jo["Button"]          = act->button + 1;
+        jo["Name"]            = act->name;
+        jo["Event"]           = act->event;
+        jo["Message"]         = act->midiMessage;
+        jo["Channel"]         = act->midiChannel;
+        jo["Code"]            = act->midiCode;
+        jo["Value1"]          = act->midiValue1;
+        jo["Value2"]          = act->midiValue2;
+        act = act->next;
+      }
+    }
+  }
+
+  if (saveInterfaces) {
+    JsonArray jinterfaces = jdoc.createNestedArray("Interfaces");
+    for (byte i = 0; i < INTERFACES; i++) {
       JsonObject jo = jinterfaces.createNestedObject();
       jo["Interface"]       = i + 1;
       jo["Name"]            = interfaces[i].name;
@@ -111,28 +125,24 @@ void spiffs_save_config(String filename) {
       jo["Thru"]            = interfaces[i].midiThru;
       jo["Routing"]         = interfaces[i].midiRouting;
       jo["Clock"]           = interfaces[i].midiClock;
-  }
-
-  JsonArray jsequences = jdoc.createNestedArray("Sequences");
-  for (byte s = 0; s < SEQUENCES; s++) {
-    for (byte t = 0; t < STEPS; t++) {
-      JsonObject jo = jsequences.createNestedObject();
-      jo["Sequence"]        = s + 1;
-      jo["Step"]            = t + 1;
-      jo["Message"]         = sequences[s][t].midiMessage;
-      jo["Channel"]         = sequences[s][t].midiChannel;
-      jo["Code"]            = sequences[s][t].midiCode;
-      jo["Value1"]          = sequences[s][t].midiValue1;
-      jo["Value2"]          = sequences[s][t].midiValue2;
-      jo["Value3"]          = sequences[s][t].midiValue3;
     }
   }
 
-  JsonArray jladder = jdoc.createNestedArray("Ladder");
-  for (byte s = 0; s < LADDER_STEPS; s++) {
-      JsonObject jo = jladder.createNestedObject();
-      jo["Step"]            = s + 1;
-      jo["Level"]           = ladderLevels[s];
+  if (saveSequences) {
+    JsonArray jsequences = jdoc.createNestedArray("Sequences");
+    for (byte s = 0; s < SEQUENCES; s++) {
+      for (byte t = 0; t < STEPS; t++) {
+        JsonObject jo = jsequences.createNestedObject();
+        jo["Sequence"]        = s + 1;
+        jo["Step"]            = t + 1;
+        jo["Message"]         = sequences[s][t].midiMessage;
+        jo["Channel"]         = sequences[s][t].midiChannel;
+        jo["Code"]            = sequences[s][t].midiCode;
+        jo["Value1"]          = sequences[s][t].midiValue1;
+        jo["Value2"]          = sequences[s][t].midiValue2;
+        jo["Value3"]          = sequences[s][t].midiValue3;
+      }
+    }
   }
 
   jdoc.shrinkToFit();
@@ -170,7 +180,7 @@ void spiffs_save_config(String filename) {
 //  Load configuration from SPIFFS file
 //
 
-void spiffs_load_config(String filename) {
+void spiffs_load_config(String filename, bool loadActions = true, bool loadPedals = true, bool loadInterfaces = true, bool loadSequences = true, bool loadOptions  = true) {
 
   DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
   DPRINT("Memory allocated for JSON document: %d bytes\n", ESP.getMaxAllocHeap());
@@ -198,7 +208,7 @@ void spiffs_load_config(String filename) {
   JsonObject jro = jdoc.as<JsonObject>();
   // Loop through all the key-value pairs in obj
   for (JsonPair jp : jro) {
-    if (String(jp.key().c_str()) == String("Globals")) {
+    if (loadOptions && String(jp.key().c_str()) == String("Globals")) {
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
@@ -222,7 +232,18 @@ void spiffs_load_config(String filename) {
         }
       }
     }
-    else if (String(jp.key().c_str()) == String("Pedals")) {
+    else if (loadOptions && String(jp.key().c_str()) == String("Ladder")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          int s = jo["Step"];
+          s--;
+          s = constrain(s, 0, LADDER_STEPS - 1);
+          ladderLevels[s]             = jo["Level"];
+        }
+      }
+    }
+    else if (loadPedals && String(jp.key().c_str()) == String("Pedals")) {
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
@@ -240,7 +261,7 @@ void spiffs_load_config(String filename) {
         }
       }
     }
-    else if (String(jp.key().c_str()) == String("BankNames")) {
+    else if (loadActions && String(jp.key().c_str()) == String("BankNames")) {
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
@@ -251,8 +272,9 @@ void spiffs_load_config(String filename) {
         }
       }
     }
-    else if (String(jp.key().c_str()) == String("Actions")) {
+    else if (loadActions && String(jp.key().c_str()) == String("Actions")) {
       if (jp.value().is<JsonArray>()) {
+        delete_actions();
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
           int b = jo["Bank"];
@@ -304,7 +326,7 @@ void spiffs_load_config(String filename) {
         }
       }
     }
-    else if (String(jp.key().c_str()) == String("Interfaces")) {
+    else if (loadInterfaces && String(jp.key().c_str()) == String("Interfaces")) {
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
@@ -320,7 +342,7 @@ void spiffs_load_config(String filename) {
         }
       }
     }
-    else if (String(jp.key().c_str()) == String("Sequences")) {
+    else if (loadSequences && String(jp.key().c_str()) == String("Sequences")) {
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
@@ -336,17 +358,6 @@ void spiffs_load_config(String filename) {
           sequences[s][t].midiValue1  = jo["Value1"];
           sequences[s][t].midiValue2  = jo["Value2"];
           sequences[s][t].midiValue3  = jo["Value3"];
-        }
-      }
-    }
-    else if (String(jp.key().c_str()) == String("Ladder")) {
-      if (jp.value().is<JsonArray>()) {
-        JsonArray ja = jp.value();
-        for (JsonObject jo : ja) {
-          int s = jo["Step"];
-          s--;
-          s = constrain(s, 0, LADDER_STEPS - 1);
-          ladderLevels[s]             = jo["Level"];
         }
       }
     }

@@ -2669,6 +2669,8 @@ if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
 
 void http_handle_post_configurations(AsyncWebServerRequest *request) {
 
+  const String checked("on");
+
   if (request->arg("action") == String("new")) {
     if (request->arg("newconfiguration").isEmpty())  {
       alertError = F("Configuration not saved. No configuration name provided.");
@@ -2679,7 +2681,12 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
       File file = SPIFFS.open(configname, FILE_WRITE);
       if (file) {
         file.close();
-        spiffs_save_config(configname);
+        spiffs_save_config(configname,
+                           request->arg("actions1")    == checked,
+                           request->arg("pedals1")     == checked,
+                           request->arg("interfaces1") == checked,
+                           request->arg("sequences1")  == checked,
+                           request->arg("options1")    == checked);
         alert = F("Current profile setup saved as '");
         alert += request->arg("newconfiguration") + F("'.");
       }
@@ -2694,9 +2701,13 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   }
   else if (request->arg("action") == String("apply")) {
     String config = request->arg("filename");
-    delete_actions();
     controller_delete();
-    spiffs_load_config(config);
+    spiffs_load_config(config,
+                       request->arg("actions2")    == checked,
+                       request->arg("pedals2")     == checked,
+                       request->arg("interfaces2") == checked,
+                       request->arg("sequences2")  == checked,
+                       request->arg("options2")    == checked);
     sort_actions();
     create_banks();
     loadConfig = true;
@@ -2707,8 +2718,12 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   else if (request->arg("action") == String("save")) {
     String config = request->arg("filename");
     controller_delete();
-    delete_actions();
-    spiffs_load_config(config);
+    spiffs_load_config(config,
+                       request->arg("actions2")    == checked,
+                       request->arg("pedals2")     == checked,
+                       request->arg("interfaces2") == checked,
+                       request->arg("sequences2")  == checked,
+                       request->arg("options2")    == checked);
     sort_actions();
     create_banks();
     eeprom_update_globals();
