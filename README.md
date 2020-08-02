@@ -1,6 +1,7 @@
 [![](./images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
 
 > Version 2.0 is out! Hardware is the same but there are a lot of new feautures and stability improvment. Check it out.
+> Before any future update save configuration, reset to factory default and reload configuration.
 
 # PedalinoMini™
 
@@ -44,7 +45,7 @@ Wireless MIDI foot controller for guitarists and more.
 - Individual automatic calibration of expression pedals. Manual fine tuning is not usually requested.
 - Transform a linear expression pedal into log expression pedal and vice versa
 - Resistors ladder calibrated is easy as pressing footswitches in sequence.
-- 6 status leds that can be controlled by MIDI remote devices too
+- RGB NeoPixel/WS2812B status leds
 - Responsive and mobile-first configuration web interface (<http://pedalino.local>)
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
 - OTA (Over the Air) firmware update or via HTTP (<http://pedalino.local/update>)
