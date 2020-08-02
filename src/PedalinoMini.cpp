@@ -150,7 +150,7 @@ void setup()
   pinMode(WIFI_LED, OUTPUT);
   pinMode(BLE_LED, OUTPUT);
 
-  FastLED.addLeds<NEOPIXEL, CLOCK_PIN>(fastleds, LEDS);
+  FastLED.addLeds<NEOPIXEL, FASTLEDS_DATA_PIN>(fastleds, LEDS);
   for (byte l = 0; l < LEDS; l++)
     fastleds[l]= CRGB::Black;
   FastLED.show();
