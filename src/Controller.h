@@ -653,6 +653,9 @@ void controller_event_handler_analog(byte pedal, int value)
               MTC.setBpm(bpm);
               break;
           }
+          fastleds[act->led] = act->color;
+          fastleds[act->led] %= 100 * value / (MIDI_RESOLUTION - 1);
+          FastLED.show();
         }
         act = act->next;
       }
@@ -1021,6 +1024,12 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               MTC.setBpm(bpm);
               break;
           }
+          CRGB black = CRGB::Black;
+          if (fastleds[act->led] == black)
+            fastleds[act->led] = act->color;
+          else
+            fastleds[act->led] = CRGB::Black;
+          FastLED.show();
         }
         act = act->next;
       }

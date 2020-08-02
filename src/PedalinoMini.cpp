@@ -150,7 +150,11 @@ void setup()
   pinMode(WIFI_LED, OUTPUT);
   pinMode(BLE_LED, OUTPUT);
 
-  leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
+  FastLED.addLeds<NEOPIXEL, CLOCK_PIN>(fastleds, LEDS);
+  for (byte l = 0; l < LEDS; l++)
+    fastleds[l]= CRGB::Black;
+  FastLED.show();
+  //leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
   display_init();
 
 #ifdef DEBUG_ESP_PORT

@@ -17,12 +17,12 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
 #define PROFILES          3
-#define ACTIONS         256
 #define BANKS            20
 #define PEDALS            6
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of switches in a resistor ladder
+#define LEDS             18
 
 #define MAXACTIONNAME    10
 #define MAXBANKNAME      10
@@ -63,6 +63,10 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #endif
+
+#include "FastLED.h"
+#define FASTLEDS_DATA_PIN  GPIO_NUM_5
+CRGB fastleds[LEDS];
 
 #include "ShiftOut.h"
 
@@ -214,6 +218,8 @@ struct action {
   char                   name[MAXACTIONNAME+1];
   byte                   pedal;
   byte                   button;
+  byte                   led;
+  uint32_t               color;
   byte                   event;
   byte                   midiMessage;     /*  1 = Program Change,
                                               2 = Control Code

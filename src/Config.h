@@ -102,6 +102,8 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
         jo["Bank"]            = b + 1;
         jo["Pedal"]           = act->pedal + 1;
         jo["Button"]          = act->button + 1;
+        jo["Led"]             = act->led + 1;
+        jo["Color"]           = act->color;
         jo["Name"]            = act->name;
         jo["Event"]           = act->event;
         jo["Message"]         = act->midiMessage;
@@ -291,6 +293,8 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
             actions[b]->button         = jo["Button"];
             actions[b]->button--;
             actions[b]->button         = constrain(actions[b]->button, 0, LADDER_STEPS - 1);
+            actions[b]->led            = jo["Led"];
+            actions[b]->color          = jo["Color"];
             strlcpy(actions[b]->name, jo["Name"] | "", sizeof(actions[b]->name));
             actions[b]->event          = jo["Event"];
             actions[b]->midiMessage    = jo["Message"];
@@ -312,6 +316,8 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
                   act->button         = jo["Button"];
                   act->button--;
                   act->button         = constrain(act->button, 0, LADDER_STEPS - 1);
+                  act->led            = jo["Led"];
+                  act->color          = jo["Color"];
                   strlcpy(act->name, jo["Name"] | "", sizeof(act->name));
                   act->event          = jo["Event"];
                   act->midiMessage    = jo["Message"];

@@ -9,9 +9,10 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-String theme        = "bootstrap";
-String httpUsername = "admin";
-String httpPassword = getChipId();
+String theme         = "bootstrap";
+String httpUsername  = "admin";
+String httpPassword  = getChipId();
+bool   authenticated = false;
 
 #ifdef NOWIFI
 inline void http_run() {};
@@ -115,7 +116,7 @@ void get_top_page(int p = 0) {
   page += F("</li>");
   page += F("</ul>");
   }
-  if (p != 0 && p != 7)
+  if (p != -1 && p != 0 && p != 7)
   {
     page += F("<form class='form-inline my-2 my-lg-0'>");
     page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
@@ -166,6 +167,10 @@ void get_login_page() {
 
   get_top_page(-1);
 
+  page += F("<div class='col-4'>");
+  page += F("</div>");
+
+  page += F("<div class='col-4'>");
   page += F("<form class='form-signin'>");
   page += F("<div class='text-center mb-4'>");
   page += F("<img class='mb-4' src='/logo.png' alt='' width='64' height='64'>");
@@ -191,6 +196,10 @@ void get_login_page() {
   page += F("<button class='btn btn-lg btn-primary btn-block' type='submit'>Sign in</button>");
   page += F("<p class='mt-5 mb-3 text-muted text-center'>© 2018-2019</p>");
   page += F("</form>");
+  page += F("</div>");
+
+  page += F("<div class='col-4'>");
+  page += F("</div>");
 
   get_footer_page();
 }
@@ -970,6 +979,24 @@ void get_actions_page() {
     page += F(">BPM-</option>");
     page += F("</select>");
     page += F("</div>");
+    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group-prepend w-25'>");
+    page += F("<div class='input-group-text w-100'>Led</div>");
+    page += F("</div>");
+    page += F("<input type='number' class='form-control form-control-sm' name='led");
+    page += String(i);
+    page += F("' min='1' max='");
+    page += String(LEDS);
+    page += F("' value='");
+    page += String(act->led + 1);
+    page += F("'>");
+    page += F("<input type='color' class='form-control form-control-sm' name='color");
+    page += String(i);
+    page += F("' value='");
+    char color[8];
+    sprintf(color, "#%06X", act->color & 0xFFFFFF);
+    page += String(color);
+    page += F("'></div>");
     page += F("</div>");
 
     page += F("<div class='col-3'>");
@@ -2135,16 +2162,24 @@ size_t get_configurations_page_chunked(uint8_t *buffer, size_t maxLen, size_t in
 }
 
 void http_handle_login(AsyncWebServerRequest *request) {
-  get_login_page();
-  request->send(200, "text/html", page);
+  if (httpUsername.isEmpty()) {
+    authenticated = true;
+    request->redirect("/");
+  } else {
+    authenticated = false;
+    get_login_page();
+    request->send(200, "text/html", page);
+  }
 }
 
 void http_handle_post_login(AsyncWebServerRequest *request) {
   if (request->hasArg("username")) {
-    if (request->arg("username") == String("admin"))
+    if (request->arg("username") == httpUsername)
       if (request->hasArg("password"))
-        if (request->arg("password") == host)
-          request->redirect("/");
+        if (request->arg("password") == httpPassword) {
+          authenticated = true;
+          return request->redirect("/");
+        }
   }
   get_login_page();
   request->send(200, "text/html", page);
@@ -2271,6 +2306,8 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->name[0]      = 0;
     act->pedal        = p;
     act->button       = 0;
+    act->led          = LEDS - 1;
+    act->color        = 0;
     act->event        = PED_EVENT_PRESS;
     act->midiMessage  = PED_EMPTY;
     act->midiChannel  = 1;
@@ -2295,6 +2332,8 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->name[0]      = 0;
     act->pedal        = constrain(request->arg("action").charAt(3) - '1', 0, PEDALS - 1);
     act->button       = 0;
+    act->led          = LEDS - 1;
+    act->color        = 0;
     act->event        = PED_EVENT_PRESS;
     act->midiMessage  = PED_EMPTY;
     act->midiChannel  = 1;
@@ -2358,6 +2397,10 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
         i++;
         strncpy(act->name,            request->arg(String("name")     + String(i)).c_str(),    MAXACTIONNAME+1);
         act->button       = constrain(request->arg(String("button")   + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
+        act->led          = constrain(request->arg(String("led")      + String(i)).toInt() - 1, 0, LEDS - 1);
+        byte r, g, b;
+        sscanf(                        request->arg(String("color")    + String(i)).c_str(), "#%02x%02x%02x", &r, &g, &b);
+        act->color        = (r << 16) + (g << 8) + b;
         act->event        = constrain(request->arg(String("event")    + String(i)).toInt(), 0, 255);
         act->midiMessage  = constrain(request->arg(String("message")  + String(i)).toInt(), 0, 255);
         act->midiCode     = constrain(request->arg(String("code")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
