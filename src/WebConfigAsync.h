@@ -1860,11 +1860,16 @@ void get_options_page() {
   page += F("</div>");
 #endif
 
-  page += F("<div class='form-row'>");
-  page += F("<div class='col-auto'>");
+  page += F("<div class='form-row justify-content-between'>");
+  page += F("<div class='col-6'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
   page += F(" ");
   page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
+  page += F("</div>");
+  page += F("<div class='col-6'>");
+  page += F("<button type='submit' name='action' value='factorydefault' class='btn btn-primary'>Reset to Factory Default</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='reboot' class='btn btn-primary'>Reboot</button>");
   page += F("</div>");
   page += F("</div>");
 
@@ -2697,6 +2702,13 @@ if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
   else if (request->arg("action") == String("save")) {
     eeprom_update_globals();
     alert = "Changes saved.";
+  }
+  else if (request->arg("action") == String("factorydefault")) {
+    eeprom_initialize();
+    restartRequired = true;
+  }
+  else if (request->arg("action") == String("reboot")) {
+    restartRequired = true;
   }
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
