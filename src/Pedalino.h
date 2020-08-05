@@ -215,11 +215,16 @@ using namespace ace_button;
 #define CALIBRATION_DURATION   8000       // milliseconds
 
 struct action {
-  char                   name[MAXACTIONNAME+1];
+  char                   tag0[MAXACTIONNAME+1];
+  union {
+    char                 tag1[MAXACTIONNAME+1];
+    char                 name[MAXACTIONNAME+1];
+  };
   byte                   pedal;
   byte                   button;
   byte                   led;
-  uint32_t               color;
+  uint32_t               color0;
+  uint32_t               color1;
   byte                   event;
   byte                   midiMessage;     /*  1 = Program Change,
                                               2 = Control Code

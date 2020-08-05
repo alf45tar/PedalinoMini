@@ -43,7 +43,8 @@ void sort_actions() {
           t.midiCode       = idx->midiCode;
           t.midiValue1     = idx->midiValue1;
           t.midiValue2     = idx->midiValue2;
-          strncpy(idx->name, act->name, MAXACTIONNAME + 1);
+          strncpy(idx->tag0, act->tag0, MAXACTIONNAME + 1);
+          strncpy(idx->tag1, act->tag1, MAXACTIONNAME + 1);
           idx->pedal       = act->pedal;
           idx->button      = act->button;
           idx->event       = act->event;
@@ -52,7 +53,8 @@ void sort_actions() {
           idx->midiCode    = act->midiCode;
           idx->midiValue1  = act->midiValue1;
           idx->midiValue2  = act->midiValue2;
-          strncpy(act->name, t.name, MAXACTIONNAME + 1);
+          strncpy(act->tag0, t.tag0, MAXACTIONNAME + 1);
+          strncpy(act->tag1, t.tag1, MAXACTIONNAME + 1);
           act->pedal       = t.pedal;
           act->button      = t.button;
           act->event       = t.event;
@@ -653,8 +655,8 @@ void controller_event_handler_analog(byte pedal, int value)
               MTC.setBpm(bpm);
               break;
           }
-          fastleds[act->led] = act->color;
-          fastleds[act->led] %= 100 * value / (MIDI_RESOLUTION - 1);
+          fastleds[act->led] = act->color0;
+          fastleds[act->led] = fastleds[act->led].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
           FastLED.show();
         }
         act = act->next;
@@ -1024,11 +1026,11 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               MTC.setBpm(bpm);
               break;
           }
-          CRGB black = CRGB::Black;
-          if (fastleds[act->led] == black)
-            fastleds[act->led] = act->color;
+          CRGB off = act->color0;
+          if (fastleds[act->led] == off)
+            fastleds[act->led] = act->color1;
           else
-            fastleds[act->led] = CRGB::Black;
+            fastleds[act->led] = act->color0;
           FastLED.show();
         }
         act = act->next;

@@ -770,7 +770,7 @@ void get_actions_page() {
     page += F("<div class='form-row mt-2'>");
 
     page += F("<div class='col-2'>");
-    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-50'>");
     page += F("<div class='input-group-text w-100'>Button</div>");
     page += F("</div>");
@@ -803,21 +803,27 @@ void get_actions_page() {
     }
     page += F("</select>");
     page += F("</div>");
-
-    page += F("<div class='input-group input-group-sm'>");
-    page += F("<div class='input-group-prepend w-50'>");
-    page += F("<div class='input-group-text w-100'>Tag</div>");
-    page += F("</div>");
-    page += F("<input type='text' class='form-control form-control-sm' name='name");
-    page += String(i);
-    page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->name);
-    page += F("'></div>");
     page += F("</div>");
 
     page += F("<div class='col-4'>");
-    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group input-group-sm mb-1'>");
+    page += F("<div class='input-group-prepend w-25'>");
+    page += F("<div class='input-group-text w-100'>Tags</div>");
+    page += F("</div>");
+    page += F("<input type='text' class='form-control form-control-sm' placeholder='On' name='nameon");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->tag1);
+    page += F("'>");
+    page += F("<input type='text' class='form-control form-control-sm' placeholder='Off' name='nameoff");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->tag0);
+    page += F("'></div>");
+
+    page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-25'>");
     page += F("<div class='input-group-text w-100'>On</div>");
     page += F("</div>");
@@ -878,7 +884,7 @@ void get_actions_page() {
     //page += F("</div>");
 
     //page += F("<div class='col-2'>");
-    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-25'>");
     page += F("<div class='input-group-text w-100'>Send</div>");
     page += F("</div>");
@@ -979,7 +985,8 @@ void get_actions_page() {
     page += F(">BPM-</option>");
     page += F("</select>");
     page += F("</div>");
-    page += F("<div class='input-group input-group-sm'>");
+
+    page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-25'>");
     page += F("<div class='input-group-text w-100'>Led</div>");
     page += F("</div>");
@@ -990,17 +997,23 @@ void get_actions_page() {
     page += F("' value='");
     page += String(act->led + 1);
     page += F("'>");
-    page += F("<input type='color' class='form-control form-control-sm' name='color");
+    page += F("<input type='color' class='form-control form-control-sm' name='color1-");
     page += String(i);
     page += F("' value='");
     char color[8];
-    sprintf(color, "#%06X", act->color & 0xFFFFFF);
+    sprintf(color, "#%06X", act->color1 & 0xFFFFFF);
+    page += String(color);
+    page += F("'>");
+    page += F("<input type='color' class='form-control form-control-sm' name='color0-");
+    page += String(i);
+    page += F("' value='");
+    sprintf(color, "#%06X", act->color0 & 0xFFFFFF);
     page += String(color);
     page += F("'></div>");
     page += F("</div>");
 
     page += F("<div class='col-3'>");
-    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-50'>");
     page += F("<div class='input-group-text w-100'>Channel</div>");
     page += F("</div>");
@@ -1016,7 +1029,7 @@ void get_actions_page() {
     page += F("</select>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-50'>");
     page += F("<div class='input-group-text w-100'>Code</div>");
     page += F("</div>");
@@ -1025,10 +1038,8 @@ void get_actions_page() {
     page += F("' min='0' max='127' value='");
     page += String(act->midiCode);
     page += F("'></div>");
-    page += F("</div>");
 
-    page += F("<div class='col-2'>");
-    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-50'>");
     page += F("<div class='input-group-text w-100'>From</div>");
     page += F("</div>");
@@ -1037,10 +1048,8 @@ void get_actions_page() {
     page += F("' min='0' max='127' value='");
     page += String(act->midiValue1);
     page += F("'></div>");
-    //page += F("</div>");
 
-    //page += F("<div class='col-1'>");
-    page += F("<div class='input-group input-group-sm'>");
+    page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-50'>");
     page += F("<div class='input-group-text w-100'>To</div>");
     page += F("</div>");
@@ -1049,6 +1058,9 @@ void get_actions_page() {
     page += F("' min='0' max='127' value='");
     page += String(act->midiValue2);
     page += F("'></div>");
+    page += F("</div>");
+
+    page += F("<div class='col-2'>");
     page += F("</div>");
 
     page += F("<div class='col-1 text-center'>");
@@ -1296,9 +1308,9 @@ void get_pedals_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -1360,9 +1372,9 @@ void get_interfaces_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
   page += F("</div>");
   page += F("</div>");
 
@@ -1531,9 +1543,9 @@ void get_sequences_page() {
 
   page += F("<div class='form-row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -1861,15 +1873,15 @@ void get_options_page() {
 #endif
 
   page += F("<div class='form-row justify-content-between'>");
-  page += F("<div class='col-6'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary'>Apply</button>");
+  page += F("<div class='col-4'>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary'>Save</button>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
   page += F("</div>");
-  page += F("<div class='col-6'>");
-  page += F("<button type='submit' name='action' value='factorydefault' class='btn btn-primary'>Reset to Factory Default</button>");
+  page += F("<div class='col-8 text-right'>");
+  page += F("<button type='submit' name='action' value='factorydefault' class='btn btn-primary btn-sm'>Reset to Factory Default</button>");
   page += F(" ");
-  page += F("<button type='submit' name='action' value='reboot' class='btn btn-primary'>Reboot</button>");
+  page += F("<button type='submit' name='action' value='reboot' class='btn btn-primary btn-sm'>Reboot</button>");
   page += F("</div>");
   page += F("</div>");
 
@@ -2308,11 +2320,13 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
       assert(act->next != nullptr);
       act = act->next;
     }
-    act->name[0]      = 0;
+    act->tag0[0]      = 0;
+    act->tag1[0]      = 0;
     act->pedal        = p;
     act->button       = 0;
     act->led          = LEDS - 1;
-    act->color        = 0;
+    act->color0       = CRGB::Black;;
+    act->color1       = CRGB::Black;
     act->event        = PED_EVENT_PRESS;
     act->midiMessage  = PED_EMPTY;
     act->midiChannel  = 1;
@@ -2334,11 +2348,13 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
       assert(act->next != nullptr);
       act = act->next;
     }
-    act->name[0]      = 0;
+    act->tag0[0]      = 0;
+    act->tag1[0]      = 0;
     act->pedal        = constrain(request->arg("action").charAt(3) - '1', 0, PEDALS - 1);
     act->button       = 0;
     act->led          = LEDS - 1;
-    act->color        = 0;
+    act->color0       = CRGB::Black;;
+    act->color1       = CRGB::Black;
     act->event        = PED_EVENT_PRESS;
     act->midiMessage  = PED_EMPTY;
     act->midiChannel  = 1;
@@ -2400,12 +2416,15 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     while (act != nullptr) {
       if (act->pedal == p || uipedal.equals("All")) {
         i++;
-        strncpy(act->name,            request->arg(String("name")     + String(i)).c_str(),    MAXACTIONNAME+1);
+        strncpy(act->tag0,            request->arg(String("nameoff")     + String(i)).c_str(),    MAXACTIONNAME+1);
+        strncpy(act->tag1,            request->arg(String("nameon")     + String(i)).c_str(),    MAXACTIONNAME+1);
         act->button       = constrain(request->arg(String("button")   + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
         act->led          = constrain(request->arg(String("led")      + String(i)).toInt() - 1, 0, LEDS - 1);
         byte r, g, b;
-        sscanf(                        request->arg(String("color")    + String(i)).c_str(), "#%02x%02x%02x", &r, &g, &b);
-        act->color        = (r << 16) + (g << 8) + b;
+        sscanf(                       request->arg(String("color0-")  + String(i)).c_str(), "#%02x%02x%02x", &r, &g, &b);
+        act->color0       = (r << 16) + (g << 8) + b;
+        sscanf(                       request->arg(String("color1-")  + String(i)).c_str(), "#%02x%02x%02x", &r, &g, &b);
+        act->color1       = (r << 16) + (g << 8) + b;
         act->event        = constrain(request->arg(String("event")    + String(i)).toInt(), 0, 255);
         act->midiMessage  = constrain(request->arg(String("message")  + String(i)).toInt(), 0, 255);
         act->midiCode     = constrain(request->arg(String("code")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
