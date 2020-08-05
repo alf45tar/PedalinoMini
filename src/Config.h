@@ -61,6 +61,7 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
     jo["TapDanceMode"]        = tapDanceMode;
     jo["RepeatOnBankSwitch"]  = repeatOnBankSwitch;
     jo["TapDanceBank"]        = tapDanceBank;
+    jo["LedsBrightness"]      = ledsBrightness;
 
     JsonArray jladder = jdoc.createNestedArray("Ladder");
     for (byte s = 0; s < LADDER_STEPS; s++) {
@@ -234,6 +235,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           tapDanceMode        = jo["TapDanceMode"]                         | tapDanceMode;
           repeatOnBankSwitch  = jo["RepeatOnBankSwitch"]                   | repeatOnBankSwitch;
           tapDanceBank        = jo["TapDanceBank"]                         | tapDanceBank;
+          ledsBrightness      = jo["LedsBrightness"]                       | ledsBrightness;
         }
       }
     }
@@ -644,6 +646,16 @@ void eeprom_update_encoder_sensitivity(byte sensitivity = 5)
   DPRINT("[NVS][Global[Encoder Sensit]: %d\n", sensitivity);
 }
 
+void eeprom_update_leds_brightness(byte brightness = 5)
+{
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putUChar("LedsBrightness", brightness);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global[LedsBrightness]: %d\n", brightness);
+}
+
 void eeprom_update_profile(byte profile = currentProfile)
 {
   DPRINT("Updating NVS Profile ");
@@ -728,6 +740,7 @@ void eeprom_read_global()
     longPressTime      = preferences.getLong("Long   Time");
     repeatPressTime    = preferences.getLong("Repeat Time");
     encoderSensitivity = preferences.getUChar("Encoder Sensit");
+    ledsBrightness     = preferences.getUChar("LedsBrightness");
     preferences.getBytes("Ladder", ladderLevels, sizeof(ladderLevels));
     preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
     blynk_set_token(preferences.getString("Blynk Token"));
@@ -750,6 +763,7 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][Long   Time]:      %ld\n", longPressTime);
     DPRINT("[NVS][Global][Repeat Time]:      %ld\n", repeatPressTime);
     DPRINT("[NVS][Global][Encoder Sensit]:   %d\n", encoderSensitivity);
+    DPRINT("[NVS][Global][LedsBrightness]:   %d\n", ledsBrightness);
     DPRINT("[NVS][Global][Blynk Cloud]:      %d\n", blynk_enabled());
     DPRINT("[NVS][Global][Blynk Token]:      %s\n", blynk_get_token().c_str());
     for (byte i = 0; i < LADDER_STEPS; i++) {
@@ -830,6 +844,7 @@ void eeprom_update_globals()
   eeprom_update_press_time(pressTime, doublePressTime, longPressTime, repeatPressTime);
   eeprom_update_ladder();
   eeprom_update_encoder_sensitivity(encoderSensitivity);
+  eeprom_update_leds_brightness(ledsBrightness);
   eeprom_update_blynk_cloud_enable(blynk_enabled());
   eeprom_update_blynk_auth_token(blynk_get_token());
 }
@@ -869,6 +884,7 @@ void eeprom_initialize()
   eeprom_update_press_time();
   eeprom_update_ladder();
   eeprom_update_encoder_sensitivity();
+  eeprom_update_leds_brightness();
   eeprom_update_blynk_cloud_enable();
   eeprom_update_blynk_auth_token();
   for (byte p = 0; p < PROFILES; p++)

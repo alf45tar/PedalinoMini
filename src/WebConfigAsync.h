@@ -1834,7 +1834,7 @@ void get_options_page() {
   page += F("The first press of pedal X switch to bank X, the second press of any pedal send the MIDI event.");
   page += F("</small>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
+  page += F("<div class='custom-control custom-switch mb-4'>");
   page += F("<input type='checkbox' class='custom-control-input' id='repeatOnBankSwitch' name='repeatonbankswitch'");
   if (repeatOnBankSwitch) page += F(" checked");
   page += F(">");
@@ -1843,6 +1843,10 @@ void get_options_page() {
   page += F("On bank switch repeat the last MIDI message that was sent for that bank");
   page += F("</small>");
   page += F("</div>");
+  page += F("<label for='brightness'>Leds Brightness</label>");
+  page += F("<input type='range' class='custom-range' min='0' max='25' id='brightness' name='ledsbrightness' value='");
+  page += String(ledsBrightness);
+  page += F("'>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -2687,10 +2691,16 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   }
   // if (newLadder) eeprom_update_ladder();
 
-if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
+  if (request->arg("encodersensitivity").toInt() != encoderSensitivity) {
     encoderSensitivity = request->arg("encodersensitivity").toInt();
     //eeprom_update_encoder_sensitivity(encoderSensitivity);
     loadConfig = true;
+  }
+
+  if (request->arg("ledsbrightness").toInt() != ledsBrightness) {
+    ledsBrightness = request->arg("ledsbrightness").toInt();
+    FastLED.setBrightness(map(ledsBrightness, 0, 25, 0, 255));
+    FastLED.show();
   }
 #ifdef BLINK
   bool newBlynkCloud = (request->arg("blynkcloud") == checked);

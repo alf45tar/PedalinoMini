@@ -150,11 +150,6 @@ void setup()
   pinMode(WIFI_LED, OUTPUT);
   pinMode(BLE_LED, OUTPUT);
 
-  FastLED.addLeds<NEOPIXEL, FASTLEDS_DATA_PIN>(fastleds, LEDS);
-  for (byte l = 0; l < LEDS; l++)
-    fastleds[l]= CRGB::Black;
-  FastLED.show();
-  //leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
   display_init();
 
 #ifdef DEBUG_ESP_PORT
@@ -242,6 +237,13 @@ void setup()
 
   eeprom_init_or_erase();
   eeprom_read_global();
+
+  FastLED.addLeds<NEOPIXEL, FASTLEDS_DATA_PIN>(fastleds, LEDS);
+  for (byte l = 0; l < LEDS; l++)
+    fastleds[l]= CRGB::Black;
+  FastLED.setBrightness(map(ledsBrightness, 0, 25, 0, 255));
+  FastLED.show();
+  //leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
 
   // Reset to factory default if BOOT key is pressed and hold for alt least 15 seconds at power on
 
