@@ -34,7 +34,8 @@ void sort_actions() {
       while (idx != nullptr) {
         if ((act->pedal > idx->pedal) || ((act->pedal == idx->pedal) && (act->button > idx->button))) {
           action t;
-          strncpy(t.name,    idx->name, MAXACTIONNAME + 1);
+          strncpy(t.tag0,    idx->tag0, MAXACTIONNAME + 1);
+          strncpy(t.tag1,    idx->tag1, MAXACTIONNAME + 1);
           t.pedal          = idx->pedal;
           t.button         = idx->button;
           t.event          = idx->event;
@@ -43,6 +44,8 @@ void sort_actions() {
           t.midiCode       = idx->midiCode;
           t.midiValue1     = idx->midiValue1;
           t.midiValue2     = idx->midiValue2;
+          t.color0         = idx->color0;
+          t.color1         = idx->color1;
           strncpy(idx->tag0, act->tag0, MAXACTIONNAME + 1);
           strncpy(idx->tag1, act->tag1, MAXACTIONNAME + 1);
           idx->pedal       = act->pedal;
@@ -53,6 +56,8 @@ void sort_actions() {
           idx->midiCode    = act->midiCode;
           idx->midiValue1  = act->midiValue1;
           idx->midiValue2  = act->midiValue2;
+          idx->color0      = act->color0;
+          idx->color1      = act->color1;
           strncpy(act->tag0, t.tag0, MAXACTIONNAME + 1);
           strncpy(act->tag1, t.tag1, MAXACTIONNAME + 1);
           act->pedal       = t.pedal;
@@ -63,6 +68,8 @@ void sort_actions() {
           act->midiCode    = t.midiCode;
           act->midiValue1  = t.midiValue1;
           act->midiValue2  = t.midiValue2;
+          act->color0      = t.color0;
+          act->color1      = t.color1;
         }
         idx = idx->next;
       }
