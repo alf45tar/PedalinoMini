@@ -32,7 +32,9 @@ void sort_actions() {
     while (act != nullptr) {
       action *idx = act->next;
       while (idx != nullptr) {
-        if ((act->pedal > idx->pedal) || ((act->pedal == idx->pedal) && (act->button > idx->button))) {
+        if ((act->pedal > idx->pedal) ||
+           ((act->pedal == idx->pedal) && (act->button > idx->button)) ||
+           ((act->pedal == idx->pedal) && (act->button == idx->button) && (act->event > idx->event))) {
           action t;
           strncpy(t.tag0,    idx->tag0, MAXACTIONNAME + 1);
           strncpy(t.tag1,    idx->tag1, MAXACTIONNAME + 1);
@@ -664,6 +666,7 @@ void controller_event_handler_analog(byte pedal, int value)
           }
           fastleds[act->led] = act->color0;
           fastleds[act->led] = fastleds[act->led].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
+          fastleds[act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
           FastLED.show();
         }
         act = act->next;
@@ -955,10 +958,14 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               if ((pedals[p].mode == PED_MOMENTARY1 ||
                    pedals[p].mode == PED_MOMENTARY2 ||
                    pedals[p].mode == PED_MOMENTARY3 ||
-                   pedals[p].mode == PED_LADDER)    && (currentMIDIValue[currentBank][p][i] == act->midiValue1))
+                   pedals[p].mode == PED_LADDER)    && (currentMIDIValue[currentBank][p][i] == act->midiValue1)) {
                 midi_send(act->midiMessage, act->midiCode, act->midiValue2, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
-              else
+                strncpy(lastPedalName, act->tag1, MAXACTIONNAME+1);
+              }
+              else {
                 midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
+                strncpy(lastPedalName, act->tag0, MAXACTIONNAME+1);
+              }
               break;
 
             case PED_BANK_SELECT_INC:
@@ -1034,10 +1041,15 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
           }
           CRGB off = act->color0;
-          if (fastleds[act->led] == off)
-            fastleds[act->led] = act->color1;
-          else
-            fastleds[act->led] = act->color0;
+          off.nscale8(ledsOffBrightness);
+          CRGB on  = act->color1;
+          on.nscale8(ledsOnBrightness);
+          if (fastleds[act->led] == off) {
+            fastleds[act->led] = on;
+          }
+          else {
+            fastleds[act->led] = off;
+          }
           FastLED.show();
         }
         act = act->next;

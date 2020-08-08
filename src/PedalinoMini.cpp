@@ -240,8 +240,7 @@ void setup()
 
   FastLED.addLeds<NEOPIXEL, FASTLEDS_DATA_PIN>(fastleds, LEDS);
   for (byte l = 0; l < LEDS; l++)
-    fastleds[l]= CRGB::Black;
-  FastLED.setBrightness(map(ledsBrightness, 0, 25, 0, 255));
+    fastleds[l] = CRGB::Black;
   FastLED.show();
   //leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
 

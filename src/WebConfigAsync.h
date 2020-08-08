@@ -769,10 +769,27 @@ void get_actions_page() {
     }
     page += F("<div class='form-row mt-2'>");
 
-    page += F("<div class='col-2'>");
+    page += F("<div class='col-6'>");
     page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-50'>");
-    page += F("<div class='input-group-text w-100'>Button</div>");
+    page += F("<div class='input-group-prepend w-25'>");
+    page += F("<div class='input-group-text w-100'>Tags</div>");
+    page += F("</div>");
+    page += F("<input type='text' class='form-control form-control-sm' placeholder='On' name='nameon");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->tag1);
+    page += F("'>");
+    page += F("<input type='text' class='form-control form-control-sm' placeholder='Off' name='nameoff");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->tag0);
+    page += F("'></div>");
+
+    page += F("<div class='input-group input-group-sm mb-1'>");
+    page += F("<div class='input-group-prepend w-25'>");
+    page += F("<div class='input-group-text w-100'>On Button</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='button");
     page += String(i) + F("'>");
@@ -802,31 +819,7 @@ void get_actions_page() {
       page += String(b) + F("</option>");
     }
     page += F("</select>");
-    page += F("</div>");
-    page += F("</div>");
 
-    page += F("<div class='col-4'>");
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-25'>");
-    page += F("<div class='input-group-text w-100'>Tags</div>");
-    page += F("</div>");
-    page += F("<input type='text' class='form-control form-control-sm' placeholder='On' name='nameon");
-    page += String(i);
-    page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->tag1);
-    page += F("'>");
-    page += F("<input type='text' class='form-control form-control-sm' placeholder='Off' name='nameoff");
-    page += String(i);
-    page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->tag0);
-    page += F("'></div>");
-
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-25'>");
-    page += F("<div class='input-group-text w-100'>On</div>");
-    page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='event");
     page += String(i) + F("'>");
     switch (pedals[act->pedal].mode) {
@@ -881,9 +874,7 @@ void get_actions_page() {
      }
     page += F("</select>");
     page += F("</div>");
-    //page += F("</div>");
 
-    //page += F("<div class='col-2'>");
     page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-25'>");
     page += F("<div class='input-group-text w-100'>Send</div>");
@@ -984,7 +975,11 @@ void get_actions_page() {
     if (act->midiMessage == PED_ACTION_BPM_MINUS) page += F(" selected");
     page += F(">BPM-</option>");
     page += F("</select>");
-    page += F("</div>");
+    page += F("<input type='number' class='form-control form-control-sm' name='code");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiCode);
+    page += F("'></div>");
 
     page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-25'>");
@@ -1012,7 +1007,7 @@ void get_actions_page() {
     page += F("'></div>");
     page += F("</div>");
 
-    page += F("<div class='col-3'>");
+    page += F("<div class='col-4'>");
     page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-50'>");
     page += F("<div class='input-group-text w-100'>Channel</div>");
@@ -1028,16 +1023,6 @@ void get_actions_page() {
     }
     page += F("</select>");
     page += F("</div>");
-
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-50'>");
-    page += F("<div class='input-group-text w-100'>Code</div>");
-    page += F("</div>");
-    page += F("<input type='number' class='form-control form-control-sm' name='code");
-    page += String(i);
-    page += F("' min='0' max='127' value='");
-    page += String(act->midiCode);
-    page += F("'></div>");
 
     page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-50'>");
@@ -1058,9 +1043,6 @@ void get_actions_page() {
     page += F("' min='0' max='127' value='");
     page += String(act->midiValue2);
     page += F("'></div>");
-    page += F("</div>");
-
-    page += F("<div class='col-2'>");
     page += F("</div>");
 
     page += F("<div class='col-1 text-center'>");
@@ -1843,9 +1825,13 @@ void get_options_page() {
   page += F("On bank switch repeat the last MIDI message that was sent for that bank");
   page += F("</small>");
   page += F("</div>");
-  page += F("<label for='brightness'>Leds Brightness</label>");
-  page += F("<input type='range' class='custom-range' min='0' max='25' id='brightness' name='ledsbrightness' value='");
-  page += String(ledsBrightness);
+  page += F("<label for='brightnessOn'>Leds On Brightness</label>");
+  page += F("<input type='range' class='custom-range' min='0' max='255' id='brightnessOn' name='ledsonbrightness' value='");
+  page += String(ledsOnBrightness);
+  page += F("'>");
+  page += F("<label for='brightnessOff'>Leds Off Brightness</label>");
+  page += F("<input type='range' class='custom-range' min='0' max='255' id='brightnessOff' name='ledsoffbrightness' value='");
+  page += String(ledsOffBrightness);
   page += F("'>");
   page += F("</div>");
   page += F("</div>");
@@ -2697,10 +2683,14 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     loadConfig = true;
   }
 
-  if (request->arg("ledsbrightness").toInt() != ledsBrightness) {
-    ledsBrightness = request->arg("ledsbrightness").toInt();
-    FastLED.setBrightness(map(ledsBrightness, 0, 25, 0, 255));
-    FastLED.show();
+  if (request->arg("ledsonbrightness").toInt() != ledsOnBrightness) {
+    ledsOnBrightness = request->arg("ledsonbrightness").toInt();
+    //FastLED.setBrightness(map(ledsOnBrightness, 0, 25, 0, 255));
+    //FastLED.show();
+  }
+
+  if (request->arg("ledsoffbrightness").toInt() != ledsOffBrightness) {
+    ledsOffBrightness = request->arg("ledsoffbrightness").toInt();
   }
 #ifdef BLINK
   bool newBlynkCloud = (request->arg("blynkcloud") == checked);

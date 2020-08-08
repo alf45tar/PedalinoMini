@@ -396,7 +396,8 @@ long  doublePressTime         = PED_DOUBLE_PRESS_TIME;
 long  longPressTime           = PED_LONG_PRESS_TIME;
 long  repeatPressTime         = PED_REPEAT_PRESS_TIME;
 byte  encoderSensitivity      = 5;    // 1..10
-byte  ledsBrightness          = 5;    // 1..25
+byte  ledsOnBrightness        = 50;   // 0..255
+byte  ledsOffBrightness       = 10;   // 0..255
 
 
 MidiTimeCode  MTC;
