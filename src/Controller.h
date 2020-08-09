@@ -46,6 +46,7 @@ void sort_actions() {
           t.midiCode       = idx->midiCode;
           t.midiValue1     = idx->midiValue1;
           t.midiValue2     = idx->midiValue2;
+          t.led            = idx->led;
           t.color0         = idx->color0;
           t.color1         = idx->color1;
           strncpy(idx->tag0, act->tag0, MAXACTIONNAME + 1);
@@ -58,6 +59,7 @@ void sort_actions() {
           idx->midiCode    = act->midiCode;
           idx->midiValue1  = act->midiValue1;
           idx->midiValue2  = act->midiValue2;
+          idx->led         = act->led;
           idx->color0      = act->color0;
           idx->color1      = act->color1;
           strncpy(act->tag0, t.tag0, MAXACTIONNAME + 1);
@@ -70,6 +72,7 @@ void sort_actions() {
           act->midiCode    = t.midiCode;
           act->midiValue1  = t.midiValue1;
           act->midiValue2  = t.midiValue2;
+          act->led         = t.led;
           act->color0      = t.color0;
           act->color1      = t.color1;
         }
@@ -764,13 +767,14 @@ void controller_delete()
 void controller_run(bool send = true)
 {
   if (saveProfile && send) {
+    saveProfile = false;
     DPRINT("Saving profile ...\n");
     eeprom_update_current_profile(currentProfile);
-    saveProfile = false;
     return;
   }
 
   if (reloadProfile && send) {
+    reloadProfile = false;
     DPRINT("Loading profile ...\n");
     eeprom_read_profile(currentProfile);
     for (byte b = 0; b < BANKS; b++) {
@@ -789,11 +793,11 @@ void controller_run(bool send = true)
 #ifdef WIFI
     OscControllerUpdate();
 #endif
-    reloadProfile = false;
     return;
   }
 
 if (loadConfig && send) {
+    loadConfig = false;
     DPRINT("Loading configuration ...\n");
     autosensing_setup();
     controller_setup();
@@ -801,7 +805,6 @@ if (loadConfig && send) {
 #ifdef WIFI
     OscControllerUpdate();
 #endif
-    loadConfig = false;
     return;
   }
   for (byte i = 0; i < PEDALS; i++) {
@@ -1367,6 +1370,21 @@ void controller_setup()
     pedals[i].lastUpdate[1] = pedals[i].lastUpdate[0];
     DPRINT("\n");
   }
+
+  // Set initial led color
+  bool ledstatus[LEDS];
+  for (byte l = 0; l < LEDS; l++)
+    ledstatus[l] = false;
+  action *act = actions[currentBank];
+  while (act != nullptr) {
+    if (!ledstatus[act->led]) {
+      ledstatus[act->led] = true;
+      fastleds[act->led] = act->color0;
+      fastleds[act->led].nscale8(ledsOffBrightness);
+    }
+    act = act->next;
+  }
+  FastLED.show();
 
   for (int i = 0; i < 100; i++) {
     controller_run(false);            // to avoid spurious readings

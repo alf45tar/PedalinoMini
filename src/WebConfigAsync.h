@@ -770,22 +770,6 @@ void get_actions_page() {
     page += F("<div class='form-row mt-2'>");
 
     page += F("<div class='col-6'>");
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-25'>");
-    page += F("<div class='input-group-text w-100'>Tags</div>");
-    page += F("</div>");
-    page += F("<input type='text' class='form-control form-control-sm' placeholder='On' name='nameon");
-    page += String(i);
-    page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->tag1);
-    page += F("'>");
-    page += F("<input type='text' class='form-control form-control-sm' placeholder='Off' name='nameoff");
-    page += String(i);
-    page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->tag0);
-    page += F("'></div>");
 
     page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-25'>");
@@ -1004,6 +988,23 @@ void get_actions_page() {
     page += F("' value='");
     sprintf(color, "#%06X", act->color0 & 0xFFFFFF);
     page += String(color);
+    page += F("'></div>");
+
+    page += F("<div class='input-group input-group-sm mb-1'>");
+    page += F("<div class='input-group-prepend w-25'>");
+    page += F("<div class='input-group-text w-100'>Tags</div>");
+    page += F("</div>");
+    page += F("<input type='text' class='form-control form-control-sm' placeholder='On' name='nameon");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->tag1);
+    page += F("'>");
+    page += F("<input type='text' class='form-control form-control-sm' placeholder='Off' name='nameoff");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->tag0);
     page += F("'></div>");
     page += F("</div>");
 

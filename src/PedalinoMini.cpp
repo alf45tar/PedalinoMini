@@ -242,6 +242,7 @@ void setup()
   for (byte l = 0; l < LEDS; l++)
     fastleds[l] = CRGB::Black;
   FastLED.show();
+
   //leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
 
   // Reset to factory default if BOOT key is pressed and hold for alt least 15 seconds at power on
