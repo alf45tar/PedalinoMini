@@ -357,6 +357,7 @@ byte      currentMIDIValue[BANKS][PEDALS][LADDER_STEPS];
 message   lastMIDIMessage[BANKS];
 byte      lastProgramChange[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint16_t  lastBankSelect[16]    = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+CRGB      lastLedColor[BANKS][LEDS];
 
 interface interfaces[] = {
                            "USB MIDI   ", 0, 1, 0, 0, 0,
@@ -489,6 +490,7 @@ void   blynk_refresh();
 
 void   screen_update(bool);
 void   screen_info(int, int, int, int, int = 0, int = MIDI_RESOLUTION - 1);
+void   leds_refresh();
 void   leds_update(byte, byte, byte, byte);
 void   eeprom_update_current_profile(byte);
 bool   auto_reconnect(String ssid = "", String password = "");

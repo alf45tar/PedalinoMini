@@ -125,6 +125,7 @@ void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t but
       }
       */
       currentBank = (currentBank == BANKS - 1 ? 0 : currentBank + 1);
+      leds_refresh();
       break;
 
     case AceButton::kEventDoubleClicked:
@@ -135,6 +136,7 @@ void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t but
       }
       */
         currentBank = (currentBank == 0 ? BANKS - 1 : currentBank - 1);
+        leds_refresh();
       break;
 
     case AceButton::kEventLongPressed:
@@ -242,6 +244,9 @@ void setup()
   for (byte l = 0; l < LEDS; l++)
     fastleds[l] = CRGB::Black;
   FastLED.show();
+  for (byte b = 0; b < BANKS; b++)
+    for (byte l = 0; l < LEDS; l++)
+      lastLedColor[b][l] = CRGB::Black;
 
   //leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
 

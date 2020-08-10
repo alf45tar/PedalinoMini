@@ -1081,6 +1081,7 @@ void OnOscBank(OSCMessage &msg)
   DPRINT("OSC message /bank %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
   currentBank = constrain(msg.getInt(0) - 1, 0, BANKS - 1);
   OscSendBank();
+  leds_refresh();
 }
 
 void OnOscBank_1(OSCMessage &msg)
@@ -1089,6 +1090,7 @@ void OnOscBank_1(OSCMessage &msg)
   if (msg.getInt(0) > 0) {
     currentBank = constrain(msg.getInt(0) - 1, 0, BANKS - 1);
     OscSendBank();
+    leds_refresh();
   }
 }
 
@@ -1098,6 +1100,7 @@ void OnOscBank_2(OSCMessage &msg)
   if (msg.getInt(0) > 0) {
     currentBank = constrain(5 + msg.getInt(0) - 1, 0, BANKS - 1);
     OscSendBank();
+    leds_refresh();
   }
 }
 

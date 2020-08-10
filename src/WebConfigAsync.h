@@ -2983,6 +2983,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
           int b;
           if (sscanf((const char *)data, "bank%d", &b) == 1)
             currentBank = constrain(b - 1, 0, BANKS);
+            leds_refresh();
         }
       }
       /*
