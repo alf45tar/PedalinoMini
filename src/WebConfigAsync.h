@@ -2427,6 +2427,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     }
     sort_actions();
     create_banks();
+    leds_refresh();
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
     if (request->arg("action").equals("save")) {
       eeprom_update_profile();

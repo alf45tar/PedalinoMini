@@ -399,6 +399,9 @@ long  repeatPressTime         = PED_REPEAT_PRESS_TIME;
 byte  encoderSensitivity      = 5;    // 1..10
 byte  ledsOnBrightness        = 50;   // 0..255
 byte  ledsOffBrightness       = 10;   // 0..255
+byte  tapLed                  = 0;
+CRGB  tapColor0               = 0;
+CRGB  tapColor1               = 0;
 
 
 MidiTimeCode  MTC;

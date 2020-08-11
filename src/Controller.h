@@ -113,6 +113,19 @@ void leds_refresh()
   for (byte l = 0; l < LEDS; l++)
     fastleds[l] = lastLedColor[currentBank][l];
   FastLED.show();
+  tapLed    = 0;
+  tapColor0 = 0;
+  tapColor1 = 0;
+  action *act = actions[currentBank];
+  while (act != nullptr) {
+    if (act->midiMessage == PED_ACTION_TAP) {
+      tapLed = act->led;
+      tapColor0 = act->color0;
+      tapColor1 = act->color1;
+      exit;
+    }
+    act = act->next;
+  }
 }
 
 void leds_update(byte type, byte channel, byte data1, byte data2)
@@ -232,8 +245,24 @@ void leds_update(byte type, byte channel, byte data1, byte data2)
 //
 void mtc_midi_real_time_message_send(byte b)
 {
+  static byte click = 0;
+
   if (interfaces[PED_RTPMIDI].midiClock) AppleMidiSendRealTimeMessage(b);
   if (interfaces[PED_IPMIDI].midiClock)  ipMIDISendRealTimeMessage(b);
+
+  if (!tapLed && !tapColor0 && !tapColor1) return;
+
+  if (click == 0) {
+    fastleds[tapLed] = tapColor1;
+    fastleds[tapLed].nscale8(ledsOnBrightness);
+    FastLED.show();
+  }
+  else if (click == 8) {
+    fastleds[tapLed] = tapColor0;
+    fastleds[tapLed].nscale8(ledsOffBrightness);
+    FastLED.show();
+  }
+  click = (click + 1) % 24;
 }
 
 void mtc_midi_time_code_quarter_frame_send(byte b)
@@ -702,6 +731,11 @@ void controller_event_handler_analog(byte pedal, int value)
             case PED_CHANNEL_PRESSURE:
             case PED_SEQUENCE:
               midi_send(act->midiMessage, act->midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+              fastleds[act->led] = act->color0;
+              fastleds[act->led] = fastleds[act->led].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
+              fastleds[act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
+              FastLED.show();
+              lastLedColor[currentBank][act->led] = fastleds[act->led];
               break;
 
             case PED_BANK_SELECT_INC:
@@ -731,17 +765,13 @@ void controller_event_handler_analog(byte pedal, int value)
               leds_refresh();
               break;
 
+            case PED_ACTION_TAP:
             case PED_ACTION_BPM_PLUS:
             case PED_ACTION_BPM_MINUS:
               bpm = map(value, 0, MIDI_RESOLUTION, 40, 300);
               MTC.setBpm(bpm);
               break;
           }
-          fastleds[act->led] = act->color0;
-          fastleds[act->led] = fastleds[act->led].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
-          fastleds[act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
-          FastLED.show();
-          lastLedColor[currentBank][act->led] = fastleds[act->led];
         }
         act = act->next;
       }
@@ -1444,21 +1474,22 @@ void controller_setup()
     DPRINT("\n");
   }
 
-  // Set initial led color
-  bool ledstatus[LEDS];
-  for (byte l = 0; l < LEDS; l++)
-    ledstatus[l] = false;
-  action *act = actions[currentBank];
-  while (act != nullptr) {
-    if (!ledstatus[act->led]) {
-      ledstatus[act->led] = true;
-      fastleds[act->led] = act->color0;
-      fastleds[act->led].nscale8(ledsOffBrightness);
-      lastLedColor[currentBank][act->led] = fastleds[act->led];
+  // Set initial led color for all banks
+  for (byte b = 0; b < BANKS; b++) {
+    bool ledstatus[LEDS];
+    for (byte l = 0; l < LEDS; l++)
+      ledstatus[l] = false;
+    action *act = actions[b];
+    while (act != nullptr) {
+      if (!ledstatus[act->led]) {
+        ledstatus[act->led] = true;
+        lastLedColor[b][act->led] = act->color0;
+        lastLedColor[b][act->led].nscale8(ledsOffBrightness);
+      }
+      act = act->next;
     }
-    act = act->next;
   }
-  FastLED.show();
+  leds_refresh();
 
   for (int i = 0; i < 100; i++) {
     controller_run(false);            // to avoid spurious readings
