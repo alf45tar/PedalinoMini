@@ -769,7 +769,7 @@ void get_actions_page() {
     }
     page += F("<div class='form-row mt-2'>");
 
-    page += F("<div class='col-6'>");
+    page += F("<div class='col-11'>");
 
     page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-25'>");
@@ -963,7 +963,18 @@ void get_actions_page() {
     page += String(i);
     page += F("' min='0' max='127' value='");
     page += String(act->midiCode);
-    page += F("'></div>");
+    page += F("'>");
+    page += F("<select class='custom-select custom-select-sm' name='channel");
+    page += String(i) + F("'>");
+    for (unsigned int c = 1; c <= 16; c++) {
+      page += F("<option value='");
+      page += String(c) + F("'");
+      if (act->midiChannel == c) page += F(" selected");
+      page += F(">Channel ");
+      page += String(c) + F("</option>");
+    }
+    page += F("</select>");
+    page += F("</div>");
 
     page += F("<div class='input-group input-group-sm mb-1'>");
     page += F("<div class='input-group-prepend w-25'>");
@@ -976,17 +987,17 @@ void get_actions_page() {
     page += F("' value='");
     page += String(act->led + 1);
     page += F("'>");
-    page += F("<input type='color' class='form-control form-control-sm' name='color1-");
-    page += String(i);
-    page += F("' value='");
-    char color[8];
-    sprintf(color, "#%06X", act->color1 & 0xFFFFFF);
-    page += String(color);
-    page += F("'>");
     page += F("<input type='color' class='form-control form-control-sm' name='color0-");
     page += String(i);
     page += F("' value='");
+    char color[8];
     sprintf(color, "#%06X", act->color0 & 0xFFFFFF);
+    page += String(color);
+    page += F("'>");
+    page += F("<input type='color' class='form-control form-control-sm' name='color1-");
+    page += String(i);
+    page += F("' value='");
+    sprintf(color, "#%06X", act->color1 & 0xFFFFFF);
     page += String(color);
     page += F("'></div>");
 
@@ -994,51 +1005,28 @@ void get_actions_page() {
     page += F("<div class='input-group-prepend w-25'>");
     page += F("<div class='input-group-text w-100'>Tags</div>");
     page += F("</div>");
-    page += F("<input type='text' class='form-control form-control-sm' placeholder='On' name='nameon");
-    page += String(i);
-    page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->tag1);
-    page += F("'>");
     page += F("<input type='text' class='form-control form-control-sm' placeholder='Off' name='nameoff");
     page += String(i);
     page += F("' maxlength='");
     page += String(MAXACTIONNAME) + F("' value='");
     page += String(act->tag0);
+    page += F("'>");
+    page += F("<input type='text' class='form-control form-control-sm' placeholder='On' name='nameon");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->tag1);
     page += F("'></div>");
-    page += F("</div>");
-
-    page += F("<div class='col-4'>");
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-50'>");
-    page += F("<div class='input-group-text w-100'>Channel</div>");
-    page += F("</div>");
-    page += F("<select class='custom-select custom-select-sm' name='channel");
-    page += String(i) + F("'>");
-    for (unsigned int c = 1; c <= 16; c++) {
-      page += F("<option value='");
-      page += String(c) + F("'");
-      if (act->midiChannel == c) page += F(" selected");
-      page += F(">");
-      page += String(c) + F("</option>");
-    }
-    page += F("</select>");
-    page += F("</div>");
 
     page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-50'>");
-    page += F("<div class='input-group-text w-100'>From</div>");
+    page += F("<div class='input-group-prepend w-25'>");
+    page += F("<div class='input-group-text w-100'>From Off/To On</div>");
     page += F("</div>");
     page += F("<input type='number' class='form-control form-control-sm' name='from");
     page += String(i);
     page += F("' min='0' max='127' value='");
     page += String(act->midiValue1);
-    page += F("'></div>");
-
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-50'>");
-    page += F("<div class='input-group-text w-100'>To</div>");
-    page += F("</div>");
+    page += F("'>");
     page += F("<input type='number' class='form-control form-control-sm' name='to");
     page += String(i);
     page += F("' min='0' max='127' value='");

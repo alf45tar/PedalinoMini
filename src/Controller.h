@@ -11,8 +11,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #include <algorithm>
 
-void delete_actions() {
-
+void delete_actions()
+{
   for (byte b = 0; b < BANKS; b++) {
     //memset(banknames[b], 0, MAXBANKNAME+1);
     action *act = actions[b];
@@ -25,8 +25,8 @@ void delete_actions() {
   }
 }
 
-void sort_actions() {
-
+void sort_actions()
+{
   for (byte b = 0; b < BANKS; b++) {
     action *act = actions[b];
     while (act != nullptr) {
@@ -83,8 +83,8 @@ void sort_actions() {
   }
 }
 
-void create_banks() {
-
+void create_banks()
+{
   for (byte b = 0; b < BANKS; b++) {
     for (byte p = 0; p < PEDALS; p++) {
       action *act = actions[b];
@@ -106,13 +106,8 @@ void create_banks() {
       }
     }
   }
-}
 
-void leds_refresh()
-{
-  for (byte l = 0; l < LEDS; l++)
-    fastleds[l] = lastLedColor[currentBank][l];
-  FastLED.show();
+  // Looking for tap action in the current bank
   tapLed    = 0;
   tapColor0 = 0;
   tapColor1 = 0;
@@ -122,10 +117,19 @@ void leds_refresh()
       tapLed = act->led;
       tapColor0 = act->color0;
       tapColor1 = act->color1;
-      exit;
+      act = nullptr;
     }
-    act = act->next;
+    else
+      act = act->next;
   }
+}
+
+void leds_refresh()
+{
+  // Set the last leds color of the current bank after a bank switch or led update
+  for (byte l = 0; l < LEDS; l++)
+    fastleds[l] = lastLedColor[currentBank][l];
+  FastLED.show();
 }
 
 void leds_update(byte type, byte channel, byte data1, byte data2)
@@ -993,8 +997,8 @@ if (loadConfig && send) {
                     strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
                     break;
 
-                  case PED_BANK_PLUS:
-                  case PED_BANK_MINUS:
+                  case PED_ACTION_BANK_PLUS:
+                  case PED_ACTION_BANK_MINUS:
                     {
                       int b = currentBank + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].invertPolarity ? -1 : 1);
                       b = constrain(b, pedals[i].expZero - 1, pedals[i].expMax - 1);
@@ -1002,8 +1006,9 @@ if (loadConfig && send) {
                       leds_refresh();
                       break;
                     }
-                  case PED_BPM_PLUS:
-                  case PED_BPM_MINUS:
+                  case PED_ACTION_TAP:
+                  case PED_ACTION_BPM_PLUS:
+                  case PED_ACTION_BPM_MINUS:
                     bpm = constrain(bpm + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].jogwheel->speed() + 1),
                                     pedals[i].invertPolarity ? 300 : 40,
                                     pedals[i].invertPolarity ? 40 : 300);
