@@ -132,21 +132,31 @@ void leds_refresh()
   FastLED.show();
 }
 
-void leds_update(byte type, byte channel, byte data1, byte data2)
+void leds_refresh(byte l)
 {
-  for (byte b = 0; b < BANKS; b++) {
-    action *act = actions[b];
+  fastleds[l] = lastLedColor[currentBank][l];
+  FastLED.show();
+}
+
+void leds_update(byte type, byte channel, byte data1, byte data2, byte bank)
+{
+    action *act = actions[bank];
     while (act != nullptr) {
       if (act->midiChannel == channel && pedals[act->pedal].function == PED_NONE) {
         switch (act->midiMessage) {
 
           case PED_PROGRAM_CHANGE:
-            // Led on on PC pedal, other PC pedals off (see below)
-            if (type == midi::ProgramChange && act->midiCode == data1) {
-              lastLedColor[b][act->led] = act->color1;
-              lastLedColor[b][act->led].nscale8(ledsOnBrightness);
-              leds_refresh();
-            }
+            if (type == midi::ProgramChange)
+              if (act->midiCode == data1) {
+                lastLedColor[bank][act->led] = act->color1;
+                lastLedColor[bank][act->led].nscale8(ledsOnBrightness);
+                leds_refresh(act->led);
+              }
+              else {
+                lastLedColor[bank][act->led] = act->color0;
+                lastLedColor[bank][act->led].nscale8(ledsOffBrightness);
+                leds_refresh(act->led);
+              }
             break;
 
           case PED_CONTROL_CHANGE:
@@ -154,23 +164,23 @@ void leds_update(byte type, byte channel, byte data1, byte data2)
               switch (pedals[act->pedal].mode) {
                 case PED_ANALOG:
                 case PED_JOG_WHEEL:
-                  lastLedColor[b][act->led] = act->color0;
-                  lastLedColor[b][act->led] = lastLedColor[b][act->led].lerp8(act->color1, 255 * data2 / (MIDI_RESOLUTION - 1));
-                  lastLedColor[b][act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * data2 / (MIDI_RESOLUTION - 1));
-                  leds_refresh();
+                  lastLedColor[bank][act->led] = act->color0;
+                  lastLedColor[bank][act->led] = lastLedColor[bank][act->led].lerp8(act->color1, 255 * data2 / (MIDI_RESOLUTION - 1));
+                  lastLedColor[bank][act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * data2 / (MIDI_RESOLUTION - 1));
+                  leds_refresh(act->led);
                   break;
 
                 default:
                   if (data2 == act->midiValue1) {
                     // Led off
-                    lastLedColor[b][act->led] = act->color0;
-                    lastLedColor[b][act->led].nscale8(ledsOffBrightness);
-                    leds_refresh();
+                    lastLedColor[bank][act->led] = act->color0;
+                    lastLedColor[bank][act->led].nscale8(ledsOffBrightness);
+                    leds_refresh(act->led);
                   } else if (data2 == act->midiValue2) {
                     // Led on
-                    lastLedColor[b][act->led] = act->color1;
-                    lastLedColor[b][act->led].nscale8(ledsOnBrightness);
-                    leds_refresh();
+                    lastLedColor[bank][act->led] = act->color1;
+                    lastLedColor[bank][act->led].nscale8(ledsOnBrightness);
+                    leds_refresh(act->led);
                   }
                   break;
               }
@@ -184,63 +194,20 @@ void leds_update(byte type, byte channel, byte data1, byte data2)
               CRGB on  = act->color1;
               off.nscale8(ledsOffBrightness);
               on.nscale8(ledsOnBrightness);
-              lastLedColor[b][act->led] = (fastleds[act->led] == off) ? on : off;
-              leds_refresh();
+              lastLedColor[bank][act->led] = (fastleds[act->led] == off) ? on : off;
+              leds_refresh(act->led);
             }
             break;
         }
       }
       act = act->next;
     }
-  }
+}
 
-/*
-  for (byte i = 0; i < PEDALS; i++) {
-    if (pedals[i].function == PED_NONE && banks[currentBank][i].midiChannel == channel) {
-      switch (banks[currentBank][i].midiMessage) {
-        case PED_PROGRAM_CHANGE:
-          // Led on on PC pedal, other PC pedals off (see below)
-          if (type == midi::ProgramChange && banks[currentBank][i].midiCode == data1) {
-            leds.setHigh(i);
-            leds.write();
-          }
-          break;
-        case PED_CONTROL_CHANGE:
-          if (type == midi::ControlChange && banks[currentBank][i].midiCode == data1) {
-            if (data2 == 0) {
-              // Led off if CC value == 0
-              leds.setLow(i);
-              leds.write();
-            } else {
-              // Led on if CC value is > 0
-              leds.setHigh(i);
-              leds.write();
-            }
-          }
-          break;
-        case PED_NOTE_ON:
-          // Invert the status only on NoteOn
-          if (type == midi::NoteOn && banks[currentBank][i].midiCode == data1) {
-            leds.invert(i);
-            leds.write();
-          }
-          break;
-      }
-    }
-  }
-  // Reset leds of other Program Change pedals
-  if (type == midi::ProgramChange) {
-    for (byte i = 0; i < PEDALS; i++) {
-      if (pedals[i].function                == PED_NONE &&
-          banks[currentBank][i].midiChannel == channel &&
-          banks[currentBank][i].midiMessage == PED_PROGRAM_CHANGE &&
-          banks[currentBank][i].midiCode    != data1) {
-        leds.setLow(i);
-        leds.write();
-      }
-    }
-  }
-*/
+void leds_update(byte type, byte channel, byte data1, byte data2)
+{
+  for (byte b = 0; b < BANKS; b++)
+    leds_update(type, channel, data1, data2, b);
 }
 
 
@@ -578,6 +545,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         screen_info(midi::ProgramChange, code, 0, channel, range_min, range_max);
         currentMIDIValue[bank][pedal][button] = value;
         lastMIDIMessage[currentBank] = {PED_PROGRAM_CHANGE, code, 0, channel};
+        leds_update(midi::ProgramChange, channel, code, 0);
       }
       break;
 
@@ -728,6 +696,9 @@ void controller_event_handler_analog(byte pedal, int value)
               break;
 
             case PED_PROGRAM_CHANGE:
+              midi_send(act->midiMessage, act->midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+              break;
+
             case PED_CONTROL_CHANGE:
             case PED_NOTE_ON:
             case PED_NOTE_OFF:
@@ -1153,13 +1124,15 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               MTC.setBpm(bpm);
               break;
           }
-          CRGB off = act->color0;
-          CRGB on  = act->color1;
-          off.nscale8(ledsOffBrightness);
-          on.nscale8(ledsOnBrightness);
-          fastleds[act->led] = (fastleds[act->led] == off) ? on : off;
-          FastLED.show();
-          lastLedColor[currentBank][act->led] = fastleds[act->led];
+          if (act->midiMessage != PED_PROGRAM_CHANGE) {
+            CRGB off = act->color0;
+            CRGB on  = act->color1;
+            off.nscale8(ledsOffBrightness);
+            on.nscale8(ledsOnBrightness);
+            fastleds[act->led] = (fastleds[act->led] == off) ? on : off;
+            FastLED.show();
+            lastLedColor[currentBank][act->led] = fastleds[act->led];
+          }
         }
         act = act->next;
       }
