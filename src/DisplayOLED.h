@@ -417,7 +417,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 #ifdef WIFI
     if (wifiEnabled) {
       static int      signal  = WiFi.RSSI();
-      
+
       display->setFont(wifiSignal);
       signal = (4*signal + WiFi.RSSI()) / 5;
       if      (signal < -90) display->drawString(0, 0, String(0));
@@ -667,6 +667,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   if (millis() < endMillis2 && lastPedalName[0] != ':') {
     ui.disableAutoTransition();
     ui.switchToFrame(0);
+    if (strlen(lastPedalName) != 0 && lastPedalName[strlen(lastPedalName) - 1] == '.') lastPedalName[strlen(lastPedalName) - 1] = 0;
     if (lastPedalName[0] == 0) {
       display->setTextAlignment(TEXT_ALIGN_CENTER);
       switch (m1) {

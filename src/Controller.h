@@ -1459,8 +1459,8 @@ void controller_setup()
       ledstatus[l] = false;
     action *act = actions[b];
     while (act != nullptr) {
-      act->tag0[strlen(act->tag0)] = 0;   // ensure string is null terminated
-      act->tag1[strlen(act->tag1)] = 0;   // ensure string is null terminated
+      act->tag0[MAXACTIONNAME-1] = 0;   // ensure string is null terminated
+      act->tag1[MAXACTIONNAME-1] = 0;   // ensure string is null terminated
       if (!ledstatus[act->led] ||
          (act->tag0[0] != 0 && act->tag0[strlen(act->tag0) - 1] == '.') ||
          (act->tag1[0] != 0 && act->tag1[strlen(act->tag1) - 1] == '.')) {
