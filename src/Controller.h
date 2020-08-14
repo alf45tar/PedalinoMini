@@ -859,6 +859,16 @@ void controller_run(bool send = true)
       for (byte p = 0; p < PEDALS; p++)
         for (byte i = 0; i < LADDER_STEPS; i++)
           currentMIDIValue[b][p][i] = 0;
+      action *act = actions[b];
+      while (act != nullptr) {
+        if (act->midiMessage == midi::ControlChange) {
+          if (act->tag1[0] != 0 && act->tag1[strlen(act->tag1) - 1] == '.')
+            currentMIDIValue[b][act->pedal][act->button] = act->midiValue2;
+          else
+            currentMIDIValue[b][act->pedal][act->button] = act->midiValue1;
+        }
+        act = act->next;
+      }
     }
     for (byte i = 0; i < 16; i++) {
       lastProgramChange[i] = 0;
