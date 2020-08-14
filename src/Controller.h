@@ -1459,10 +1459,20 @@ void controller_setup()
       ledstatus[l] = false;
     action *act = actions[b];
     while (act != nullptr) {
-      if (!ledstatus[act->led]) {
+      act->tag0[strlen(act->tag0)] = 0;   // ensure string is null terminated
+      act->tag1[strlen(act->tag1)] = 0;   // ensure string is null terminated
+      if (!ledstatus[act->led] ||
+         (act->tag0[0] != 0 && act->tag0[strlen(act->tag0) - 1] == '.') ||
+         (act->tag1[0] != 0 && act->tag1[strlen(act->tag1) - 1] == '.')) {
         ledstatus[act->led] = true;
-        lastLedColor[b][act->led] = act->color0;
-        lastLedColor[b][act->led].nscale8(ledsOffBrightness);
+        if (act->tag1[0] != 0 && act->tag1[strlen(act->tag1) - 1] == '.') {
+          lastLedColor[b][act->led] = act->color1;
+          lastLedColor[b][act->led].nscale8(ledsOnBrightness);
+        }
+        else {
+          lastLedColor[b][act->led] = act->color0;
+          lastLedColor[b][act->led].nscale8(ledsOffBrightness);
+        }
       }
       act = act->next;
     }
