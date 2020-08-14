@@ -45,7 +45,7 @@ Wireless MIDI foot controller for guitarists and more.
 - Invert polarity via software
 - Individual automatic calibration of expression pedals. Manual fine tuning is not usually requested.
 - Transform a linear expression pedal into log expression pedal and vice versa
-- Resistors ladder calibrated is easy as pressing footswitches in sequence.
+- Resistors ladder calibrated is easy as pressing footswitches in sequence
 - RGB NeoPixel/WS2812B status leds
 - Responsive and mobile-first configuration web interface (<http://pedalino.local>)
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
@@ -310,10 +310,11 @@ PedalinoMini™ can control a Fender Mustang I/II/III/IV Amplifier via MIDI. Add
 Where|What|Display|Description
 :---:|:--:|-------|:----------
 Bank Name|Empty|![](./images/oled-display1.png)|If the current bank name is empty the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
-Bank Name|Any|![](./images/oled-display2.mov)|If current bank name is not empty the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. On new display mode the bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
+Bank Name|Any|![](./images/oled-display2.mov)|If current bank name is not empty the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. The bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
 Bank Name|:|![](./images/oled-display3.png)|If the bank name start with colon (:) the bank name is always shown (if no event occurs).
 Bank Name|.|![](./images/oled-display4.mov)|If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
-Action Tag|:|![](./images/oled-display6.mov)|If action tag start with colon (:) the display is not switched when an event occurs
+Action Tags|:|![](./images/oled-display6.mov)|If action tag start with colon (:) the display is not switched when an event occurs.
+Action Tags|.|![](./images/oled-display6.mov)|If action tag end with dot (.) the corresponding led and color is set on boot.
 Action Tag|###|![](./images/oled-display7.mov)|A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
 
 ## How to switch profiles
