@@ -314,7 +314,7 @@ Bank Name|Any|![](./images/oled-display2.mov)|If current bank name is not empty 
 Bank Name|:|![](./images/oled-display3.png)|If the bank name start with colon (:) the bank name is always shown (if no event occurs).
 Bank Name|.|![](./images/oled-display4.mov)|If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
 Action Tags|:|![](./images/oled-display6.mov)|If action tag start with colon (:) the display is not switched when an event occurs.
-Action Tags|.|![](./images/oled-display6.mov)|If action tag end with dot (.) the corresponding led and color is set on boot.
+Action Tags|.|![]()|If action tag end with dot (.) the corresponding led and color is set on boot.
 Action Tag|###|![](./images/oled-display7.mov)|A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
 
 ## How to switch profiles
