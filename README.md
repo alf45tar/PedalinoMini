@@ -172,7 +172,7 @@ The responsive and mobile-first configuration web user interface is available on
 
 In order to know your device name and/or the IP address press for at least half a second the BOOT button and check the display.
 
-As alternative method you can use the IP address. If you are using the AP mode the IP address is always `192.168.1.4` and the connection address is `http://192.168.1.4` for everyone.
+As alternative method you can use the IP address. If you are using the AP mode the IP address is always `192.168.4.1` and the connection address is `http://192.168.4.1` for everyone.
 
 The default username and password to connect to web user interface are `admin` as username and your `device-name` in __uppercase__ as password. For example I am using `admin` as username and `8E2DE6B4` as password.
 
