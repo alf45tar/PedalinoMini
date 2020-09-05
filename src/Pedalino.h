@@ -64,6 +64,8 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #endif
 
+#define FASTLED_RMT_MAX_CHANNELS  1         // Total number of channels that the driver is allowed to use.
+                                            // Setting it to 1 results in fully serial output.
 #include "FastLED.h"
 #define FASTLEDS_DATA_PIN  GPIO_NUM_5
 CRGB fastleds[LEDS];

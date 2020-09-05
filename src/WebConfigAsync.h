@@ -69,7 +69,7 @@ void get_top_page(int p = 0) {
     page += theme;
     page += F("/bootstrap.min.css' crossorigin='anonymous'>");
   }
-  if (p == -1) page += F("<link rel='stylesheet' href='/css/floating-labels.css'>");
+  //if (p == -1) page += F("<link rel='stylesheet' href='/css/floating-labels.css'>");
   page += F("</head>");
 
   page += F("<body>");
