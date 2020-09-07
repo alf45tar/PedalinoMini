@@ -64,8 +64,6 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #endif
 
-#define FASTLED_RMT_MAX_CHANNELS  1         // Total number of channels that the driver is allowed to use.
-                                            // Setting it to 1 results in fully serial output.
 #include "FastLED.h"
 #define FASTLEDS_DATA_PIN  GPIO_NUM_5
 CRGB fastleds[LEDS];
@@ -79,15 +77,31 @@ ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 // Serial MIDI interfaces
 
 #include <MIDI.h>                       // https://github.com/FortySevenEffects/arduino_midi_library
+#include "ESPSerialMIDI.h"
 
 #define MIDI_BAUD_RATE                  31250
 #define HIGH_SPEED_SERIAL_BAUD_RATE     1000000
 
+
+struct Serial1MIDISettings : public midi::DefaultSettings
+{
+  static const long BaudRate = MIDI_BAUD_RATE;
+  static const int8_t RxPin  = USB_MIDI_IN_PIN;
+  static const int8_t TxPin  = USB_MIDI_OUT_PIN;
+};
+
+struct Serial2MIDISettings : public midi::DefaultSettings
+{
+  static const long BaudRate = MIDI_BAUD_RATE;
+  static const int8_t RxPin  = DIN_MIDI_IN_PIN;
+  static const int8_t TxPin  = DIN_MIDI_OUT_PIN;
+};
+
 #define SERIAL_MIDI_USB   Serial1
 #define SERIAL_MIDI_DIN   Serial2
 
-MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI);
-MIDI_CREATE_INSTANCE(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI);
+MIDI_CREATE_CUSTOM_INSTANCE_ESP(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, Serial1MIDISettings);
+MIDI_CREATE_CUSTOM_INSTANCE_ESP(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MIDISettings);
 
 
 typedef uint8_t   byte;

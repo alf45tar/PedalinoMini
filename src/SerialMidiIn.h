@@ -11,7 +11,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #include <MIDI.h>
 
-// Forward messages received from USB MIDI interface to WiFI interface
 
 void OnUSBMidiNoteOn(byte channel, byte note, byte velocity)
 {
