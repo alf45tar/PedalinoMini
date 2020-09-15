@@ -13,7 +13,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #ifdef BLE
 #include <BLE-MIDI.h>
-#include <hardware/BLE-MIDI_ESP32.h>
+#include <hardware/ESP32.h>
 
 void OnBleMidiConnected() {
   bleMidiConnected = true;
@@ -258,8 +258,8 @@ void ble_midi_start_service()
   // Initiate BLE MIDI communications, listen to all channels
   BLE_MIDI.begin(MIDI_CHANNEL_OMNI);
 
-  BLEBLE_MIDI.onConnected(OnBleMidiConnected);
-  BLEBLE_MIDI.onDisconnected(OnBleMidiDisconnected);
+  BLEBLE_MIDI.setHandleConnected(OnBleMidiConnected);
+  BLEBLE_MIDI.setHandleDisconnected(OnBleMidiDisconnected);
 
   // Connect the handle function called upon reception of a MIDI message from BLE MIDI interface
   BLE_MIDI.setHandleNoteOn(OnBleMidiNoteOn);

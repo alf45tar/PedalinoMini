@@ -11,7 +11,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #ifdef BLE
 #include <BLE-MIDI.h>
-#include <hardware/BLE-MIDI_ESP32.h>
+#include <hardware/ESP32.h>
 #endif
 
 #define BLE_LED         2
@@ -21,7 +21,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 // Bluetooth LE MIDI interface
 
 #ifdef BLE
-BLEMIDI_CREATE_INSTANCE(BLEMIDI_NAMESPACE::BLEMIDI_ESP32, host.c_str(), BLE_MIDI);
+BLEMIDI_CREATE_INSTANCE(host.c_str(), BLE_MIDI);
 #endif
 
 bool                  bleMidiConnected = false;
