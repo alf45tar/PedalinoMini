@@ -11,7 +11,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #ifdef BLE
 #include <BLE-MIDI.h>
-#include <hardware/ESP32.h>
+#include <hardware/ESP32_NimBLE.h>
 #endif
 
 #define BLE_LED         2

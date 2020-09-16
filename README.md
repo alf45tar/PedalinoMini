@@ -4,6 +4,8 @@
 
 > Before any update save configuration, reset to factory default and reload configuration. EEPROM can change without any further advice.
 
+> Sep 16, 2020 - Replaced Bluedroid with NimBLE. WiFi, Bluetooth and Web UI can be active at the same time.
+
 # PedalinoMini™
 
 ![PlatformIO CI](https://github.com/alf45tar/PedalinoMini/workflows/PlatformIO%20CI/badge.svg)
@@ -102,17 +104,17 @@ PedalinoMini™ has 8 booting modes:
 
 Mode|Name|Description
 ----|----|-----------
-1|Normal|BLE and WiFi are enabled. PedalinoMini™ starts the WiFi procedure on boot (connect to last AP -> SmartConfig -> WPS -> Access Point).<br>After boot PedalinoMini™ will wait for BLE-MIDI connection.<br>Web UI config is disabled.
-2|Bluetooth Only|WiFi is disabled.<br> PedalinoMini™ will wait for BLE-MIDI connection.
+1|Normal|BLE and WiFi are enabled. PedalinoMini™ starts the WiFi procedure on boot (connect to last AP -> SmartConfig -> WPS -> Access Point).<br>After boot PedalinoMini™ will wait for BLE-MIDI connection.
+2|Bluetooth Only|WiFi nad Web UI is disabled.<br> PedalinoMini™ will wait for BLE-MIDI connection.
 3|WiFi Only|PedalinoMini™ starts the WiFi procedure on boot (connect to last AP -> SmartConfig -> WPS -> Access Point).<br>BLE is disabled.
-4|Access Point with Bluetooth|PedalinoMini™ skip the WiFi procedure on boot and create a WiFi Access Point.<br>PedalinoMini™ will wait for BLE-MIDI connection.<br>Web UI config is disabled.
+4|Access Point with Bluetooth|PedalinoMini™ skip the WiFi procedure on boot and create a WiFi Access Point.<br>PedalinoMini™ will wait for BLE-MIDI connection.
 5|Access Point without Bluetooth|PedalinoMini™ skips the WiFi procedure on boot and create a WiFi Access Point.<br>BLE is disabled.
 6|Reset WiFi credentials|Forget the last connected access point.<br>On next boot PedalinoMini™ can be connected to a new AP.
 7|Ladder Config|Learn mode for your ladder pedal. Any resistors ladder (up to 6 buttons) can be calibrated just pressing footswitches in any sequence. Footswitches are numbered depending of the corresponding analog value: lower value lower number. TC HELICON Switch-6 footswitch 1 correspond to button 6, footswitch 2 to button 5, and so on until footswitch 6 to button 1.<br>Configure at least one pedal as Ladder before to proceed with configuration.
 8|Reset to factory default|
 
 The last booting mode (1-5) is selected if you don't press any button on boot.
-The default boot mode is (3) WiFi Only or (2) Bluetooth if WiFi support it is not included.
+The default boot mode is (1) Normal.
 
 To select a different mode:
 
@@ -121,17 +123,15 @@ To select a different mode:
 
 Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware Update|HTTP Firmware Update
 :--:|----|:------:|:---------:|:------:|:----:|:------:|:-:|:----:|:-----------------:|:------------------:
-1|Normal|x|x|x|x|x|x|-|-|-
+1|Normal|x|x|x|x|x|x|x|x|x
 2|Bluetooth Only|x|x|-|-|x|-|-|x|-
 3|WiFi Only|x|x|x|x|-|x|x|x|x
-4|Access Point with Bluetooth|x|x|x|x|x|x|-|-|-
+4|Access Point with Bluetooth|x|x|x|x|x|x|x|x|x
 5|Access Point without Bluetooth|x|x|x|x|-|x|x|x|x
 
 - (x) Supported
   (-) Not supported
 - USB-MIDI and DIN-MIDI are always available if hardware implemented.
-- Web UI config is disabled in Normal (1) and Access Point with Bluetooth (4) due to memory limit.
-- OTA/HTTP Firmware Update is available only when firmware is less than 2 MB.
 
 ## How to connect PedalinoMini™ to a WiFi network
 

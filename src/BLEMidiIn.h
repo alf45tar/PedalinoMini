@@ -13,7 +13,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #ifdef BLE
 #include <BLE-MIDI.h>
-#include <hardware/ESP32.h>
+#include <hardware/ESP32_NimBLE.h>
 
 void OnBleMidiConnected() {
   bleMidiConnected = true;

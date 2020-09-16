@@ -393,12 +393,6 @@ void load_factory_default()
 {
   host               = getChipId();
   bootMode           = PED_BOOT_NORMAL;
-#ifdef BLE
-  bootMode           = PED_BOOT_BLE;
-#endif
-#ifdef WIFI
-  bootMode           = PED_BOOT_WIFI;
-#endif
   wifiSSID           = "";
   wifiPassword       = "";
   ssidSoftAP         = String("Pedalino-") + getChipId();
