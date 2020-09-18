@@ -78,8 +78,8 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 
 [PlatformIO](https://platformio.org) is the recommended IDE for Pedalino build and upload.
 
-1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode)
-2. Run the following commands from View->Command Palette (Ctrl+Shift+P)
+1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode) and if on windows, install git (https://git-scm.com/download/win)
+2. In VSCode run the following commands from View->Command Palette (Ctrl+Shift+P)
     - Git: Clone
     - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
     - PlaftormIO: Build
