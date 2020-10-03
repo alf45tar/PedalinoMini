@@ -332,3 +332,24 @@ On TTGO T-Eight replace BOOT button with CENTER button.
 
 The factory default configuration is quite simple: 6 momentary pedals, one actions on press, all MIDI interfaces interface enabled.
 More configuration are available here.
+
+# End User Built (oldest first)
+
+https://github.com/marosell
+![marosell](https://user-images.githubusercontent.com/1125586/65741408-f1188b80-e0b9-11e9-868f-e65c7d6db10b.JPG)
+
+https://github.com/mknerr
+![](https://user-images.githubusercontent.com/25649210/83949366-60ba4b00-a7f1-11ea-8af6-402a4fcb3f37.jpeg)
+
+https://github.com/alf45tar
+![](https://user-images.githubusercontent.com/35426671/74613398-71459900-510e-11ea-8cb0-226436100cea.jpg)
+
+https://github.com/jimhiggs
+![](https://user-images.githubusercontent.com/33665935/75095781-0c0b0100-556f-11ea-99ee-fa6dd0c59d29.jpg)
+
+https://github.com/raidolo
+![](https://user-images.githubusercontent.com/25846804/91668083-dfc9d180-eb09-11ea-818e-1f8f97915324.jpeg)
+
+https://github.com/bsos
+![](https://user-images.githubusercontent.com/6843511/94213274-63c26f80-fea4-11ea-9e11-c6955389c7e1.jpeg)
+
