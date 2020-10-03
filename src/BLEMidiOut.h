@@ -10,8 +10,8 @@ __________           .___      .__  .__                 _____  .__       .__    
  */
 
 #ifdef BLE
-#include <BLE-MIDI.h>
-#include <hardware/ESP32_NimBLE.h>
+#include <BLEMIDI.h>
+#include <hardware/BLEMIDI_ESP32_NimBLE.h>
 #endif
 
 #define BLE_LED         2

@@ -12,8 +12,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 #undef CLASSIC_BT_ENABLED
 
 #ifdef BLE
-#include <BLE-MIDI.h>
-#include <hardware/ESP32_NimBLE.h>
+#include <BLEMIDI.h>
+#include <hardware/BLEMIDI_ESP32_NimBLE.h>
 
 void OnBleMidiConnected() {
   bleMidiConnected = true;
