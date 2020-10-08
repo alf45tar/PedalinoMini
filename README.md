@@ -353,3 +353,5 @@ https://github.com/raidolo
 https://github.com/bsos
 ![](https://user-images.githubusercontent.com/6843511/94213274-63c26f80-fea4-11ea-9e11-c6955389c7e1.jpeg)
 
+https://github.com/rigr
+![](https://user-images.githubusercontent.com/6568315/95367206-c2d8a900-08d4-11eb-9cc1-21adec9d219b.jpg)
