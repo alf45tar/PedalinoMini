@@ -12,7 +12,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #undef CLASSIC_BT_ENABLED
 
 #ifdef BLE
-#include <BLEMIDI.h>
+#include <BLEMIDI_Transport.h>
 #include <hardware/BLEMIDI_ESP32_NimBLE.h>
 
 void OnBleMidiConnected() {
