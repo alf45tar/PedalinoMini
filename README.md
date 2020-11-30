@@ -82,12 +82,14 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 2. Install Git
     - On Windows, install git from https://git-scm.com/download/win
     - On macOS, install Command Line Tools for Xcode running `xcode-select --install` via Terminal
-2. In VSCode run the following commands from View->Command Palette (Ctrl+Shift+P)
-    - Git: Clone
-    - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
-    - PlaftormIO: Build
-    - PlatformIO: Upload
-    - Run “Upload File System image” task in PlatformIO IDE or use PlatformIO Core (CLI) and 'platformio run --target uploadfs' command
+2. In VSCode run the following commands:
+    - from View->Command Palette (Ctrl+Shift+P)
+        - Git: Clone
+        - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
+    - under PlatformIO Project Tasks select your environment (i.e. env:esp32doit-devkit-v1)
+        - Click "Build" under General
+        - Click "Upload" under General
+        - Click “Upload File System Image” under Platform or use PlatformIO Core (CLI) and 'platformio run --target uploadfs' command
 
 That's all folks.
 
