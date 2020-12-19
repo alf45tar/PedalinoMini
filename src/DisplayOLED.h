@@ -1,130 +1,116 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
+                                                                                   (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-#ifdef TTGO_T_EIGHT
-#include "SH1106Wire.h"
+#include "Fonts.h"
+
+#if defined(TTGO_T_EIGHT) || defined(SSH1106WIRE)
+#include <SH1106Wire.h>
 #define OLED_I2C_ADDRESS  0x3c
 #define OLED_I2C_SDA      21
 #define OLED_I2C_SCL      22
-#else
+SH1106Wire                display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
+#endif
+#if defined(SSD1306WIRE)
 #include <SSD1306Wire.h>
 #define OLED_I2C_ADDRESS  0x3c
 #define OLED_I2C_SDA      SDA
 #define OLED_I2C_SCL      SCL
+SSD1306Wire               display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 #endif
 #include <OLEDDisplayUi.h>
-#include <Battery.h>
 #include <WiFi.h>
 
-
-// Initialize the OLED display using Wire library
-#ifdef TTGO_T_EIGHT
-SH1106Wire    display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
-#else
-SSD1306Wire   display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
-#endif
 OLEDDisplayUi ui(&display);
 bool          uiUpdate = true;
 
+#ifdef BATTERY
+#include <Battery.h>
 Battery bat(3000, 4200, BATTERY_PIN);
-
+#endif
 
 #define WIFI_LOGO_WIDTH   78
 #define WIFI_LOGO_HEIGHT  64
 
 const uint8_t WiFiLogo[] PROGMEM = {
-  0x00, 0x00, 0x00, 0xFC, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0xFF, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xFF, 
-  0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF, 0x03, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x07, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0xFC, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x7E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x1F, 0xC0, 
-  0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x0F, 0xF0, 0x03, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x07, 0xFC, 0x03, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0xC0, 0x07, 0xFE, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0xC0, 0x03, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 
-  0x83, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0x81, 0x07, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xC1, 0x03, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xC1, 0x03, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0xE0, 0xE1, 0xC3, 0x03, 0xF0, 0x0F, 0x00, 0x00, 0x00, 
-  0x00, 0xE0, 0xE1, 0xC1, 0x03, 0xF8, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xE0, 
-  0xE1, 0xC1, 0x03, 0xF8, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xC0, 0x81, 
-  0x01, 0xF8, 0x0F, 0x00, 0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x78, 
-  0x00, 0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x78, 0x00, 0x00, 
-  0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x78, 0x00, 0x00, 0x00, 0x00, 
-  0x1C, 0x78, 0xE0, 0xF1, 0x03, 0xF8, 0xC7, 0x0F, 0x00, 0x00, 0x3C, 0x7C, 
-  0xF0, 0xF1, 0x03, 0xF8, 0xC7, 0x0F, 0x00, 0x00, 0x3C, 0x7C, 0xF0, 0xF1, 
-  0x03, 0xF8, 0xC7, 0x0F, 0x00, 0x00, 0x3C, 0x7C, 0x70, 0xC0, 0x03, 0x78, 
-  0x00, 0x0F, 0x00, 0x00, 0x38, 0xFE, 0x78, 0xC0, 0x03, 0x78, 0x00, 0x0F, 
-  0x00, 0x00, 0x38, 0xFE, 0x78, 0xC0, 0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 
-  0x78, 0xFE, 0x39, 0xC0, 0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 0x78, 0xEF, 
-  0x39, 0xC0, 0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 0x70, 0xCF, 0x3D, 0xC0, 
-  0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 0x70, 0xC7, 0x1D, 0xC0, 0x03, 0x78, 
-  0x00, 0x0F, 0x00, 0x00, 0xF0, 0xC7, 0x1F, 0xC0, 0x03, 0x78, 0x00, 0x0F, 
-  0x00, 0x00, 0xF0, 0x83, 0x1F, 0xC0, 0x03, 0x78, 0x00, 0x0F, 0x00, 0x00, 
-  0xE0, 0x83, 0x1F, 0xC0, 0x0F, 0x78, 0x00, 0x1F, 0x00, 0x00, 0xE0, 0x83, 
-  0x0F, 0xC0, 0x0F, 0x78, 0x00, 0x3F, 0x00, 0x00, 0xE0, 0x01, 0x0F, 0xC0, 
-  0x0F, 0x78, 0x00, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x0E, 0x1C, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x1E, 0x3E, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x0F, 0x1E, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x0F, 0x0E, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x0F, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x1E, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x07, 0x1E, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x07, 0x1F, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0xFC, 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0xFF, 0x81, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 
-  0x80, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xC0, 0x07, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xE0, 0x03, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x03, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0xF8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 
-  0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x3F, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x0F, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 
-  0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+  0x00, 0x00, 0x00, 0xFC, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0xFF, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xFF,
+  0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF, 0x03, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x07, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0xFC, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x7E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x1F, 0xC0,
+  0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x0F, 0xF0, 0x03, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x07, 0xFC, 0x03, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0xC0, 0x07, 0xFE, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0xC0, 0x03, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0,
+  0x83, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0x81, 0x07,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xC1, 0x03, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xC1, 0x03, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0xE0, 0xE1, 0xC3, 0x03, 0xF0, 0x0F, 0x00, 0x00, 0x00,
+  0x00, 0xE0, 0xE1, 0xC1, 0x03, 0xF8, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xE0,
+  0xE1, 0xC1, 0x03, 0xF8, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xC0, 0x81,
+  0x01, 0xF8, 0x0F, 0x00, 0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x78,
+  0x00, 0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x78, 0x00, 0x00,
+  0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x78, 0x00, 0x00, 0x00, 0x00,
+  0x1C, 0x78, 0xE0, 0xF1, 0x03, 0xF8, 0xC7, 0x0F, 0x00, 0x00, 0x3C, 0x7C,
+  0xF0, 0xF1, 0x03, 0xF8, 0xC7, 0x0F, 0x00, 0x00, 0x3C, 0x7C, 0xF0, 0xF1,
+  0x03, 0xF8, 0xC7, 0x0F, 0x00, 0x00, 0x3C, 0x7C, 0x70, 0xC0, 0x03, 0x78,
+  0x00, 0x0F, 0x00, 0x00, 0x38, 0xFE, 0x78, 0xC0, 0x03, 0x78, 0x00, 0x0F,
+  0x00, 0x00, 0x38, 0xFE, 0x78, 0xC0, 0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00,
+  0x78, 0xFE, 0x39, 0xC0, 0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 0x78, 0xEF,
+  0x39, 0xC0, 0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 0x70, 0xCF, 0x3D, 0xC0,
+  0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 0x70, 0xC7, 0x1D, 0xC0, 0x03, 0x78,
+  0x00, 0x0F, 0x00, 0x00, 0xF0, 0xC7, 0x1F, 0xC0, 0x03, 0x78, 0x00, 0x0F,
+  0x00, 0x00, 0xF0, 0x83, 0x1F, 0xC0, 0x03, 0x78, 0x00, 0x0F, 0x00, 0x00,
+  0xE0, 0x83, 0x1F, 0xC0, 0x0F, 0x78, 0x00, 0x1F, 0x00, 0x00, 0xE0, 0x83,
+  0x0F, 0xC0, 0x0F, 0x78, 0x00, 0x3F, 0x00, 0x00, 0xE0, 0x01, 0x0F, 0xC0,
+  0x0F, 0x78, 0x00, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x0E, 0x1C, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x1E, 0x3E, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x0F, 0x1E, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x0F, 0x0E, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x0F, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x1E,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x07, 0x1E, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x07, 0x1F, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0xFC, 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0xFF, 0x81, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
+  0x80, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xC0, 0x07,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xE0, 0x03, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x03, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0xF8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80,
+  0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x3F, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x0F, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x07, 0x00, 0x00
 };
 
-#define BLUETOOTH_LOGO_WIDTH   35
-#define BLUETOOTH_LOGO_HEIGHT  54
+
+#define BLUETOOTH_LOGO_WIDTH  20
+#define BLUETOOTH_LOGO_HEIGHT 38
 
 const uint8_t BluetoothLogo[] PROGMEM = {
-  0x00, 0xFC, 0xFF, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0x07, 0x00, 0xC0, 0xFF, 
-  0xFF, 0x1F, 0x00, 0xE0, 0xFF, 0xFF, 0x3F, 0x00, 0xF0, 0xFF, 0xFF, 0x7F, 
-  0x00, 0xF8, 0xFF, 0xFF, 0xFF, 0x00, 0xFC, 0xFF, 0xFE, 0xFF, 0x01, 0xFC, 
-  0xFF, 0xFE, 0xFF, 0x01, 0xFE, 0xFF, 0xFC, 0xFF, 0x03, 0xFE, 0xFF, 0xF8, 
-  0xFF, 0x03, 0xFF, 0xFF, 0xF0, 0xFF, 0x07, 0xFF, 0xFF, 0xE0, 0xFF, 0x07, 
-  0xFF, 0xFF, 0xC0, 0xFF, 0x07, 0xFF, 0xFF, 0x80, 0xFF, 0x07, 0xFF, 0xFF, 
-  0x80, 0xFF, 0x07, 0xFF, 0xFF, 0x08, 0xFF, 0x07, 0xFF, 0xFF, 0x18, 0xFE, 
-  0x07, 0xFF, 0xFD, 0x38, 0xFC, 0x07, 0xFF, 0xF8, 0x78, 0xF8, 0x07, 0xFF, 
-  0xF0, 0x78, 0xF8, 0x07, 0xFF, 0xE1, 0x38, 0xFC, 0x07, 0xFF, 0xC3, 0x18, 
-  0xFE, 0x07, 0xFF, 0x87, 0x08, 0xFF, 0x07, 0xFF, 0x0F, 0x80, 0xFF, 0x07, 
-  0xFF, 0x1F, 0xC0, 0xFF, 0x07, 0xFF, 0x3F, 0xE0, 0xFF, 0x07, 0xFF, 0x7F, 
-  0xF0, 0xFF, 0x07, 0xFF, 0x7F, 0xF0, 0xFF, 0x07, 0xFF, 0x3F, 0xE0, 0xFF, 
-  0x07, 0xFF, 0x1F, 0xC0, 0xFF, 0x07, 0xFF, 0x0F, 0x80, 0xFF, 0x07, 0xFF, 
-  0x87, 0x08, 0xFF, 0x07, 0xFF, 0xC3, 0x18, 0xFE, 0x07, 0xFF, 0xE1, 0x38, 
-  0xFC, 0x07, 0xFF, 0xF0, 0x78, 0xF8, 0x07, 0xFF, 0xF8, 0x78, 0xF8, 0x07, 
-  0xFF, 0xFD, 0x78, 0xF8, 0x07, 0xFF, 0xFF, 0x38, 0xFC, 0x07, 0xFF, 0xFF, 
-  0x18, 0xFE, 0x07, 0xFF, 0xFF, 0x08, 0xFF, 0x07, 0xFF, 0xFF, 0x80, 0xFF, 
-  0x07, 0xFF, 0xFF, 0xC0, 0xFF, 0x07, 0xFF, 0xFF, 0xC0, 0xFF, 0x07, 0xFF, 
-  0xFF, 0xE0, 0xFF, 0x07, 0xFE, 0xFF, 0xF0, 0xFF, 0x03, 0xFE, 0xFF, 0xF8, 
-  0xFF, 0x03, 0xFC, 0xFF, 0xFC, 0xFF, 0x01, 0xFC, 0xFF, 0xFE, 0xFF, 0x01, 
-  0xF8, 0xFF, 0xFE, 0xFF, 0x00, 0xF0, 0xFF, 0xFF, 0x7F, 0x00, 0xE0, 0xFF, 
-  0xFF, 0x3F, 0x00, 0xC0, 0xFF, 0xFF, 0x1F, 0x00, 0x00, 0xFF, 0xFF, 0x07, 
-  0x00, 0x00, 0xFC, 0xFF, 0x01, 0x00
-};
+  0x00,0x01,0xf0,0x00,0x03,0xf0,0x00,0x07,0xf0,0x00,0x0f,0xf0,
+  0x00,0x1f,0xf0,0x00,0x3f,0xf0,0x00,0x7f,0xf0,0x00,0xf7,0xf0,
+  0x00,0xe7,0xf1,0x02,0xc7,0xf3,0x07,0x87,0xf7,0x0f,0x87,0xf7,
+  0x1e,0xc7,0xf3,0x3c,0xe7,0xf1,0x78,0xf7,0xf0,0xf0,0x7f,0xf0,
+  0xe0,0x3f,0xf0,0xc0,0x1f,0xf0,0x80,0x0f,0xf0,0x80,0x0f,0xf0,
+  0xc0,0x1f,0xf0,0xe0,0x3f,0xf0,0xf0,0x7f,0xf0,0x78,0xf7,0xf0,
+  0x3c,0xe7,0xf1,0x1e,0xc7,0xf3,0x0f,0x87,0xf7,0x07,0x87,0xf7,
+  0x02,0xc7,0xf3,0x00,0xe7,0xf1,0x00,0xf7,0xf0,0x00,0x7f,0xf0,
+  0x00,0x3f,0xf0,0x00,0x1f,0xf0,0x00,0x0f,0xf0,0x00,0x07,0xf0,
+  0x00,0x03,0xf0,0x00,0x01,0xf0};
 
 
 const uint8_t activeSymbol[] PROGMEM = {
@@ -186,19 +172,21 @@ const uint8_t bluetoothSign[] PROGMEM = {
 0x00, 0x00, 0x0D, 0x08, // 49
 // Font Data:
 0x82, 0x00, 0x44, 0x00, 0x28, 0x00, 0xFF, 0x01, 0x11, 0x01, 0xAA, 0x00, 0x44, // 49
-};      
+};
 
 // Font generated or edited with the glyphEditor
 const uint8_t blynkSign[] PROGMEM = {
 0x0A, // Width: 10
 0x0A, // Height: 10
 0x30, // First char: 48
-0x02, // Number of chars: 2
+0x03, // Number of chars: 3
 // Jump Table:
 0xFF, 0xFF, 0x00, 0x0A, // 48
 0x00, 0x00, 0x14, 0x0A, // 49
+0x00, 0x14, 0x14, 0x0A, // 50
 // Font Data:
 0x11, 0x02, 0x12, 0x01, 0x00, 0x00, 0xFC, 0x01, 0x25, 0x01, 0x24, 0x01, 0xD8, 0x00, 0x00, 0x00, 0x12, 0x01, 0x11, 0x02, // 49
+0xEE, 0x01, 0xED, 0x02, 0xFF, 0x03, 0x03, 0x02, 0xDA, 0x02, 0xDB, 0x02, 0x27, 0x03, 0xFF, 0x03, 0xED, 0x02, 0xEE, 0x01, // 50
 };
 
 // Font generated or edited with the glyphEditor
@@ -374,29 +362,62 @@ void display_progress_bar_title2(String title1, String title2)
   display.setTextAlignment(TEXT_ALIGN_CENTER);
   display.setFont(ArialMT_Plain_10);
   display.drawString(display.getWidth() / 2, 0, title1.c_str());
-  display.setFont(ArialMT_Plain_16);
+  if (display.getStringWidth(title2) <= display.width()) display.setFont(ArialMT_Plain_16);
   display.drawString(display.getWidth() / 2, 10, title2.c_str());
   display.display();
 }
 
 void display_progress_bar_update(unsigned int progress, unsigned int total)
 {
-  display.drawProgressBar(4, 32, 120, 8, 100*progress/total);
+  display.setColor(BLACK);
+  display.fillRect(0, 32, 127, 8);
+  display.drawProgressBar(0, 32, 127, 8, 100*progress/total);
+  display.display();
+}
+
+void display_progress_bar_2_update(unsigned int progress, unsigned int total)
+{
+  display.setColor(BLACK);
+  display.fillRect(0, 54, 127, 8);
+  display.drawProgressBar(0, 54, 127, 8, 100*progress/total);
+  display.display();
+}
+
+void display_progress_bar_2_label(unsigned int label, unsigned int x)
+{
+  const String l(label);
+
+  display.setColor(WHITE);
+  display.setFont(ArialMT_Plain_10);
+  if (x <= display.getStringWidth(l) / 2) {
+    display.setTextAlignment(TEXT_ALIGN_LEFT);
+    display.drawString(0, 42, l);
+  }
+  else if (x >= (128 - display.getStringWidth(l) / 2)) {
+    display.setTextAlignment(TEXT_ALIGN_RIGHT);
+    display.drawString(display.width() + 1, 42, l);
+  }
+  else {
+    display.setTextAlignment(TEXT_ALIGN_CENTER);
+    display.drawString(x, 42, l);
+  }
+  display.drawLine(x, 53, x, 63);
   display.display();
 }
 
 void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
+#ifdef BATTERY
   static uint16_t voltage = bat.voltage();
   static uint8_t  level   = bat.level(voltage);
+#endif
 
-  if ((millis() >= endMillis2) ||
-      (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+
 #ifdef WIFI
     if (wifiEnabled) {
       static int      signal  = WiFi.RSSI();
 
-      display->setTextAlignment(TEXT_ALIGN_LEFT);
       display->setFont(wifiSignal);
       signal = (4*signal + WiFi.RSSI()) / 5;
       if      (signal < -90) display->drawString(0, 0, String(0));
@@ -415,13 +436,18 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     else display->drawString(24, 0, String(0));
 
     display->setFont(blynkSign);
-    if (blynk_cloud_connected()) display->drawString(36, 0, String(1));
+    if (blynk_cloud_connected())
+      blynk_app_connected() ? display->drawString(36, 0, String(2)) :display->drawString(36, 0, String(1));
     else display->drawString(36, 0, String(0));
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
-    display->setFont(profileSign);
-    display->drawString(64 + 10*currentProfile, 0, String(currentProfile));
 
-#ifdef TTGO_T_EIGHT
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    display->setFont(profileSign);
+    display->drawString(64 + (scrollingMode ? 10*currentProfile : 0), 0, String(currentProfile));
+
+  if ((millis() >= endMillis2) ||
+      (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
+
+#ifdef BATTERY
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(batteryIndicator);
     voltage = (199*voltage + bat.voltage()) / 200;
@@ -500,15 +526,20 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
           break;
       }
       */
-      MTC.isPlaying() ? display->setColor(WHITE) : display->setColor(BLACK);
+      //MTC.isPlaying() ? display->setColor(WHITE) : display->setColor(BLACK);
       switch (timeSignature) {
         case PED_TIMESIGNATURE_2_4:
           display->fillRect(64 * MTC.getBeat(), 0, 64, 10);
           break;
         case PED_TIMESIGNATURE_4_4:
-          display->fillRect(32 * MTC.getBeat(), 0, 32, 10);
-          //display->setColor(INVERSE);
-          display->drawRect(32 * MTC.getBeat(), 0, 32, 10);
+          display->drawRect(77 + 13 * 0, 0, 12, 10);
+          display->drawRect(77 + 13 * 1, 0, 12, 10);
+          display->drawRect(77 + 13 * 2, 0, 12, 10);
+          display->drawRect(77 + 13 * 3, 0, 12, 10);
+          if (MTC.isPlaying())
+            display->fillRect(79 + 13 * MTC.getBeat(), 2,  8,  6);
+          else
+            display->drawRect(81 + 13 * MTC.getBeat(), 3,  4,  4);
           break;
         case PED_TIMESIGNATURE_3_4:
         case PED_TIMESIGNATURE_3_8:
@@ -518,6 +549,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
           display->fillRect(43 * MTC.getBeat(), 0, 42, 10);
           break;
       }
+      //display->setColor(WHITE);
     }
     else if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
              MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
@@ -532,16 +564,78 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
-  if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2) {
-    byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
-    display->drawProgressBar(4, 54, 120, 8, p);
+  if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
+    //byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
+    int p;
+    switch (m1) {
+
+      case midi::ControlChange:
+        //p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
+        m3 = constrain(m3, rmin, rmax);
+        p = map(m3, rmin, rmax, 0, 100);
+        display->drawProgressBar(0, 54, 127, 8, p);
+        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 3, 124));
+        break;
+
+      case midi::PitchBend:
+        p = map(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX, -100, 100);
+        if ( p >= 0 ) {
+          display->drawProgressBar(60, 54, 67, 8, p);
+          uint16_t radius = 8 / 2;
+          uint16_t xRadius = 0 + radius;
+          uint16_t yRadius = 54 + radius;
+          uint16_t doubleRadius = 2 * radius;
+          display->drawCircleQuads(xRadius, yRadius, radius, 0b00000110);
+          display->drawHorizontalLine(xRadius, 54, 68 - doubleRadius);
+          display->drawHorizontalLine(xRadius, 54 + 8, 68 - doubleRadius);
+          display->drawCircleQuads(0 + 68 - radius, yRadius, radius, 0b00001001);
+        }
+        else {
+          display->drawProgressBar(60, 54, 67, 8, 0);
+          uint16_t radius = 8 / 2;
+          uint16_t xRadius = 0 + radius;
+          uint16_t yRadius = 54 + radius;
+          uint16_t doubleRadius = 2 * radius;
+          uint16_t innerRadius = radius - 2;
+          display->drawCircleQuads(xRadius, yRadius, radius, 0b00000110);
+          display->drawHorizontalLine(xRadius, 54, 68 - doubleRadius);
+          display->drawHorizontalLine(xRadius, 54 + 8, 68 - doubleRadius);
+          display->drawCircleQuads(0 + 68 - radius, yRadius, radius, 0b00001001);
+          uint16_t maxProgressWidth = (68 - doubleRadius) * p / 100;
+          display->fillCircle(68 + maxProgressWidth - xRadius, yRadius, innerRadius);
+          display->fillRect(68 + maxProgressWidth - xRadius + 1, 54 + 2, -maxProgressWidth, 8 - 3);
+          display->fillCircle(68 - xRadius, yRadius, innerRadius);
+        }
+        break;
+
+      case midi::AfterTouchChannel:
+        ///p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
+        m3 = constrain(m2, rmin, rmax);
+        p = map(m3, rmin, rmax, 0, 100);
+        display->drawProgressBar(0, 54, 127, 8, p);
+        break;
+    }
   }
-  else { 
+  else if (scrollingMode || MTC.getMode() != MidiTimeCode::SynchroNone) {
     display->drawLine(0, 51, 127, 51);
 
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(ArialMT_Plain_10);
-    display->drawString(0, 54, String("Bank " + String(currentBank+1)));
+    if (tapDanceMode && tapDanceBank) {
+      display->setColor(BLACK);
+      display->fillRect(0, 54, 40, 63);
+      display->setColor(WHITE);
+    }
+    else {
+      display->fillRect(0, 54, 40, 63);
+      display->setColor(BLACK);
+    }
+
+    if (currentBank < 9)
+      display->drawString(0, 53, String("Bank 0" + String(currentBank+1)));
+    else
+      display->drawString(0, 53, String("Bank " + String(currentBank+1)));
+    display->setColor(WHITE);
 
 #ifdef WIFI
     if (wifiEnabled) {
@@ -550,10 +644,10 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
       if(appleMidiConnected) display->drawString(84, 54, String(1));
       else display->drawString(84, 54, String(0));
 
-      if (interfaces[PED_IPMIDI].midiIn) display->drawString(106, 54, String(2));
+      if (interfaces[PED_IPMIDI].midiIn || interfaces[PED_IPMIDI].midiOut) display->drawString(106, 54, String(2));
       else display->drawString(106, 54, String(0));
 
-      if (interfaces[PED_OSC].midiIn) display->drawString(128, 54, String(3));
+      if (interfaces[PED_OSC].midiIn || interfaces[PED_OSC].midiOut) display->drawString(128, 54, String(3));
       else display->drawString(128, 54, String(0));
     }
 #endif
@@ -570,12 +664,20 @@ void drawRect(OLEDDisplay *display, int16_t x0, int16_t y0, int16_t x1, int16_t 
 
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
-  if (millis() < endMillis2) {
+  if (millis() < endMillis2 && lastPedalName[0] != ':') {
     ui.disableAutoTransition();
     ui.switchToFrame(0);
-    if (banks[currentBank][lastUsed].pedalName[0] == 0) {
+    if (strlen(lastPedalName) != 0 && lastPedalName[strlen(lastPedalName) - 1] == '.') lastPedalName[strlen(lastPedalName) - 1] = 0;
+    if (lastPedalName[0] == 0) {
       display->setTextAlignment(TEXT_ALIGN_CENTER);
       switch (m1) {
+        case midi::InvalidType:
+          drawRect(display, 64-22, 15, 64+24, 15+23);
+          display->setFont(ArialMT_Plain_10);
+          display->drawString( 64 + x, 39 + y, String("Bank"));
+          display->setFont(ArialMT_Plain_24);
+          display->drawString( 64 + x, 14 + y, String(m2));
+          break;
         case midi::NoteOn:
         case midi::NoteOff:
           drawRect(display, 64-22, 15, 64+24, 15+23);
@@ -609,22 +711,51 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
         case midi::PitchBend:
           drawRect(display, 84-38, 15, 84+36, 15+23);
           display->setFont(ArialMT_Plain_10);
-          display->drawString(84 + x, 39 + y, String("Pitch")); 
+          display->drawString(84 + x, 39 + y, String("Pitch"));
           display->setFont(ArialMT_Plain_24);
-          display->drawString(84 + x, 14 + y, String(m2));  
+          display->drawString(84 + x, 14 + y, String(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN));
+          break;
+        case midi::AfterTouchChannel:
+          drawRect(display, 84-22, 15, 84+24, 15+23);
+          display->setFont(ArialMT_Plain_10);
+          display->drawString(84 + x, 39 + y, String("Pressure"));
+          display->setFont(ArialMT_Plain_24);
+          display->drawString(84 + x, 14 + y, String(m2));
           break;
       }
-      display->setFont(ArialMT_Plain_10);
-      display->drawString(18 + x, 39 + y, String("Channel"));
-      display->setFont(ArialMT_Plain_16);
-      display->drawString(18 + x, 22 + y, String(m4));
+      if (m1 != midi::InvalidType) {
+        display->setFont(ArialMT_Plain_10);
+        display->drawString(18 + x, 39 + y, String("Channel"));
+        display->setFont(ArialMT_Plain_16);
+        display->drawString(18 + x, 22 + y, String(m4));
+      }
     }
     else {
-      display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-      display->setFont(ArialMT_Plain_24);
-      display->drawString(64, 32, String(banks[currentBank][lastUsed].pedalName)); 
-    }    
-  }  
+      String name = lastPedalName;
+      switch (m1) {
+        case midi::InvalidType:
+          drawRect(display, 64-22, 15, 64+24, 15+23);
+          display->setTextAlignment(TEXT_ALIGN_CENTER);
+          display->setFont(ArialMT_Plain_10);
+          display->drawString( 64 + x, 39 + y, String("Bank"));
+          display->setFont(ArialMT_Plain_24);
+          display->drawString( 64 + x, 14 + y, String(m2));
+          break;
+        case midi::NoteOn:
+        case midi::NoteOff:
+        case midi::ControlChange:
+          name.replace(String("###"), String(m3));
+        case midi::ProgramChange:
+        case midi::AfterTouchChannel:
+          name.replace(String("###"), String(m2));
+        default:
+          display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+          display->setFont(ArialMT_Plain_24);
+          display->drawString(64, 32, name);
+          break;
+      }
+    }
+  }
   else if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
            MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
     display->setFont(ArialMT_Plain_24);
@@ -724,18 +855,129 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     display->setFont(ArialMT_Plain_24);
     display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
     display->drawString(64 + x, 32 + y, buf);
+    display->setFont(ArialMT_Plain_10);
+    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster)
+      display->drawString(128 + x, 0 + y, "Master");
+    else if (MTC.getMode() == MidiTimeCode::SynchroMTCSlave)
+      display->drawString(128 + x, 0 + y, "Slave");
     ui.disableAutoTransition();
   }
   else {
-    display->setFont(ArialMT_Plain_16);
-    display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-    display->drawString(64 + x, 32 + y, MODEL);
-    display->setFont(ArialMT_Plain_10);
-    display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->drawString(110 + x, 16 + y, String("TM"));
-    ui.enableAutoTransition();
+    if (scrollingMode) {
+      display->setFont(ArialMT_Plain_16);
+      display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+      display->drawString(64 + x, 32 + y, MODEL);
+      display->setFont(ArialMT_Plain_10);
+      display->setTextAlignment(TEXT_ALIGN_LEFT);
+      display->drawString(110 + x, 16 + y, String("TM"));
+      ui.enableAutoTransition();
+    }
+    else {
+      if (banknames[currentBank][0] == 0) {
+        display->setFont(DSEG7_Classic_Bold_50);
+        display->setTextAlignment(TEXT_ALIGN_LEFT);
+        display->drawString(  0 + x, 9 + y, (currentProfile == 0 ? String('A') : (currentProfile == 1 ? String('B') : String('C'))));
+        display->drawString( 38 + x, 9 + y, String("."));
+        display->setTextAlignment(TEXT_ALIGN_RIGHT);
+        display->drawString(128 + x, 9 + y, (currentBank >= 9  ? String("") : String('0')) + String(currentBank + 1));
+      }
+      else {
+        String name;
+        int offsetText       = 0;
+        int offsetBackground = 0;
+        static unsigned long ms = millis();
+
+        // Display pedals name
+        display->setFont(ArialMT_Plain_10);
+        for (byte p = 0; p < PEDALS/2; p++) {
+          switch (p) {
+            case 0:
+              display->setTextAlignment(TEXT_ALIGN_LEFT);
+              offsetText = 1;
+              offsetBackground = 0;
+              break;
+            case PEDALS / 2 - 1:
+              display->setTextAlignment(TEXT_ALIGN_RIGHT);
+              offsetText = -1;
+              offsetBackground = 2;
+              break;
+            default:
+              display->setTextAlignment(TEXT_ALIGN_CENTER);
+              offsetText = 0;
+              offsetBackground = 1;
+              break;
+          }
+          // Top line
+          name = String((banks[currentBank][p].pedalName[0] == ':') ? &banks[currentBank][p].pedalName[1] : banks[currentBank][p].pedalName);
+          name.replace(String("###"), String(currentMIDIValue[currentBank][p][0]));
+          if (pedals[p].function == PED_MIDI && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
+            display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
+                              12 + y,
+                              display->getStringWidth(name) + 1,
+                              10);
+            display->setColor(BLACK);
+          }
+          else
+            display->setColor(WHITE);
+          display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 10 + y, name);
+          // Bottom line
+          name = String((banks[currentBank][p + PEDALS / 2].pedalName[0] == ':') ? &banks[currentBank][p + PEDALS / 2].pedalName[1] : banks[currentBank][p + PEDALS / 2].pedalName);
+          name.replace(String("###"), String(currentMIDIValue[currentBank][p + PEDALS / 2][0]));
+          if (pedals[p + PEDALS / 2].function == PED_MIDI && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
+            display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
+                              53 + y,
+                              display->getStringWidth(name) + 1,
+                              10);
+            display->setColor(BLACK);
+          }
+          else
+            display->setColor(WHITE);
+          display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 51 + y, name);
+          display->setColor(WHITE);
+        }
+        // Center area
+        if (((millis() - ms < 4000) && (banknames[currentBank][0] != '.')) || (banknames[currentBank][0] == ':')) {
+          // Display bank name
+          display->drawRect(0, 23, 128, 29);
+          name = (banknames[currentBank][0] == ':') ? &banknames[currentBank][1] : banknames[currentBank];
+          name.replace(String("##"), String(currentBank));
+          display->setFont(ArialMT_Plain_24);
+          display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
+          display->drawString( 64 + x, 37 + y, name);
+        }
+        else if (((millis() - ms < 8000) || (banknames[currentBank][0] == '.')) && (banknames[currentBank][0] != ':')) {
+          // Display pedal values
+          name = (banknames[currentBank][0] == '.') ? &banknames[currentBank][1] : banknames[currentBank];
+          name.replace(String("##"), String(currentBank));
+          display->setFont(ArialMT_Plain_10);
+          display->setTextAlignment(TEXT_ALIGN_RIGHT);
+          display->drawString(128 + x, y, name);
+          for (byte p = 0; p < PEDALS/2; p++) {
+            if ((pedals[p].function == PED_MIDI) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
+              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 25 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p][0],
+                                                                                                       banks[currentBank][p].midiValue1,
+                                                                                                       banks[currentBank][p].midiValue2,
+                                                                                                       0, 100),
+                                                                                                   0, 100));
+            }
+            if ((pedals[p + PEDALS / 2].function == PED_MIDI) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
+              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
+                                                                                                       banks[currentBank][p + PEDALS / 2].midiValue1,
+                                                                                                       banks[currentBank][p + PEDALS / 2].midiValue2,
+                                                                                                       0, 100),
+                                                                                                   0, 100));
+            }
+          }
+        }
+        else {
+          ms = millis();
+        }
+      }
+      ui.disableAutoTransition();
+    }
   }
-  
+
 #ifdef WEBSOCKET
   events.send(MTC.isPlaying() ? "1" : "0", "play");
 
@@ -786,7 +1028,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
-  if (MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2)
+  if (!scrollingMode || MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2)
     ui.switchToFrame(0);
 
   display->setFont(ArialMT_Plain_10);
@@ -801,7 +1043,7 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       display->setTextAlignment(TEXT_ALIGN_LEFT);
       display->drawString(0 + x, 26 + y, "AP:");
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
-      display->drawString(128 + x, 26 + y, wifiSoftAP);
+      display->drawString(128 + x, 26 + y, ssidSoftAP);
       display->setTextAlignment(TEXT_ALIGN_LEFT);
       display->drawString(0 + x, 36 + y, "AP IP:");
       display->setTextAlignment(TEXT_ALIGN_RIGHT);
@@ -826,12 +1068,8 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 
 void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
 {
-  static uint16_t voltage = bat.voltage();
-
-  if (MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2)
+  if (!scrollingMode || MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2)
     ui.switchToFrame(0);
-
-  voltage = (99*voltage + bat.voltage()) / 100;
 
   display->setFont(ArialMT_Plain_10);
   display->setTextAlignment(TEXT_ALIGN_LEFT);
@@ -839,10 +1077,15 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->drawString(128 + x, 16 + y, ESP.getFreeHeap()/1024 + String(" Kb"));
 
+#ifdef BATTERY
+  static uint16_t voltage = bat.voltage();
+  voltage = (99*voltage + bat.voltage()) / 100;
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0 + x, 26 + y, "Battery voltage:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->drawString(128 + x, 26 + y, voltage + String(" mV"));
+#endif
+
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0 + x, 36 + y, "Running time:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
@@ -876,7 +1119,7 @@ void display_init()
     display.clear();
     display.drawXbm((display.getWidth() - WIFI_LOGO_WIDTH) / 2, (display.getHeight() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
     display.display();
-    delay(500);
+    leds.kittCar();
   }
 #endif
 
@@ -885,7 +1128,7 @@ void display_init()
     display.clear();
     display.drawXbm((display.getWidth() - BLUETOOTH_LOGO_WIDTH) / 2, (display.getHeight() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
     display.display();
-    delay(500);
+    leds.kittCar();
   }
 #endif
 
@@ -917,13 +1160,15 @@ void display_init()
 
   // Add overlays
   ui.setOverlays(overlays, overlaysCount);
-  
+
   // Initialising the UI will init the display too.
   ui.init();
 
   display.flipScreenVertically();
 
+#ifdef BATTERY
   bat.begin(3300, 2, &sigmoidal);
+#endif
 }
 
 void display_ui_update_disable()
@@ -936,7 +1181,7 @@ void display_ui_update_enable()
   uiUpdate = true;
 }
 
-void display_update(bool force = false)
+void display_update()
 {
   if (uiUpdate) ui.update();
 }

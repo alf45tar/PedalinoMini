@@ -1,10 +1,10 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
                                                                                    (c) 2018-2019 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
@@ -15,7 +15,11 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <WiFiAP.h>
 #include <ESPmDNS.h>
 #include <Update.h>
+#include <esp_wifi.h>
 #include <esp_wps.h>
+#ifdef BLUFI
+#include "BluFi.h"
+#endif
 
 #define WIFI_CONNECT_TIMEOUT    15
 #define SMART_CONFIG_TIMEOUT    15
@@ -63,8 +67,8 @@ void stop_services()
 {
   MDNS.end();
   ArduinoOTA.end();
-  ipMIDI.stop();
-  oscUDP.stop();
+  oscUDPin.close();
+  oscUDPout.close();
 }
 
 void start_services()
@@ -89,18 +93,33 @@ void start_services()
   DPRINT("OTA update started\n");
 
 #ifdef WEBCONFIG
-  http_setup();
-  DPRINT("HTTP server started\n");
-  DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
-  DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
+  switch (bootMode) {
+    case PED_BOOT_NORMAL:
+    case PED_BOOT_WIFI:
+    case PED_BOOT_AP:
+    case PED_BOOT_AP_NO_BLE:
+      http_setup();
+      DPRINT("HTTP server started\n");
+      DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
+      DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
+      break;
+  }
 #endif
 
-  ipMIDI.beginMulticast(ipMIDImulticast, ipMIDIdestPort);
-  DPRINT("ipMIDI server started\n");
+  // ipMIDI
+  ip_midi_start();
+  DPRINT("ipMIDI started\n");
 
-  // RTP-MDI
+  // RTP-MIDI
   apple_midi_start();
   DPRINT("RTP-MIDI started\n");
+
+  // Set incoming OSC messages port
+  //oscUDPin.listen(WiFi.localIP(), oscLocalPort);
+  oscUDPin.listen(oscLocalPort);
+  oscUDPin.onPacket(oscOnPacket);
+
+  DPRINT("OSC server started\n");
 
   // Calculate the broadcast address of local WiFi to broadcast OSC messages
   oscRemoteIp = WiFi.localIP();
@@ -108,9 +127,8 @@ void start_services()
   for (int i = 0; i < 4; i++)
     oscRemoteIp[i] |= (localMask[i] ^ B11111111);
 
-  // Set incoming OSC messages port
-  oscUDP.begin(oscLocalPort);
-  DPRINT("OSC server started\n");
+  // Set outcoming OSC broadcast ip/port
+  oscUDPout.connect(oscRemoteIp, oscRemotePort);
 
   // Connect to Blynk Cloud
   blynk_connect();
@@ -201,16 +219,34 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       //IPAddress apIP(192, 168, 1, 1);
       //IPAddress netMsk(255, 255, 255, 0);
       //WiFi.softAPConfig(apIP, apIP, netMsk);
-      //WiFi.softAPsetHostname(host.c_str());
+      WiFi.softAPsetHostname((host + String(".local")).c_str());
       //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
       //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
-      //DPRINT("AP SSID     : %s\n", wifiSoftAP.c_str());
+      //DPRINT("AP SSID     : %s\n", ssidSoftAP.c_str());
       //DPRINT("AP PSK      : %s\n", host.c_str());
       //DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
       //DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
       //DPRINT("Channel     : %d\n", WiFi.channel());
-      //DPRINT("Connect to %s wireless network with no password\n", wifiSoftAP.c_str());
+      //DPRINT("Connect to %s wireless network with no password\n", ssidSoftAP.c_str());
       //start_services();
+#ifdef BLUFI
+      {
+        wifi_mode_t            mode;
+        wifi_config_t          config;
+        esp_blufi_extra_info_t info;
+
+        esp_wifi_get_mode(&mode);
+        if (mode == WIFI_MODE_AP) {
+          esp_wifi_get_config(WIFI_IF_AP, &config);
+          memset(&info, 0, sizeof(esp_blufi_extra_info_t));
+          info.softap_ssid     = config.ap.ssid;
+          info.softap_ssid_len = config.ap.ssid_len;
+          esp_blufi_send_wifi_conn_report(mode, ESP_BLUFI_STA_CONN_SUCCESS, 0, &info);
+        } else {
+          esp_blufi_send_wifi_conn_report(mode, ESP_BLUFI_STA_CONN_FAIL, 0, NULL);
+        }
+      }
+#endif
       break;
 
     case SYSTEM_EVENT_AP_STOP:
@@ -232,26 +268,66 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
     case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_SUCCESS\n");
       wpsStatus = 1;
-      ESP_ERROR_CHECK(esp_wifi_wps_disable());
-      WiFi.begin();
+      if (WiFi.getMode() == WIFI_STA) ESP_ERROR_CHECK(esp_wifi_wps_disable());
+      //WiFi.begin();
+      ESP_ERROR_CHECK(esp_wifi_connect());
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_FAILED:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_FAILED\n");
       wpsStatus = -1;
-      ESP_ERROR_CHECK(esp_wifi_wps_disable());
+      if (WiFi.getMode() == WIFI_STA) ESP_ERROR_CHECK(esp_wifi_wps_disable());
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_TIMEOUT:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_TIMEOUT\n");
       wpsStatus = -2;
-      ESP_ERROR_CHECK(esp_wifi_wps_disable());
+      if (WiFi.getMode() == WIFI_STA) ESP_ERROR_CHECK(esp_wifi_wps_disable());
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_PIN:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_PIN\n");
       DPRINT("WPS_PIN = " PINSTR, PIN2STR(info.sta_er_pin.pin_code));
       break;
+
+    case SYSTEM_EVENT_STA_WPS_ER_PBC_OVERLAP:
+      DPRINT("SYSTEM_EVENT_STA_WPS_ER_PBC_OVERLAP\n");
+      break;
+
+#ifdef BLUFI
+    case SYSTEM_EVENT_SCAN_DONE: {
+      DPRINT("SYSTEM_EVENT_SCAN_DONE\n");
+      uint16_t apCount = 0;
+      esp_wifi_scan_get_ap_num(&apCount);
+      if (apCount == 0) {
+        BLUFI_INFO("Nothing AP found");
+        break;
+      }
+      wifi_ap_record_t *ap_list = (wifi_ap_record_t *)malloc(sizeof(wifi_ap_record_t) * apCount);
+      if (!ap_list) {
+        BLUFI_ERROR("malloc error, ap_list is NULL");
+        break;
+      }
+      ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&apCount, ap_list));
+      esp_blufi_ap_record_t * blufi_ap_list = (esp_blufi_ap_record_t *)malloc(apCount * sizeof(esp_blufi_ap_record_t));
+      if (!blufi_ap_list) {
+        if (ap_list) {
+          free(ap_list);
+        }
+        BLUFI_ERROR("malloc error, blufi_ap_list is NULL");
+        break;
+      }
+      for (int i = 0; i < apCount; ++i) {
+        blufi_ap_list[i].rssi = ap_list[i].rssi;
+        memcpy(blufi_ap_list[i].ssid, ap_list[i].ssid, sizeof(ap_list[i].ssid));
+      }
+      esp_blufi_send_wifi_list(apCount, blufi_ap_list);
+      esp_wifi_scan_stop();
+      free(ap_list);
+      free(blufi_ap_list);
+      break;
+    }
+#endif
 
     default:
       DPRINT("Event: %d\n", event);
@@ -275,23 +351,23 @@ void ap_mode_start()
                       // and before setting up the softAP
 
   WiFi.mode(WIFI_AP);
-  
-  if (WiFi.softAP(wifiSoftAP.c_str(), host.c_str())) {
-    DPRINT("AP %s started with password %s\n", wifiSoftAP.c_str(), host.c_str());
+
+  if (WiFi.softAP(ssidSoftAP.c_str(), passwordSoftAP.c_str())) {
+    DPRINT("AP %s started with password %s\n", ssidSoftAP.c_str(), passwordSoftAP.c_str());
     // Setup the DNS server redirecting all the domains to the apIP
     //dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
     //dnsServer.start(53, "*", apIP);
-    WiFi.softAPsetHostname(host.c_str());
-    //DPRINT("AP SSID     : %s\n", WiFi.softAPSSID().c_str());
-    //DPRINT("AP PSK      : %s\n", WiFi.softAPPSK().c_str());
-    DPRINT("AP SSID     : %s\n", wifiSoftAP.c_str());
-    DPRINT("AP PSK      : %s\n", host.c_str());
+    //if (!WiFi.softAPsetHostname(host.c_str())) {
+    //  DPRINT("WiFi.softAPsetHostname(%s) failed\n", host.c_str());
+    //}
+    DPRINT("AP SSID     : %s\n", ssidSoftAP.c_str());
+    DPRINT("AP PSK      : %s\n", passwordSoftAP.c_str());
     DPRINT("AP MAC      : %s\n", WiFi.softAPmacAddress().c_str());
     DPRINT("AP IP       : %s\n", WiFi.softAPIP().toString().c_str());
     DPRINT("Channel     : %d\n", WiFi.channel());
-    DPRINT("Connect to %s wireless network with password %s\n", wifiSoftAP.c_str(), host.c_str());
+    DPRINT("Connect to %s wireless network with password %s\n", ssidSoftAP.c_str(), passwordSoftAP.c_str());
     start_services();
-  }  
+  }
   else
     DPRINT("AP mode failed\n");
 }
@@ -299,7 +375,7 @@ void ap_mode_start()
 void ap_mode_stop()
 {
   WIFI_LED_OFF();
-  
+
   stop_services();
 
   if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA) {
@@ -329,13 +405,17 @@ bool smart_config()
 
   DPRINT("SmartConfig started\n");
   display_progress_bar_title("SmartConfig");
+  leds.setAllLow();
+  leds.write();
   for (int i = 0; i < SMART_CONFIG_TIMEOUT && !WiFi.smartConfigDone(); i++) {
     display_progress_bar_update(i, SMART_CONFIG_TIMEOUT-1);
     status_blink();
     delay(950);
+    leds.setHigh(map(i, 0, SMART_CONFIG_TIMEOUT-2, 0, 5));
+    leds.write();
   }
   display_progress_bar_update(1, 1);
-  
+
   if (WiFi.smartConfigDone()) {
     // Wait for WiFi to connect to AP
     while (WiFi.status() != WL_CONNECTED) {
@@ -347,7 +427,7 @@ bool smart_config()
     DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
     DPRINT("Password    : %s\n", WiFi.psk().c_str());
 
-    eeprom_update_wifi_credentials(WiFi.SSID(), WiFi.psk());
+    eeprom_update_sta_wifi_credentials(WiFi.SSID(), WiFi.psk());
   }
   else
     DPRINT("SmartConfig timeout\n");
@@ -355,11 +435,14 @@ bool smart_config()
   if (WiFi.smartConfigDone())
   {
     WiFi.stopSmartConfig();
+    leds.kittCar();
     return true;
   }
   else
   {
     WiFi.stopSmartConfig();
+    leds.setAllLow();
+    leds.write();
     return false;
   }
 }
@@ -377,17 +460,23 @@ bool wps_config()
   strcpy(WPS.factory_info.model_number, "ESP32");
   strcpy(WPS.factory_info.model_name,   "Pedalino(TM)");
   strcpy(WPS.factory_info.device_name,  "PedalinoMini");
-  
+
   ESP_ERROR_CHECK(esp_wifi_wps_enable(&WPS));
   ESP_ERROR_CHECK(esp_wifi_wps_start(0));
-  
+
   DPRINT("WPS started\n");
   display_progress_bar_title("Press WPS button on AP");
+  leds.setAllLow();
+  leds.write();
   for (int i = 0; i < 10*WPS_TIMEOUT && wpsStatus == 0; i++) {
     display_progress_bar_update(i, 10*WPS_TIMEOUT-1);
+    leds.setHigh(map(i, 0, 10*WPS_TIMEOUT-10, 5, 0));
+    leds.write();
     delay(100);
   }
   display_progress_bar_update(1, 1);
+  leds.setAllLow();
+  leds.write();
 
   if (wpsStatus == 1) {
     // Wait for WiFi to connect to AP
@@ -410,8 +499,8 @@ bool wps_config()
       DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
       DPRINT("Password    : %s\n", WiFi.psk().c_str());
 
-      eeprom_update_wifi_credentials(WiFi.SSID(), WiFi.psk());
-    }  
+      eeprom_update_sta_wifi_credentials(WiFi.SSID(), WiFi.psk());
+    }
   }
   else {
     DPRINT("WPS timeout\n");
@@ -434,16 +523,28 @@ bool ap_connect(String ssid, String password)
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), password.c_str());
   display_progress_bar_title2("Connecting to", ssid);
+  leds.setAllLow();
+  leds.write();
   for (byte i = 0; i < WIFI_CONNECT_TIMEOUT * 2 && !WiFi.isConnected(); i++) {
     display_progress_bar_update(i, WIFI_CONNECT_TIMEOUT*2-1);
     status_blink();
     delay(100);
     status_blink();
     delay(300);
+    leds.setHigh(map(i, 0, WIFI_CONNECT_TIMEOUT*2-2, 0, 5));
+    leds.write();
   }
   display_progress_bar_update(1, 1);
 
-  WiFi.isConnected() ? WIFI_LED_ON() : WIFI_LED_OFF();
+  if (WiFi.isConnected()) {
+    WIFI_LED_ON();
+    leds.setAllHigh();
+    leds.write();
+    delay(100);
+  }
+  else WIFI_LED_OFF();
+  leds.setAllLow();
+  leds.write();
 
   return WiFi.isConnected();
 }
@@ -466,11 +567,15 @@ void wifi_connect()
   if (auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
     return;
 
+#ifndef NOSMARTCONFIG
   if (!WiFi.isConnected())
     smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
+#endif
 
+#ifndef NOWPS
   if (!WiFi.isConnected())
     wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
+#endif
 
   if (!WiFi.isConnected())
     ap_mode_start();          // switch to AP mode until next reboot

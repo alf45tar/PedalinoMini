@@ -1,17 +1,16 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
                                                                                    (c) 2018-2019 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
 #include <MIDI.h>
 
-// Forward messages received from USB MIDI interface to WiFI interface
 
 void OnUSBMidiNoteOn(byte channel, byte note, byte velocity)
 {
@@ -22,6 +21,8 @@ void OnUSBMidiNoteOn(byte channel, byte note, byte velocity)
   ipMIDISendNoteOn(note, velocity, channel);
   AppleMidiSendNoteOn(note, velocity, channel);
   OSCSendNoteOn(note, velocity, channel);
+  leds_update(midi::NoteOn, channel, note, velocity);
+  screen_info(midi::NoteOn, note, velocity, channel);
 }
 
 void OnUSBMidiNoteOff(byte channel, byte note, byte velocity)
@@ -33,6 +34,7 @@ void OnUSBMidiNoteOff(byte channel, byte note, byte velocity)
   ipMIDISendNoteOff(note, velocity, channel);
   AppleMidiSendNoteOff(note, velocity, channel);
   OSCSendNoteOff(note, velocity, channel);
+  screen_info(midi::NoteOff, note, velocity, channel);
 }
 
 void OnUSBMidiAfterTouchPoly(byte channel, byte note, byte pressure)
@@ -44,6 +46,7 @@ void OnUSBMidiAfterTouchPoly(byte channel, byte note, byte pressure)
   ipMIDISendAfterTouchPoly(note, pressure, channel);
   AppleMidiSendAfterTouchPoly(note, pressure, channel);
   OSCSendAfterTouchPoly(note, pressure, channel);
+  screen_info(midi::AfterTouchPoly, note, pressure, channel);
 }
 
 void OnUSBMidiControlChange(byte channel, byte number, byte value)
@@ -55,6 +58,8 @@ void OnUSBMidiControlChange(byte channel, byte number, byte value)
   ipMIDISendControlChange(number, value, channel);
   AppleMidiSendControlChange(number, value, channel);
   OSCSendControlChange(number, value, channel);
+  leds_update(midi::ControlChange, channel, number, value);
+  screen_info(midi::ControlChange, number, value, channel);
 }
 
 void OnUSBMidiProgramChange(byte channel, byte number)
@@ -66,6 +71,8 @@ void OnUSBMidiProgramChange(byte channel, byte number)
   ipMIDISendProgramChange(number, channel);
   AppleMidiSendProgramChange(number, channel);
   OSCSendProgramChange(number, channel);
+  leds_update(midi::ProgramChange, channel, number, 0);
+  screen_info(midi::ProgramChange, number, 0, channel);
 }
 
 void OnUSBMidiAfterTouchChannel(byte channel, byte pressure)
@@ -77,6 +84,7 @@ void OnUSBMidiAfterTouchChannel(byte channel, byte pressure)
   ipMIDISendAfterTouch(pressure, channel);
   AppleMidiSendAfterTouch(pressure, channel);
   OSCSendAfterTouch(pressure, channel);
+  screen_info(midi::AfterTouchChannel, pressure, 0, channel);
 }
 
 void OnUSBMidiPitchBend(byte channel, int bend)
@@ -88,6 +96,7 @@ void OnUSBMidiPitchBend(byte channel, int bend)
   ipMIDISendPitchBend(bend, channel);
   AppleMidiSendPitchBend(bend, channel);
   OSCSendPitchBend(bend, channel);
+  screen_info(midi::PitchBend, bend, 0, channel);
 }
 
 void OnUSBMidiSystemExclusive(byte* array, unsigned size)
@@ -203,7 +212,7 @@ void OnUSBMidiActiveSensing(void)
 void OnUSBMidiSystemReset(void)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
-  
+
   if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::SystemReset);
   BLESendSystemReset();
   ipMIDISendSystemReset();
@@ -222,6 +231,7 @@ void OnSerialMidiNoteOn(byte channel, byte note, byte velocity)
   ipMIDISendNoteOn(note, velocity, channel);
   AppleMidiSendNoteOn(note, velocity, channel);
   OSCSendNoteOn(note, velocity, channel);
+  screen_info(midi::NoteOn, note, velocity, channel);
 }
 
 void OnSerialMidiNoteOff(byte channel, byte note, byte velocity)
@@ -233,6 +243,7 @@ void OnSerialMidiNoteOff(byte channel, byte note, byte velocity)
   ipMIDISendNoteOff(note, velocity, channel);
   AppleMidiSendNoteOff(note, velocity, channel);
   OSCSendNoteOff(note, velocity, channel);
+  screen_info(midi::NoteOff, note, velocity, channel);
 }
 
 void OnSerialMidiAfterTouchPoly(byte channel, byte note, byte pressure)
@@ -244,6 +255,7 @@ void OnSerialMidiAfterTouchPoly(byte channel, byte note, byte pressure)
   ipMIDISendAfterTouchPoly(note, pressure, channel);
   AppleMidiSendAfterTouchPoly(note, pressure, channel);
   OSCSendAfterTouchPoly(note, pressure, channel);
+  screen_info(midi::AfterTouchPoly, note, pressure, channel);
 }
 
 void OnSerialMidiControlChange(byte channel, byte number, byte value)
@@ -255,6 +267,7 @@ void OnSerialMidiControlChange(byte channel, byte number, byte value)
   ipMIDISendControlChange(number, value, channel);
   AppleMidiSendControlChange(number, value, channel);
   OSCSendControlChange(number, value, channel);
+  screen_info(midi::ControlChange, number, value, channel);
 }
 
 void OnSerialMidiProgramChange(byte channel, byte number)
@@ -266,6 +279,7 @@ void OnSerialMidiProgramChange(byte channel, byte number)
   ipMIDISendProgramChange(number, channel);
   AppleMidiSendProgramChange(number, channel);
   OSCSendProgramChange(number, channel);
+  screen_info(midi::ProgramChange, number, 0, channel);
 }
 
 void OnSerialMidiAfterTouchChannel(byte channel, byte pressure)
@@ -277,6 +291,7 @@ void OnSerialMidiAfterTouchChannel(byte channel, byte pressure)
   ipMIDISendAfterTouch(pressure, channel);
   AppleMidiSendAfterTouch(pressure, channel);
   OSCSendAfterTouch(pressure, channel);
+  screen_info(midi::AfterTouchChannel, pressure, 0, channel);
 }
 
 void OnSerialMidiPitchBend(byte channel, int bend)
@@ -288,6 +303,7 @@ void OnSerialMidiPitchBend(byte channel, int bend)
   ipMIDISendPitchBend(bend, channel);
   AppleMidiSendPitchBend(bend, channel);
   OSCSendPitchBend(bend, channel);
+  screen_info(midi::PitchBend, bend, 0, channel);
 }
 
 void OnSerialMidiSystemExclusive(byte* array, unsigned size)
@@ -403,7 +419,7 @@ void OnSerialMidiActiveSensing(void)
 void OnSerialMidiSystemReset(void)
 {
   if (!interfaces[PED_DINMIDI].midiIn) return;
-  
+
   if (interfaces[PED_USBMIDI].midiOut) USB_MIDI.sendRealTime(midi::SystemReset);
   BLESendSystemReset();
   ipMIDISendSystemReset();
@@ -435,6 +451,7 @@ void serial_midi_connect()
 
   // Initiate USB MIDI communications, listen to all channels
   USB_MIDI.begin(MIDI_CHANNEL_OMNI);
+  // Enable/disable MIDI Thru
   interfaces[PED_USBMIDI].midiThru ? USB_MIDI.turnThruOn() : USB_MIDI.turnThruOff();
 
   // Connect the handle function called upon reception of a MIDI message from serial MIDI interface
@@ -459,5 +476,6 @@ void serial_midi_connect()
 
   // Initiate serial MIDI communications, listen to all channels
   DIN_MIDI.begin(MIDI_CHANNEL_OMNI);
+  // Enable/disable MIDI Thru
   interfaces[PED_DINMIDI].midiThru ? DIN_MIDI.turnThruOn() : DIN_MIDI.turnThruOff();
 }

@@ -98,9 +98,10 @@ MidiTimeCode::~MidiTimeCode()
 {
 }
 
-void MidiTimeCode::setup(void (*midi_send_callback)(byte))
+void MidiTimeCode::setup(void (*midi_send_callback_1)(byte), void (*midi_send_callback_2)(byte))
 {
-  mMidiSendCallback = midi_send_callback;
+  mMidiSendCallback1 = midi_send_callback_1;
+  mMidiSendCallback2 = midi_send_callback_2;
   // Timer needed in setup even if no synchro occurring
   setTimer(1.0f);
 }
@@ -116,14 +117,14 @@ void MidiTimeCode::doSendMidiClock()
   if ( mNextEvent != InvalidType )
   {
     mEventTime = millis();
-    mMidiSendCallback(mNextEvent);
+    mMidiSendCallback1(mNextEvent);
     mPlaying = (mNextEvent == Start) || (mNextEvent == Continue);
     mNextEvent = InvalidType;
   }
 
   if ( mEventTime == 0 )
   {
-    mMidiSendCallback(Clock);
+    mMidiSendCallback1(Clock);
     mClick = (mClick + 1) % MidiTimeCode::mMidiClockPpqn;
     if (mClick == 0) mBeat = (mBeat + 1) % mTimeSignature;
   }
@@ -333,7 +334,7 @@ void MidiTimeCode::decodeMTCFullFrame(unsigned size, const byte* array)
 
 void MidiTimeCode::sendMTCQuarterFrame(int index)
 {
-  mMidiSendCallback(TimeCodeQuarterFrame);
+  mMidiSendCallback2(TimeCodeQuarterFrame);
 
   byte MTCData = 0;
   switch (mMTCQuarterFrameTypes[index])
@@ -363,21 +364,21 @@ void MidiTimeCode::sendMTCQuarterFrame(int index)
       MTCData = (mPlayhead.hours & 0xf0) >> 4 | mCurrentSmpteType;
       break;
   }
-  mMidiSendCallback(mMTCQuarterFrameTypes[index] | MTCData);
+  mMidiSendCallback2(mMTCQuarterFrameTypes[index] | MTCData);
 }
 
 void MidiTimeCode::sendMTCFullFrame()
 {
-  mMidiSendCallback(0xf0);
-  mMidiSendCallback(0x7f);
-  mMidiSendCallback(0x7f);
-  mMidiSendCallback(0x01);
-  mMidiSendCallback(0x01);
-  mMidiSendCallback(mPlayhead.hours);
-  mMidiSendCallback(mPlayhead.minutes);
-  mMidiSendCallback(mPlayhead.seconds);
-  mMidiSendCallback(mPlayhead.frames);
-  mMidiSendCallback(0xf7);
+  mMidiSendCallback2(0xf0);
+  mMidiSendCallback2(0x7f);
+  mMidiSendCallback2(0x7f);
+  mMidiSendCallback2(0x01);
+  mMidiSendCallback2(0x01);
+  mMidiSendCallback2(mPlayhead.hours);
+  mMidiSendCallback2(mPlayhead.minutes);
+  mMidiSendCallback2(mPlayhead.seconds);
+  mMidiSendCallback2(mPlayhead.frames);
+  mMidiSendCallback2(0xf7);
 }
 
 // To be called every two frames (so once a complete cycle of quarter frame messages have passed)
@@ -503,4 +504,5 @@ const         MidiTimeCode::MTCQuarterFrameType MidiTimeCode::mMTCQuarterFrameTy
                                                                                            HoursLow, HoursHighAndSmpte
                                                                                          };
 MidiTimeCode::MidiSynchro MidiTimeCode::mMode = MidiTimeCode::SynchroNone;
-void (*MidiTimeCode::mMidiSendCallback)(byte b) = 0;
+void (*MidiTimeCode::mMidiSendCallback1)(byte b) = 0;
+void (*MidiTimeCode::mMidiSendCallback2)(byte b) = 0;

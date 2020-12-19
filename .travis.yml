@@ -15,4 +15,4 @@ install:
     - platformio update
 
 script:
-    - platformio ci --project-conf=platformio.ini
+    - platformio ci --project-conf=platformio.ini . src/partitions_ota.csv src/partitions_no_ota.csv

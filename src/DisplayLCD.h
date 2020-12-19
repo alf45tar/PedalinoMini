@@ -1,11 +1,11 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
+                                                                                   (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -179,16 +179,18 @@ const char bar1[]  = {49, 50, 51, 52, 53, 54, 55, 56, 57, 58};
 const char bar2[]  = {'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o'};
 //const char bar2[]  = {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#'};
 
-int m1, m2, m3, m4;
-unsigned long endMillis2;
+int m1, m2, m3, m4, rmin, rmax;
+unsigned long endMillis2 = 0;
 
-
-void screen_info(int b1, int b2, int b3, int b4)
+//void screen_info(int b1, int b2, int b3, int b4, int m1 = 0, int m2 = MIDI_RESOLUTION - 1)
+void screen_info(int b1, int b2, int b3, int b4, int mi, int ma)
 {
   m1 = b1;
   m2 = b2;
   m3 = b3;
   m4 = b4;
+  rmin = mi;
+  rmax = ma;
   endMillis2 = millis() + LCD_LINE1_PERSISTENCE;
 }
 
@@ -298,7 +300,7 @@ void screen_update(bool force = false) {
     if (lastUsedPedal >= 0 && lastUsedPedal < PEDALS) {
       //strncpy(&buf[strlen(buf)], &bar2[0], map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 10));
       //strncpy(&buf[strlen(buf)], "          ", 10 - map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 10));
-      f = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 50);
+      f = map(pedals[lastUsedPedal].pedalValue[0], 0, ADC_RESOLUTION - 1, 0, 50);
       p = f % 5;
       f = f / 5;
       strncpy(&buf[strlen(buf)], &bar2[0], f);
@@ -313,7 +315,7 @@ void screen_update(bool force = false) {
       for (byte i = 0; i < 10 - f ; i++) {
         lcdPrint(" ");
         buf[strlen(buf)] = ' ';
-      } 
+      }
       // replace unprintable chars
       for (byte i = 0; i < LCD_COLS; i++)
         buf[i] = (buf[i] == -1) ? '#' : buf[i];

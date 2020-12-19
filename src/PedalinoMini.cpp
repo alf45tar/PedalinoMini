@@ -1,11 +1,11 @@
 /*
-__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___    
-\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \   
- |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \  
- |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
- |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
-               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
+                                                                                   (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -36,6 +36,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #ifdef NOWEBCONFIG
 #undef WEBCONFIG
+#undef WEBSOCKET
 #else
 #define WEBCONFIG
 #endif
@@ -51,7 +52,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "esp32-hal-psram.h"
 #endif
 
-#include <esp_log.h>
+#include <esp32-hal-log.h>
+#include <esp_partition.h>
 #include <esp_bt_main.h>
 #include <string>
 #include "Pedalino.h"
@@ -59,7 +61,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "Config.h"
 #include "UdpMidiOut.h"
 #include "BLEMidiOut.h"
-#include "SerialMidi.h"
+#include "SerialMidiIn.h"
 #include "UdpMidiIn.h"
 #include "BLEMidiIn.h"
 #include "Controller.h"
@@ -85,28 +87,72 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 void IRAM_ATTR onButtonLeft()
 {
-  if (reloadProfile) return;
-  currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
-  reloadProfile = true;
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 500ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 500) {
+    if (reloadProfile) return;
+    currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
+    reloadProfile = true;
+  }
+  last_interrupt_time = interrupt_time;
 }
 
 void IRAM_ATTR onButtonRight()
 {
-  if (reloadProfile) return;
-  currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
-  reloadProfile = true;
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 500ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 500) {
+    if (reloadProfile) return;
+    currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
+    reloadProfile = true;
+  }
+  last_interrupt_time = interrupt_time;
 }
 
-void IRAM_ATTR onButtonCenter()
+void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t buttonState)
 {
-  if (saveProfile) return;
-  saveProfile = true;
+  DPRINT("Pedal: Boot    Button: %d    EventType: %d     ButtonState: %d\n", button->getId(), eventType, buttonState);
+
+  switch (eventType) {
+
+    case AceButton::kEventClicked:
+      /*
+      if (!reloadProfile) {
+        currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
+        reloadProfile = true;
+      }
+      */
+      currentBank = (currentBank == BANKS - 1 ? 0 : currentBank + 1);
+      leds_refresh();
+      break;
+
+    case AceButton::kEventDoubleClicked:
+      /*
+      if (!reloadProfile) {
+        currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
+        reloadProfile = true;
+      }
+      */
+        currentBank = (currentBank == 0 ? BANKS - 1 : currentBank - 1);
+        leds_refresh();
+      break;
+
+    case AceButton::kEventLongPressed:
+      scrollingMode = !scrollingMode;
+      break;
+  }
 }
 
 void setup()
 {
+  //esp_spiram_add_to_heapalloc();
+
   pinMode(WIFI_LED, OUTPUT);
   pinMode(BLE_LED, OUTPUT);
+
+  display_init();
 
 #ifdef DEBUG_ESP_PORT
   //esp_log_level_set("*",      ESP_LOG_ERROR);
@@ -123,7 +169,14 @@ void setup()
   DPRINT("ChipRevision %d, CPU Freq %d MHz, SDK Version %s\n",ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getSdkVersion());
   DPRINT("Flash Size %d, Flash Speed %d Hz\n",ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
-  DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram()); 
+  DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
+  esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, "nvs");
+  if (pi != NULL) {
+    const esp_partition_t* nvs = esp_partition_get(pi);
+    DPRINT("%s Total %d\n", nvs->label, nvs->size);
+    esp_partition_iterator_release(pi);
+  }
+  DPRINT("PlatformIO Built Environment: %s\n", xstr(PLATFORMIO_ENV));
 
   DPRINTLN("_________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___ ");
   DPRINTLN("\\______  \\ ____   __| _/____  |  | |__| ____   ____   /     \\ |__| ____ |__|   /  / \\__    ___/     \\   \\  \\ ");
@@ -131,24 +184,10 @@ void setup()
   DPRINTLN("|    |   \\  ___// /_/ | / __ \\|  |_|  |   |  (  <_> )    Y    \\  |   |  \\  | (  (     |    |/    Y    \\   )  )");
   DPRINTLN("|____|    \\___  >____ |(____  /____/__|___|  /\\____/\\____|__  /__|___|  /__|  \\  \\    |____|\\____|__  /  /  / ");
   DPRINTLN("              \\/     \\/     \\/             \\/               \\/        \\/       \\__\\                 \\/  /__/ ");
-  DPRINTLN("                                                                                  (c) 2018-2019 alf45star      ");
+  DPRINTLN("                                                                                  (c) 2018-2020 alf45star      ");
   DPRINTLN("                                                                      https://github.com/alf45tar/PedalinoMini");
   DPRINT("\nHostname: %s\n", host.c_str());
-
-#ifdef TTGO_T_EIGHT
-  pinMode(LEFT_PIN, INPUT_PULLUP);
-  if (digitalRead(LEFT_PIN) == LOW) {
-    //currentProfile = 0;
-    //eeprom_update_current_profile(currentProfile);
-    bleEnabled = false;
-  }
-  pinMode(RIGHT_PIN, INPUT_PULLUP);
-  if (digitalRead(RIGHT_PIN) == LOW) {
-    //currentProfile = 2;
-    //eeprom_update_current_profile(currentProfile);
-    wifiEnabled = false;
-  }
-#endif
+  DPRINT("PSRAM%sfound\n", psramFound() ? " " : " not ");
 
 #ifdef BLE
   if (bleEnabled) {
@@ -183,69 +222,122 @@ void setup()
   }
 #endif
 
-#if __BOARD_HAS_PSRAM__
-  banks = (bank**)heap_caps_malloc(BANKS*sizeof(bank*), MALLOC_CAP_SPIRAM);
-  for (byte b = 0; b < BANKS; b++)
-    banks[b] = (bank*)heap_caps_malloc(PEDALS*sizeof(bank), MALLOC_CAP_SPIRAM);
-
-  pedals = (pedal*)heap_caps_malloc(PEDALS*sizeof(pedal), MALLOC_CAP_SPIRAM);
-  
-  sequences = (sequence**)heap_caps_malloc(SEQUENCES*sizeof(sequence*), MALLOC_CAP_SPIRAM);
-  for (byte s = 0; s < SEQUENCES; s++)
-    sequences[s] = (sequence*)heap_caps_malloc(STEPS*sizeof(sequence), MALLOC_CAP_SPIRAM);
-
-  lastMIDIMessage = (message*)heap_caps_malloc(BANKS*sizeof(message), MALLOC_CAP_SPIRAM);
-#endif
-
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
-  DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram()); 
+  DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
 
-  display_init();
+  if (!SPIFFS.begin()) {
+      DPRINT("SPIFFS mount FAILED\n");
+  }
+  else {
+    DPRINT("SPIFFS mount OK\n");
+  }
 
   eeprom_init_or_erase();
+  eeprom_read_global();
 
-  // Reset to factory default if BOOT key is pressed and hold for alt least 12 seconds at power on
-  
+  FastLED.addLeds<NEOPIXEL, FASTLEDS_DATA_PIN>(fastleds, LEDS);
+  for (byte l = 0; l < LEDS; l++)
+    fastleds[l] = CRGB::Black;
+  FastLED.show();
+  for (byte b = 0; b < BANKS; b++)
+    for (byte l = 0; l < LEDS; l++)
+      lastLedColor[b][l] = CRGB::Black;
+
+  //leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
+
+  // Reset to factory default if BOOT key is pressed and hold for alt least 15 seconds at power on
+
   pinMode(FACTORY_DEFAULT_PIN, INPUT_PULLUP);
   unsigned long milliStart = millis();
   unsigned long duration = 0;
   lcdClear();
-  bootMode = PED_BOOT_NORMAL;
-  if (digitalRead(FACTORY_DEFAULT_PIN) == LOW)
+  byte newBootMode = PED_BOOT_UNKNOWN;
+  if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) {
+    newBootMode = PED_BOOT_NORMAL;
     display_progress_bar_title2("Release button for", "Normal Boot");
-  while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 12000)) {
-    if (duration > 1000 && duration < 3000 && bootMode != PED_BOOT_BLE) {
-      bootMode = PED_BOOT_BLE;
+    leds.setAllLow();
+    leds.write();
+  }
+  while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 16000)) {
+    if (duration > 1000 && duration < 3000 && newBootMode != PED_BOOT_BLE) {
+      newBootMode = PED_BOOT_BLE;
       display_progress_bar_title2("Release button for", "Bluetooth Only");
+      leds.setHigh(0);
+      leds.write();
     }
-    else if (duration > 3000 && duration < 5000 && bootMode != PED_BOOT_WIFI) {
-      bootMode = PED_BOOT_WIFI;
+    else if (duration > 3000 && duration < 5000 && newBootMode != PED_BOOT_WIFI) {
+      newBootMode = PED_BOOT_WIFI;
       display_progress_bar_title2("Release button for", "WiFi Only");
+      leds.setHigh(1);
+      leds.write();
     }
-    else if (duration > 5000 && duration < 7000 && bootMode != PED_BOOT_AP) {
-      bootMode = PED_BOOT_AP;
+    else if (duration > 5000 && duration < 7000 && newBootMode != PED_BOOT_AP) {
+      newBootMode = PED_BOOT_AP;
       display_progress_bar_title2("Release button for", "Access Point");
+      leds.setHigh(2);
+      leds.write();
     }
-    else if (duration > 7000 && duration < 9000 && bootMode != PED_BOOT_AP_NO_BLE) {
-      bootMode = PED_BOOT_AP_NO_BLE;
+    else if (duration > 7000 && duration < 9000 && newBootMode != PED_BOOT_AP_NO_BLE) {
+      newBootMode = PED_BOOT_AP_NO_BLE;
       display_progress_bar_title2("Release button for", "AP without BLE");
+      leds.setHigh(3);
+      leds.write();
     }
-    else if (duration > 9000 && duration < 12000 && bootMode != PED_FACTORY_DEFAULT) {
-      bootMode = PED_FACTORY_DEFAULT;
+    else if (duration > 9000 && duration < 11000 && newBootMode != PED_BOOT_RESET_WIFI) {
+      newBootMode = PED_BOOT_RESET_WIFI;
+      display_progress_bar_title2("Release button for", "WiFi Reset");
+      leds.setHigh(4);
+      leds.write();
+    }
+    else if (duration > 11000 && duration < 13000 && newBootMode != PED_BOOT_LADDER_CONFIG) {
+      newBootMode = PED_BOOT_LADDER_CONFIG;
+      display_progress_bar_title2("Release button for", "Ladder Config");
+      leds.setHigh(5);
+      leds.write();
+    }
+    else if (duration > 13000 && duration < 16000 && newBootMode != PED_FACTORY_DEFAULT) {
+      newBootMode = PED_FACTORY_DEFAULT;
       display_progress_bar_title2("Hold button for", "Factory Default");
+      leds.setAllLow();
+      leds.write();
     }
     DPRINT("#");
     lcdSetCursor(duration / 500, 0);
     lcdPrint("#");
-    display_progress_bar_update(duration, 12000);
+    display_progress_bar_update(duration, 16000);
     WIFI_LED_ON();
     delay(50);
     WIFI_LED_OFF();
     delay(50);
     duration = millis() - milliStart;
   }
+
   //display_clear();
-  switch (bootMode) { 
+
+  DPRINT("\n");
+  switch ((newBootMode == PED_BOOT_UNKNOWN) ? bootMode : newBootMode) {
+    case PED_BOOT_NORMAL:     DPRINT("Boot NORMAL\n");  break;
+    case PED_BOOT_BLE:        DPRINT("Boot BLE\n");     break;
+    case PED_BOOT_WIFI:       DPRINT("Boot WIFI\n");    break;
+    case PED_BOOT_AP:         DPRINT("Boot AP+BLE\n");  break;
+    case PED_BOOT_AP_NO_BLE:  DPRINT("Boot AP\n");      break;
+  }
+
+  if (newBootMode != PED_BOOT_UNKNOWN && newBootMode != bootMode) {
+    bootMode = newBootMode;
+    switch (bootMode) {
+      case PED_BOOT_NORMAL:
+      case PED_BOOT_BLE:
+      case PED_BOOT_WIFI:
+      case PED_BOOT_AP:
+      case PED_BOOT_AP_NO_BLE:
+        eeprom_update_boot_mode(bootMode);
+        break;
+      default:
+        break;
+    }
+  }
+  switch (bootMode) {
     case PED_BOOT_NORMAL:
       break;
 
@@ -255,7 +347,7 @@ void setup()
 #else
       bleEnabled = false;
 #endif
-      wifiEnabled = false;    
+      wifiEnabled = false;
       break;
 
     case PED_BOOT_WIFI:
@@ -271,22 +363,35 @@ void setup()
     case PED_BOOT_AP:
       break;
 
+    case PED_BOOT_RESET_WIFI:
+      DPRINT("\nReset WiFi credentials\n");
+      eeprom_update_sta_wifi_credentials("", "");
+      eeprom_read_global();
+      break;
+
+    case PED_BOOT_LADDER_CONFIG:
+      DPRINT("\nLadder Config\n");
+      eeprom_read_profile();
+      ladder_config();
+      ESP.restart();
+      break;
+
     case PED_FACTORY_DEFAULT:
-      if (duration > 12000) {
+      if (duration > 15000) {
         DPRINT("\nReset EEPROM to factory default\n");
         lcdSetCursor(0, 1);
         lcdPrint("Factory default ");
+        leds.kittCar();
         delay(1000);
         eeprom_initialize();
-        //ESP.restart();
+        //eeprom_read_global();
+        ESP.restart();
       }
       else
         bootMode = PED_BOOT_NORMAL;
       break;
-      
+
   }
-  
-  eeprom_read_global();
 
   // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
   serial_midi_connect();              // On receiving MIDI data callbacks setup
@@ -301,6 +406,10 @@ void setup()
   }
  #endif
 
+#ifdef BLUFI
+  blufi_config();
+#endif
+
 #ifdef WIFI
   if (wifiEnabled) {
     WiFi.persistent(false);
@@ -309,7 +418,7 @@ void setup()
       DPRINT("Skipped connection to last AP and/or SmartConfig/WPS setup\n");
       ap_mode_start();
     }
-    else 
+    else
       wifi_connect();
 
     blynk_setup();
@@ -322,21 +431,48 @@ void setup()
   }
 #endif
 
-  attachInterrupt(LEFT_PIN,   onButtonLeft,   FALLING);
-  attachInterrupt(CENTER_PIN, onButtonCenter, FALLING);
-  attachInterrupt(RIGHT_PIN,  onButtonRight,  FALLING);
+  pinMode(LEFT_PIN, INPUT_PULLUP);
+  pinMode(CENTER_PIN, INPUT_PULLUP);
+  pinMode(RIGHT_PIN, INPUT_PULLUP);
+
+  attachInterrupt(LEFT_PIN,   onButtonLeft,   CHANGE);
+
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureDoubleClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureRepeatPress);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+  bootButtonConfig.setDebounceDelay(DEBOUNCE_INTERVAL);
+  bootButtonConfig.setClickDelay(pressTime);
+  bootButtonConfig.setDoubleClickDelay(doublePressTime);
+  bootButtonConfig.setLongPressDelay(longPressTime);
+  bootButtonConfig.setRepeatPressDelay(repeatPressTime);
+  bootButtonConfig.setRepeatPressInterval(repeatPressTime);
+  bootButton.init(&bootButtonConfig, CENTER_PIN);
+  bootButton.setEventHandler(boot_button_event_handler);
+
+  attachInterrupt(RIGHT_PIN,  onButtonRight,  CHANGE);
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
+
+  leds.setAllLow();
+  leds.write();
 }
 
 
 void loop()
 {
+  if (firmwareUpdate) return;
+
+  bootButton.check();
+
 #ifdef WIFI
-  if (!appleMidiConnected) WIFI_LED_OFF();
+  if (!appleMidiConnected && !bleMidiConnected) WIFI_LED_OFF();
 #endif
 #ifdef BLE
-  if (!bleMidiConnected)  BLE_LED_OFF();
+  if (!bleMidiConnected && !appleMidiConnected) BLE_LED_OFF();
 #endif
   if (appleMidiConnected ||  bleMidiConnected) {
     // led fast blinking (5 times per second)
@@ -351,7 +487,7 @@ void loop()
     }
   }
 #ifdef WIFI
-  else
+  else if (!bleMidiConnected)
     // led always on if connected to an AP or one or more client connected the the internal AP
     switch (WiFi.getMode()) {
       case WIFI_STA:
@@ -374,20 +510,28 @@ void loop()
   controller_run();
 
   // Listen to incoming messages
-  if (USB_MIDI.read())
+  if (interfaces[PED_USBMIDI].midiIn && USB_MIDI.read())
     DPRINTMIDI("USB MIDI", USB_MIDI.getType(), USB_MIDI.getChannel(), USB_MIDI.getData1(), USB_MIDI.getData2());
-  if (DIN_MIDI.read())
-    DPRINTMIDI("Serial MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
 
+  if (interfaces[PED_DINMIDI].midiIn && DIN_MIDI.read())
+    DPRINTMIDI("DIN MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
+
+#ifdef BLE
+  if (bleEnabled) {
+    if (interfaces[PED_BLEMIDI].midiIn && BLE_MIDI.read())
+      DPRINTMIDI("BLE MIDI", BLE_MIDI.getType(), BLE_MIDI.getChannel(), BLE_MIDI.getData1(), BLE_MIDI.getData2());
+  }
+#endif
+
+#ifdef WIFI
   if (wifiEnabled) {
-    // Listen to incoming AppleMIDI messages from WiFi
-    rtpMIDI_listen();
+    if (WiFi.isConnected()) {
+      if (interfaces[PED_RTPMIDI].midiIn && RTP_MIDI.read())
+        DPRINTMIDI("RTP MIDI", RTP_MIDI.getType(), RTP_MIDI.getChannel(), RTP_MIDI.getData1(), RTP_MIDI.getData2());
 
-    // Listen to incoming ipMIDI messages from WiFi
-    ipMIDI_listen();
-
-    // Listen to incoming OSC UDP messages from WiFi
-    oscUDP_listen();
+      if (interfaces[PED_IPMIDI].midiIn && IP_MIDI.read())
+        DPRINTMIDI("IP  MIDI", IP_MIDI.getType(), IP_MIDI.getChannel(), IP_MIDI.getData1(), IP_MIDI.getData2());
+    }
 
     http_run();
 
@@ -402,6 +546,7 @@ void loop()
     Debug.handle();
 #endif
   }
+#endif // WIFI
 
   // Update display
   display_update();
