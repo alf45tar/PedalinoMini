@@ -1,10 +1,6 @@
 [![](./images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
 
-> Version 2.0 is out! Hardware is the same but there are a lot of new feautures and stability improvment. Check it out.
-
 > Before any update save configuration, reset to factory default and reload configuration. EEPROM can change without any further advice.
-
-> Sep 16, 2020 - Replaced Bluedroid with NimBLE. WiFi, Bluetooth and Web UI can be active at the same time.
 
 # PedalinoMini™
 
@@ -315,13 +311,13 @@ PedalinoMini™ can control a Fender Mustang I/II/III/IV Amplifier via MIDI. Add
 
 Where|What|Display|Description
 :---:|:--:|-------|:----------
-Bank Name|Empty|![](./images/oled-display1.png)|If the current bank name is empty the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
-Bank Name|Any|![](./images/oled-display2.mov)|If current bank name is not empty the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. The bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
-Bank Name|:|![](./images/oled-display3.png)|If the bank name start with colon (:) the bank name is always shown (if no event occurs).
-Bank Name|.|![](./images/oled-display4.mov)|If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
-Action Tags|:|![](./images/oled-display6.mov)|If action tag start with colon (:) the display is not switched when an event occurs.
+Bank Name|Empty|![](./images/oled-display1.gif)|If the current bank name is empty the current profile and the current bank is shown using a vintage 7 segment LED style. First digit is the profile, the others two are for bank.
+Bank Name|Any|![](./images/oled-display2.gif)|If current bank name is not empty the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. The bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
+Bank Name|:|![](./images/oled-display3.gif)|If the bank name start with colon (:) the bank name is always shown (if no event occurs).
+Bank Name|.|![](./images/oled-display4.gif)|If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
+Action Tags|:|![](./images/oled-display6.gif)|If action tag start with colon (:) the display is not switched when an event occurs.
 Action Tags|.|![]()|If action tag end with dot (.) the corresponding led and color is set on boot.
-Action Tag|###|![](./images/oled-display7.mov)|A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
+Action Tag|###|![](./images/oled-display7.gif)|A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
 
 ## How to switch profiles
 
