@@ -222,10 +222,12 @@ Once Pedals setup is complete proceed with Actions setup to define which event (
 
 ________|Description
 :-------|:----------
-Button|Every pedal support at least one "button" except for MOMENTARY 2/LATCH 2 (2 buttons), MOMENTARY 3 (3 buttons) and LADDER (6 buttons). Each button is indipendent and every action can be linked to any button.
-Tag|Action name to display when action is triggered.
-On|Momentary switches, latches and ladders have 5 different events that can trigger an action: PRESS, RELEASE, CLICK, DOUBLE CLICK and LONG PRESS. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
+On Button|Every pedal support at least one "button" except for MOMENTARY 2/LATCH 2 (2 buttons), MOMENTARY 3 (3 buttons) and LADDER (6 buttons). Each button is indipendent and every action can be linked to any button.<br>Momentary switches, latches and ladders have 5 different events that can trigger an action: PRESS, RELEASE, CLICK, DOUBLE CLICK and LONG PRESS. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
 Send|The action to be triggered on event. It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.
+Led|Select the led number and the off and on color.
+Tags|Action name to display when off or on action is triggered.
+From Off/To On|Define the range from a off value to a on value (see below).
+
 
 Action|MIDI Channel|MIDI Code|From|To
 :-----|:----------:|:-------:|:--:|:--:
