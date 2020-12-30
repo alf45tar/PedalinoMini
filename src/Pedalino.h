@@ -31,59 +31,61 @@ __________           .___      .__  .__                 _____  .__       .__    
 // GPIOs 34 to 39 are GPIs – input only pins.
 // These pins don’t have internal pull-ups or pull-down resistors.
 
-#ifdef TTGO_T_DISPLAY
+#ifdef HELTEC_WIFI_KIT_32
+const byte pinD[] = {GPIO_NUM_0, GPIO_NUM_2, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12};
+const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35};
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // PRG button
+#define CENTER_PIN            GPIO_NUM_0
+#define USB_MIDI_IN_PIN       GPIO_NUM_18
+#define USB_MIDI_OUT_PIN      GPIO_NUM_19
+#define DIN_MIDI_IN_PIN       GPIO_NUM_23
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_22
+#define BATTERY_PIN           GPIO_NUM_13   // Pin connected to VBAT
+#define BATTERY_ADC_EN        GPIO_NUM_21   // ADC_EN is the ADC detection enable port
+#define FASTLEDS_DATA_PIN     GPIO_NUM_5
+#elif defined TTGO_T_DISPLAY
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_17};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_32, GPIO_NUM_33};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button 2
 #define RIGHT_PIN             GPIO_NUM_35   // Button 1
 #define CENTER_PIN            GPIO_NUM_0    // Button 2
-#define LEFT_PIN              GPIO_NUM_2
-#define SERIAL_DATA_PIN       GPIO_NUM_2
-#define CLOCK_PIN             GPIO_NUM_2
-#define LATCH_PIN             GPIO_NUM_2
 #define USB_MIDI_IN_PIN       GPIO_NUM_21   // SDA
 #define USB_MIDI_OUT_PIN      GPIO_NUM_22   // SCL
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_2
-#define BATTERY_PIN           GPIO_NUM_34
-#define BATTERY_ADC_EN        GPIO_NUM_14   //ADC_EN is the ADC detection enable port
+#define BATTERY_PIN           GPIO_NUM_34   // Pin connected to VBAT
+#define BATTERY_ADC_EN        GPIO_NUM_14   // ADC_EN is the ADC detection enable port
+#define FASTLEDS_DATA_PIN     GPIO_NUM_15
 #elif defined TTGO_T_EIGHT
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
 #define RIGHT_PIN             GPIO_NUM_37
 #define CENTER_PIN            GPIO_NUM_38
-#define LEFT_PIN              GPIO_NUM_39   // Shared with A2
-#define SERIAL_DATA_PIN       GPIO_NUM_2
-#define CLOCK_PIN             GPIO_NUM_2
 #define LATCH_PIN             GPIO_NUM_2
 #define USB_MIDI_IN_PIN       GPIO_NUM_18   // Used by SD
 #define USB_MIDI_OUT_PIN      GPIO_NUM_19   // Used by SD
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
+#define FASTLEDS_DATA_PIN     GPIO_NUM_5
 #else
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
-#define RIGHT_PIN             GPIO_NUM_23
 #define CENTER_PIN            GPIO_NUM_0
-#define LEFT_PIN              GPIO_NUM_23
-#define SERIAL_DATA_PIN       GPIO_NUM_16   // DS
-#define CLOCK_PIN             GPIO_NUM_5    // SH_CP
-#define LATCH_PIN             GPIO_NUM_17   // ST_CP
 #define USB_MIDI_IN_PIN       GPIO_NUM_18
 #define USB_MIDI_OUT_PIN      GPIO_NUM_19
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
+#define FASTLEDS_DATA_PIN     GPIO_NUM_5
 #endif
 
 #define PIN_D(x)          pinD[x]
 #define PIN_A(x)          pinA[x]
 
-#include "FastLED.h"
-#define FASTLEDS_DATA_PIN  GPIO_NUM_5
+#include <FastLED.h>
 CRGB fastleds[LEDS];
 
 #include "ShiftOut.h"
@@ -95,7 +97,7 @@ ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 // Serial MIDI interfaces
 
 #include <MIDI.h>                       // https://github.com/FortySevenEffects/arduino_midi_library
-#include "ESPSerialMIDI.h"
+#include <ESPSerialMIDI.h>
 
 #define MIDI_BAUD_RATE                  31250
 #define HIGH_SPEED_SERIAL_BAUD_RATE     1000000

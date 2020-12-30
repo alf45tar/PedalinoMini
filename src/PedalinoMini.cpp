@@ -441,12 +441,12 @@ void setup()
   }
 #endif
 
+#ifdef LEFT_PIN
   pinMode(LEFT_PIN, INPUT_PULLUP);
+  attachInterrupt(LEFT_PIN, onButtonLeft, CHANGE);
+#endif
+#ifdef CENTER_PIN
   pinMode(CENTER_PIN, INPUT_PULLUP);
-  pinMode(RIGHT_PIN, INPUT_PULLUP);
-
-  attachInterrupt(LEFT_PIN,   onButtonLeft,   CHANGE);
-
   bootButtonConfig.setFeature(ButtonConfig::kFeatureClick);
   bootButtonConfig.setFeature(ButtonConfig::kFeatureDoubleClick);
   bootButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
@@ -462,8 +462,11 @@ void setup()
   bootButtonConfig.setRepeatPressInterval(repeatPressTime);
   bootButton.init(&bootButtonConfig, CENTER_PIN);
   bootButton.setEventHandler(boot_button_event_handler);
-
-  attachInterrupt(RIGHT_PIN,  onButtonRight,  CHANGE);
+#endif
+#ifdef RIGHT_PIN
+  pinMode(RIGHT_PIN, INPUT_PULLUP);
+  attachInterrupt(RIGHT_PIN, onButtonRight, CHANGE);
+#endif
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
 
