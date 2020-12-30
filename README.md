@@ -71,6 +71,7 @@ USB MIDI and DIN MIDI connection requires additional hardware.
 
 ![Schematic1](./images/Schematic_PedalinoMini_Sheet-1.svg "Schematic1")
 ![Schematic2](./images/Schematic_PedalinoMini_Sheet-2.svg "Schematic2")
+![Schematic2](./images/Schematic_PedalinoMini_Sheet-3.svg "Schematic3")
 
 Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins will be floating. A floating pin can trigger unexpected MIDI events. As alternative you can disable the not used pedals via web interface.
 
