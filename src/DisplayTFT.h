@@ -5,148 +5,26 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-#include "Fonts.h"
+#ifdef TTGO_T_DISPLAY
+#include <TFT_eSPI.h>
+#include <SPI.h>
+#include <Wire.h>
 
-#if defined(HELTEC_WIFI_KIT_32)
-#include <oled/SSD1306Wire.h>
-#include <oled/OLEDDisplayUi.h>
-#define OLED_I2C_ADDRESS  0x3c
-#define OLED_I2C_SDA      SDA_OLED
-#define OLED_I2C_SCL      SCL_OLED
-SSD1306Wire               display(0x3c, SDA_OLED, SCL_OLED, RST_OLED, GEOMETRY_128_64);
-#endif
-#if defined(TTGO_T_EIGHT)
-#include <SH1106Wire.h>
-#include <OLEDDisplayUi.h>
-#define OLED_I2C_ADDRESS  0x3c
-#define OLED_I2C_SDA      21
-#define OLED_I2C_SCL      22
-SH1106Wire                display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
-#endif
-#if defined(SSH1106WIRE)
-#include <SH1106Wire.h>
-#include <OLEDDisplayUi.h>
-#define OLED_I2C_ADDRESS  0x3c
-#define OLED_I2C_SDA      SDA
-#define OLED_I2C_SCL      SCL
-SH1106Wire                display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
-#endif
-#if defined(SSD1306WIRE)
-#include <SSD1306Wire.h>
-#include <OLEDDisplayUi.h>
-#define OLED_I2C_ADDRESS  0x3c
-#define OLED_I2C_SDA      SDA
-#define OLED_I2C_SCL      SCL
-SSD1306Wire               display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
+TFT_eSPI    display  = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);
+TFT_eSprite top      = TFT_eSprite(&display);
+
 #endif
 
 #include <WiFi.h>
+#include "Images.h"
 
-OLEDDisplayUi ui(&display);
 bool          uiUpdate = true;
 
-#define WIFI_LOGO_WIDTH   78
-#define WIFI_LOGO_HEIGHT  64
 
-const uint8_t WiFiLogo[] PROGMEM = {
-  0x00, 0x00, 0x00, 0xFC, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0xFF, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xFF,
-  0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF, 0x03, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x07, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0xFC, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x7E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x1F, 0xC0,
-  0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x0F, 0xF0, 0x03, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x07, 0xFC, 0x03, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0xC0, 0x07, 0xFE, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0xC0, 0x03, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0,
-  0x83, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0x81, 0x07,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xC1, 0x03, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xC1, 0x03, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0xE0, 0xE1, 0xC3, 0x03, 0xF0, 0x0F, 0x00, 0x00, 0x00,
-  0x00, 0xE0, 0xE1, 0xC1, 0x03, 0xF8, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xE0,
-  0xE1, 0xC1, 0x03, 0xF8, 0x0F, 0x00, 0x00, 0x00, 0x00, 0xE0, 0xC0, 0x81,
-  0x01, 0xF8, 0x0F, 0x00, 0x00, 0x00, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x78,
-  0x00, 0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x78, 0x00, 0x00,
-  0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x78, 0x00, 0x00, 0x00, 0x00,
-  0x1C, 0x78, 0xE0, 0xF1, 0x03, 0xF8, 0xC7, 0x0F, 0x00, 0x00, 0x3C, 0x7C,
-  0xF0, 0xF1, 0x03, 0xF8, 0xC7, 0x0F, 0x00, 0x00, 0x3C, 0x7C, 0xF0, 0xF1,
-  0x03, 0xF8, 0xC7, 0x0F, 0x00, 0x00, 0x3C, 0x7C, 0x70, 0xC0, 0x03, 0x78,
-  0x00, 0x0F, 0x00, 0x00, 0x38, 0xFE, 0x78, 0xC0, 0x03, 0x78, 0x00, 0x0F,
-  0x00, 0x00, 0x38, 0xFE, 0x78, 0xC0, 0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00,
-  0x78, 0xFE, 0x39, 0xC0, 0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 0x78, 0xEF,
-  0x39, 0xC0, 0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 0x70, 0xCF, 0x3D, 0xC0,
-  0xE3, 0x78, 0x00, 0x0F, 0x00, 0x00, 0x70, 0xC7, 0x1D, 0xC0, 0x03, 0x78,
-  0x00, 0x0F, 0x00, 0x00, 0xF0, 0xC7, 0x1F, 0xC0, 0x03, 0x78, 0x00, 0x0F,
-  0x00, 0x00, 0xF0, 0x83, 0x1F, 0xC0, 0x03, 0x78, 0x00, 0x0F, 0x00, 0x00,
-  0xE0, 0x83, 0x1F, 0xC0, 0x0F, 0x78, 0x00, 0x1F, 0x00, 0x00, 0xE0, 0x83,
-  0x0F, 0xC0, 0x0F, 0x78, 0x00, 0x3F, 0x00, 0x00, 0xE0, 0x01, 0x0F, 0xC0,
-  0x0F, 0x78, 0x00, 0x3F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x0E, 0x1C, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x1E, 0x3E, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x0F, 0x1E, 0x3E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x0F, 0x0E, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x0F, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x1E,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x07, 0x1E, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x07, 0x1F, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0xFC, 0x03, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0xFF, 0x81, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-  0x80, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xC0, 0x07,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0xE0, 0x03, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x03, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0xF8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80,
-  0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x3F, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x0F, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x07, 0x00, 0x00
-};
-
-
-#define BLUETOOTH_LOGO_WIDTH  20
-#define BLUETOOTH_LOGO_HEIGHT 38
-
-const uint8_t BluetoothLogo[] PROGMEM = {
-  0x00,0x01,0xf0,0x00,0x03,0xf0,0x00,0x07,0xf0,0x00,0x0f,0xf0,
-  0x00,0x1f,0xf0,0x00,0x3f,0xf0,0x00,0x7f,0xf0,0x00,0xf7,0xf0,
-  0x00,0xe7,0xf1,0x02,0xc7,0xf3,0x07,0x87,0xf7,0x0f,0x87,0xf7,
-  0x1e,0xc7,0xf3,0x3c,0xe7,0xf1,0x78,0xf7,0xf0,0xf0,0x7f,0xf0,
-  0xe0,0x3f,0xf0,0xc0,0x1f,0xf0,0x80,0x0f,0xf0,0x80,0x0f,0xf0,
-  0xc0,0x1f,0xf0,0xe0,0x3f,0xf0,0xf0,0x7f,0xf0,0x78,0xf7,0xf0,
-  0x3c,0xe7,0xf1,0x1e,0xc7,0xf3,0x0f,0x87,0xf7,0x07,0x87,0xf7,
-  0x02,0xc7,0xf3,0x00,0xe7,0xf1,0x00,0xf7,0xf0,0x00,0x7f,0xf0,
-  0x00,0x3f,0xf0,0x00,0x1f,0xf0,0x00,0x0f,0xf0,0x00,0x07,0xf0,
-  0x00,0x03,0xf0,0x00,0x01,0xf0};
-
-
-const uint8_t activeSymbol[] PROGMEM = {
-  B00000000,
-  B00000000,
-  B00011000,
-  B00100100,
-  B01000010,
-  B01000010,
-  B00100100,
-  B00011000
-};
-
-const uint8_t inactiveSymbol[] PROGMEM = {
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00011000,
-  B00011000,
-  B00000000,
-  B00000000
-};
 
 // Font generated or edited with the glyphEditor
 const uint8_t wifiSignal[] PROGMEM = {
@@ -186,7 +64,6 @@ const uint8_t bluetoothSign[] PROGMEM = {
 // Font Data:
 0x82, 0x00, 0x44, 0x00, 0x28, 0x00, 0xFF, 0x01, 0x11, 0x01, 0xAA, 0x00, 0x44, // 49
 };
-
 
 // Font generated or edited with the glyphEditor
 const uint8_t profileSign10[] PROGMEM = {
@@ -342,48 +219,74 @@ const uint8_t block10x10[] PROGMEM = {
 
 void display_clear()
 {
-  display.clear();
-  display.display();
+  display.fillScreen(TFT_BLACK);
 }
 
 void display_progress_bar_title(String title)
 {
-  display.clear();
-  display.setFont(ArialMT_Plain_10);
-  display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-  display.drawString(display.getWidth() / 2, display.getHeight() / 2 - 10, title.c_str());
-  display.display();
+  display.fillScreen(TFT_BLACK);
+  display.setTextSize(1);
+  display.setFreeFont(&FreeSans18pt7b);
+  display.setTextColor(TFT_WHITE, TFT_BLACK);
+  display.setTextDatum(BC_DATUM);
+  display.drawString(title, display.width() / 2, display.height() / 2);
 }
 
 void display_progress_bar_title2(String title1, String title2)
 {
-  display.clear();
-  display.setTextAlignment(TEXT_ALIGN_CENTER);
-  display.setFont(ArialMT_Plain_10);
-  display.drawString(display.getWidth() / 2, 0, title1.c_str());
-  if (display.getStringWidth(title2) <= display.width()) display.setFont(ArialMT_Plain_16);
-  display.drawString(display.getWidth() / 2, 10, title2.c_str());
-  display.display();
+  display.fillScreen(TFT_BLACK);
+  display.setTextSize(1);
+  display.setFreeFont(&FreeSans18pt7b);
+  display.setTextColor(TFT_WHITE, TFT_BLACK);
+  display.setTextDatum(BC_DATUM);
+  display.drawString(title2, display.width() / 2, display.height() / 2);
+  uint16_t h = display.fontHeight(1);
+  display.setFreeFont(&FreeSans9pt7b);
+  display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+  display.setTextDatum(BC_DATUM);
+  display.drawString(title1, display.width() / 2, display.height() / 2 - h);
+
+}
+
+void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t progress)
+{
+  height += height % 2;
+
+  uint16_t radius = height / 2;
+  uint16_t doubleRadius = 2 * radius;
+  uint16_t innerRadius = radius - 2;
+
+  TFT_eSprite bar = TFT_eSprite(&display);
+
+  bar.createSprite(width, height);
+
+  bar.drawCircleHelper(radius,             radius, radius, 0b00001001, TFT_LIGHTGREY);
+  bar.drawCircleHelper(width - 1 - radius, radius, radius, 0b00000110, TFT_LIGHTGREY);
+  bar.drawFastHLine(radius - 1, 0,          width - doubleRadius + 1, TFT_LIGHTGREY);
+  bar.drawFastHLine(radius - 1, height - 1, width - doubleRadius + 1, TFT_LIGHTGREY);
+
+  uint16_t maxProgressWidth = (width - doubleRadius - 1) * progress / 100;
+
+  bar.fillCircle(radius, radius, innerRadius, TFT_ORANGE);
+  bar.fillRect(radius + 1, 2, maxProgressWidth, height - 4, TFT_ORANGE);
+  bar.fillCircle(radius + maxProgressWidth, radius, innerRadius, TFT_ORANGE);
+
+  bar.pushSprite(x, y);
 }
 
 void display_progress_bar_update(unsigned int progress, unsigned int total)
 {
-  display.setColor(BLACK);
-  display.fillRect(0, 32, 127, 8);
-  display.drawProgressBar(0, 32, 127, 8, 100*progress/total);
-  display.display();
+  display_progress_bar(0, display.height() / 2 + 8, display.width() - 1, display.height() / 8, 100*progress/total);
 }
 
 void display_progress_bar_2_update(unsigned int progress, unsigned int total)
 {
-  display.setColor(BLACK);
-  display.fillRect(0, 54, 127, 8);
-  display.drawProgressBar(0, 54, 127, 8, 100*progress/total);
-  display.display();
+  display_progress_bar(0, display.height() - display.height() / 8, display.width() - 1, display.height() / 8, 100*progress/total);
 }
 
 void display_progress_bar_2_label(unsigned int label, unsigned int x)
 {
+  /*
   const String l(label);
 
   display.setColor(WHITE);
@@ -402,37 +305,82 @@ void display_progress_bar_2_label(unsigned int label, unsigned int x)
   }
   display.drawLine(x, 53, x, 63);
   display.display();
+  */
 }
 
-void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
+void topOverlay()
 {
-#ifdef BATTERY
-  static uint16_t voltage = bat.voltage();
-  static uint8_t  level   = bat.level(voltage);
-#endif
+  static uint64_t timeStamp       = 0;
+  static float    battery_voltage = 4.2F;
 
-    display->setTextAlignment(TEXT_ALIGN_LEFT);
+  if (millis() - timeStamp > 1005 ) {
+    timeStamp = millis();
 
 #ifdef WIFI
     if (wifiEnabled) {
-      static int      signal  = WiFi.RSSI();
+      static int signal = WiFi.RSSI();
 
-      display->setFont(wifiSignal);
+      top.setSwapBytes(true);
       signal = (4*signal + WiFi.RSSI()) / 5;
-      if      (signal < -90) display->drawString(0, 0, String(0));
-      else if (signal < -85) display->drawString(0, 0, String(1));
-      else if (signal < -80) display->drawString(0, 0, String(2));
-      else if (signal < -75) display->drawString(0, 0, String(3));
-      else if (signal < -70) display->drawString(0, 0, String(4));
-      else if (signal < -65) display->drawString(0, 0, String(5));
-      else if (signal < -60) display->drawString(0, 0, String(6));
-      else                   display->drawString(0, 0, String(7));
+      if      (signal < -90) top.pushImage(1, 1, 32, 22, w0);
+      else if (signal < -80) top.pushImage(1, 1, 32, 22, w25);
+      else if (signal < -70) top.pushImage(1, 1, 32, 22, w50);
+      else if (signal < -60) top.pushImage(1, 1, 32, 22, w75);
+      else                   top.pushImage(1, 1, 32, 22, w100);
     }
 #endif
 
-    display->setFont(bluetoothSign);
-    if (bleMidiConnected) display->drawString(24, 0, String(1));
-    else display->drawString(24, 0, String(0));
+#ifdef BLE
+    top.setSwapBytes(true);
+    if (bleMidiConnected)
+      if (wifiEnabled) top.pushImage(40, 1, 16, 22, bt);
+      else top.pushImage(1, 1, 16, 22, bt);
+    else if (wifiEnabled) top.fillRect(40, 1, 16, 22, TFT_WHITE);
+      else top.fillRect(1, 1, 16, 22, TFT_WHITE);
+#endif
+
+#ifdef BATTERY
+    uint16_t v = analogRead(BATTERY_PIN);
+    digitalWrite(BATTERY_ADC_EN, LOW);
+
+    float voltage = ((float)v / 1024.0) * 2.0 * 3.3 * (vref / 1000.0);
+    if (abs(voltage - battery_voltage) > 0.2F)
+      battery_voltage = voltage;
+    else
+      battery_voltage = (9.0F*battery_voltage + voltage) / 10.0F;
+/*
+        String vol = "Voltage :" + String(battery_voltage) + "V";
+        display.setFreeFont(&FreeSans9pt7b);
+        display.setTextColor(TFT_BLACK);
+        display.setTextDatum(ML_DATUM);
+        display.drawString(vol,  0, 100);
+*/
+    top.setSwapBytes(true);
+    if      (battery_voltage > 4.2F) top.pushImage(display.width() - 50, 1, 50, 22, bcharge);
+    else if (battery_voltage > 4.0F) top.pushImage(display.width() - 50, 1, 50, 22, b100);
+    else if (battery_voltage > 3.8F) top.pushImage(display.width() - 50, 1, 50, 22, b75);
+    else if (battery_voltage > 3.6F) top.pushImage(display.width() - 50, 1, 50, 22, b50);
+    else if (battery_voltage > 3.4F) top.pushImage(display.width() - 50, 1, 50, 22, b25);
+    else if (battery_voltage > 3.2F) top.pushImage(display.width() - 50, 1, 50, 22, b10);
+    else top.pushImage(display.width() - 50, 1, 50, 22, b10);
+#endif
+
+  } else if (millis() - timeStamp > 1000) {
+#ifdef BATTERY
+    /*
+      BATTERY_ADC_EN is the ADC detection enable port
+      If the USB port is used for power supply, it is turned on by default.
+      If it is powered by battery, it needs to be set to high level
+    */
+    pinMode(BATTERY_ADC_EN, OUTPUT);
+    digitalWrite(BATTERY_ADC_EN, HIGH);
+  } else if (millis() - timeStamp > 500 && battery_voltage <= 3.2F) {
+      top.pushImage(display.width() - 50, 1, 50, 22, b0);
+#endif
+  }
+  top.pushSprite(0, 0);
+
+/*
 
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(profileSign);
@@ -442,18 +390,20 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
       (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
 
 #ifdef BATTERY
+  static uint16_t voltage = bat.voltage();
+  static uint8_t  level   = bat.level(voltage);
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(batteryIndicator);
     voltage = (199*voltage + bat.voltage()) / 200;
     level   = (199*level + bat.level(voltage)) / 200;
-    /*
+
     if      (level == 100) display->drawString(128, 0, String((millis() >> 10) % 4));
     else if (level >   70) display->drawString(128, 0, String(3));
     else if (level >   40) display->drawString(128, 0, String(2));
     else if (level >   10) display->drawString(128, 0, String(1));
     else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
     else display->drawString(128, 0, String(4));
-    */
+
     if      (voltage > 3700) display->drawString(128, 0, String((millis() >> 10) % 4));
     else if (voltage > 3600) display->drawString(128, 0, String(3));
     else if (voltage > 3300) display->drawString(128, 0, String(2));
@@ -466,7 +416,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   if (millis() < endMillis2) {
     if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
         MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
-      /*
+
       display->setFont(ArialMT_Plain_10);
       display->setTextAlignment(TEXT_ALIGN_CENTER);
       display->drawString(64, 0, String(bpm) + "BPM");
@@ -519,7 +469,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
             display->drawString(128, 0, String(1));
           break;
       }
-      */
+
       //MTC.isPlaying() ? display->setColor(WHITE) : display->setColor(BLACK);
       switch (timeSignature) {
         case PED_TIMESIGNATURE_2_4:
@@ -554,10 +504,12 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
       display->drawString(128, 0, buf);
     }
   }
+  */
 }
 
-void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
+void bottomOverlay()
 {
+  /*
   if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
     //byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
     int p;
@@ -646,18 +598,20 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
     }
 #endif
   }
+  */
 }
 
-void drawRect(OLEDDisplay *display, int16_t x0, int16_t y0, int16_t x1, int16_t y1)
+void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 {
-  display->drawLine(x0+1, y0,   x1-1, y0);
-  display->drawLine(x1,   y0+1, x1,   y1-1);
-  display->drawLine(x1-1, y1,   x0+1, y1);
-  display->drawLine(x0,   y1-1, x0,   y0+1);
+  display.drawLine(x0+1, y0,   x1-1, y0,   TFT_WHITE);
+  display.drawLine(x1,   y0+1, x1,   y1-1, TFT_WHITE);
+  display.drawLine(x1-1, y1,   x0+1, y1,   TFT_WHITE);
+  display.drawLine(x0,   y1-1, x0,   y0+1, TFT_WHITE);
 }
 
-void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
+void drawFrame1(int16_t x, int16_t y)
 {
+  /*
   if (millis() < endMillis2 && lastPedalName[0] != ':') {
     ui.disableAutoTransition();
     ui.switchToFrame(0);
@@ -786,11 +740,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       display->drawString(68 + x, 36 + y, "Master");
     else if (MTC.getMode() == MidiTimeCode::SynchroClockSlave)
       display->drawString(68 + x, 36 + y, "Slave");
-    /*
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->setFont(MTC.isPlaying() ? beats4 : beats4off);
-    display->drawString(112 + x, 14 + x, String(MTC.getBeat()));
-    */
+
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(block);
     switch (timeSignature) {
@@ -1018,10 +968,12 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
     events.send("", "timesignature");
   }
 #endif
+  */
 }
 
-void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
+void drawFrame2(int16_t x, int16_t y)
 {
+  /*
   if (!scrollingMode || MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2)
     ui.switchToFrame(0);
 
@@ -1058,10 +1010,12 @@ void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
       break;
   }
 #endif
+*/
 }
 
-void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y)
+void drawFrame3(int16_t x, int16_t y)
 {
+  /*
   if (!scrollingMode || MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2)
     ui.switchToFrame(0);
 
@@ -1087,82 +1041,49 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   long min = (millis() / 1000 / 60) % 60;
   long h   = (millis() / 1000 / 3600);
   display->drawString(128 + x, 36 + y, h + String("h ") + min + String("m ") + sec + String("s"));
+  */
 }
 
-// This array keeps function pointers to all frames
-// frames are the single views that slide in
-#ifdef DIAGNOSTIC
-FrameCallback frames[] = { drawFrame1, drawFrame2, drawFrame3 };
-#else
-FrameCallback frames[] = { drawFrame1, drawFrame2 };
-#endif
-int frameCount = sizeof(frames) / sizeof(FrameCallback);
-
-// Overlays are statically drawn on top of a frame
-OverlayCallback overlays[] = { topOverlay, bottomOverlay };
-int overlaysCount = sizeof(overlays) / sizeof(OverlayCallback);
 
 void display_init()
 {
-  display.init();
-  display.flipScreenVertically();
-  display.setContrast(255);
+    display.init();
+    display.setRotation(1);
+    display.fillScreen(TFT_BLACK);
+    top.createSprite(display.width(), 24);
+    top.fillRect(0, 0, display.width(), 24, TFT_WHITE);
+
+    /*
+    if (TFT_BL > 0) {                           // TFT_BL has been set in the TFT_eSPI library in the User Setup file TTGO_T_Display.h
+        pinMode(TFT_BL, OUTPUT);                // Set backlight pin to output mode
+        digitalWrite(TFT_BL, TFT_BACKLIGHT_ON); // Turn backlight on. TFT_BACKLIGHT_ON has been set in the TFT_eSPI library in the User Setup file TTGO_T_Display.h
+    }
+    */
 
 #ifdef WIFI
   if (wifiEnabled) {
-    display.clear();
-    display.drawXbm((display.getWidth() - WIFI_LOGO_WIDTH) / 2, (display.getHeight() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
-    display.display();
-    leds.kittCar();
+    display.fillScreen(TFT_WHITE);
+    display.setSwapBytes(true);
+    display.pushImage((display.width() - WIFI_LOGO_WIDTH) / 2, (display.height() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
+    delay(1000);
   }
 #endif
 
 #ifdef BLE
   if (bleEnabled) {
-    display.clear();
-    display.drawXbm((display.getWidth() - BLUETOOTH_LOGO_WIDTH) / 2, (display.getHeight() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
-    display.display();
-    leds.kittCar();
+    display.fillScreen(TFT_WHITE);
+    display.setSwapBytes(true);
+    display.pushImage((display.width() - BLUETOOTH_LOGO_WIDTH) / 2, (display.height() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
+    delay(1000);
   }
 #endif
 
-  // The ESP is capable of rendering 60fps in 80Mhz mode
-	// but that won't give you much time for anything else
-	// run it in 160Mhz mode or just set it to 30 fps
-  ui.setTargetFPS(60);
+    display.fillScreen(TFT_BLACK);
 
-	// Customize the active and inactive symbol
-  ui.setActiveSymbol(activeSymbol);
-  ui.setInactiveSymbol(inactiveSymbol);
+    //display.setSwapBytes(true);
+    //display.pushImage((display.width() - PEDALINO_LOGO_WIDTH) / 2, (display.height() - PEDALINO_LOGO_HEIGHT) / 2, PEDALINO_LOGO_WIDTH, PEDALINO_LOGO_HEIGHT, PedalinoLogo);
 
-  // You can change this to
-  // TOP, LEFT, BOTTOM, RIGHT
-  ui.setIndicatorPosition(BOTTOM);
-
-  // Defines where the first frame is located in the bar.
-  ui.setIndicatorDirection(LEFT_RIGHT);
-
-  // Disable drawing of all indicators.
-  ui.disableAllIndicators();
-
-  // You can change the transition that is used
-  // SLIDE_LEFT, SLIDE_RIGHT, SLIDE_UP, SLIDE_DOWN
-  ui.setFrameAnimation(SLIDE_LEFT);
-
-  // Add frames
-  ui.setFrames(frames, frameCount);
-
-  // Add overlays
-  ui.setOverlays(overlays, overlaysCount);
-
-  // Initialising the UI will init the display too.
-  ui.init();
-
-  display.flipScreenVertically();
-
-#ifdef BATTERY
-  bat.begin(3300, 2, &sigmoidal);
-#endif
+    display.fillScreen(TFT_BLACK);
 }
 
 void display_ui_update_disable()
@@ -1177,10 +1098,16 @@ void display_ui_update_enable()
 
 void display_update()
 {
-  if (uiUpdate) ui.update();
+  if (uiUpdate) {
+    topOverlay();
+  }
 }
 
 void display_off()
 {
+  digitalWrite(TFT_BL, !TFT_BACKLIGHT_ON);
 
+  display.writecommand(TFT_DISPOFF);
+  display.writecommand(TFT_SLPIN);
 }
+

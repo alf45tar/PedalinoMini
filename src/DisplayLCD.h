@@ -267,9 +267,6 @@ void screen_update(bool force = false) {
       strncpy(screen1, buf, LCD_COLS);
       lcdSetCursor(0, 0);
       lcdPrint(buf);
-#ifdef BLYNK
-      blynkLCD.print(0, 0, buf);
-#endif
     }
 
     if (bleConnected) {
@@ -319,9 +316,6 @@ void screen_update(bool force = false) {
       // replace unprintable chars
       for (byte i = 0; i < LCD_COLS; i++)
         buf[i] = (buf[i] == -1) ? '#' : buf[i];
-#ifdef BLYNK
-      blynkLCD.print(0, 1, buf);
-#endif
     }
 
     if (selectBank) {

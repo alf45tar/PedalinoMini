@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -30,26 +30,41 @@ __________           .___      .__  .__                 _____  .__       .__    
 // https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 // GPIOs 34 to 39 are GPIs – input only pins.
 // These pins don’t have internal pull-ups or pull-down resistors.
+
+#ifdef TTGO_T_DISPLAY
+const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_17};
+const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_32, GPIO_NUM_33};
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button 2
+#define RIGHT_PIN             GPIO_NUM_35   // Button 1
+#define CENTER_PIN            GPIO_NUM_0    // Button 2
+#define LEFT_PIN              GPIO_NUM_2
+#define SERIAL_DATA_PIN       GPIO_NUM_2
+#define CLOCK_PIN             GPIO_NUM_2
+#define LATCH_PIN             GPIO_NUM_2
+#define USB_MIDI_IN_PIN       GPIO_NUM_21   // SDA
+#define USB_MIDI_OUT_PIN      GPIO_NUM_22   // SCL
+#define DIN_MIDI_IN_PIN       GPIO_NUM_15
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_2
+#define BATTERY_PIN           GPIO_NUM_34
+#define BATTERY_ADC_EN        GPIO_NUM_14   //ADC_EN is the ADC detection enable port
+#elif defined TTGO_T_EIGHT
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
-
-#define PIN_D(x)          pinD[x]
-#define PIN_A(x)          pinA[x]
-
-#ifdef TTGO_T_EIGHT
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
 #define RIGHT_PIN             GPIO_NUM_37
 #define CENTER_PIN            GPIO_NUM_38
 #define LEFT_PIN              GPIO_NUM_39   // Shared with A2
-#define SERIAL_DATA_PIN       GPIO_NUM_2    // DS
-#define CLOCK_PIN             GPIO_NUM_2    // SH_CP
-#define LATCH_PIN             GPIO_NUM_2    // ST_CP
+#define SERIAL_DATA_PIN       GPIO_NUM_2
+#define CLOCK_PIN             GPIO_NUM_2
+#define LATCH_PIN             GPIO_NUM_2
 #define USB_MIDI_IN_PIN       GPIO_NUM_18   // Used by SD
 #define USB_MIDI_OUT_PIN      GPIO_NUM_19   // Used by SD
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #else
+const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
+const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
 #define RIGHT_PIN             GPIO_NUM_23
 #define CENTER_PIN            GPIO_NUM_0
@@ -63,6 +78,9 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #endif
+
+#define PIN_D(x)          pinD[x]
+#define PIN_A(x)          pinA[x]
 
 #include "FastLED.h"
 #define FASTLEDS_DATA_PIN  GPIO_NUM_5
@@ -442,6 +460,8 @@ String wifiPassword("");
 bool powersaver = false;
 bool firmwareUpdate = false;
 
+uint32_t vref = 1100;
+
 #ifdef DEBUG_ESP_PORT
 #include <esp_log.h>
 #define SERIALDEBUG       Serial
@@ -450,13 +470,6 @@ bool firmwareUpdate = false;
 //#define DPRINTLN(...)     ESP_LOGI(LOG_TAG, __VA_ARGS__)
 #define DPRINT(...)       SERIALDEBUG.printf(__VA_ARGS__)
 #define DPRINTLN(...)     { SERIALDEBUG.printf( __VA_ARGS__ ); SERIALDEBUG.println(); }
-#endif
-
-#ifdef PEDALINO_TELNET_DEBUG
-#include <RemoteDebug.h>          // Remote debug over telnet - not recommended for production, only for development
-RemoteDebug Debug;
-#define DPRINT(...)       rdebugI(__VA_ARGS__)
-#define DPRINTLN(...)     rdebugIln(__VA_ARGS__)
 #endif
 
 #ifndef DPRINT
@@ -497,15 +510,6 @@ void   delete_actions();
 void   sort_actions();
 void   create_banks();
 void   wifi_connect();
-void   blynk_enable();
-void   blynk_disable();
-bool   blynk_enabled();
-bool   blynk_cloud_connected();
-String blynk_get_token();
-String blynk_set_token(String);
-void   blynk_connect();
-void   blynk_disconnect();
-void   blynk_refresh();
 
 void   screen_update(bool);
 void   screen_info(int, int, int, int, int = 0, int = MIDI_RESOLUTION - 1);
@@ -516,7 +520,6 @@ bool   auto_reconnect(String ssid = "", String password = "");
 bool   smart_config();
 bool   ap_connect(String ssid = "", String password = "");
 #ifdef WIFI
-#include <BlynkSimpleEsp32.h>
 String translateEncryptionType(wifi_auth_mode_t);
 #endif
 

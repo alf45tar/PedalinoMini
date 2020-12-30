@@ -24,29 +24,37 @@ void ota_begin(const char *hostname) {
   ArduinoOTA.begin();
 
   ArduinoOTA.onStart([]() {
-    blynk_disconnect();
 #ifdef WEBSOCKET
     webSocket.enable(false);
     webSocket.closeAll();
 #endif
+#ifdef TTGO_T_DISPLAY
+#else
     display.clear();
     display.setFont(ArialMT_Plain_10);
     display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
     display.drawString(display.getWidth() / 2, display.getHeight() / 2 - 10, "OTA Update");
     display.display();
+#endif
   });
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+#ifdef TTGO_T_DISPLAY
+#else
     display.drawProgressBar(4, 32, 120, 8, progress / (total / 100) );
     display.display();
+#endif
   });
 
   ArduinoOTA.onEnd([]() {
+#ifdef TTGO_T_DISPLAY
+#else
     display.clear();
     display.setFont(ArialMT_Plain_10);
     display.setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
     display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Restart");
     display.display();
+#endif
   });
 }
 

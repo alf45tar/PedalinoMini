@@ -409,7 +409,6 @@ void load_factory_default()
   tapDanceMode       = false;
   repeatOnBankSwitch = false;
   tapDanceBank       = true;
-  blynk_set_token("");
 
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {
@@ -590,26 +589,6 @@ void eeprom_update_press_time(long p1 = PED_PRESS_TIME,
   DPRINT("[NVS][Global[Repeat Time]: %ld\n", p4);
 }
 
-void eeprom_update_blynk_cloud_enable(bool enable = false)
-{
-  DPRINT("Updating NVS ... ");
-  preferences.begin("Global", false);
-  preferences.putBool("Blynk Cloud", enable);
-  preferences.end();
-  DPRINT("done\n");
-  DPRINT("[NVS][Global[Blynk Cloud]: %d\n", enable);
-}
-
-void eeprom_update_blynk_auth_token(String token = "")
-{
-  DPRINT("Updating NVS ... ");
-  preferences.begin("Global", false);
-  preferences.putString("Blynk Token", token);
-  preferences.end();
-  DPRINT("done\n");
-  DPRINT("[NVS][Global][Blynk Token]: %s\n", token.c_str());
-}
-
 void eeprom_update_theme(String theme = "bootstrap")
 {
   DPRINT("Updating NVS ... ");
@@ -715,7 +694,6 @@ void eeprom_update_profile(byte profile = currentProfile)
   }
   preferences.end();
   DPRINT(" ... done\n");
-  blynk_refresh();
 }
 
 void eeprom_read_global()
@@ -742,8 +720,6 @@ void eeprom_read_global()
     ledsOnBrightness   = preferences.getUChar("LedsOnBright");
     ledsOffBrightness  = preferences.getUChar("LedsOffBright");
     preferences.getBytes("Ladder", ladderLevels, sizeof(ladderLevels));
-    preferences.getBool("Blynk Cloud") ? blynk_enable() : blynk_disable();
-    blynk_set_token(preferences.getString("Blynk Token"));
     preferences.end();
     DPRINT("done\n");
     DPRINT("[NVS][Global][Device Name]:      %s\n", host.c_str());
@@ -765,8 +741,6 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][Encoder Sensit]:   %d\n", encoderSensitivity);
     DPRINT("[NVS][Global][LedsOnBright]:     %d\n", ledsOnBrightness);
     DPRINT("[NVS][Global][LedsOffBright]:    %d\n", ledsOffBrightness);
-    DPRINT("[NVS][Global][Blynk Cloud]:      %d\n", blynk_enabled());
-    DPRINT("[NVS][Global][Blynk Token]:      %s\n", blynk_get_token().c_str());
     for (byte i = 0; i < LADDER_STEPS; i++) {
       DPRINT("[NVS][Global][Ladder]:           Ladder %d Level %d\n", i + 1, ladderLevels[i]);
     }
@@ -828,7 +802,6 @@ void eeprom_read_profile(byte profile = currentProfile)
   create_banks();
   preferences.end();
   DPRINT("done\n");
-  blynk_refresh();
 }
 
 void eeprom_update_globals()
@@ -846,8 +819,6 @@ void eeprom_update_globals()
   eeprom_update_ladder();
   eeprom_update_encoder_sensitivity(encoderSensitivity);
   eeprom_update_leds_brightness(ledsOnBrightness, ledsOffBrightness);
-  eeprom_update_blynk_cloud_enable(blynk_enabled());
-  eeprom_update_blynk_auth_token(blynk_get_token());
 }
 
 void eeprom_update_all()
@@ -886,8 +857,6 @@ void eeprom_initialize()
   eeprom_update_ladder();
   eeprom_update_encoder_sensitivity();
   eeprom_update_leds_brightness();
-  eeprom_update_blynk_cloud_enable();
-  eeprom_update_blynk_auth_token();
   for (byte p = 0; p < PROFILES; p++)
     eeprom_update_profile(p);
 }

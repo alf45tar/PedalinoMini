@@ -369,12 +369,6 @@ void get_root_page() {
   page += F("<dt>DNS 2</dt><dd>");
   page += WiFi.dnsIP(1).toString();
   page += F("</dd>");
-#ifdef BLINK
-  page += F("<dt>Blynk Cloud</dt><dd>");
-  if (blynk_cloud_connected()) page += String("Online");
-  else page += String("Offline");
-  page += F("</dd>");
-#endif
   page += F("<dt>MIDI Network</dt><dd>");
   if (appleMidiConnected) page += String("Connected to<br>") + appleMidiSessionName;
   else page += String("Disconnected");
@@ -1827,30 +1821,6 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-#ifdef BLYNK
-  page += F("<div class='form-row mb-3'>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='blynkCloud' name='blynkcloud'");
-  if (blynk_enabled()) page += F(" checked");
-  page += F(">");
-  page += F("<label class='custom-control-label' for='blynkCloud'>Blynk Cloud</label>");
-  page += F("<small id='blynkCloudModeHelpBlock' class='form-text text-muted'>");
-  page += F("If Blynk Cloud connection is disabled the app cannot connect to Pedalino.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("</div>");
-
-  page += F("<div class='form-row mb-3'>");
-  page += F("<label for='authtoken'>Blynk Auth Token</label>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='authtoken' name='blynkauthtoken' placeholder='Blynk Auth Token is 32 characters long. Copy and paste from email.' value='");
-  page += blynk_get_token() + F("'>");
-  page += F("<small id='blynkCloudModeHelpBlock' class='form-text text-muted'>");
-  page += F("Auth Token is a unique identifier which is needed to connect your Pedalino to your smartphone. Every Pedalino will have its own Auth Token. You’ll get Auth Token automatically on your email after Pedalino app clone. You can also copy it manually. Click on devices section and selected required device.<br>");
-  page += F("Don’t share your Auth Token with anyone, unless you want someone to have access to your Pedalino.");
-  page += F("</small>");
-  page += F("</div>");
-#endif
-
   page += F("<div class='form-row justify-content-between'>");
   page += F("<div class='col-4'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
@@ -2271,7 +2241,6 @@ void http_handle_post_live(AsyncWebServerRequest *request) {
   a = request->arg("profile");
   currentProfile = a.toInt();
 
-  blynk_refresh();
   alert = "Saved";
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_live_page_chunked);
@@ -2423,7 +2392,6 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
       alert = "Changes saved.";
     }
   }
-  blynk_refresh();
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_actions_page_chunked);
   response->addHeader("Connection", "close");
@@ -2496,7 +2464,6 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     loadConfig = true;
     alert = "Changes saved.";
   }
-  blynk_refresh();
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_pedals_page_chunked);
   response->addHeader("Connection", "close");
@@ -2532,7 +2499,6 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
     eeprom_update_current_profile(currentProfile);
     alert = "Changes saved.";
   }
-  blynk_refresh();
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_interfaces_page_chunked);
   response->addHeader("Connection", "close");
@@ -2571,7 +2537,6 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
     eeprom_update_current_profile(currentProfile);
     alert = "Changes saved.";
   }
-  blynk_refresh();
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_sequences_page_chunked);
   response->addHeader("Connection", "close");
@@ -2682,28 +2647,6 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   if (request->arg("ledsoffbrightness").toInt() != ledsOffBrightness) {
     ledsOffBrightness = request->arg("ledsoffbrightness").toInt();
   }
-#ifdef BLINK
-  bool newBlynkCloud = (request->arg("blynkcloud") == checked);
-  if (newBlynkCloud & !blynk_enabled()) {
-    blynk_enable();
-    //eeprom_update_blynk_cloud_enable(true);
-    //blynk_connect();
-    //blynk_refresh();
-  }
-  if (!newBlynkCloud & blynk_enabled()) {
-    blynk_disconnect();
-    blynk_disable();
-    //eeprom_update_blynk_cloud_enable(false);
-  }
-
-  if (request->arg("blynkauthtoken") != String(blynkAuthToken)) {
-    blynk_disconnect();
-    //eeprom_update_blynk_auth_token(request->arg("blynkauthtoken"));
-    blynk_set_token(request->arg("blynkauthtoken"));
-    //blynk_connect();
-    //blynk_refresh();
-  }
-#endif
 
   if (request->arg("action") == String("apply")) {
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
@@ -3075,7 +3018,6 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
   //Upload handler chunks in data
   if (!index) {
     // Disconnect, not to interfere with OTA process
-    blynk_disconnect();
 #ifdef WEBSOCKET
     webSocket.enable(false);
     webSocket.closeAll();
@@ -3225,7 +3167,10 @@ inline void http_run() {
 
 #ifdef WEBSOCKET
     //webSocket.binaryAll(display.buffer, 128*64);
+#ifdef TTGO_T_DISPLAY
+#else
     if (wsClient) wsClient->binary(display.buffer, 128*64);
+#endif
      // Limits the number of clients by closing the oldest client
      // when the maximum number of clients has been exceeded
     webSocket.cleanupClients();

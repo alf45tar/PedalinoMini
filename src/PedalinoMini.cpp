@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -22,7 +22,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifdef NOWIFI
 #undef WIFI
 #define NOWEBCONFIG
-#define NOBLYNK
 #else
 #define WIFI
 #define BOOTSTRAP_LOCAL
@@ -41,18 +40,13 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define WEBCONFIG
 #endif
 
-#ifdef NOBLYNK
-#undef BLYNK
-#else
-#define BLYNK
-#endif
-
 #include <Arduino.h>
 #ifdef TTGO_T_EIGHT
 #include "esp32-hal-psram.h"
 #endif
 
 #include <esp32-hal-log.h>
+#include <esp_adc_cal.h>
 #include <esp_partition.h>
 #include <esp_bt_main.h>
 #include <string>
@@ -65,9 +59,12 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "UdpMidiIn.h"
 #include "BLEMidiIn.h"
 #include "Controller.h"
-#include "BlynkRPC.h"
 #include "DisplayLCD.h"
+#ifdef TTGO_T_DISPLAY
+#include "DisplayTFT.h"
+#else
 #include "DisplayOLED.h"
+#endif
 #include "WebConfigAsync.h"
 #include "OTAUpdate.h"
 #include "WifiConnect.h"
@@ -135,8 +132,16 @@ void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t but
         reloadProfile = true;
       }
       */
-        currentBank = (currentBank == 0 ? BANKS - 1 : currentBank - 1);
-        leds_refresh();
+      currentBank = (currentBank == 0 ? BANKS - 1 : currentBank - 1);
+      leds_refresh();
+
+      display_off();
+      //After using light sleep, you need to disable timer wake, because here use external IO port to wake up
+      esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
+      //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
+      esp_sleep_enable_ext0_wakeup(FACTORY_DEFAULT_PIN, 0);
+      delay(200);
+      esp_deep_sleep_start();
       break;
 
     case AceButton::kEventLongPressed:
@@ -170,6 +175,19 @@ void setup()
   DPRINT("Flash Size %d, Flash Speed %d Hz\n",ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
+#ifdef TTGO_T_DISPLAY
+  //Check type of calibration value used to characterize ADC for BATTERY_PIN (GPIO34)
+  esp_adc_cal_characteristics_t adc_chars;
+  esp_adc_cal_value_t           val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)ADC1_CHANNEL_6, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
+  if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
+    vref = adc_chars.vref;
+    DPRINT("eFuse Vref:%u mV\n", adc_chars.vref);
+  } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
+    DPRINT("Two Point --> coeff_a:%umV coeff_b:%umV\n", adc_chars.coeff_a, adc_chars.coeff_b);
+  } else {
+    DPRINT("Default Vref: 1100mV\n");
+  }
+#endif
   esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, "nvs");
   if (pi != NULL) {
     const esp_partition_t* nvs = esp_partition_get(pi);
@@ -420,14 +438,6 @@ void setup()
     }
     else
       wifi_connect();
-
-    blynk_setup();
-
-#ifdef PEDALINO_TELNET_DEBUG
-    // Initialize the telnet server of RemoteDebug
-    Debug.begin(host);              // Initiaze the telnet server
-    Debug.setResetCmdEnabled(true); // Enable the reset command
-#endif
   }
 #endif
 
@@ -537,14 +547,6 @@ void loop()
 
     // Run OTA update service
     ota_handle();
-
-    // Process Blynk messages
-    blynk_run();
-
-#ifdef PEDALINO_TELNET_DEBUG
-    // Remote debug over telnet
-    Debug.handle();
-#endif
   }
 #endif // WIFI
 

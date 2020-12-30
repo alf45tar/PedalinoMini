@@ -83,9 +83,6 @@ void start_services()
     MDNS.addService("_apple-midi", "_udp", 5004);
     MDNS.addService("_osc",        "_udp", oscLocalPort);
     MDNS.addService("_http",       "_tcp", 80);
-#ifdef PEDALINO_TELNET_DEBUG
-    MDNS.addService("_telnet",     "_tcp", 23);
-#endif
   }
 
   // OTA update init
@@ -129,9 +126,6 @@ void start_services()
 
   // Set outcoming OSC broadcast ip/port
   oscUDPout.connect(oscRemoteIp, oscRemotePort);
-
-  // Connect to Blynk Cloud
-  blynk_connect();
 }
 
 
@@ -436,6 +430,7 @@ bool smart_config()
   {
     WiFi.stopSmartConfig();
     leds.kittCar();
+    display_clear();
     return true;
   }
   else
@@ -443,6 +438,7 @@ bool smart_config()
     WiFi.stopSmartConfig();
     leds.setAllLow();
     leds.write();
+    display_clear();
     return false;
   }
 }
@@ -505,6 +501,7 @@ bool wps_config()
   else {
     DPRINT("WPS timeout\n");
   }
+  display_clear();
   return WiFi.isConnected();
 }
 
@@ -545,6 +542,7 @@ bool ap_connect(String ssid, String password)
   else WIFI_LED_OFF();
   leds.setAllLow();
   leds.write();
+  display_clear();
 
   return WiFi.isConnected();
 }
