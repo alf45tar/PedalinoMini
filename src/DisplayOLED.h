@@ -406,7 +406,7 @@ void display_progress_bar_2_label(unsigned int label, unsigned int x)
 
 void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
-#ifdef BATTERY
+#ifdef BATTERY2
   static uint16_t voltage = bat.voltage();
   static uint8_t  level   = bat.level(voltage);
 #endif
@@ -441,7 +441,7 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   if ((millis() >= endMillis2) ||
       (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
 
-#ifdef BATTERY
+#ifdef BATTERY2
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(batteryIndicator);
     voltage = (199*voltage + bat.voltage()) / 200;
@@ -1071,7 +1071,7 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->drawString(128 + x, 16 + y, ESP.getFreeHeap()/1024 + String(" Kb"));
 
-#ifdef BATTERY
+#ifdef BATTERY2
   static uint16_t voltage = bat.voltage();
   voltage = (99*voltage + bat.voltage()) / 100;
   display->setTextAlignment(TEXT_ALIGN_LEFT);
@@ -1159,10 +1159,6 @@ void display_init()
   ui.init();
 
   display.flipScreenVertically();
-
-#ifdef BATTERY
-  bat.begin(3300, 2, &sigmoidal);
-#endif
 }
 
 void display_ui_update_disable()

@@ -97,7 +97,7 @@ ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
 // Serial MIDI interfaces
 
 #include <MIDI.h>                       // https://github.com/FortySevenEffects/arduino_midi_library
-#include <ESPSerialMIDI.h>
+#include "ESPSerialMIDI.h"
 
 #define MIDI_BAUD_RATE                  31250
 #define HIGH_SPEED_SERIAL_BAUD_RATE     1000000
