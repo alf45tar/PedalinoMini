@@ -77,7 +77,7 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 
 ## How to build and upload
 
-[PlatformIO](https://platformio.org) is the recommended IDE for Pedalino build and upload.
+[PlatformIO](https://platformio.org) is the recommended IDE for PedalinoMini™ build and upload.
 
 1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode)
 2. Install Git
@@ -90,7 +90,7 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
     - under PlatformIO Project Tasks select your environment (i.e. env:esp32doit-devkit-v1)
         - Click "Build" under General
         - Click "Upload" under General
-        - Click “Upload File System Image” under Platform or use PlatformIO Core (CLI) and 'platformio run --target uploadfs' command
+        - Click “Upload File System Image” under Platform. Do not skip this step otherwise the WebUI will not works properly.
 
 That's all folks.
 
@@ -151,14 +151,14 @@ PedalinoMini™ implements Wi-Fi Protected Setup (WPS) and Smart Config technolo
 
 If the WiFi network is not available PedalinoMini™ will create an hotspot for you. Once connected to the PedalinoMini™ hotspot, you can use the web interface to set the SSID and password of an access point that you would like to connect to.
 
-- On power on Pedalino will try to connect to the last know access point
+- On power on PedalinoMini™ will try to connect to the last know access point
 - If it cannot connect to the last used access point within 15 seconds it enters into Smart Config mode
 - Start one of the suggested apps to configure SSID and password
 - If it doesn't receive any SSID and password during the next 15 seconds it enters into WPS mode
-- Press WPS button on your WiFi router
-- If it doesn't receive any SSID and password during the next 15 seconds it switch to AP mode
+- Press or press and hold (it depends by your router) the WPS button on your WiFi router __after__ PedalinoMini™ entered in WPS mode
+- If it doesn't receive any SSID and password during the next 30 seconds it switch to AP mode
 - In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
-- Reboot Pedalino to restart the procedure.
+- Reboot PedalinoMini™ to restart the procedure.
 
 ```C++
 void wifi_connect()

@@ -23,7 +23,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #define WIFI_CONNECT_TIMEOUT    15
 #define SMART_CONFIG_TIMEOUT    15
-#define WPS_TIMEOUT             15
+#define WPS_TIMEOUT             30
 
 #define WIFI_LED        2
 #define WIFI_LED_OFF()  digitalWrite(WIFI_LED, LOW)
@@ -461,7 +461,7 @@ bool wps_config()
   ESP_ERROR_CHECK(esp_wifi_wps_start(0));
 
   DPRINT("WPS started\n");
-  display_progress_bar_title("Press WPS button on AP");
+  display_progress_bar_title2("Press WPS button on AP", "WPS Setup");
   leds.setAllLow();
   leds.write();
   for (int i = 0; i < 10*WPS_TIMEOUT && wpsStatus == 0; i++) {
