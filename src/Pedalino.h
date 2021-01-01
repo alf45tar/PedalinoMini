@@ -458,6 +458,9 @@ bool  bleConnected            = false;
 
 String wifiSSID("");
 String wifiPassword("");
+int    wifiLevel = 0;
+
+uint16_t  batteryVoltage = 4200;  // mV
 
 bool powersaver = false;
 bool firmwareUpdate = false;

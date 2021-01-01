@@ -1071,17 +1071,15 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->drawString(128 + x, 16 + y, ESP.getFreeHeap()/1024 + String(" Kb"));
 
-#ifdef BATTERY2
-  static uint16_t voltage = bat.voltage();
-  voltage = (99*voltage + bat.voltage()) / 100;
+#ifdef BATTERY
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(0 + x, 26 + y, "Battery voltage:");
+  display->drawString(0 + x, 26 + y, "Battery:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  display->drawString(128 + x, 26 + y, voltage + String(" mV"));
+  display->drawString(128 + x, 26 + y, batteryVoltage / 1000.0F + String(" mV"));
 #endif
 
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(0 + x, 36 + y, "Running time:");
+  display->drawString(0 + x, 36 + y, "Run time:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   long sec = (millis() / 1000) % 60;
   long min = (millis() / 1000 / 60) % 60;

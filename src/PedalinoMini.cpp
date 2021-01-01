@@ -10,7 +10,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  */
 
 /*
-    ESP32 Pedalino Mini
+    ESP32 PedalinoMini™ Mini
 
       - Serial MIDI
       - WiFi AppleMIDI a.k.a. RTP-MIDI a.k.a. Network MIDI
@@ -86,8 +86,8 @@ void IRAM_ATTR onButtonLeft()
 {
   static unsigned long last_interrupt_time = 0;
   unsigned long interrupt_time = millis();
-  // If interrupts come faster than 500ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 500) {
+  // If interrupts come faster than 200ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 200) {
     if (reloadProfile) return;
     currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
     reloadProfile = true;
@@ -99,8 +99,8 @@ void IRAM_ATTR onButtonRight()
 {
   static unsigned long last_interrupt_time = 0;
   unsigned long interrupt_time = millis();
-  // If interrupts come faster than 500ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 500) {
+  // If interrupts come faster than 200ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 200) {
     if (reloadProfile) return;
     currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
     reloadProfile = true;
@@ -136,8 +136,6 @@ void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t but
       leds_refresh();
 
       display_off();
-      //After using light sleep, you need to disable timer wake, because here use external IO port to wake up
-      esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
       //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
       esp_sleep_enable_ext0_wakeup(FACTORY_DEFAULT_PIN, 0);
       delay(200);
@@ -149,6 +147,38 @@ void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t but
       break;
   }
 }
+
+void wifi_and_battery_level() {
+
+  if (interruptCounter1 > 0) {
+
+    interruptCounter1 = 0;
+
+#ifdef WIFI
+    if (wifiEnabled) wifiLevel = (3 * wifiLevel + WiFi.RSSI()) / 4;
+#endif
+
+#ifdef BATTERY
+    /*
+      BATTERY_ADC_EN is the ADC detection enable port
+      If the USB port is used for power supply, it is turned on by default.
+      If it is powered by battery, it needs to be set to high level
+    */
+    pinMode(BATTERY_ADC_EN, OUTPUT);
+    digitalWrite(BATTERY_ADC_EN, HIGH);
+    delay(5);
+    uint16_t v = analogRead(BATTERY_PIN);
+    digitalWrite(BATTERY_ADC_EN, LOW);
+
+    uint16_t voltage = ((uint32_t)v * 2 * 33 * vref) / 10240;   //  float voltage = ((float)v / 1024.0) * 2.0 * 3.3 * (vref / 1000.0);
+    if (abs(voltage - batteryVoltage) > 200)
+      batteryVoltage = (uint16_t)voltage;
+    else
+      batteryVoltage = (7 * batteryVoltage + voltage) / 8;
+#endif
+  }
+}
+
 
 void setup()
 {
@@ -188,6 +218,10 @@ void setup()
     DPRINT("Default Vref: 1100mV\n");
   }
 #endif
+
+  // Setup a 1Hz timer
+  Timer1Attach(1000);
+
   esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, "nvs");
   if (pi != NULL) {
     const esp_partition_t* nvs = esp_partition_get(pi);
@@ -552,6 +586,8 @@ void loop()
     ota_handle();
   }
 #endif // WIFI
+
+  wifi_and_battery_level();
 
   // Update display
   display_update();
