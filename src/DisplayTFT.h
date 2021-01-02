@@ -82,6 +82,8 @@ void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t heigh
   bar.fillCircle(radius + maxProgressWidth, radius, innerRadius, TFT_ORANGE);
 
   bar.pushSprite(x, y);
+
+  bar.deleteSprite();
 }
 
 void display_progress_bar_update(unsigned int progress, unsigned int total)
@@ -273,98 +275,121 @@ void topOverlay()
 
 void bottomOverlay()
 {
-  bottom.fillRect(0, 0, display.width(), 24, TFT_WHITE);
+  //bottom.fillRect(0, 0, display.width(), 24, TFT_WHITE);
 
-  /*
   if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
-    //byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
     int p;
     switch (m1) {
 
       case midi::ControlChange:
-        //p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
         m3 = constrain(m3, rmin, rmax);
         p = map(m3, rmin, rmax, 0, 100);
-        display->drawProgressBar(0, 54, 127, 8, p);
+        display_progress_bar(0, display.height() - 24, display.width(), 24, p);
         if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 3, 124));
         break;
-
+/*
       case midi::PitchBend:
         p = map(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX, -100, 100);
         if ( p >= 0 ) {
-          display->drawProgressBar(60, 54, 67, 8, p);
+          display_progress_bar(60, 54, 67, 8, p);
           uint16_t radius = 8 / 2;
           uint16_t xRadius = 0 + radius;
           uint16_t yRadius = 54 + radius;
           uint16_t doubleRadius = 2 * radius;
-          display->drawCircleQuads(xRadius, yRadius, radius, 0b00000110);
-          display->drawHorizontalLine(xRadius, 54, 68 - doubleRadius);
-          display->drawHorizontalLine(xRadius, 54 + 8, 68 - doubleRadius);
-          display->drawCircleQuads(0 + 68 - radius, yRadius, radius, 0b00001001);
+          display.drawCircleHelper(xRadius, yRadius, radius, 0b00001001, TFT_WHITE);
+          display.drawFastHLine(xRadius, 54, 68 - doubleRadius, TFT_WHITE);
+          display.drawFastHLine(xRadius, 54 + 8, 68 - doubleRadius, TFT_WHITE);
+          display.drawCircleHelper(0 + 68 - radius, yRadius, radius, 0b00000110, TFT_WHITE);
         }
         else {
-          display->drawProgressBar(60, 54, 67, 8, 0);
+          display_progress_bar(60, 54, 67, 8, 0);
           uint16_t radius = 8 / 2;
           uint16_t xRadius = 0 + radius;
           uint16_t yRadius = 54 + radius;
           uint16_t doubleRadius = 2 * radius;
           uint16_t innerRadius = radius - 2;
-          display->drawCircleQuads(xRadius, yRadius, radius, 0b00000110);
-          display->drawHorizontalLine(xRadius, 54, 68 - doubleRadius);
-          display->drawHorizontalLine(xRadius, 54 + 8, 68 - doubleRadius);
-          display->drawCircleQuads(0 + 68 - radius, yRadius, radius, 0b00001001);
+          display.drawCircleHelper(xRadius, yRadius, radius, 0b00001001, TFT_WHITE);
+          display.drawFastHLine(xRadius, 54, 68 - doubleRadius, TFT_WHITE);
+          display.drawFastHLine(xRadius, 54 + 8, 68 - doubleRadius, TFT_WHITE);
+          display.drawCircleHelper(0 + 68 - radius, yRadius, radius, 0b00000110, TFT_WHITE);
           uint16_t maxProgressWidth = (68 - doubleRadius) * p / 100;
-          display->fillCircle(68 + maxProgressWidth - xRadius, yRadius, innerRadius);
-          display->fillRect(68 + maxProgressWidth - xRadius + 1, 54 + 2, -maxProgressWidth, 8 - 3);
-          display->fillCircle(68 - xRadius, yRadius, innerRadius);
+          display.fillCircle(68 + maxProgressWidth - xRadius, yRadius, innerRadius, TFT_WHITE);
+          display.fillRect(68 + maxProgressWidth - xRadius + 1, 54 + 2, -maxProgressWidth, 8 - 3, TFT_WHITE);
+          display.fillCircle(68 - xRadius, yRadius, innerRadius, TFT_WHITE);
         }
         break;
-
+*/
       case midi::AfterTouchChannel:
-        ///p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
         m3 = constrain(m2, rmin, rmax);
         p = map(m3, rmin, rmax, 0, 100);
-        display->drawProgressBar(0, 54, 127, 8, p);
+        display_progress_bar(0, display.height() - 24, display.width(), 24, p);
         break;
     }
   }
   else if (scrollingMode || MTC.getMode() != MidiTimeCode::SynchroNone) {
-    display->drawLine(0, 51, 127, 51);
 
-    display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->setFont(ArialMT_Plain_10);
-    if (tapDanceMode && tapDanceBank) {
-      display->setColor(BLACK);
-      display->fillRect(0, 54, 40, 63);
-      display->setColor(WHITE);
-    }
-    else {
-      display->fillRect(0, 54, 40, 63);
-      display->setColor(BLACK);
-    }
+    bottom.setFreeFont(&FreeSansBold9pt7b);
+    bottom.setTextDatum(MC_DATUM);
 
-    if (currentBank < 9)
-      display->drawString(0, 53, String("Bank 0" + String(currentBank+1)));
-    else
-      display->drawString(0, 53, String("Bank " + String(currentBank+1)));
-    display->setColor(WHITE);
+#ifdef BLE
+    if (bleEnabled) {
+       if (bleMidiConnected) {
+        bottom.fillRect(0, 0, display.width() / 4, 24, TFT_WHITE);
+        bottom.setTextColor(TFT_BLACK, TFT_WHITE);
+      }
+      else {
+        bottom.fillRect(0, 0, display.width() / 4, 24, TFT_BLACK);
+        bottom.setTextColor(TFT_DARKGREY, TFT_BLACK);
+      }
+      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 0, TFT_BLACK);
+      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 2, TFT_BLACK);
+      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 4, TFT_BLACK);
+      bottom.drawString("BLE", 1 * display.width() / 8, 11);
+    }
+#endif
 
 #ifdef WIFI
     if (wifiEnabled) {
-      display->setTextAlignment(TEXT_ALIGN_RIGHT);
-      display->setFont(midiIcons);
-      if(appleMidiConnected) display->drawString(84, 54, String(1));
-      else display->drawString(84, 54, String(0));
+      if (appleMidiConnected) {
+        bottom.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_WHITE);
+        bottom.setTextColor(TFT_BLACK, TFT_WHITE);
+      }
+      else {
+        bottom.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_BLACK);
+        bottom.setTextColor(TFT_DARKGREY, TFT_BLACK);
+      }
+      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_BLACK);
+      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_BLACK);
+      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_BLACK);
+      bottom.drawString("MIDI",   3 * display.width() / 8, 11);
+      if (interfaces[PED_IPMIDI].midiIn || interfaces[PED_IPMIDI].midiOut) {
+        bottom.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_WHITE);
+        bottom.setTextColor(TFT_BLACK, TFT_WHITE);
+      }
+      else {
+        bottom.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_BLACK);
+        bottom.setTextColor(TFT_DARKGREY, TFT_BLACK);
+      }
+      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_BLACK);
+      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_BLACK);
+      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_BLACK);
+      bottom.drawString("ipMIDI", 5 * display.width() / 8, 11);
 
-      if (interfaces[PED_IPMIDI].midiIn || interfaces[PED_IPMIDI].midiOut) display->drawString(106, 54, String(2));
-      else display->drawString(106, 54, String(0));
-
-      if (interfaces[PED_OSC].midiIn || interfaces[PED_OSC].midiOut) display->drawString(128, 54, String(3));
-      else display->drawString(128, 54, String(0));
+      if (interfaces[PED_OSC].midiIn    || interfaces[PED_OSC].midiOut) {
+        bottom.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_WHITE);
+        bottom.setTextColor(TFT_BLACK, TFT_WHITE);
+      }
+      else {
+        bottom.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_BLACK);
+        bottom.setTextColor(TFT_DARKGREY, TFT_BLACK);
+      }
+      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_BLACK);
+      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_BLACK);
+      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_BLACK);
+      bottom.drawString("OSC", 7 * display.width() / 8, 11);
     }
 #endif
   }
-  */
 
   bottom.pushSprite(0, display.height() - 24);
 }
