@@ -120,18 +120,29 @@ void display_progress_bar_2_label(unsigned int label, unsigned int x)
 
 void topOverlay()
 {
-  top.fillRect(0, 0, display.width(), 24, TFT_WHITE);
+  top.fillRect(0, 0, display.width(), 24, TFT_BLACK);
 
   if ((millis() >= endMillis2) ||
       (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
 #ifdef WIFI
     if (wifiEnabled) {
+      top.fillTriangle(1, 22, 30, 22, 30, 2, TFT_DARKGREY);
+      int level = constrain(wifiLevel, -90, -60);
+      top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_GREEN);
+      if      (level < -80) top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_RED);
+      else if (level < -72) top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_ORANGE);
+      else if (level < -65) top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_YELLOW);
+      else                  top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_GREEN);
+      for (byte c = 1; c < 6; c++)
+        top.drawFastVLine(1+c*6, 0, 24, TFT_BLACK);
+      /*
       top.setSwapBytes(true);
       if      (wifiLevel < -90) top.pushImage(1, 1, 32, 22, w0);
       else if (wifiLevel < -80) top.pushImage(1, 1, 32, 22, w25);
       else if (wifiLevel < -70) top.pushImage(1, 1, 32, 22, w50);
       else if (wifiLevel < -60) top.pushImage(1, 1, 32, 22, w75);
       else                   top.pushImage(1, 1, 32, 22, w100);
+      */
     }
 #endif
 
@@ -140,8 +151,8 @@ void topOverlay()
     if (bleMidiConnected)
       if (wifiEnabled) top.pushImage(40, 1, 16, 22, bt);
       else top.pushImage(1, 1, 16, 22, bt);
-    else if (wifiEnabled) top.fillRect(40, 1, 16, 22, TFT_WHITE);
-      else top.fillRect(1, 1, 16, 22, TFT_WHITE);
+    else if (wifiEnabled) top.fillRect(40, 1, 16, 22, TFT_BLACK);
+      else top.fillRect(1, 1, 16, 22, TFT_BLACK);
 #endif
 
 #ifdef BATTERY
@@ -159,19 +170,19 @@ void topOverlay()
     top.setTextDatum(MC_DATUM);
     switch (currentProfile) {
       case 0:
-        top.fillRoundRect(116 + (scrollingMode ? 24*currentProfile : 0), 1, 22, 22, 4, TFT_BLUE);
+        top.fillRoundRect(display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0), 1, 22, 22, 4, TFT_BLUE);
         top.setTextColor(TFT_WHITE, TFT_BLUE);
-        top.drawString("A", 116 + (scrollingMode ? 24*currentProfile : 0) + 11, 11);
+        top.drawString("A", display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0) + 11, 11);
         break;
       case 1:
-        top.fillRoundRect(116 + (scrollingMode ? 24*currentProfile : 0), 1, 22, 22, 4, TFT_RED);
+        top.fillRoundRect(display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0), 1, 22, 22, 4, TFT_RED);
         top.setTextColor(TFT_WHITE, TFT_RED);
-        top.drawString("B", 116 + (scrollingMode ? 24*currentProfile : 0) + 11, 11);
+        top.drawString("B", display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0) + 11, 11);
         break;
       case 2:
-        top.fillRoundRect(116 + (scrollingMode ? 24*currentProfile : 0), 1, 22, 22, 4, TFT_ORANGE);
+        top.fillRoundRect(display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0), 1, 22, 22, 4, TFT_ORANGE);
         top.setTextColor(TFT_WHITE, TFT_ORANGE);
-        top.drawString("C", 116 + (scrollingMode ? 24*currentProfile : 0) + 11, 11);
+        top.drawString("C", display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0) + 11, 11);
         break;
     }
   }
@@ -269,7 +280,7 @@ void topOverlay()
     }
   }
   */
-  
+
   top.pushSprite(0, 0);
 }
 
@@ -637,10 +648,10 @@ void drawFrame1(int16_t x, int16_t y)
           default:
             display.setTextColor(TFT_WHITE, TFT_BLACK);
             break;
-        }  
+        }
         display.setFreeFont(&DSEG14_Classic_Bold_72);
         display.setTextDatum(MC_DATUM);
-        display.drawString(a, display.width() / 2 + x, display.height() / 2 + y);        
+        display.drawString(a, display.width() / 2 + x, display.height() / 2 + y);
       }
       else {
         /*
@@ -896,10 +907,10 @@ void display_init()
     display.fillScreen(TFT_BLACK);
     top.setColorDepth(8);
     top.createSprite(display.width(), 24);
-    top.fillRect(0, 0, display.width(), 24, TFT_WHITE);
+    top.fillRect(0, 0, display.width(), 24, TFT_BLACK);
     bottom.setColorDepth(8);
     bottom.createSprite(display.width(), 24);
-    bottom.fillRect(0, 0, display.width(), 24, TFT_WHITE);
+    bottom.fillRect(0, 0, display.width(), 24, TFT_BLACK);
 
     /*
     if (TFT_BL > 0) {                           // TFT_BL has been set in the TFT_eSPI library in the User Setup file TTGO_T_Display.h
@@ -912,8 +923,6 @@ void display_init()
     display.setSwapBytes(true);
     display.pushImage((display.width() - PEDALINO_LOGO_WIDTH) / 2, (display.height() - PEDALINO_LOGO_HEIGHT) / 2, PEDALINO_LOGO_WIDTH, PEDALINO_LOGO_HEIGHT, PedalinoLogo);
     delay(1000);
-    
-    display.fillScreen(TFT_BLACK);
 
 #ifdef WIFI
   if (wifiEnabled) {
@@ -974,7 +983,7 @@ void display_update()
     else {
       drawFrame1(0, 0);
       frame = 8;
-    }  
+    }
   }
 }
 
