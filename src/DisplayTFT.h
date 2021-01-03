@@ -15,8 +15,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <Wire.h>
 
 TFT_eSPI    display  = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);
-TFT_eSprite top      = TFT_eSprite(&display);
-TFT_eSprite bottom   = TFT_eSprite(&display);
 
 #endif
 
@@ -120,21 +118,57 @@ void display_progress_bar_2_label(unsigned int label, unsigned int x)
 
 void topOverlay()
 {
+  TFT_eSprite top = TFT_eSprite(&display);
+
+  top.setColorDepth(8);
+  top.createSprite(display.width(), 24);
   top.fillRect(0, 0, display.width(), 24, TFT_BLACK);
 
   if ((millis() >= endMillis2) ||
       (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
 #ifdef WIFI
     if (wifiEnabled) {
+      top.fillCircleHelper(1, 22, 22, 0b00000010, 0, TFT_DARKGREY);
+      top.fillCircleHelper(1, 22, 18, 0b00000010, 0, TFT_BLACK);
+      top.fillCircleHelper(1, 22, 16, 0b00000010, 0, TFT_DARKGREY);
+      top.fillCircleHelper(1, 22, 12, 0b00000010, 0, TFT_BLACK);
+      top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_DARKGREY);
+      top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_BLACK);
+      top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_DARKGREY);
+      if      (wifiLevel < -80) {
+        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_RED);
+      }
+      else if (wifiLevel < -72) {
+        top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_ORANGE);
+        top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_BLACK);
+        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_ORANGE);
+      }
+      else if (wifiLevel < -65) {
+        top.fillCircleHelper(1, 22, 16, 0b00000010, 0, TFT_YELLOW);
+        top.fillCircleHelper(1, 22, 12, 0b00000010, 0, TFT_BLACK);
+        top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_YELLOW);
+        top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_BLACK);
+        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_YELLOW);
+      }
+      else {
+        top.fillCircleHelper(1, 22, 22, 0b00000010, 0, TFT_DARKGREEN);
+        top.fillCircleHelper(1, 22, 18, 0b00000010, 0, TFT_BLACK);
+        top.fillCircleHelper(1, 22, 16, 0b00000010, 0, TFT_DARKGREEN);
+        top.fillCircleHelper(1, 22, 12, 0b00000010, 0, TFT_BLACK);
+        top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_DARKGREEN);
+        top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_BLACK);
+        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_DARKGREEN);
+      }
+      /*
       top.fillTriangle(1, 22, 30, 22, 30, 2, TFT_DARKGREY);
       int level = constrain(wifiLevel, -90, -60);
-      top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_GREEN);
       if      (level < -80) top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_RED);
       else if (level < -72) top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_ORANGE);
       else if (level < -65) top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_YELLOW);
-      else                  top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_GREEN);
+      else                  top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_DARKGREEN);
       for (byte c = 1; c < 6; c++)
         top.drawFastVLine(1+c*6, 0, 24, TFT_BLACK);
+      */
       /*
       top.setSwapBytes(true);
       if      (wifiLevel < -90) top.pushImage(1, 1, 32, 22, w0);
@@ -147,15 +181,32 @@ void topOverlay()
 #endif
 
 #ifdef BLE
+    if (bleMidiConnected) {
+      top.drawFastVLine(36, 1, 22, TFT_BLUE);
+      top.drawLine(41,  6, 31, 16, TFT_BLUE);
+      top.drawLine(31,  6, 41, 16, TFT_BLUE);
+      top.drawLine(36,  1, 41,  6, TFT_BLUE);
+      top.drawLine(36, 22, 41, 16, TFT_BLUE);
+     }
+    /*
     top.setSwapBytes(true);
     if (bleMidiConnected)
       if (wifiEnabled) top.pushImage(40, 1, 16, 22, bt);
       else top.pushImage(1, 1, 16, 22, bt);
     else if (wifiEnabled) top.fillRect(40, 1, 16, 22, TFT_BLACK);
       else top.fillRect(1, 1, 16, 22, TFT_BLACK);
+    */
 #endif
 
 #ifdef BATTERY
+    top.drawRoundRect(display.width() - 50, 1, 44, 20, 4, TFT_WHITE);
+    top.fillRoundRect(display.width() - 6, 7, 4, 8, 2, TFT_WHITE);
+    top.fillRoundRect(display.width() - 50 + 2, 1 + 2, map(constrain(batteryVoltage, 3000, 4000), 3000, 4000, 0, 40), 20 - 4, 4, TFT_DARKGREEN);
+    if (batteryVoltage > 4200) {
+      top.fillTriangle(display.width() - 26,  3, display.width() - 34, 13, display.width() - 28, 12, TFT_WHITE);
+      top.fillTriangle(display.width() - 30, 18, display.width() - 22,  9, display.width() - 28, 12, TFT_WHITE);
+    }
+/*
     top.setSwapBytes(true);
     if      (batteryVoltage > 4200) top.pushImage(display.width() - 50, 1, 50, 22, bcharge);
     else if (batteryVoltage > 4000) top.pushImage(display.width() - 50, 1, 50, 22, b100);
@@ -164,25 +215,26 @@ void topOverlay()
     else if (batteryVoltage > 3400) top.pushImage(display.width() - 50, 1, 50, 22, b25);
     else if (batteryVoltage > 3200) top.pushImage(display.width() - 50, 1, 50, 22, b10);
     else top.pushImage(display.width() - 50, 1, 50, 22, b0);
+*/
 #endif
 
     top.setFreeFont(&FreeSansBold9pt7b);
     top.setTextDatum(MC_DATUM);
     switch (currentProfile) {
       case 0:
-        top.fillRoundRect(display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0), 1, 22, 22, 4, TFT_BLUE);
-        top.setTextColor(TFT_WHITE, TFT_BLUE);
-        top.drawString("A", display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0) + 11, 11);
+        top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_RED);
+        top.setTextColor(TFT_WHITE, TFT_RED);
+        top.drawString("A", 52 + 24*currentProfile + 11, 11);
         break;
       case 1:
-        top.fillRoundRect(display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0), 1, 22, 22, 4, TFT_RED);
-        top.setTextColor(TFT_WHITE, TFT_RED);
-        top.drawString("B", display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0) + 11, 11);
+        top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_ORANGE);
+        top.setTextColor(TFT_WHITE, TFT_ORANGE);
+        top.drawString("B", 52 + 24*currentProfile + 11, 11);
         break;
       case 2:
-        top.fillRoundRect(display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0), 1, 22, 22, 4, TFT_ORANGE);
-        top.setTextColor(TFT_WHITE, TFT_ORANGE);
-        top.drawString("C", display.width() / 2 - 11 + (scrollingMode ? 24*currentProfile : 0) + 11, 11);
+        top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_BLUE);
+        top.setTextColor(TFT_WHITE, TFT_BLUE);
+        top.drawString("C", 52 + 24*currentProfile + 11, 11);
         break;
     }
   }
@@ -282,11 +334,17 @@ void topOverlay()
   */
 
   top.pushSprite(0, 0);
+
+  top.deleteSprite();
 }
 
 void bottomOverlay()
 {
-  //bottom.fillRect(0, 0, display.width(), 24, TFT_WHITE);
+  TFT_eSprite bottom = TFT_eSprite(&display);
+
+  bottom.setColorDepth(8);
+  bottom.createSprite(display.width(), 24);
+  bottom.fillRect(0, 0, display.width(), 24, TFT_BLACK);
 
   if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
     int p;
@@ -400,9 +458,10 @@ void bottomOverlay()
       bottom.drawString("OSC", 7 * display.width() / 8, 11);
     }
 #endif
+    bottom.pushSprite(0, display.height() - 24);
   }
 
-  bottom.pushSprite(0, display.height() - 24);
+  //bottom.pushSprite(0, display.height() - 24);
 }
 
 void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
@@ -415,85 +474,117 @@ void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 
 void drawFrame1(int16_t x, int16_t y)
 {
-  display.fillRect(0, 24, display.width(), display.height() - 48, TFT_BLACK);
-
   if (millis() < endMillis2 && lastPedalName[0] != ':') {
-    /*
-    ui.disableAutoTransition();
-    ui.switchToFrame(0);
+
+    //ui.disableAutoTransition();
+    //ui.switchToFrame(0);
     if (strlen(lastPedalName) != 0 && lastPedalName[strlen(lastPedalName) - 1] == '.') lastPedalName[strlen(lastPedalName) - 1] = 0;
     if (lastPedalName[0] == 0) {
-      display->setTextAlignment(TEXT_ALIGN_CENTER);
+      TFT_eSprite sprite = TFT_eSprite(&display);
+      sprite.setColorDepth(8);
+      sprite.createSprite(100, 74);
+      sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+      sprite.pushSprite(0, 30);
+      sprite.pushSprite(display.width() - sprite.width(), 30);
+      sprite.setTextColor(TFT_WHITE, TFT_BLACK);
       switch (m1) {
         case midi::InvalidType:
-          drawRect(display, 64-22, 15, 64+24, 15+23);
-          display->setFont(ArialMT_Plain_10);
-          display->drawString( 64 + x, 39 + y, String("Bank"));
-          display->setFont(ArialMT_Plain_24);
-          display->drawString( 64 + x, 14 + y, String(m2));
+          display.drawRect(display.width() / 2 - 22, 30, display.width() / 2 + 24, 30 + 23, TFT_WHITE);
+          display.setFreeFont(&FreeSans9pt7b);
+          display.drawString("Bank", display.width() / 2 + x, 39 + y);
+          display.setFreeFont(&FreeSans24pt7b);
+          display.drawString(String(m2), display.width() / 2 + x, 14 + y);
           break;
         case midi::NoteOn:
         case midi::NoteOff:
-          drawRect(display, 64-22, 15, 64+24, 15+23);
-          display->setFont(ArialMT_Plain_10);
-          display->drawString( 64 + x, 39 + y, String("Note"));
-          display->setFont(ArialMT_Plain_24);
-          display->drawString( 64 + x, 14 + y, String(m2));
-          display->setFont(ArialMT_Plain_10);
-          display->drawString(110 + x, 39 + y, String("Velocity"));
-          display->setFont(ArialMT_Plain_16);
-          display->drawString(110 + x, 22 + y, String(m3));
+          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString("Note", sprite.width() / 2 + x, 62 + y);
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
+          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
+          sprite.pushSprite(display.width() / 2 - 50, 30);
+          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.setTextDatum(MR_DATUM);
+          sprite.drawString("Velocity", sprite.width() + x, 62 + y);
+          sprite.setFreeFont(&FreeSans18pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString(String(m3), sprite.width() - display.width() / 8 + x, 22 + y);
+          sprite.pushSprite(display.width() - sprite.width(), 30, TFT_BLACK);
           break;
         case midi::ControlChange:
-          drawRect(display, 64-22, 15, 64+24, 15+23);
-          display->setFont(ArialMT_Plain_10);
-          display->drawString( 64 + x, 39 + y, String("CC"));
-          display->setFont(ArialMT_Plain_24);
-          display->drawString( 64 + x, 14 + y, String(m2));
-          display->setFont(ArialMT_Plain_10);
-          display->drawString(110 + x, 39 + y, String("Value"));
-          display->setFont(ArialMT_Plain_16);
-          display->drawString(110 + x, 22 + y, String(m3));
+          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString("CC", sprite.width() / 2 + x, 62 + y);
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
+          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
+          sprite.pushSprite(display.width() / 2 - 50, 30);
+          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.setTextDatum(MR_DATUM);
+          sprite.drawString("Value", sprite.width() + x, 62 + y);
+          sprite.setFreeFont(&FreeSans18pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString(String(m3), sprite.width() - display.width() / 8 + x, 22 + y);
+          sprite.pushSprite(display.width() - sprite.width(), 30, TFT_BLACK);
           break;
         case midi::ProgramChange:
-          drawRect(display, 84-22, 15, 84+24, 15+23);
-          display->setFont(ArialMT_Plain_10);
-          display->drawString(84 + x, 39 + y, String("PC"));
-          display->setFont(ArialMT_Plain_24);
-          display->drawString(84 + x, 14 + y, String(m2));
+          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString("PC", sprite.width() / 2 + x, 62 + y);
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
+          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
+          sprite.pushSprite(display.width() / 2 - 50, 30);
           break;
         case midi::PitchBend:
-          drawRect(display, 84-38, 15, 84+36, 15+23);
-          display->setFont(ArialMT_Plain_10);
-          display->drawString(84 + x, 39 + y, String("Pitch"));
-          display->setFont(ArialMT_Plain_24);
-          display->drawString(84 + x, 14 + y, String(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN));
+sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString("Pitch", sprite.width() / 2 + x, 62 + y);
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.drawString(String(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN), sprite.width() / 2 + x, 22 + y);
+          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
+          sprite.pushSprite(display.width() / 2 - 50, 30);
           break;
         case midi::AfterTouchChannel:
-          drawRect(display, 84-22, 15, 84+24, 15+23);
-          display->setFont(ArialMT_Plain_10);
-          display->drawString(84 + x, 39 + y, String("Pressure"));
-          display->setFont(ArialMT_Plain_24);
-          display->drawString(84 + x, 14 + y, String(m2));
+          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString("Pressure", sprite.width() / 2 + x, 62 + y);
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
+          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
+          sprite.pushSprite(display.width() / 2 - 50, 30);
           break;
       }
       if (m1 != midi::InvalidType) {
-        display->setFont(ArialMT_Plain_10);
-        display->drawString(18 + x, 39 + y, String("Channel"));
-        display->setFont(ArialMT_Plain_16);
-        display->drawString(18 + x, 22 + y, String(m4));
+        sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+        sprite.setFreeFont(&FreeSans9pt7b);
+        sprite.setTextDatum(ML_DATUM);
+        sprite.drawString("Channel", 0 + x, 62 + y);
+        sprite.setFreeFont(&FreeSans18pt7b);
+        sprite.setTextDatum(MC_DATUM);
+        sprite.drawString(String(m4), display.width() / 8 + x, 22 + y);
+        sprite.pushSprite(0, 30, TFT_BLACK);
       }
+      sprite.deleteSprite();
     }
     else {
       String name = lastPedalName;
       switch (m1) {
         case midi::InvalidType:
-          drawRect(display, 64-22, 15, 64+24, 15+23);
-          display->setTextAlignment(TEXT_ALIGN_CENTER);
-          display->setFont(ArialMT_Plain_10);
-          display->drawString( 64 + x, 39 + y, String("Bank"));
-          display->setFont(ArialMT_Plain_24);
-          display->drawString( 64 + x, 14 + y, String(m2));
+          display.drawRect(64-22, 15, 64+24, 15+23, TFT_WHITE);
+          display.setTextDatum(TC_DATUM);
+          display.setFreeFont(&FreeSans9pt7b);
+          display.drawString("Bank", 64 + x, 39 + y);
+          display.setFreeFont(&FreeSans24pt7b);
+          display.drawString(String(m2), 64 + x, 14 + y);
           break;
         case midi::NoteOn:
         case midi::NoteOff:
@@ -503,13 +594,12 @@ void drawFrame1(int16_t x, int16_t y)
         case midi::AfterTouchChannel:
           name.replace(String("###"), String(m2));
         default:
-          display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-          display->setFont(ArialMT_Plain_24);
-          display->drawString(64, 32, name);
+          display.setTextDatum(MC_DATUM);
+          display.setFreeFont(&FreeSans24pt7b);
+          display.drawString(name, 64, 32);
           break;
       }
     }
-    */
   }
   else if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
            MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
@@ -631,27 +721,35 @@ void drawFrame1(int16_t x, int16_t y)
     }
     else {
       if (banknames[currentBank][0] == 0) {
+        TFT_eSprite sprite = TFT_eSprite(&display);
+
         String a;
         a = (currentProfile == 0 ? "A" : (currentProfile == 1 ? "B" : "C"));
         a += ".";
         a += ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
+        display.setFreeFont(&DSEG14_Classic_Bold_72);
+        int w = display.textWidth(a);
+        sprite.setColorDepth(8);
+        sprite.createSprite(w, DSEG14_Classic_Bold_72.yAdvance);
+        sprite.setFreeFont(&DSEG14_Classic_Bold_72);
         switch (currentProfile) {
           case 0:
-            display.setTextColor(TFT_BLUE, TFT_BLACK);
+            sprite.setTextColor(TFT_RED, TFT_BLACK);
             break;
           case 1:
-            display.setTextColor(TFT_RED, TFT_BLACK);
+            sprite.setTextColor(TFT_ORANGE, TFT_BLACK);
             break;
           case 2:
-            display.setTextColor(TFT_ORANGE, TFT_BLACK);
+            sprite.setTextColor(TFT_BLUE, TFT_BLACK);
             break;
           default:
-            display.setTextColor(TFT_WHITE, TFT_BLACK);
+            sprite.setTextColor(TFT_WHITE, TFT_BLACK);
             break;
         }
-        display.setFreeFont(&DSEG14_Classic_Bold_72);
-        display.setTextDatum(MC_DATUM);
-        display.drawString(a, display.width() / 2 + x, display.height() / 2 + y);
+        sprite.setTextDatum(MC_DATUM);
+        sprite.drawString(a, sprite.width() / 2, sprite.height() / 2);
+        sprite.pushSprite((display.width() - w) / 2 + x, 30 + y);
+        sprite.deleteSprite();
       }
       else {
         /*
@@ -866,7 +964,7 @@ void drawFrame3(int16_t x, int16_t y)
     //ui.switchToFrame(0);
 
   display.fillRect(0, 24, display.width(), display.height() - 48, TFT_BLACK);
-  display.setFreeFont(&FreeSansBold12pt7b);
+  display.setFreeFont(&FreeSansBold9pt7b);
   display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   display.setTextDatum(TL_DATUM);
   display.drawString("Free heap:", 0 + x, 30 + y);
@@ -876,7 +974,7 @@ void drawFrame3(int16_t x, int16_t y)
   display.drawString(ESP.getFreeHeap()/1024 + String(" Kb"), display.width() + x, 30 + y);
 
 #ifdef BATTERY
-  display.setFreeFont(&FreeSansBold12pt7b);
+  display.setFreeFont(&FreeSansBold9pt7b);
   display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   display.setTextDatum(TL_DATUM);
   display.drawString("Battery:", 0 + x, 58 + y);
@@ -886,7 +984,7 @@ void drawFrame3(int16_t x, int16_t y)
   display.drawString(batteryVoltage / 1000.0F + String(" mV"), display.width()+ x, 58 + y);
 #endif
 
-  display.setFreeFont(&FreeSansBold12pt7b);
+  display.setFreeFont(&FreeSansBold9pt7b);
   display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   display.setTextDatum(TL_DATUM);
   display.drawString("Run time:", 0 + x, 86 + y);
@@ -905,13 +1003,6 @@ void display_init()
     display.init();
     display.setRotation(1);
     display.fillScreen(TFT_BLACK);
-    top.setColorDepth(8);
-    top.createSprite(display.width(), 24);
-    top.fillRect(0, 0, display.width(), 24, TFT_BLACK);
-    bottom.setColorDepth(8);
-    bottom.createSprite(display.width(), 24);
-    bottom.fillRect(0, 0, display.width(), 24, TFT_BLACK);
-
     /*
     if (TFT_BL > 0) {                           // TFT_BL has been set in the TFT_eSPI library in the User Setup file TTGO_T_Display.h
         pinMode(TFT_BL, OUTPUT);                // Set backlight pin to output mode
@@ -959,30 +1050,32 @@ void display_update()
 {
   static byte frame = 8;
 
-  if (uiUpdate && (millis() % 1024) == 0) {
-    topOverlay();
-    bottomOverlay();
-    if (scrollingMode) {
-      frame = (frame + 1) % 9;
-      switch (frame) {
-        case 0:
-          drawFrame1(0, 0);
-          break;
-        case 3:
-          drawFrame2(0, 0);
-          break;
-        case 6:
+  if (uiUpdate) {
+    if (millis() % 128 == 0) {
+      topOverlay();
+      bottomOverlay();
+      if (scrollingMode) {
+        frame = (frame + 1) % 9;
+        switch (frame) {
+          case 0:
+            drawFrame1(0, 0);
+            break;
+          case 3:
+            drawFrame2(0, 0);
+            break;
+          case 6:
 #ifdef DIAGNOSTIC
-          drawFrame3(0, 0);
+            drawFrame3(0, 0);
 #else
-          drawFrame2(0, 0);
+            drawFrame2(0, 0);
 #endif
-          break;
+            break;
+        }
       }
-    }
-    else {
-      drawFrame1(0, 0);
-      frame = 8;
+      else {
+        drawFrame1(0, 0);
+        frame = 8;
+      }
     }
   }
 }
