@@ -2,6 +2,8 @@
 
 > Before any update save configuration, reset to factory default and reload configuration. EEPROM can change without any further advice.
 
+> January 6th, 2021 - EEPROM changed - documentation needs to be updated
+
 # PedalinoMini™
 
 ![PlatformIO CI](https://github.com/alf45tar/PedalinoMini/workflows/PlatformIO%20CI/badge.svg)
