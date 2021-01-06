@@ -1233,7 +1233,7 @@ void get_pedals_page() {
     page += F(">Tap</option>");
     page += F("<option value='");
     page += String(PED_POWER_ON_OFF) + F("'");
-    if (pedals[i-1].function1 == PED_POWER_ON_OFF) page += F(" selected");
+    if (pedals[i-1].function2 == PED_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
     page += F("</select>");
     page += F("</div>");
@@ -1291,7 +1291,7 @@ void get_pedals_page() {
     page += F(">Tap</option>");
     page += F("<option value='");
     page += String(PED_POWER_ON_OFF) + F("'");
-    if (pedals[i-1].function1 == PED_POWER_ON_OFF) page += F(" selected");
+    if (pedals[i-1].function3 == PED_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
     page += F("</select>");
     page += F("</div>");
