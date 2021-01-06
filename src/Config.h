@@ -452,7 +452,25 @@ void load_factory_default()
                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
 
-#endif  // TTGO_T_EIGHT
+  pedals[PEDALS-1].function1 = PED_BANK_PLUS;
+  pedals[PEDALS-1].function2 = PED_BANK_MINUS;
+  pedals[PEDALS-1].function3 = PED_DEVICE_INFO;
+  pedals[PEDALS-1].pressMode = PED_PRESS_1_2_L;
+  pedals[PEDALS-1].expZero   = 1;
+  pedals[PEDALS-1].expMax    = BANKS;
+#ifdef TTGO_T_DISPLAY
+  pedals[PEDALS-1].function1 = PED_PROFILE_PLUS;
+  pedals[PEDALS-1].function2 = PED_POWER_ON_OFF;
+  pedals[PEDALS-1].function3 = PED_DEVICE_INFO;
+  pedals[PEDALS-1].pressMode = PED_PRESS_1_2_L;
+  pedals[PEDALS-1].expZero   = 1;
+  pedals[PEDALS-1].expMax    = PROFILES;
+
+  pedals[PEDALS-2].function1 = PED_BANK_PLUS;
+  pedals[PEDALS-2].expZero   = 1;
+  pedals[PEDALS-2].expMax    = BANKS;
+#endif
+#endif
 
   for (byte b = 0; b < BANKS; b++) {
     memset(banknames[b], 0, MAXBANKNAME+1);

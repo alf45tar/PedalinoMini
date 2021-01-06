@@ -1075,7 +1075,7 @@ void get_pedals_page() {
     page += String(i) + F("</h5>");
     page += F("<div class='card-body'>");
     page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-prepend' style='width: 50%'>");
     page += F("<div class='input-group-text w-100'>Mode</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='mode");
@@ -1123,8 +1123,20 @@ void get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 40%'>");
-    page += F("<div class='input-group-text w-100'>On Single Press</div>");
+    page += F("<div class='input-group-prepend' style='width: 50%'>");
+    page += F("<div class='input-group-text w-100 py-0'>");
+    page += F("<div class='custom-control custom-switch'>");
+    page += F("<input type='checkbox' class='custom-control-input' id='singleCheck");
+    page += String(i) + F("' name='singlepress") + String(i) + F("'");
+    if (pedals[i-1].pressMode == PED_PRESS_1   ||
+        pedals[i-1].pressMode == PED_PRESS_1_2 ||
+        pedals[i-1].pressMode == PED_PRESS_1_L ||
+        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
+    page += F(">");
+    page += F("<label class='custom-control-label' for='singleCheck");
+    page += String(i) + F("'>Single Press</label>");
+    page += F("</div>");
+    page += F("</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='function1");
     page += String(i);
@@ -1174,6 +1186,10 @@ void get_pedals_page() {
     if (pedals[i-1].function1 == PED_TAP) page += F(" selected");
     page += F(">Tap</option>");
     page += F("<option value='");
+    page += String(PED_DEVICE_INFO) + F("'");
+    if (pedals[i-1].function1 == PED_DEVICE_INFO) page += F(" selected");
+    page += F(">Device Info</option>");
+    page += F("<option value='");
     page += String(PED_POWER_ON_OFF) + F("'");
     if (pedals[i-1].function1 == PED_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
@@ -1181,8 +1197,20 @@ void get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 40%'>");
-    page += F("<div class='input-group-text w-100'>On Double Press</div>");
+    page += F("<div class='input-group-prepend' style='width: 50%'>");
+    page += F("<div class='input-group-text w-100 py-0'>");
+    page += F("<div class='custom-control custom-switch'>");
+    page += F("<input type='checkbox' class='custom-control-input' id='doubleCheck");
+    page += String(i) + F("' name='doublepress") + String(i) + F("'");
+    if (pedals[i-1].pressMode == PED_PRESS_2   ||
+        pedals[i-1].pressMode == PED_PRESS_1_2 ||
+        pedals[i-1].pressMode == PED_PRESS_2_L ||
+        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
+    page += F(">");
+    page += F("<label class='custom-control-label' for='doubleCheck");
+    page += String(i) + F("'>Double Press</label>");
+    page += F("</div>");
+    page += F("</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='function2");
     page += String(i);
@@ -1232,6 +1260,10 @@ void get_pedals_page() {
     if (pedals[i-1].function2 == PED_TAP) page += F(" selected");
     page += F(">Tap</option>");
     page += F("<option value='");
+    page += String(PED_DEVICE_INFO) + F("'");
+    if (pedals[i-1].function2 == PED_DEVICE_INFO) page += F(" selected");
+    page += F(">Device Info</option>");
+    page += F("<option value='");
     page += String(PED_POWER_ON_OFF) + F("'");
     if (pedals[i-1].function2 == PED_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
@@ -1239,8 +1271,20 @@ void get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 40%'>");
-    page += F("<div class='input-group-text w-100'>On Long Press</div>");
+    page += F("<div class='input-group-prepend' style='width: 50%'>");
+    page += F("<div class='input-group-text w-100 py-0'>");
+    page += F("<div class='custom-control custom-switch'>");
+    page += F("<input type='checkbox' class='custom-control-input' id='longCheck");
+    page += String(i) + F("' name='longpress") + String(i) + F("'");
+    if (pedals[i-1].pressMode == PED_PRESS_L   ||
+        pedals[i-1].pressMode == PED_PRESS_1_L ||
+        pedals[i-1].pressMode == PED_PRESS_2_L ||
+        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
+    page += F(">");
+    page += F("<label class='custom-control-label' for='longCheck");
+    page += String(i) + F("'>Long Press</label>");
+    page += F("</div>");
+    page += F("</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='function3");
     page += String(i);
@@ -1290,6 +1334,10 @@ void get_pedals_page() {
     if (pedals[i-1].function3 == PED_TAP) page += F(" selected");
     page += F(">Tap</option>");
     page += F("<option value='");
+    page += String(PED_DEVICE_INFO) + F("'");
+    if (pedals[i-1].function3 == PED_DEVICE_INFO) page += F(" selected");
+    page += F(">Device Info</option>");
+    page += F("<option value='");
     page += String(PED_POWER_ON_OFF) + F("'");
     if (pedals[i-1].function3 == PED_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
@@ -1297,7 +1345,7 @@ void get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-prepend' style='width: 50%'>");
     page += F("<div class='input-group-text w-100'>Analog</div>");
     page += F("</div>");
     page += F("<select class='custom-select custom-select-sm' name='map");
@@ -1319,7 +1367,7 @@ void get_pedals_page() {
     page += F("</div>");
 
     page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-prepend' style='width: 25%'>");
     page += F("<div class='input-group-text w-100'>Min</div>");
     page += F("</div>");
     page += F("<input type='number' class='form-control form-control-sm' name='min");
@@ -1327,10 +1375,8 @@ void get_pedals_page() {
     page += F("' min='0' max='");
     page += String(ADC_RESOLUTION - 1) + F("' value='");
     page += String(pedals[i-1].expZero);
-    page += F("'></div>");
-
-    page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("'>");
+    page += F("<div class='input-group-prepend' style='width: 25%'>");
     page += F("<div class='input-group-text w-100'>Max</div>");
     page += F("</div>");
     page += F("<input type='number' class='form-control form-control-sm' name='max");
@@ -1347,42 +1393,6 @@ void get_pedals_page() {
     page += F(">");
     page += F("<label class='custom-control-label' for='polarityCheck");
     page += String(i) + F("'>Invert Polarity</label>");
-    page += F("</div>");
-
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='singleCheck");
-    page += String(i) + F("' name='singlepress") + String(i) + F("'");
-    if (pedals[i-1].pressMode == PED_PRESS_1   ||
-        pedals[i-1].pressMode == PED_PRESS_1_2 ||
-        pedals[i-1].pressMode == PED_PRESS_1_L ||
-        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
-    page += F(">");
-    page += F("<label class='custom-control-label' for='singleCheck");
-    page += String(i) + F("'>Single Press</label>");
-    page += F("</div>");
-
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='doubleCheck");
-    page += String(i) + F("' name='doublepress") + String(i) + F("'");
-    if (pedals[i-1].pressMode == PED_PRESS_2   ||
-        pedals[i-1].pressMode == PED_PRESS_1_2 ||
-        pedals[i-1].pressMode == PED_PRESS_2_L ||
-        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
-    page += F(">");
-    page += F("<label class='custom-control-label' for='doubleCheck");
-    page += String(i) + F("'>Double Press</label>");
-    page += F("</div>");
-
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='longCheck");
-    page += String(i) + F("' name='longpress") + String(i) + F("'");
-    if (pedals[i-1].pressMode == PED_PRESS_L   ||
-        pedals[i-1].pressMode == PED_PRESS_1_L ||
-        pedals[i-1].pressMode == PED_PRESS_2_L ||
-        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
-    page += F(">");
-    page += F("<label class='custom-control-label' for='longCheck");
-    page += String(i) + F("'>Long Press</label>");
     page += F("</div>");
 
     page += F("<div class='custom-control custom-switch'>");

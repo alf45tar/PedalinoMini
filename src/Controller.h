@@ -1249,6 +1249,10 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               reloadProfile = true;
               break;
 
+    case PED_DEVICE_INFO:
+              scrollingMode = !scrollingMode;
+              break;
+
     case PED_POWER_ON_OFF:
               display_off();
               //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);

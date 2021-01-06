@@ -200,6 +200,7 @@ using namespace ace_button;
 #define PED_BPM_MINUS           9
 #define PED_PROFILE_PLUS       10
 #define PED_PROFILE_MINUS      11
+#define PED_DEVICE_INFO        88
 #define PED_POWER_ON_OFF       99
 
 #define PED_EVENT_PRESS         AceButton::kEventPressed

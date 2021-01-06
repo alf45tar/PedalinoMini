@@ -84,7 +84,7 @@ void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t heigh
   uint16_t doubleRadius = 2 * radius;
   uint16_t innerRadius = radius - 2;
 
-  TFT_eSprite bar = TFT_eSprite(&display);  
+  TFT_eSprite bar = TFT_eSprite(&display);
 
   bar.setColorDepth(4);
   bar.createSprite(width, height);
@@ -567,7 +567,7 @@ void drawFrame1(int16_t x, int16_t y)
         sprite.drawString("Channel", 0 + x, 62 + y);
         sprite.setFreeFont(&FreeSans18pt7b);
         sprite.setTextDatum(MC_DATUM);
-        sprite.drawString(String(m4), display.width() / 8 + x, 22 + y);  
+        sprite.drawString(String(m4), display.width() / 8 + x, 22 + y);
       }
       sprite.pushSprite(0, 30);
       sprite.deleteSprite();
@@ -899,7 +899,7 @@ void drawFrame2(int16_t x, int16_t y)
     //ui.switchToFrame(0);
 
   display.fillRect(0, 24, display.width(), display.height() - 48, TFT_BLACK);
-  display.setFreeFont(&FreeSansBold12pt7b);
+  display.setFreeFont(&FreeSans12pt7b);
   display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   display.setTextDatum(TL_DATUM);
   display.drawString("Device:", 0 + x, 30 + y);
@@ -911,7 +911,7 @@ void drawFrame2(int16_t x, int16_t y)
   switch (WiFi.getMode()) {
     case WIFI_AP:
     case WIFI_AP_STA:
-      display.setFreeFont(&FreeSansBold12pt7b);
+      display.setFreeFont(&FreeSans12pt7b);
       display.setTextColor(TFT_DARKGREY, TFT_BLACK);
       display.setTextDatum(TL_DATUM);
       display.drawString( "AP:", 0 + x, 30 + y);
@@ -919,7 +919,7 @@ void drawFrame2(int16_t x, int16_t y)
       display.setTextColor(TFT_WHITE, TFT_BLACK);
       display.setTextDatum(TR_DATUM);
       display.drawString(ssidSoftAP, display.width() + x, 30 + y);
-      display.setFreeFont(&FreeSansBold12pt7b);
+      display.setFreeFont(&FreeSans12pt7b);
       display.setTextColor(TFT_DARKGREY, TFT_BLACK);
       display.setTextDatum(TL_DATUM);
       display.drawString("AP IP:", 0 + x, 58 + y);
@@ -929,7 +929,7 @@ void drawFrame2(int16_t x, int16_t y)
       display.drawString(WiFi.softAPIP().toString(), display.width() + x, 58 + y);
       break;
     case WIFI_STA:
-      display.setFreeFont(&FreeSansBold12pt7b);
+      display.setFreeFont(&FreeSans12pt7b);
       display.setTextColor(TFT_DARKGREY, TFT_BLACK);
       display.setTextDatum(TL_DATUM);
       display.drawString("SSID:", 0 + x, 58 + y);
@@ -937,7 +937,7 @@ void drawFrame2(int16_t x, int16_t y)
       display.setTextColor(TFT_WHITE, TFT_BLACK);
       display.setTextDatum(TR_DATUM);
       display.drawString(wifiSSID, display.width() + x, 58 + y);
-      display.setFreeFont(&FreeSansBold12pt7b);
+      display.setFreeFont(&FreeSans12pt7b);
       display.setTextColor(TFT_DARKGREY, TFT_BLACK);
       display.setTextDatum(TL_DATUM);
       display.drawString("IP:", 0 + x, 86 + y);
@@ -959,7 +959,7 @@ void drawFrame3(int16_t x, int16_t y)
     //ui.switchToFrame(0);
 
   display.fillRect(0, 24, display.width(), display.height() - 48, TFT_BLACK);
-  display.setFreeFont(&FreeSansBold9pt7b);
+  display.setFreeFont(&FreeSans12pt7b);
   display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   display.setTextDatum(TL_DATUM);
   display.drawString("Free heap:", 0 + x, 30 + y);
@@ -969,7 +969,7 @@ void drawFrame3(int16_t x, int16_t y)
   display.drawString(ESP.getFreeHeap()/1024 + String(" Kb"), display.width() + x, 30 + y);
 
 #ifdef BATTERY
-  display.setFreeFont(&FreeSansBold9pt7b);
+  display.setFreeFont(&FreeSans12pt7b);
   display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   display.setTextDatum(TL_DATUM);
   display.drawString("Battery:", 0 + x, 58 + y);
@@ -979,7 +979,7 @@ void drawFrame3(int16_t x, int16_t y)
   display.drawString(batteryVoltage / 1000.0F + String(" mV"), display.width()+ x, 58 + y);
 #endif
 
-  display.setFreeFont(&FreeSansBold9pt7b);
+  display.setFreeFont(&FreeSans12pt7b);
   display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   display.setTextDatum(TL_DATUM);
   display.drawString("Run time:", 0 + x, 86 + y);
