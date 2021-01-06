@@ -32,10 +32,10 @@ __________           .___      .__  .__                 _____  .__       .__    
 // These pins don’t have internal pull-ups or pull-down resistors.
 
 #ifdef HELTEC_WIFI_KIT_32
+#define PEDALS                6
 const byte pinD[] = {GPIO_NUM_0, GPIO_NUM_2, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // PRG button
-#define CENTER_PIN            GPIO_NUM_0
 #define USB_MIDI_IN_PIN       GPIO_NUM_18
 #define USB_MIDI_OUT_PIN      GPIO_NUM_19
 #define DIN_MIDI_IN_PIN       GPIO_NUM_23
@@ -44,11 +44,10 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NU
 #define BATTERY_ADC_EN        GPIO_NUM_21   // ADC_EN is the ADC detection enable port
 #define FASTLEDS_DATA_PIN     GPIO_NUM_5
 #elif defined TTGO_T_DISPLAY
-const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_17};
-const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_32, GPIO_NUM_33};
+#define PEDALS                8
+const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_17, GPIO_NUM_35, GPIO_NUM_0};
+const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_35, GPIO_NUM_0};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button 2
-#define RIGHT_PIN             GPIO_NUM_35   // Button 1
-#define CENTER_PIN            GPIO_NUM_0    // Button 2
 #define USB_MIDI_IN_PIN       GPIO_NUM_21   // SDA
 #define USB_MIDI_OUT_PIN      GPIO_NUM_22   // SCL
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
@@ -57,11 +56,10 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NU
 #define BATTERY_ADC_EN        GPIO_NUM_14   // ADC_EN is the ADC detection enable port
 #define FASTLEDS_DATA_PIN     GPIO_NUM_15
 #elif defined TTGO_T_EIGHT
-const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
-const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
+#define PEDALS                8
+const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_38, GPIO_NUM_37};
+const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_38, GPIO_NUM_37};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
-#define RIGHT_PIN             GPIO_NUM_37
-#define CENTER_PIN            GPIO_NUM_38
 #define LATCH_PIN             GPIO_NUM_2
 #define USB_MIDI_IN_PIN       GPIO_NUM_18   // Used by SD
 #define USB_MIDI_OUT_PIN      GPIO_NUM_19   // Used by SD
@@ -70,10 +68,10 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #define FASTLEDS_DATA_PIN     GPIO_NUM_5
 #else
-const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13};
-const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33};
+#define PEDALS                7
+const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_0};
+const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_0};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0
-#define CENTER_PIN            GPIO_NUM_0
 #define USB_MIDI_IN_PIN       GPIO_NUM_18
 #define USB_MIDI_OUT_PIN      GPIO_NUM_19
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
@@ -200,10 +198,9 @@ using namespace ace_button;
 #define PED_TAP                 7
 #define PED_BPM_PLUS            8
 #define PED_BPM_MINUS           9
-#define PED_BANK_PLUS_2        10
-#define PED_BANK_MINUS_2       11
-#define PED_BANK_PLUS_3        12
-#define PED_BANK_MINUS_3       13
+#define PED_PROFILE_PLUS       10
+#define PED_PROFILE_MINUS      11
+#define PED_POWER_ON_OFF       99
 
 #define PED_EVENT_PRESS         AceButton::kEventPressed
 #define PED_EVENT_RELEASE       AceButton::kEventReleased
@@ -292,7 +289,7 @@ struct bank {
 };
 
 struct pedal {
-  byte                   function;        /*  1 = None (use Actions)
+  byte                   function1;       /*  1 = None (use Actions)
                                               2 = Bank+
                                               3 = Bank-
                                               4 = Start
@@ -305,6 +302,8 @@ struct pedal {
                                              11 = Bank-2
                                              12 = Bank+3
                                              13 = Bank-3 */
+  byte                   function2;
+  byte                   function3;
   byte                   autoSensing;     /* 0 = disable
                                              1 = enable   */
   byte                   mode;            /* 1 = none
@@ -534,6 +533,7 @@ void display_progress_bar_title2(String, String);
 void display_progress_bar_update(unsigned int, unsigned int);
 void display_progress_bar_2_update(unsigned int, unsigned int);
 void display_progress_bar_2_label(unsigned int, unsigned int);
+void display_off();
 
 void mtc_start();
 void mtc_stop();

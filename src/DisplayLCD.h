@@ -198,7 +198,7 @@ void screen_info(int b1, int b2, int b3, int b4, int mi, int ma)
 char foot_char(byte footswitch)
 {
   footswitch = constrain(footswitch, 0, PEDALS - 1);
-  if (pedals[footswitch].function != PED_MIDI) return ' ';
+  if (pedals[footswitch].function1 != PED_MIDI) return ' ';
   if ((footswitch == lastUsedPedal) ||
 
       ((pedals[footswitch].mode == PED_MOMENTARY1 ||

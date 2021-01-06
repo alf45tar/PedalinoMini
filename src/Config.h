@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -77,7 +77,9 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
     for (byte p = 0; p < PEDALS; p++) {
       JsonObject jo = jpedals.createNestedObject();
       jo["Pedal"]           = p + 1;
-      jo["Function"]        = pedals[p].function;
+      jo["Function1"]       = pedals[p].function1;
+      jo["Function2"]       = pedals[p].function2;
+      jo["Function3"]       = pedals[p].function3;
       jo["AutoSensing"]     = pedals[p].autoSensing;
       jo["Mode"]            = pedals[p].mode;
       jo["PressMode"]       = pedals[p].pressMode;
@@ -259,7 +261,9 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           int p = jo["Pedal"];
           p--;
           p = constrain(p, 0, PEDALS - 1);
-          pedals[p].function        = jo["Function"];
+          pedals[p].function1       = jo["Function1"];
+          pedals[p].function2       = jo["Function2"];
+          pedals[p].function3       = jo["Function3"];
           pedals[p].autoSensing     = jo["AutoSensing"];
           pedals[p].mode            = jo["Mode"];
           pedals[p].pressMode       = jo["PressMode"];
@@ -412,7 +416,9 @@ void load_factory_default()
 
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {
-    pedals[p] = {PED_MIDI,       // function
+    pedals[p] = {PED_NONE,       // global function on single press
+                 PED_NONE,       // global function on double press
+                 PED_NONE,       // global function on long press
                  PED_DISABLE,    // autosensing
                  (p < PEDALS/2) ? PED_MOMENTARY1 : PED_JOG_WHEEL, // mode
                  PED_PRESS_1,    // press mode
@@ -428,8 +434,10 @@ void load_factory_default()
                 };
   }
 #else
-  for (byte p = 0; p < PEDALS-2; p++)
-    pedals[p] = {PED_MIDI,       // function
+  for (byte p = 0; p < PEDALS; p++)
+    pedals[p] = {PED_NONE,       // global function on single press
+                 PED_NONE,       // global function on double press
+                 PED_NONE,       // global function on long press
                  PED_DISABLE,    // autosensing
                  PED_MOMENTARY1, // mode
                  PED_PRESS_1,    // press mode

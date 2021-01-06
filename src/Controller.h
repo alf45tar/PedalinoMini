@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -142,7 +142,7 @@ void leds_update(byte type, byte channel, byte data1, byte data2, byte bank)
 {
     action *act = actions[bank];
     while (act != nullptr) {
-      if (act->midiChannel == channel && pedals[act->pedal].function == PED_NONE) {
+      if (act->midiChannel == channel && pedals[act->pedal].function1 == PED_NONE) {
         switch (act->midiMessage) {
 
           case PED_PROGRAM_CHANGE:
@@ -675,7 +675,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
 //
 void controller_event_handler_analog(byte pedal, int value)
 {
-  switch (pedals[pedal].function) {
+  switch (pedals[pedal].function1) {
 
     case PED_NONE: {
       action *act = actions[currentBank];
@@ -1014,12 +1014,48 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 {
   byte p = constrain(button->getId() / 10 - 1, 0, PEDALS - 1);
   byte i = constrain(button->getId() % 10 - 1, 0, LADDER_STEPS - 1);
+  byte f = PED_NONE;
 
   DPRINT("Pedal: %d     Button: %d    EventType: %d     ButtonState: %d\n", p, i, eventType, buttonState);
 
-  if ((pedals[p].function != PED_NONE) && (eventType != AceButton::kEventPressed) && (eventType != AceButton::kEventRepeatPressed)) return;
+  if (pedals[p].pressMode == PED_DISABLE) return;
 
-  switch (pedals[p].function) {
+  if (pedals[p].pressMode == PED_PRESS_1) {
+    switch (eventType) {
+      case AceButton::kEventPressed:
+        f = pedals[p].function1;
+        break;
+      case AceButton::kEventDoubleClicked:
+      case AceButton::kEventLongPressed:
+      case AceButton::kEventReleased:
+      case AceButton::kEventClicked:
+      case AceButton::kEventRepeatPressed:
+        return;
+    }
+  }
+  else {
+    switch (eventType) {
+      case AceButton::kEventClicked:
+        f = pedals[p].function1;
+        break;
+      case AceButton::kEventDoubleClicked:
+        f = pedals[p].function2;
+        break;
+      case AceButton::kEventLongPressed:
+        f = pedals[p].function3;
+        break;
+      case AceButton::kEventPressed:
+      case AceButton::kEventReleased:
+      case AceButton::kEventRepeatPressed:
+        if (pedals[p].function1 != PED_NONE) return;
+        if (pedals[p].function2 != PED_NONE) return;
+        if (pedals[p].function3 != PED_NONE) return;
+        f = PED_NONE;
+        break;
+    }
+  }
+
+  switch (f) {
 
     case PED_NONE: {
       action *act = actions[currentBank];
@@ -1150,8 +1186,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
     }
 
     case PED_BANK_PLUS:
-              currentBank = constrain(currentBank + 1, constrain(pedals[p].expZero - 1, 0, BANKS - 1), constrain(pedals[p].expMax - 1, 0, BANKS - 1));
-              currentBank = constrain(currentBank, 0, BANKS - 1);
+              currentBank = constrain((currentBank == (pedals[p].expMax - 1)) ? (pedals[p].expZero - 1) : (currentBank + 1), 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
                           lastMIDIMessage[currentBank].midiCode,
@@ -1164,8 +1199,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
     case PED_BANK_MINUS:
-              currentBank = constrain(currentBank - 1, constrain(pedals[p].expZero - 1, 0, BANKS - 1), constrain(pedals[p].expMax - 1, 0, BANKS - 1));
-              currentBank = constrain(currentBank, 0, BANKS - 1);
+              currentBank = constrain((currentBank == (pedals[p].expZero - 1)) ? (pedals[p].expMax - 1) : (currentBank - 1), 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
                           lastMIDIMessage[currentBank].midiCode,
@@ -1202,6 +1236,26 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               bpm = constrain(bpm - 1, 40, 300);
               MTC.setBpm(bpm);
               break;
+
+    case PED_PROFILE_PLUS:
+              if (reloadProfile) return;
+              currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
+              reloadProfile = true;
+              break;
+
+    case PED_PROFILE_MINUS:
+              if (reloadProfile) return;
+              currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
+              reloadProfile = true;
+              break;
+
+    case PED_POWER_ON_OFF:
+              display_off();
+              //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
+              esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(p), 0);
+              delay(200);
+              esp_deep_sleep_start();
+              break;
   }
 }
 
@@ -1231,7 +1285,7 @@ void controller_setup()
   // Build new MIDI controllers setup
   for (byte i = 0; i < PEDALS; i++) {
     DPRINT("Pedal %2d     ", i + 1);
-    switch (pedals[i].function) {
+    switch (pedals[i].function1) {
       case PED_MIDI:         DPRINT("MIDI      "); break;
       case PED_BANK_PLUS:    DPRINT("BANK+1    "); break;
       case PED_BANK_MINUS:   DPRINT("BANK-1    "); break;
@@ -1241,10 +1295,36 @@ void controller_setup()
       case PED_TAP:          DPRINT("TAP       "); break;
       case PED_BPM_PLUS:     DPRINT("BPM+      "); break;
       case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
-      case PED_BANK_PLUS_2:  DPRINT("BANK+2    "); break;
-      case PED_BANK_MINUS_2: DPRINT("BANK-2    "); break;
-      case PED_BANK_PLUS_3:  DPRINT("BANK+3    "); break;
-      case PED_BANK_MINUS_3: DPRINT("BANK-3    "); break;
+      case PED_PROFILE_PLUS: DPRINT("PROFILE+  "); break;
+      case PED_PROFILE_MINUS:DPRINT("PROFILE-  "); break;
+      default:               DPRINT("          "); break;
+    }
+    switch (pedals[i].function2) {
+      case PED_MIDI:         DPRINT("MIDI      "); break;
+      case PED_BANK_PLUS:    DPRINT("BANK+1    "); break;
+      case PED_BANK_MINUS:   DPRINT("BANK-1    "); break;
+      case PED_START:        DPRINT("START     "); break;
+      case PED_STOP:         DPRINT("STOP      "); break;
+      case PED_CONTINUE:     DPRINT("CONTINUE  "); break;
+      case PED_TAP:          DPRINT("TAP       "); break;
+      case PED_BPM_PLUS:     DPRINT("BPM+      "); break;
+      case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
+      case PED_PROFILE_PLUS: DPRINT("PROFILE+  "); break;
+      case PED_PROFILE_MINUS:DPRINT("PROFILE-  "); break;
+      default:               DPRINT("          "); break;
+    }
+    switch (pedals[i].function3) {
+      case PED_MIDI:         DPRINT("MIDI      "); break;
+      case PED_BANK_PLUS:    DPRINT("BANK+1    "); break;
+      case PED_BANK_MINUS:   DPRINT("BANK-1    "); break;
+      case PED_START:        DPRINT("START     "); break;
+      case PED_STOP:         DPRINT("STOP      "); break;
+      case PED_CONTINUE:     DPRINT("CONTINUE  "); break;
+      case PED_TAP:          DPRINT("TAP       "); break;
+      case PED_BPM_PLUS:     DPRINT("BPM+      "); break;
+      case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
+      case PED_PROFILE_PLUS: DPRINT("PROFILE+  "); break;
+      case PED_PROFILE_MINUS:DPRINT("PROFILE-  "); break;
       default:               DPRINT("          "); break;
     }
     DPRINT("   ");

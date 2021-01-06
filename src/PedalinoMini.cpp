@@ -134,12 +134,6 @@ void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t but
       */
       currentBank = (currentBank == 0 ? BANKS - 1 : currentBank - 1);
       leds_refresh();
-
-      display_off();
-      //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
-      esp_sleep_enable_ext0_wakeup(FACTORY_DEFAULT_PIN, 0);
-      delay(200);
-      esp_deep_sleep_start();
       break;
 
     case AceButton::kEventLongPressed:

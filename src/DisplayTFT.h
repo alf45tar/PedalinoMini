@@ -24,6 +24,26 @@ TFT_eSPI    display  = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);
 
 bool          uiUpdate = true;
 
+// Default palette for 4 bit colour sprites
+enum tft_default_4bit_palette {
+  TFT_INDEX_BLACK,    //  0  ^
+  TFT_INDEX_BROWN,    //  1  |
+  TFT_INDEX_RED,      //  2  |
+  TFT_INDEX_ORANGE,   //  3  |
+  TFT_INDEX_YELLOW,   //  4  Colours 0-9 follow the resistor colour code!
+  TFT_INDEX_GREEN,    //  5  |
+  TFT_INDEX_BLUE,     //  6  |
+  TFT_INDEX_PURPLE,   //  7  |
+  TFT_INDEX_DARKGREY, //  8  |
+  TFT_INDEX_WHITE,    //  9  v
+  TFT_INDEX_CYAN,     // 10  Blue+green mix
+  TFT_INDEX_MAGENTA,  // 11  Blue+red mix
+  TFT_INDEX_MAROON,   // 12  Darker red colour
+  TFT_INDEX_DARKGREEN,// 13  Darker green colour
+  TFT_INDEX_NAVY,     // 14  Darker blue colour
+  TFT_INDEX_PINK      // 15
+};
+
 
 void display_clear()
 {
@@ -64,20 +84,21 @@ void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t heigh
   uint16_t doubleRadius = 2 * radius;
   uint16_t innerRadius = radius - 2;
 
-  TFT_eSprite bar = TFT_eSprite(&display);
+  TFT_eSprite bar = TFT_eSprite(&display);  
 
+  bar.setColorDepth(4);
   bar.createSprite(width, height);
 
-  bar.drawCircleHelper(radius,             radius, radius, 0b00001001, TFT_LIGHTGREY);
-  bar.drawCircleHelper(width - 1 - radius, radius, radius, 0b00000110, TFT_LIGHTGREY);
-  bar.drawFastHLine(radius - 1, 0,          width - doubleRadius + 1, TFT_LIGHTGREY);
-  bar.drawFastHLine(radius - 1, height - 1, width - doubleRadius + 1, TFT_LIGHTGREY);
+  bar.drawCircleHelper(radius,             radius, radius, 0b00001001, TFT_INDEX_DARKGREY);
+  bar.drawCircleHelper(width - 1 - radius, radius, radius, 0b00000110, TFT_INDEX_DARKGREY);
+  bar.drawFastHLine(radius - 1, 0,          width - doubleRadius + 1, TFT_INDEX_DARKGREY);
+  bar.drawFastHLine(radius - 1, height - 1, width - doubleRadius + 1, TFT_INDEX_DARKGREY);
 
   uint16_t maxProgressWidth = (width - doubleRadius - 1) * progress / 100;
 
-  bar.fillCircle(radius, radius, innerRadius, TFT_ORANGE);
-  bar.fillRect(radius + 1, 2, maxProgressWidth, height - 4, TFT_ORANGE);
-  bar.fillCircle(radius + maxProgressWidth, radius, innerRadius, TFT_ORANGE);
+  bar.fillCircle(radius, radius, innerRadius, TFT_INDEX_ORANGE);
+  bar.fillRect(radius + 1, 2, maxProgressWidth, height - 4, TFT_INDEX_ORANGE);
+  bar.fillCircle(radius + maxProgressWidth, radius, innerRadius, TFT_INDEX_ORANGE);
 
   bar.pushSprite(x, y);
 
@@ -120,7 +141,7 @@ void topOverlay()
 {
   TFT_eSprite top = TFT_eSprite(&display);
 
-  top.setColorDepth(8);
+  top.setColorDepth(4);
   top.createSprite(display.width(), 24);
   top.fillRect(0, 0, display.width(), 24, TFT_BLACK);
 
@@ -128,36 +149,36 @@ void topOverlay()
       (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
 #ifdef WIFI
     if (wifiEnabled) {
-      top.fillCircleHelper(1, 22, 22, 0b00000010, 0, TFT_DARKGREY);
-      top.fillCircleHelper(1, 22, 18, 0b00000010, 0, TFT_BLACK);
-      top.fillCircleHelper(1, 22, 16, 0b00000010, 0, TFT_DARKGREY);
-      top.fillCircleHelper(1, 22, 12, 0b00000010, 0, TFT_BLACK);
-      top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_DARKGREY);
-      top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_BLACK);
-      top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_DARKGREY);
+      top.fillCircleHelper(1, 22, 22, 0b00000010, 0, TFT_INDEX_DARKGREY);
+      top.fillCircleHelper(1, 22, 18, 0b00000010, 0, TFT_INDEX_BLACK);
+      top.fillCircleHelper(1, 22, 16, 0b00000010, 0, TFT_INDEX_DARKGREY);
+      top.fillCircleHelper(1, 22, 12, 0b00000010, 0, TFT_INDEX_BLACK);
+      top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_INDEX_DARKGREY);
+      top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_INDEX_BLACK);
+      top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_INDEX_DARKGREY);
       if      (wifiLevel < -80) {
-        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_RED);
+        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_INDEX_RED);
       }
       else if (wifiLevel < -72) {
-        top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_ORANGE);
-        top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_BLACK);
-        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_ORANGE);
+        top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_INDEX_ORANGE);
+        top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_INDEX_BLACK);
+        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_INDEX_ORANGE);
       }
       else if (wifiLevel < -65) {
-        top.fillCircleHelper(1, 22, 16, 0b00000010, 0, TFT_YELLOW);
-        top.fillCircleHelper(1, 22, 12, 0b00000010, 0, TFT_BLACK);
-        top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_YELLOW);
-        top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_BLACK);
-        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_YELLOW);
+        top.fillCircleHelper(1, 22, 16, 0b00000010, 0, TFT_INDEX_YELLOW);
+        top.fillCircleHelper(1, 22, 12, 0b00000010, 0, TFT_INDEX_BLACK);
+        top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_INDEX_YELLOW);
+        top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_INDEX_BLACK);
+        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_INDEX_YELLOW);
       }
       else {
-        top.fillCircleHelper(1, 22, 22, 0b00000010, 0, TFT_DARKGREEN);
-        top.fillCircleHelper(1, 22, 18, 0b00000010, 0, TFT_BLACK);
-        top.fillCircleHelper(1, 22, 16, 0b00000010, 0, TFT_DARKGREEN);
-        top.fillCircleHelper(1, 22, 12, 0b00000010, 0, TFT_BLACK);
-        top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_DARKGREEN);
-        top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_BLACK);
-        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_DARKGREEN);
+        top.fillCircleHelper(1, 22, 22, 0b00000010, 0, TFT_INDEX_DARKGREEN);
+        top.fillCircleHelper(1, 22, 18, 0b00000010, 0, TFT_INDEX_BLACK);
+        top.fillCircleHelper(1, 22, 16, 0b00000010, 0, TFT_INDEX_DARKGREEN);
+        top.fillCircleHelper(1, 22, 12, 0b00000010, 0, TFT_INDEX_BLACK);
+        top.fillCircleHelper(1, 22, 10, 0b00000010, 0, TFT_INDEX_DARKGREEN);
+        top.fillCircleHelper(1, 22,  6, 0b00000010, 0, TFT_INDEX_BLACK);
+        top.fillCircleHelper(1, 22,  4, 0b00000010, 0, TFT_INDEX_DARKGREEN);
       }
       /*
       top.fillTriangle(1, 22, 30, 22, 30, 2, TFT_DARKGREY);
@@ -182,11 +203,11 @@ void topOverlay()
 
 #ifdef BLE
     if (bleMidiConnected) {
-      top.drawFastVLine(36, 1, 22, TFT_BLUE);
-      top.drawLine(41,  6, 31, 16, TFT_BLUE);
-      top.drawLine(31,  6, 41, 16, TFT_BLUE);
-      top.drawLine(36,  1, 41,  6, TFT_BLUE);
-      top.drawLine(36, 22, 41, 16, TFT_BLUE);
+      top.drawFastVLine(36, 1, 22, TFT_INDEX_BLUE);
+      top.drawLine(41,  6, 31, 16, TFT_INDEX_BLUE);
+      top.drawLine(31,  6, 41, 16, TFT_INDEX_BLUE);
+      top.drawLine(36,  1, 41,  6, TFT_INDEX_BLUE);
+      top.drawLine(36, 22, 41, 16, TFT_INDEX_BLUE);
      }
     /*
     top.setSwapBytes(true);
@@ -199,12 +220,12 @@ void topOverlay()
 #endif
 
 #ifdef BATTERY
-    top.drawRoundRect(display.width() - 50, 1, 44, 20, 4, TFT_WHITE);
-    top.fillRoundRect(display.width() - 6, 7, 4, 8, 2, TFT_WHITE);
-    top.fillRoundRect(display.width() - 50 + 2, 1 + 2, map(constrain(batteryVoltage, 3000, 4000), 3000, 4000, 0, 40), 20 - 4, 4, TFT_DARKGREEN);
+    top.drawRoundRect(display.width() - 50, 1, 44, 20, 4, TFT_INDEX_WHITE);
+    top.fillRoundRect(display.width() - 6, 7, 4, 8, 2, TFT_INDEX_WHITE);
+    top.fillRoundRect(display.width() - 50 + 2, 1 + 2, map(constrain(batteryVoltage, 3000, 4000), 3000, 4000, 0, 40), 20 - 4, 4, TFT_INDEX_DARKGREEN);
     if (batteryVoltage > 4200) {
-      top.fillTriangle(display.width() - 26,  3, display.width() - 34, 13, display.width() - 28, 12, TFT_WHITE);
-      top.fillTriangle(display.width() - 30, 18, display.width() - 22,  9, display.width() - 28, 12, TFT_WHITE);
+      top.fillTriangle(display.width() - 26,  3, display.width() - 34, 13, display.width() - 28, 12, TFT_INDEX_WHITE);
+      top.fillTriangle(display.width() - 30, 18, display.width() - 22,  9, display.width() - 28, 12, TFT_INDEX_WHITE);
     }
 /*
     top.setSwapBytes(true);
@@ -222,18 +243,18 @@ void topOverlay()
     top.setTextDatum(MC_DATUM);
     switch (currentProfile) {
       case 0:
-        top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_RED);
-        top.setTextColor(TFT_WHITE, TFT_RED);
+        top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_INDEX_RED);
+        top.setTextColor(TFT_WHITE, TFT_INDEX_RED);
         top.drawString("A", 52 + 24*currentProfile + 11, 11);
         break;
       case 1:
-        top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_ORANGE);
-        top.setTextColor(TFT_WHITE, TFT_ORANGE);
+        top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_INDEX_GREEN);
+        top.setTextColor(TFT_BLACK, TFT_INDEX_GREEN);
         top.drawString("B", 52 + 24*currentProfile + 11, 11);
         break;
       case 2:
-        top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_BLUE);
-        top.setTextColor(TFT_WHITE, TFT_BLUE);
+        top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_INDEX_BLUE);
+        top.setTextColor(TFT_WHITE, TFT_INDEX_BLUE);
         top.drawString("C", 52 + 24*currentProfile + 11, 11);
         break;
     }
@@ -340,12 +361,6 @@ void topOverlay()
 
 void bottomOverlay()
 {
-  TFT_eSprite bottom = TFT_eSprite(&display);
-
-  bottom.setColorDepth(8);
-  bottom.createSprite(display.width(), 24);
-  bottom.fillRect(0, 0, display.width(), 24, TFT_BLACK);
-
   if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
     int p;
     switch (m1) {
@@ -397,22 +412,28 @@ void bottomOverlay()
   }
   else if (scrollingMode || MTC.getMode() != MidiTimeCode::SynchroNone) {
 
+    TFT_eSprite bottom = TFT_eSprite(&display);
+
+    bottom.setColorDepth(4);
+    bottom.createSprite(display.width(), 24);
+    bottom.fillRect(0, 0, display.width(), 24, TFT_INDEX_BLACK);
+
     bottom.setFreeFont(&FreeSansBold9pt7b);
     bottom.setTextDatum(MC_DATUM);
 
 #ifdef BLE
     if (bleEnabled) {
        if (bleMidiConnected) {
-        bottom.fillRect(0, 0, display.width() / 4, 24, TFT_WHITE);
-        bottom.setTextColor(TFT_BLACK, TFT_WHITE);
+        bottom.fillRect(0, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+        bottom.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
       }
       else {
-        bottom.fillRect(0, 0, display.width() / 4, 24, TFT_BLACK);
-        bottom.setTextColor(TFT_DARKGREY, TFT_BLACK);
+        bottom.fillRect(0, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
+        bottom.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
       }
-      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 0, TFT_BLACK);
-      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 2, TFT_BLACK);
-      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 4, TFT_BLACK);
+      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
+      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
+      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
       bottom.drawString("BLE", 1 * display.width() / 8, 11);
     }
 #endif
@@ -420,57 +441,49 @@ void bottomOverlay()
 #ifdef WIFI
     if (wifiEnabled) {
       if (appleMidiConnected) {
-        bottom.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_WHITE);
-        bottom.setTextColor(TFT_BLACK, TFT_WHITE);
+        bottom.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+        bottom.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
       }
       else {
-        bottom.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_BLACK);
-        bottom.setTextColor(TFT_DARKGREY, TFT_BLACK);
+        bottom.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
+        bottom.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
       }
-      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_BLACK);
-      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_BLACK);
-      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_BLACK);
+      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
+      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
+      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
       bottom.drawString("MIDI",   3 * display.width() / 8, 11);
       if (interfaces[PED_IPMIDI].midiIn || interfaces[PED_IPMIDI].midiOut) {
-        bottom.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_WHITE);
-        bottom.setTextColor(TFT_BLACK, TFT_WHITE);
+        bottom.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+        bottom.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
       }
       else {
         bottom.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_BLACK);
-        bottom.setTextColor(TFT_DARKGREY, TFT_BLACK);
+        bottom.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
       }
-      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_BLACK);
-      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_BLACK);
-      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_BLACK);
-      bottom.drawString("ipMIDI", 5 * display.width() / 8, 11);
+      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
+      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
+      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
+      bottom.drawString("ipMidi", 5 * display.width() / 8, 11);
 
       if (interfaces[PED_OSC].midiIn    || interfaces[PED_OSC].midiOut) {
-        bottom.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_WHITE);
-        bottom.setTextColor(TFT_BLACK, TFT_WHITE);
+        bottom.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+        bottom.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
       }
       else {
-        bottom.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_BLACK);
-        bottom.setTextColor(TFT_DARKGREY, TFT_BLACK);
+        bottom.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
+        bottom.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
       }
-      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_BLACK);
-      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_BLACK);
-      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_BLACK);
+      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
+      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
+      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
       bottom.drawString("OSC", 7 * display.width() / 8, 11);
     }
 #endif
+
     bottom.pushSprite(0, display.height() - 24);
   }
-
-  //bottom.pushSprite(0, display.height() - 24);
 }
 
-void drawRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
-{
-  display.drawLine(x0+1, y0,   x1-1, y0,   TFT_WHITE);
-  display.drawLine(x1,   y0+1, x1,   y1-1, TFT_WHITE);
-  display.drawLine(x1-1, y1,   x0+1, y1,   TFT_WHITE);
-  display.drawLine(x0,   y1-1, x0,   y0+1, TFT_WHITE);
-}
 
 void drawFrame1(int16_t x, int16_t y)
 {
@@ -481,98 +494,82 @@ void drawFrame1(int16_t x, int16_t y)
     if (strlen(lastPedalName) != 0 && lastPedalName[strlen(lastPedalName) - 1] == '.') lastPedalName[strlen(lastPedalName) - 1] = 0;
     if (lastPedalName[0] == 0) {
       TFT_eSprite sprite = TFT_eSprite(&display);
-      sprite.setColorDepth(8);
-      sprite.createSprite(100, 74);
+      sprite.setColorDepth(1);
+      sprite.createSprite(display.width(), display.height() - 30 - 24);
+      sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
       sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
-      sprite.pushSprite(0, 30);
-      sprite.pushSprite(display.width() - sprite.width(), 30);
-      sprite.setTextColor(TFT_WHITE, TFT_BLACK);
       switch (m1) {
         case midi::InvalidType:
-          display.drawRect(display.width() / 2 - 22, 30, display.width() / 2 + 24, 30 + 23, TFT_WHITE);
-          display.setFreeFont(&FreeSans9pt7b);
-          display.drawString("Bank", display.width() / 2 + x, 39 + y);
-          display.setFreeFont(&FreeSans24pt7b);
-          display.drawString(String(m2), display.width() / 2 + x, 14 + y);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString("Bank", sprite.width() / 2 + x, 62 + y);
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
+          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
           break;
         case midi::NoteOn:
         case midi::NoteOff:
-          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
           sprite.setFreeFont(&FreeSans9pt7b);
           sprite.setTextDatum(MC_DATUM);
           sprite.drawString("Note", sprite.width() / 2 + x, 62 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
           sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
-          sprite.pushSprite(display.width() / 2 - 50, 30);
-          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
           sprite.setFreeFont(&FreeSans9pt7b);
           sprite.setTextDatum(MR_DATUM);
           sprite.drawString("Velocity", sprite.width() + x, 62 + y);
           sprite.setFreeFont(&FreeSans18pt7b);
           sprite.setTextDatum(MC_DATUM);
           sprite.drawString(String(m3), sprite.width() - display.width() / 8 + x, 22 + y);
-          sprite.pushSprite(display.width() - sprite.width(), 30, TFT_BLACK);
           break;
         case midi::ControlChange:
-          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
           sprite.setFreeFont(&FreeSans9pt7b);
           sprite.setTextDatum(MC_DATUM);
           sprite.drawString("CC", sprite.width() / 2 + x, 62 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
           sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
-          sprite.pushSprite(display.width() / 2 - 50, 30);
-          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
+          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
           sprite.setFreeFont(&FreeSans9pt7b);
           sprite.setTextDatum(MR_DATUM);
           sprite.drawString("Value", sprite.width() + x, 62 + y);
           sprite.setFreeFont(&FreeSans18pt7b);
           sprite.setTextDatum(MC_DATUM);
           sprite.drawString(String(m3), sprite.width() - display.width() / 8 + x, 22 + y);
-          sprite.pushSprite(display.width() - sprite.width(), 30, TFT_BLACK);
           break;
         case midi::ProgramChange:
-          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
           sprite.setFreeFont(&FreeSans9pt7b);
           sprite.setTextDatum(MC_DATUM);
           sprite.drawString("PC", sprite.width() / 2 + x, 62 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
           sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
-          sprite.pushSprite(display.width() / 2 - 50, 30);
+          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
           break;
         case midi::PitchBend:
-sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
           sprite.setFreeFont(&FreeSans9pt7b);
           sprite.setTextDatum(MC_DATUM);
           sprite.drawString("Pitch", sprite.width() / 2 + x, 62 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
           sprite.drawString(String(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
-          sprite.pushSprite(display.width() / 2 - 50, 30);
+          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
           break;
         case midi::AfterTouchChannel:
-          sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
           sprite.setFreeFont(&FreeSans9pt7b);
           sprite.setTextDatum(MC_DATUM);
           sprite.drawString("Pressure", sprite.width() / 2 + x, 62 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
           sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(0, 0, 100, 50, 8, TFT_WHITE);
-          sprite.pushSprite(display.width() / 2 - 50, 30);
+          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
           break;
       }
       if (m1 != midi::InvalidType) {
-        sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
         sprite.setFreeFont(&FreeSans9pt7b);
         sprite.setTextDatum(ML_DATUM);
         sprite.drawString("Channel", 0 + x, 62 + y);
         sprite.setFreeFont(&FreeSans18pt7b);
         sprite.setTextDatum(MC_DATUM);
-        sprite.drawString(String(m4), display.width() / 8 + x, 22 + y);
-        sprite.pushSprite(0, 30, TFT_BLACK);
+        sprite.drawString(String(m4), display.width() / 8 + x, 22 + y);  
       }
+      sprite.pushSprite(0, 30);
       sprite.deleteSprite();
     }
     else {
@@ -710,6 +707,7 @@ sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
   }
   else {
     if (scrollingMode) {
+      display.fillRect(0, 24, display.width(), display.height() - 48, TFT_BLACK);
       display.setTextColor(TFT_WHITE, TFT_BLACK);
       display.setFreeFont(&FreeSansBold12pt7b);
       display.setTextDatum(MC_DATUM);
@@ -727,28 +725,26 @@ sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
         a = (currentProfile == 0 ? "A" : (currentProfile == 1 ? "B" : "C"));
         a += ".";
         a += ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
-        display.setFreeFont(&DSEG14_Classic_Bold_72);
-        int w = display.textWidth(a);
-        sprite.setColorDepth(8);
-        sprite.createSprite(w, DSEG14_Classic_Bold_72.yAdvance);
+        sprite.setColorDepth(1);
+        sprite.createSprite(display.width(), display.height() - 30 - 24);
         sprite.setFreeFont(&DSEG14_Classic_Bold_72);
         switch (currentProfile) {
           case 0:
-            sprite.setTextColor(TFT_RED, TFT_BLACK);
+            sprite.setBitmapColor(TFT_RED, TFT_BLACK);
             break;
           case 1:
-            sprite.setTextColor(TFT_ORANGE, TFT_BLACK);
+            sprite.setBitmapColor(TFT_GREEN, TFT_BLACK);
             break;
           case 2:
-            sprite.setTextColor(TFT_BLUE, TFT_BLACK);
+            sprite.setBitmapColor(TFT_BLUE, TFT_BLACK);
             break;
           default:
-            sprite.setTextColor(TFT_WHITE, TFT_BLACK);
+            sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
             break;
         }
         sprite.setTextDatum(MC_DATUM);
         sprite.drawString(a, sprite.width() / 2, sprite.height() / 2);
-        sprite.pushSprite((display.width() - w) / 2 + x, 30 + y);
+        sprite.pushSprite(0, 30);
         sprite.deleteSprite();
       }
       else {
@@ -781,7 +777,7 @@ sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
           // Top line
           name = String((banks[currentBank][p].pedalName[0] == ':') ? &banks[currentBank][p].pedalName[1] : banks[currentBank][p].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p][0]));
-          if (pedals[p].function == PED_MIDI && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
+          if (pedals[p].function1 == PED_MIDI && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
             display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
                               12 + y,
                               display->getStringWidth(name) + 1,
@@ -794,7 +790,7 @@ sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
           // Bottom line
           name = String((banks[currentBank][p + PEDALS / 2].pedalName[0] == ':') ? &banks[currentBank][p + PEDALS / 2].pedalName[1] : banks[currentBank][p + PEDALS / 2].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p + PEDALS / 2][0]));
-          if (pedals[p + PEDALS / 2].function == PED_MIDI && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
+          if (pedals[p + PEDALS / 2].function1 == PED_MIDI && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
             display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
                               53 + y,
                               display->getStringWidth(name) + 1,
@@ -824,14 +820,14 @@ sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
           display->setTextAlignment(TEXT_ALIGN_RIGHT);
           display->drawString(128 + x, y, name);
           for (byte p = 0; p < PEDALS/2; p++) {
-            if ((pedals[p].function == PED_MIDI) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
+            if ((pedals[p].function1 == PED_MIDI) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
               display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 25 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p][0],
                                                                                                        banks[currentBank][p].midiValue1,
                                                                                                        banks[currentBank][p].midiValue2,
                                                                                                        0, 100),
                                                                                                    0, 100));
             }
-            if ((pedals[p + PEDALS / 2].function == PED_MIDI) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
+            if ((pedals[p + PEDALS / 2].function1 == PED_MIDI) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
               display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue1,
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue2,
@@ -848,7 +844,7 @@ sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
       //ui.disableAutoTransition();
     }
   }
-/*
+
 #ifdef WEBSOCKET
   events.send(MTC.isPlaying() ? "1" : "0", "play");
 
@@ -895,7 +891,6 @@ sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
     events.send("", "timesignature");
   }
 #endif
-  */
 }
 
 void drawFrame2(int16_t x, int16_t y)
@@ -1048,22 +1043,22 @@ void display_ui_update_enable()
 
 void display_update()
 {
-  static byte frame = 8;
+  static byte frame = 71;
 
   if (uiUpdate) {
     if (millis() % 128 == 0) {
       topOverlay();
       bottomOverlay();
       if (scrollingMode) {
-        frame = (frame + 1) % 9;
+        frame = (frame + 1) % 72;
         switch (frame) {
           case 0:
             drawFrame1(0, 0);
             break;
-          case 3:
+          case 24:
             drawFrame2(0, 0);
             break;
-          case 6:
+          case 48:
 #ifdef DIAGNOSTIC
             drawFrame3(0, 0);
 #else
@@ -1074,7 +1069,7 @@ void display_update()
       }
       else {
         drawFrame1(0, 0);
-        frame = 8;
+        frame = 71;
       }
     }
   }

@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -1069,7 +1069,7 @@ void get_pedals_page() {
   page += F("<div class='form-row'>");
 
   for (unsigned int i = 1; i <= PEDALS; i++) {
-    page += F("<div class='col-sm-6 col-md-4 col-xl-2 col-12 mb-3'>");
+    page += F("<div class='col-sm-6 col-md-4 col-xl-3 col-12 mb-3'>");
     page += F("<div class='card'>");
     page += F("<h5 class='card-header'>Pedal ");
     page += String(i) + F("</h5>");
@@ -1089,80 +1089,210 @@ void get_pedals_page() {
     page += String(PED_MOMENTARY1) + F("'");
     if (pedals[i-1].mode == PED_MOMENTARY1) page += F(" selected");
     page += F(">Momentary</option>");
-    page += F("<option value='");
-    page += String(PED_LATCH1) + F("'");
-    if (pedals[i-1].mode == PED_LATCH1) page += F(" selected");
-    page += F(">Latch</option>");
-    page += F("<option value='");
-    page += String(PED_ANALOG) + F("'");
-    if (pedals[i-1].mode == PED_ANALOG) page += F(" selected");
-    page += F(">Analog</option>");
-    page += F("<option value='");
-    page += String(PED_JOG_WHEEL) + F("'");
-    if (pedals[i-1].mode == PED_JOG_WHEEL) page += F(" selected");
-    page += F(">Jog Wheel</option>");
-    page += F("<option value='");
-    page += String(PED_MOMENTARY2) + F("'");
-    if (pedals[i-1].mode == PED_MOMENTARY2) page += F(" selected");
-    page += F(">Momentary 2</option>");
-    page += F("<option value='");
-    page += String(PED_MOMENTARY3) + F("'");
-    if (pedals[i-1].mode == PED_MOMENTARY3) page += F(" selected");
-    page += F(">Momentary 3</option>");
-    page += F("<option value='");
-    page += String(PED_LATCH2) + F("'");
-    if (pedals[i-1].mode == PED_LATCH2) page += F(" selected");
-    page += F(">Latch 2</option>");
-    page += F("<option value='");
-    page += String(PED_LADDER) + F("'");
-    if (pedals[i-1].mode == PED_LADDER) page += F(" selected");
-    page += F(">Ladder</option>");
+    if (PIN_D(i-1) != PIN_A(i-1)) {
+      page += F("<option value='");
+      page += String(PED_LATCH1) + F("'");
+      if (pedals[i-1].mode == PED_LATCH1) page += F(" selected");
+      page += F(">Latch</option>");
+      page += F("<option value='");
+      page += String(PED_ANALOG) + F("'");
+      if (pedals[i-1].mode == PED_ANALOG) page += F(" selected");
+      page += F(">Analog</option>");
+      page += F("<option value='");
+      page += String(PED_JOG_WHEEL) + F("'");
+      if (pedals[i-1].mode == PED_JOG_WHEEL) page += F(" selected");
+      page += F(">Jog Wheel</option>");
+      page += F("<option value='");
+      page += String(PED_MOMENTARY2) + F("'");
+      if (pedals[i-1].mode == PED_MOMENTARY2) page += F(" selected");
+      page += F(">Momentary 2</option>");
+      page += F("<option value='");
+      page += String(PED_MOMENTARY3) + F("'");
+      if (pedals[i-1].mode == PED_MOMENTARY3) page += F(" selected");
+      page += F(">Momentary 3</option>");
+      page += F("<option value='");
+      page += String(PED_LATCH2) + F("'");
+      if (pedals[i-1].mode == PED_LATCH2) page += F(" selected");
+      page += F(">Latch 2</option>");
+      page += F("<option value='");
+      page += String(PED_LADDER) + F("'");
+      if (pedals[i-1].mode == PED_LADDER) page += F(" selected");
+      page += F(">Ladder</option>");
+    }
     page += F("</select>");
     page += F("</div>");
 
     page += F("<div class='input-group input-group-sm mb-2'>");
     page += F("<div class='input-group-prepend' style='width: 40%'>");
-    page += F("<div class='input-group-text w-100'>Function</div>");
+    page += F("<div class='input-group-text w-100'>On Single Press</div>");
     page += F("</div>");
-    page += F("<select class='custom-select custom-select-sm' name='function");
+    page += F("<select class='custom-select custom-select-sm' name='function1");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
     page += String(PED_NONE) + F("'");
-    if (pedals[i-1].function == PED_NONE) page += F(" selected");
+    if (pedals[i-1].function1 == PED_NONE) page += F(" selected");
     page += F("></option>");
     page += F("<option value='");
     page += String(PED_BANK_PLUS) + F("'");
-    if (pedals[i-1].function == PED_BANK_PLUS) page += F(" selected");
+    if (pedals[i-1].function1 == PED_BANK_PLUS) page += F(" selected");
     page += F(">Bank+</option>");
     page += F("<option value='");
     page += String(PED_BANK_MINUS) + F("'");
-    if (pedals[i-1].function == PED_BANK_MINUS) page += F(" selected");
+    if (pedals[i-1].function1 == PED_BANK_MINUS) page += F(" selected");
     page += F(">Bank-</option>");
     page += F("<option value='");
-    page += String(PED_START) + F("'");
-    if (pedals[i-1].function == PED_START) page += F(" selected");
-    page += F(">MTC Start</option>");
-    page += F("<option value='");
-    page += String(PED_STOP) + F("'");
-    if (pedals[i-1].function == PED_STOP) page += F(" selected");
-    page += F(">MTC Stop</option>");
-    page += F("<option value='");
-    page += String(PED_CONTINUE) + F("'");
-    if (pedals[i-1].function == PED_CONTINUE) page += F(" selected");
-    page += F(">MTC Continue</option>");
-    page += F("<option value='");
-    page += String(PED_TAP) + F("'");
-    if (pedals[i-1].function == PED_TAP) page += F(" selected");
-    page += F(">Tap</option>");
-    page += F("<option value='");
     page += String(PED_BPM_PLUS) + F("'");
-    if (pedals[i-1].function == PED_BPM_PLUS) page += F(" selected");
+    if (pedals[i-1].function1 == PED_BPM_PLUS) page += F(" selected");
     page += F(">BPM+</option>");
     page += F("<option value='");
     page += String(PED_BPM_MINUS) + F("'");
-    if (pedals[i-1].function == PED_BPM_MINUS) page += F(" selected");
+    if (pedals[i-1].function1 == PED_BPM_MINUS) page += F(" selected");
     page += F(">BPM-</option>");
+    page += F("<option value='");
+    page += String(PED_PROFILE_PLUS) + F("'");
+    if (pedals[i-1].function1 == PED_PROFILE_PLUS) page += F(" selected");
+    page += F(">Profile+</option>");
+    page += F("<option value='");
+    page += String(PED_PROFILE_MINUS) + F("'");
+    if (pedals[i-1].function1 == PED_PROFILE_MINUS) page += F(" selected");
+    page += F(">Profile-</option>");
+    page += F("<option value='");
+    page += String(PED_START) + F("'");
+    if (pedals[i-1].function1 == PED_START) page += F(" selected");
+    page += F(">MTC Start</option>");
+    page += F("<option value='");
+    page += String(PED_STOP) + F("'");
+    if (pedals[i-1].function1 == PED_STOP) page += F(" selected");
+    page += F(">MTC Stop</option>");
+    page += F("<option value='");
+    page += String(PED_CONTINUE) + F("'");
+    if (pedals[i-1].function1 == PED_CONTINUE) page += F(" selected");
+    page += F(">MTC Continue</option>");
+    page += F("<option value='");
+    page += String(PED_TAP) + F("'");
+    if (pedals[i-1].function1 == PED_TAP) page += F(" selected");
+    page += F(">Tap</option>");
+    page += F("<option value='");
+    page += String(PED_POWER_ON_OFF) + F("'");
+    if (pedals[i-1].function1 == PED_POWER_ON_OFF) page += F(" selected");
+    page += F(">Power On/Off</option>");
+    page += F("</select>");
+    page += F("</div>");
+
+    page += F("<div class='input-group input-group-sm mb-2'>");
+    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-text w-100'>On Double Press</div>");
+    page += F("</div>");
+    page += F("<select class='custom-select custom-select-sm' name='function2");
+    page += String(i);
+    page += F("'>");
+    page += F("<option value='");
+    page += String(PED_NONE) + F("'");
+    if (pedals[i-1].function2 == PED_NONE) page += F(" selected");
+    page += F("></option>");
+    page += F("<option value='");
+    page += String(PED_BANK_PLUS) + F("'");
+    if (pedals[i-1].function2 == PED_BANK_PLUS) page += F(" selected");
+    page += F(">Bank+</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_MINUS) + F("'");
+    if (pedals[i-1].function2 == PED_BANK_MINUS) page += F(" selected");
+    page += F(">Bank-</option>");
+    page += F("<option value='");
+    page += String(PED_BPM_PLUS) + F("'");
+    if (pedals[i-1].function2 == PED_BPM_PLUS) page += F(" selected");
+    page += F(">BPM+</option>");
+    page += F("<option value='");
+    page += String(PED_BPM_MINUS) + F("'");
+    if (pedals[i-1].function2 == PED_BPM_MINUS) page += F(" selected");
+    page += F(">BPM-</option>");
+    page += F("<option value='");
+    page += String(PED_PROFILE_PLUS) + F("'");
+    if (pedals[i-1].function2 == PED_PROFILE_PLUS) page += F(" selected");
+    page += F(">Profile+</option>");
+    page += F("<option value='");
+    page += String(PED_PROFILE_MINUS) + F("'");
+    if (pedals[i-1].function2 == PED_PROFILE_MINUS) page += F(" selected");
+    page += F(">Profile-</option>");
+    page += F("<option value='");
+    page += String(PED_START) + F("'");
+    if (pedals[i-1].function2 == PED_START) page += F(" selected");
+    page += F(">MTC Start</option>");
+    page += F("<option value='");
+    page += String(PED_STOP) + F("'");
+    if (pedals[i-1].function2 == PED_STOP) page += F(" selected");
+    page += F(">MTC Stop</option>");
+    page += F("<option value='");
+    page += String(PED_CONTINUE) + F("'");
+    if (pedals[i-1].function2 == PED_CONTINUE) page += F(" selected");
+    page += F(">MTC Continue</option>");
+    page += F("<option value='");
+    page += String(PED_TAP) + F("'");
+    if (pedals[i-1].function2 == PED_TAP) page += F(" selected");
+    page += F(">Tap</option>");
+    page += F("<option value='");
+    page += String(PED_POWER_ON_OFF) + F("'");
+    if (pedals[i-1].function1 == PED_POWER_ON_OFF) page += F(" selected");
+    page += F(">Power On/Off</option>");
+    page += F("</select>");
+    page += F("</div>");
+
+    page += F("<div class='input-group input-group-sm mb-2'>");
+    page += F("<div class='input-group-prepend' style='width: 40%'>");
+    page += F("<div class='input-group-text w-100'>On Long Press</div>");
+    page += F("</div>");
+    page += F("<select class='custom-select custom-select-sm' name='function3");
+    page += String(i);
+    page += F("'>");
+    page += F("<option value='");
+    page += String(PED_NONE) + F("'");
+    if (pedals[i-1].function3 == PED_NONE) page += F(" selected");
+    page += F("></option>");
+    page += F("<option value='");
+    page += String(PED_BANK_PLUS) + F("'");
+    if (pedals[i-1].function3 == PED_BANK_PLUS) page += F(" selected");
+    page += F(">Bank+</option>");
+    page += F("<option value='");
+    page += String(PED_BANK_MINUS) + F("'");
+    if (pedals[i-1].function3 == PED_BANK_MINUS) page += F(" selected");
+    page += F(">Bank-</option>");
+    page += F("<option value='");
+    page += String(PED_BPM_PLUS) + F("'");
+    if (pedals[i-1].function3 == PED_BPM_PLUS) page += F(" selected");
+    page += F(">BPM+</option>");
+    page += F("<option value='");
+    page += String(PED_BPM_MINUS) + F("'");
+    if (pedals[i-1].function3 == PED_BPM_MINUS) page += F(" selected");
+    page += F(">BPM-</option>");
+    page += F("<option value='");
+    page += String(PED_PROFILE_PLUS) + F("'");
+    if (pedals[i-1].function3 == PED_PROFILE_PLUS) page += F(" selected");
+    page += F(">Profile+</option>");
+    page += F("<option value='");
+    page += String(PED_PROFILE_MINUS) + F("'");
+    if (pedals[i-1].function3 == PED_PROFILE_MINUS) page += F(" selected");
+    page += F(">Profile-</option>");
+    page += F("<option value='");
+    page += String(PED_START) + F("'");
+    if (pedals[i-1].function3 == PED_START) page += F(" selected");
+    page += F(">MTC Start</option>");
+    page += F("<option value='");
+    page += String(PED_STOP) + F("'");
+    if (pedals[i-1].function3 == PED_STOP) page += F(" selected");
+    page += F(">MTC Stop</option>");
+    page += F("<option value='");
+    page += String(PED_CONTINUE) + F("'");
+    if (pedals[i-1].function3 == PED_CONTINUE) page += F(" selected");
+    page += F(">MTC Continue</option>");
+    page += F("<option value='");
+    page += String(PED_TAP) + F("'");
+    if (pedals[i-1].function3 == PED_TAP) page += F(" selected");
+    page += F(">Tap</option>");
+    page += F("<option value='");
+    page += String(PED_POWER_ON_OFF) + F("'");
+    if (pedals[i-1].function1 == PED_POWER_ON_OFF) page += F(" selected");
+    page += F(">Power On/Off</option>");
     page += F("</select>");
     page += F("</div>");
 
@@ -2411,8 +2541,14 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     a = request->arg(String("mode") + String(i+1));
     pedals[i].mode = a.toInt();
 
-    a = request->arg(String("function") + String(i+1));
-    pedals[i].function = a.toInt();
+    a = request->arg(String("function1") + String(i+1));
+    pedals[i].function1 = a.toInt();
+
+    a = request->arg(String("function2") + String(i+1));
+    pedals[i].function2 = a.toInt();
+
+    a = request->arg(String("function3") + String(i+1));
+    pedals[i].function3 = a.toInt();
 
     a = request->arg(String("singlepress") + String(i+1));
     pedals[i].pressMode = (a == checked) ? PED_PRESS_1 : 0;
@@ -2435,15 +2571,31 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     a = request->arg(String("max") + String(i+1));
     pedals[i].expMax = constrain(a.toInt(), 0, ADC_RESOLUTION - 1);
 
-    switch (pedals[i].function) {
+    switch (pedals[i].function1) {
       case PED_BANK_PLUS:
       case PED_BANK_MINUS:
-      case PED_BANK_PLUS_2:
-      case PED_BANK_MINUS_2:
-      case PED_BANK_PLUS_3:
-      case PED_BANK_MINUS_3:
-        pedals[i].expZero = constrain(pedals[i].expZero, 1, BANKS);
-        pedals[i].expMax  = constrain(pedals[i].expMax,  1, BANKS);
+        int from = constrain(pedals[i].expZero, 1, BANKS);
+        pedals[i].expZero = (from == pedals[i].expZero ? from : 1);
+        int to   = constrain(pedals[i].expMax,  1, BANKS);
+        pedals[i].expMax  = (to   == pedals[i].expMax ? to : BANKS);
+      break;
+    }
+    switch (pedals[i].function2) {
+      case PED_BANK_PLUS:
+      case PED_BANK_MINUS:
+        int from = constrain(pedals[i].expZero, 1, BANKS);
+        pedals[i].expZero = (from == pedals[i].expZero ? from : 1);
+        int to   = constrain(pedals[i].expMax,  1, BANKS);
+        pedals[i].expMax  = (to   == pedals[i].expMax ? to : BANKS);
+      break;
+    }
+    switch (pedals[i].function3) {
+      case PED_BANK_PLUS:
+      case PED_BANK_MINUS:
+        int from = constrain(pedals[i].expZero, 1, BANKS);
+        pedals[i].expZero = (from == pedals[i].expZero ? from : 1);
+        int to   = constrain(pedals[i].expMax,  1, BANKS);
+        pedals[i].expMax  = (to   == pedals[i].expMax ? to : BANKS);
       break;
     }
     if (pedals[i].expMax < pedals[i].expZero) {

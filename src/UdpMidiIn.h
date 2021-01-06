@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -776,13 +776,9 @@ void OscSendPedal()
   udpOut.sendTo(udpMsg7, oscControllerIP, OSC_CONTROLLER_PORT);
   oscMsg8.add(pedals[currentPedal].mapFunction).send(udpMsg8).empty();
   udpOut.sendTo(udpMsg8, oscControllerIP, OSC_CONTROLLER_PORT);
-  switch (pedals[currentPedal].function) {
+  switch (pedals[currentPedal].function1) {
     case PED_BANK_PLUS:
     case PED_BANK_MINUS:
-    case PED_BANK_PLUS_2:
-    case PED_BANK_MINUS_2:
-    case PED_BANK_PLUS_3:
-    case PED_BANK_MINUS_3:
       oscMsg9.add((float)pedals[currentPedal].expZero / (BANKS - 1)).send(udpMsg9).empty();
       oscMsg10.add((float)pedals[currentPedal].expMax / (BANKS - 1)).send(udpMsg10).empty();
       break;
@@ -966,7 +962,7 @@ void OnOscPedalMode(OSCMessage &msg)
 void OnOscPedalFunction(OSCMessage &msg)
 {
   DPRINT("OSC message /pedal_function %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
-  pedals[currentPedal].function = msg.getInt(0);
+  pedals[currentPedal].function1 = msg.getInt(0);
 
 }
 
@@ -1031,13 +1027,9 @@ void OnOscPedalAnalogMap(OSCMessage &msg)
 void OnOscPedalAnalogMin(OSCMessage &msg)
 {
   DPRINT("OSC message /analog_min %f received from %s\n", msg.getFloat(0), oscControllerIP.toString().c_str());
-  switch (pedals[currentPedal].function) {
+  switch (pedals[currentPedal].function1) {
     case PED_BANK_PLUS:
     case PED_BANK_MINUS:
-    case PED_BANK_PLUS_2:
-    case PED_BANK_MINUS_2:
-    case PED_BANK_PLUS_3:
-    case PED_BANK_MINUS_3:
       pedals[currentPedal].expZero = constrain(msg.getFloat(0) * (PEDALS - 1), 0, PEDALS);
       break;
     case PED_BPM_PLUS:
@@ -1055,13 +1047,9 @@ void OnOscPedalAnalogMin(OSCMessage &msg)
 void OnOscPedalAnalogMax(OSCMessage &msg)
 {
   DPRINT("OSC message /analog_max %d received from %s\n", msg.getInt(0), oscControllerIP.toString().c_str());
-  switch (pedals[currentPedal].function) {
+  switch (pedals[currentPedal].function1) {
     case PED_BANK_PLUS:
     case PED_BANK_MINUS:
-    case PED_BANK_PLUS_2:
-    case PED_BANK_MINUS_2:
-    case PED_BANK_PLUS_3:
-    case PED_BANK_MINUS_3:
       pedals[currentPedal].expMax = constrain(msg.getFloat(0) * (PEDALS - 1), 0, PEDALS);
       break;
     case PED_BPM_PLUS:
