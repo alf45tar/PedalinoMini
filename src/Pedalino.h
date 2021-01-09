@@ -456,11 +456,21 @@ bool  bleEnabled              = false;
 bool  wifiConnected           = false;
 bool  bleConnected            = false;
 
+uint32_t freeMemory;
+
 String wifiSSID("");
 String wifiPassword("");
 int    wifiLevel = 0;
 
 uint16_t  batteryVoltage = 4200;  // mV
+
+#ifdef DIAGNOSTIC
+#define POINTS  240                           // Logged data points
+RTC_DATA_ATTR byte historyStart = 0;
+RTC_DATA_ATTR byte memoryHistory[POINTS];     // 0% =   0Kb    100% = 200Kb
+RTC_DATA_ATTR byte wifiHistory[POINTS];       // 0% = -90dB    100% = -10dB
+RTC_DATA_ATTR byte batteryHistory[POINTS];    // 0% =  3.0V    100% =  5.0V
+#endif
 
 bool powersaver = false;
 bool firmwareUpdate = false;

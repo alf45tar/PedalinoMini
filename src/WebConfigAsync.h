@@ -299,7 +299,7 @@ void get_root_page() {
   page += SPIFFS.totalBytes() / 1024;
   page += F(" kB</dd>");
   page += F("<dt>Free Heap Size</dt><dd>");
-  page += ESP.getFreeHeap() / 1024;
+  page += freeMemory / 1024;
   page += F(" kB</dd>");
   //page += F("<dt>Running On Core</dt><dd>");
   //page += xPortGetCoreID();

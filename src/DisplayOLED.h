@@ -1075,11 +1075,11 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0 + x, 26 + y, "Battery:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  display->drawString(128 + x, 26 + y, batteryVoltage / 1000.0F + String(" mV"));
+  display->drawString(128 + x, 26 + y, batteryVoltage / 1000.0F + String(" V"));
 #endif
 
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(0 + x, 36 + y, "Run time:");
+  display->drawString(0 + x, 36 + y, "Uptime:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   long sec = (millis() / 1000) % 60;
   long min = (millis() / 1000 / 60) % 60;

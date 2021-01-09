@@ -148,6 +148,8 @@ void wifi_and_battery_level() {
 
     interruptCounter1 = 0;
 
+    freeMemory = ESP.getFreeHeap();
+
 #ifdef WIFI
     if (wifiEnabled) wifiLevel = (3 * wifiLevel + WiFi.RSSI()) / 4;
 #endif
@@ -169,6 +171,18 @@ void wifi_and_battery_level() {
       batteryVoltage = (uint16_t)voltage;
     else
       batteryVoltage = (7 * batteryVoltage + voltage) / 8;
+#endif
+
+#ifdef DIAGNOSTIC
+    static byte sec = 0;
+
+    if (sec == 0) {
+      memoryHistory[historyStart]  = map(freeMemory, 0, 200*1024, 0, 100);
+      wifiHistory[historyStart]    = map(constrain(wifiLevel, -90, -10), -90, -10, 0, 100);
+      batteryHistory[historyStart] = map(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100);
+      historyStart = (historyStart + 1) % POINTS;
+    }
+    sec = (sec + 1) % 60;
 #endif
   }
 }

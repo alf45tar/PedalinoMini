@@ -1301,6 +1301,8 @@ void controller_setup()
       case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
       case PED_PROFILE_PLUS: DPRINT("PROFILE+  "); break;
       case PED_PROFILE_MINUS:DPRINT("PROFILE-  "); break;
+      case PED_DEVICE_INFO:  DPRINT("INFO      "); break;
+      case PED_POWER_ON_OFF: DPRINT("POWER     "); break;
       default:               DPRINT("          "); break;
     }
     switch (pedals[i].function2) {
@@ -1315,6 +1317,8 @@ void controller_setup()
       case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
       case PED_PROFILE_PLUS: DPRINT("PROFILE+  "); break;
       case PED_PROFILE_MINUS:DPRINT("PROFILE-  "); break;
+      case PED_DEVICE_INFO:  DPRINT("INFO      "); break;
+      case PED_POWER_ON_OFF: DPRINT("POWER     "); break;
       default:               DPRINT("          "); break;
     }
     switch (pedals[i].function3) {
@@ -1329,6 +1333,8 @@ void controller_setup()
       case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
       case PED_PROFILE_PLUS: DPRINT("PROFILE+  "); break;
       case PED_PROFILE_MINUS:DPRINT("PROFILE-  "); break;
+      case PED_DEVICE_INFO:  DPRINT("INFO      "); break;
+      case PED_POWER_ON_OFF: DPRINT("POWER     "); break;
       default:               DPRINT("          "); break;
     }
     DPRINT("   ");
