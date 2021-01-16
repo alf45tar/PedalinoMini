@@ -227,8 +227,11 @@ void setup()
   }
 #endif
 
-  // Setup a 1Hz timer
+  // Setup a 1Hz timer for wifi and battery level monitoring and logging
   Timer1Attach(1000);
+
+  // Setup a 25Hz timer for display update
+  Timer3Attach(1000 / 25);
 
   esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, "nvs");
   if (pi != NULL) {

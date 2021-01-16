@@ -1020,7 +1020,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 
   if (pedals[p].pressMode == PED_DISABLE) return;
 
-  if (pedals[p].pressMode == PED_PRESS_1) {
+  if (pedals[p].pressMode == PED_PRESS_1 && pedals[p].function1 != PED_NONE) {
     switch (eventType) {
       case AceButton::kEventPressed:
         f = pedals[p].function1;

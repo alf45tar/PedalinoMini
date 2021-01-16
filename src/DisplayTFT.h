@@ -112,6 +112,33 @@ void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t heigh
   bar.deleteSprite();
 }
 
+void display_progress_bar_sprite(TFT_eSprite &bar, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t progress, bool invert = false)
+{
+  height += height % 2;
+
+  uint16_t radius = height / 2;
+  uint16_t doubleRadius = 2 * radius;
+  uint16_t innerRadius = radius - 2;
+
+  bar.drawCircleHelper(x + radius,             y + radius, radius, 0b00001001, 1);
+  bar.drawCircleHelper(x + width - 1 - radius, y + radius, radius, 0b00000110, 1);
+  bar.drawFastHLine(x + radius - 1, y,              width - doubleRadius + 1, 1);
+  bar.drawFastHLine(x + radius - 1, y + height - 1, width - doubleRadius + 1, 1);
+
+  uint16_t maxProgressWidth = (width - doubleRadius - 1) * progress / 100;
+
+  if (invert) {
+    bar.fillCircle(x + width - 1 - radius, y + radius, innerRadius, 1);
+    bar.fillRect(x + width - 1 - radius - maxProgressWidth, y + 2, maxProgressWidth, height - 4, 1);
+    bar.fillCircle(x + width - 1 - radius - maxProgressWidth, y + radius, innerRadius, 1);
+  }
+  else {
+    bar.fillCircle(x + radius, y + radius, innerRadius, 1);
+    bar.fillRect(x + radius + 1, y + 2, maxProgressWidth, height - 4, 1);
+    bar.fillCircle(x + radius + maxProgressWidth, y + radius, innerRadius, 1);
+  }
+}
+
 void display_progress_bar_update(unsigned int progress, unsigned int total)
 {
   display_progress_bar(0, display.height() / 2 + 8, display.width() - 1, display.height() / 8, 100*progress/total);
@@ -452,13 +479,28 @@ void topOverlay()
 
 void bottomOverlay()
 {
+  if (scrollingMode) return;
+
   if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
     int p;
     switch (m1) {
+      case midi::NoteOn:
+      case midi::NoteOff:
+        rmin = 0;
+        rmax = MIDI_RESOLUTION - 1;
 
       case midi::ControlChange:
         m3 = constrain(m3, rmin, rmax);
         p = map(m3, rmin, rmax, 0, 100);
+        display_progress_bar(0, display.height() - 24, display.width(), 24, p);
+        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 3, 124));
+        break;
+
+      case midi::ProgramChange:
+        rmin = 0;
+        rmax = MIDI_RESOLUTION - 1;
+        m3 = constrain(m2, rmin, rmax);
+        p = map(m2, rmin, rmax, 0, 100);
         display_progress_bar(0, display.height() - 24, display.width(), 24, p);
         if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 3, 124));
         break;
@@ -483,8 +525,6 @@ void bottomOverlay()
     }
   }
   else if (scrollingMode || MTC.getMode() != MidiTimeCode::SynchroNone) {
-
-    return;
 
     TFT_eSprite bottom = TFT_eSprite(&display);
 
@@ -566,7 +606,8 @@ void drawFrame1(int16_t x, int16_t y)
     //ui.disableAutoTransition();
     //ui.switchToFrame(0);
     if (strlen(lastPedalName) != 0 && lastPedalName[strlen(lastPedalName) - 1] == '.') lastPedalName[strlen(lastPedalName) - 1] = 0;
-    if (lastPedalName[0] == 0) {
+    if (!scrollingMode && lastPedalName[0] == 0) {
+      display.fillRect(0, 24, display.width(), 6, TFT_INDEX_BLACK);
       TFT_eSprite sprite = TFT_eSprite(&display);
       sprite.setColorDepth(1);
       sprite.createSprite(display.width(), display.height() - 30 - 24);
@@ -580,6 +621,7 @@ void drawFrame1(int16_t x, int16_t y)
           sprite.setFreeFont(&FreeSans24pt7b);
           sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
           sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
+          display.fillRect(0, display.height() - 24, display.width(), 24, TFT_INDEX_BLACK);
           break;
         case midi::NoteOn:
         case midi::NoteOff:
@@ -807,12 +849,31 @@ void drawFrame1(int16_t x, int16_t y)
         sprite.drawPixel(sprite.width() / 4,     i, TFT_INDEX_DARKGREY);
         sprite.drawPixel(sprite.width() / 4 * 3, i, TFT_INDEX_DARKGREY);
       }
+      sprite.setTextFont(1);
+      sprite.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+      sprite.setTextDatum(ML_DATUM);
+      sprite.drawString("-4h", 0, sprite.height() / 4);
+      sprite.drawString("-4h", 0, sprite.height() / 4 * 3 - 3);
+      sprite.setTextDatum(MC_DATUM);
+      sprite.drawString("-3h", sprite.width() / 4, sprite.height() / 4);
+      sprite.drawString("-3h", sprite.width() / 4, sprite.height() / 4 * 3 - 3);
+      sprite.setTextDatum(MC_DATUM);
+      sprite.drawString("-2h", sprite.width() / 2, sprite.height() / 4);
+      sprite.drawString("-2h", sprite.width() / 2, sprite.height() / 4 * 3 - 3);
+      sprite.setTextDatum(MC_DATUM);
+      sprite.drawString("-1h", sprite.width() / 4 * 3, sprite.height() / 4);
+      sprite.drawString("-1h", sprite.width() / 4 * 3, sprite.height() / 4 * 3 - 3);
+      sprite.setTextDatum(MR_DATUM);
+      sprite.drawString("0h", sprite.width() - 1, sprite.height() / 4);
+      sprite.drawString("0h", sprite.width() - 1, sprite.height() / 4 * 3 - 3);
+
       for (byte i = 0; i < POINTS - 1; i++) {
         byte h = (historyStart + i) % POINTS;
         if (memoryHistory[h]  != 0 && memoryHistory[h+1]  != 0) sprite.drawLine(i, 104 - memoryHistory[h],  i + 1, 104 - memoryHistory[h+1],  TFT_INDEX_RED);
         if (wifiHistory[h]    != 0 && wifiHistory[h+1]    != 0) sprite.drawLine(i, 104 - wifiHistory[h],    i + 1, 104 - wifiHistory[h+1],    TFT_INDEX_BLUE);
         if (batteryHistory[h] != 0 && batteryHistory[h+1] != 0) sprite.drawLine(i, 104 - batteryHistory[h], i + 1, 104 - batteryHistory[h+1], TFT_INDEX_GREEN);
       }
+
       sprite.setTextFont(1);
       sprite.setTextColor(TFT_INDEX_BLUE, TFT_INDEX_BLACK);
       sprite.setTextDatum(ML_DATUM);
@@ -842,116 +903,147 @@ void drawFrame1(int16_t x, int16_t y)
     }
     else {
       if (banknames[currentBank][0] == 0) {
+        String p;
+
+        display.fillRect(0, 24, display.width(), 6, TFT_INDEX_BLACK);
+
         TFT_eSprite sprite = TFT_eSprite(&display);
 
-        String a;
-        a = (currentProfile == 0 ? "A" : (currentProfile == 1 ? "B" : "C"));
-        a += ".";
-        a += ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
         sprite.setColorDepth(1);
-        sprite.createSprite(display.width(), display.height() - 30 - 24);
-        sprite.setFreeFont(&DSEG14_Classic_Bold_72);
+        sprite.createSprite(display.width(), display.height() - 30);
+        sprite.setFreeFont(&DSEG14_Classic_Bold_100);
         switch (currentProfile) {
           case 0:
+            p = "A." + ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
             sprite.setBitmapColor(TFT_RED, TFT_BLACK);
             break;
           case 1:
+            p = "B." + ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
             sprite.setBitmapColor(TFT_GREEN, TFT_BLACK);
             break;
           case 2:
+            p = "C." + ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
             sprite.setBitmapColor(TFT_BLUE, TFT_BLACK);
             break;
           default:
+            p = "" + ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
             sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
             break;
         }
         sprite.setTextDatum(MC_DATUM);
-        sprite.drawString(a, sprite.width() / 2, sprite.height() / 2);
+        sprite.drawString(p, sprite.width() / 2, sprite.height() / 2);
         sprite.pushSprite(0, 30);
         sprite.deleteSprite();
       }
       else {
-        /*
+        const byte pedals2 = PEDALS / 2;
         String name;
         int offsetText       = 0;
         int offsetBackground = 0;
         static unsigned long ms = millis();
 
+        TFT_eSprite sprite = TFT_eSprite(&display);
+
+        sprite.setColorDepth(1);
+        sprite.createSprite(display.width(), display.height() - 30);
+        sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
+
         // Display pedals name
-        display->setFont(ArialMT_Plain_10);
+        sprite.setFreeFont(&FreeSans9pt7b);
         for (byte p = 0; p < PEDALS/2; p++) {
+          // Top line
           switch (p) {
             case 0:
-              display->setTextAlignment(TEXT_ALIGN_LEFT);
+              sprite.setTextDatum(TL_DATUM);
               offsetText = 1;
               offsetBackground = 0;
               break;
             case PEDALS / 2 - 1:
-              display->setTextAlignment(TEXT_ALIGN_RIGHT);
+              sprite.setTextDatum(TR_DATUM);
               offsetText = -1;
               offsetBackground = 2;
               break;
             default:
-              display->setTextAlignment(TEXT_ALIGN_CENTER);
+              sprite.setTextDatum(TC_DATUM);
               offsetText = 0;
               offsetBackground = 1;
               break;
           }
-          // Top line
           name = String((banks[currentBank][p].pedalName[0] == ':') ? &banks[currentBank][p].pedalName[1] : banks[currentBank][p].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p][0]));
           if (pedals[p].function1 == PED_MIDI && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
-            display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
-                              12 + y,
-                              display->getStringWidth(name) + 1,
-                              10);
-            display->setColor(BLACK);
+            sprite.fillRect((sprite.width() / (PEDALS / 2 - 1)) * p - offsetBackground * display.textWidth(name) / 2 + offsetText + x,
+                              0 + y,
+                              display.textWidth(name) + 1,
+                              20, 1);
+            sprite.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
           }
           else
-            display->setColor(WHITE);
-          display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 10 + y, name);
+            sprite.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
+          sprite.drawString(name, (sprite.width() / (PEDALS / 2 - 1)) * p + offsetText + x, 0 + y);
           // Bottom line
+          switch (p) {
+            case 0:
+              sprite.setTextDatum(BL_DATUM);
+              offsetText = 1;
+              offsetBackground = 0;
+              break;
+            case PEDALS / 2 - 1:
+              sprite.setTextDatum(BR_DATUM);
+              offsetText = -1;
+              offsetBackground = 2;
+              break;
+            default:
+              sprite.setTextDatum(BC_DATUM);
+              offsetText = 0;
+              offsetBackground = 1;
+              break;
+          }
           name = String((banks[currentBank][p + PEDALS / 2].pedalName[0] == ':') ? &banks[currentBank][p + PEDALS / 2].pedalName[1] : banks[currentBank][p + PEDALS / 2].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p + PEDALS / 2][0]));
           if (pedals[p + PEDALS / 2].function1 == PED_MIDI && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
-            display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
-                              53 + y,
-                              display->getStringWidth(name) + 1,
-                              10);
-            display->setColor(BLACK);
+            sprite.fillRect((sprite.width() / (PEDALS / 2 - 1)) * p - offsetBackground * display.textWidth(name) / 2 + offsetText + x,
+                              sprite.height() - 20 + y,
+                              display.textWidth(name) + 1,
+                              20, 1);
+            sprite.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
           }
           else
-            display->setColor(WHITE);
-          display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 51 + y, name);
-          display->setColor(WHITE);
+            sprite.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
+          sprite.drawString(name, (sprite.width() / (PEDALS / 2 - 1)) * p + offsetText + x, sprite.height() - 1 + y);
+          sprite.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
         }
+
         // Center area
         if (((millis() - ms < 4000) && (banknames[currentBank][0] != '.')) || (banknames[currentBank][0] == ':')) {
           // Display bank name
-          display->drawRect(0, 23, 128, 29);
+          sprite.drawRect(0, 20, sprite.width(), sprite.height() - 42, 1);
           name = (banknames[currentBank][0] == ':') ? &banknames[currentBank][1] : banknames[currentBank];
           name.replace(String("##"), String(currentBank));
-          display->setFont(ArialMT_Plain_24);
-          display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-          display->drawString( 64 + x, 37 + y, name);
+          sprite.setFreeFont(&FreeSansBold18pt7b);
+          sprite.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString(name, sprite.width() / 2, sprite.height() / 2);
         }
         else if (((millis() - ms < 8000) || (banknames[currentBank][0] == '.')) && (banknames[currentBank][0] != ':')) {
           // Display pedal values
+          /*
           name = (banknames[currentBank][0] == '.') ? &banknames[currentBank][1] : banknames[currentBank];
           name.replace(String("##"), String(currentBank));
-          display->setFont(ArialMT_Plain_10);
-          display->setTextAlignment(TEXT_ALIGN_RIGHT);
-          display->drawString(128 + x, y, name);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.setTextDatum(TR_DATUM);
+          sprite.drawString(name, sprite.width() - 1 + x, y);
+          */
           for (byte p = 0; p < PEDALS/2; p++) {
             if ((pedals[p].function1 == PED_MIDI) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
-              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 25 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p][0],
+              display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, 25 + y, 55, 20, constrain(map(currentMIDIValue[currentBank][p][0],
                                                                                                        banks[currentBank][p].midiValue1,
                                                                                                        banks[currentBank][p].midiValue2,
                                                                                                        0, 100),
                                                                                                    0, 100));
             }
             if ((pedals[p + PEDALS / 2].function1 == PED_MIDI) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
-              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
+              display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, sprite.height() - 22 - 25 + y, 55, 20, constrain(map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue1,
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue2,
                                                                                                        0, 100),
@@ -962,7 +1054,8 @@ void drawFrame1(int16_t x, int16_t y)
         else {
           ms = millis();
         }
-        */
+        sprite.pushSprite(0, 30);
+        sprite.deleteSprite();
       }
       //ui.disableAutoTransition();
     }
@@ -1166,34 +1259,14 @@ void display_ui_update_enable()
 
 void display_update()
 {
-  static byte frame = 143;
+  if (interruptCounter3 > 0) {
 
-  if (uiUpdate) {
-    if (millis() % 64 == 0) {
+    interruptCounter3 = 0;
+
+    if (uiUpdate) {
       topOverlay();
+      drawFrame1(0, 0);
       bottomOverlay();
-      if (scrollingMode) {
-        frame = (frame + 1) % 144;
-        switch (frame) {
-          case 0:
-            drawFrame1(0, 0);
-            break;
-          case 48:
-            drawFrame1(0, 0);
-            break;
-          case 96:
-#ifdef DIAGNOSTIC
-            drawFrame1(0, 0);
-#else
-            drawFrame2(0, 0);
-#endif
-            break;
-        }
-      }
-      else {
-        drawFrame1(0, 0);
-        frame = 143;
-      }
     }
   }
 }
@@ -1205,4 +1278,3 @@ void display_off()
   display.writecommand(TFT_DISPOFF);
   display.writecommand(TFT_SLPIN);
 }
-
