@@ -60,16 +60,15 @@ void get_top_page(int p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha256-aAr2Zpq8MZ+YA/D6JtRD3xtrwpEz2IqOS+pWD/7XKIw=' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1' crossorigin='anonymous'>");
   #else
-    page += F("<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css' integrity='sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk' crossorigin='anonymous'>");
+    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1' crossorigin='anonymous'>");
   #endif
   } else {
-    page += F("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootswatch/4.5.0/");
+    page += F("<link href='https://stackpath.bootstrapcdn.com/bootswatch/5.0.0/");
     page += theme;
-    page += F("/bootstrap.min.css' crossorigin='anonymous'>");
+    page += F("/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   }
-  //if (p == -1) page += F("<link rel='stylesheet' href='/css/floating-labels.css'>");
   page += F("</head>");
 
   page += F("<body>");
@@ -77,9 +76,10 @@ void get_top_page(int p = 0) {
   page += F("<div class='container-fluid mt-3 mb-3'>");
 
   page += F("<nav class='navbar navbar-expand-md navbar-light bg-light mb-3'>");
+  page += F("<div class='container-fluid'>");
   page += F("<a class='navbar-brand' href='/'>");
   page += F("<img src='/logo.png' width='30' height='30' class='d-inline-block align-top' alt=''></a>");
-  page += F("<button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarNavDropdown' aria-controls='navbarNavDropdown' aria-expanded='false' aria-label='Toggle navigation'>");
+  page += F("<button class='navbar-toggler' type='button' data-bs-toggle='collapse' data-bs-target='#navbarNavDropdown' aria-controls='navbarNavDropdown' aria-expanded='false' aria-label='Toggle navigation'>");
   page += F("<span class='navbar-toggler-icon'></span>");
   page += F("</button>");
   page += F("<div class='collapse navbar-collapse' id='navbarNavDropdown'>");
@@ -118,30 +118,27 @@ void get_top_page(int p = 0) {
   }
   if (p != -1 && p != 0 && p != 7)
   {
-    page += F("<form class='form-inline my-2 my-lg-0'>");
+    page += F("<form class='d-flex'>");
     page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
     page += currentProfile == 1 ? F("<a class='btn btn-primary' href='?profile=2' role='button'>B</a>") : F("<a class='btn btn-outline-primary' href='?profile=2' role='button'>B</a>");
     page += currentProfile == 2 ? F("<a class='btn btn-primary' href='?profile=3' role='button'>C</a>") : F("<a class='btn btn-outline-primary' href='?profile=3' role='button'>C</a>");
     page += F("</form>");
   }
   page += F("</div>");
+  page += F("</div>");
   page += F("</nav>");
 
   if (alert != "") {
     page += F("<div class='alert alert-success alert-dismissible fade show' role='alert'>");
     page += alert;
-    page += F("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>");
-    page += F("<span aria-hidden='true'>&times;</span>");
-    page += F("</button>");
+    page += F("<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>");
     page += F("</div>");
     alert = "";
   }
   if (alertError != "") {
     page += F("<div class='alert alert-danger alert-dismissible fade show' role='alert'>");
     page += alertError;
-    page += F("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>");
-    page += F("<span aria-hidden='true'>&times;</span>");
-    page += F("</button>");
+    page += F("<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>");
     page += F("</div>");
     alertError = "";
   }
@@ -151,13 +148,9 @@ void get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/jquery-3.5.1.slim.min.js' integrity='sha256-xG3AUc6BxK8rIJarv4ha5Lp0Z/9dsPAQbO7pKM82WKM=' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/popper.min.js' integrity='sha256-x3YZWtRjM8bJqf48dFAv/qmgL68SI4jqNWeSLMZaMGA=' crossorigin='anonymous'></script>");
-  page += F("<script src='/js/bootstrap.min.js' integrity='sha256-OFRAJNoaD8L3Br5lglV7VyLRf0itmoBzWUoM+Sji4/8=' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW' crossorigin='anonymous'></script>");
 #else
-  page += F("<script src='https://code.jquery.com/jquery-3.5.1.slim.min.js' integrity='sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj' crossorigin='anonymous'></script>");
-  page += F("<script src='https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js' integrity='sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo' crossorigin='anonymous'></script>");
-  page += F("<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js' integrity='sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI' crossorigin='anonymous'></script>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js' integrity='sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW' crossorigin='anonymousì></script>");
 #endif
   page += F("</body>");
   page += F("</html>");
@@ -228,6 +221,9 @@ void get_root_page() {
   page += F("</dd>");
   page += F("<dt>Sequences</dt><dd>");
   page += String(SEQUENCES);
+  page += F("</dd>");
+  page += F("<dt>Leds</dt><dd>");
+  page += String(LEDS);
   page += F("</dd>");
   page += F("<dt>Boot Mode</dt><dd>");
   switch (bootMode) {
@@ -717,20 +713,18 @@ void get_actions_page() {
   page += F("<h5 class='card-header'>Actions</h5>");
   page += F("<div class='card-body'>");
 
-  page += F("<div class='form-row'>");
-  page += F("<div class='col-5'>");
-  page += F("<div class='input-group input-group-sm'>");
-  page += F("<div class='input-group-prepend'>");
-  page += F("<div class='input-group-text'>Bank Name</div>");
-  page += F("</div>");
-  page += F("<input type='text' class='form-control form-control-sm' name='bankname' maxlength='");
+  page += F("<div class='row'>");
+  page += F("<div class='col-auto me-auto'>");
+  page += F("<div class='form-floating'>");
+  page += F("<input type='text' class='form-control' id='bankNameFloatingInput' name='bankname' maxlength='");
   page += String(MAXBANKNAME) + F("' value='");
   page += String(banknames[b-1]) + F("'>");
+  page += F("<label for='bankNameFloatingInput'>Bank Name</label>");
   page += F("</div>");
   page += F("</div>");
-  page += F("<div class='col-7 text-right'>");
+  page += F("<div class='col-auto'>");
   page += F("<div class='btn-group' role='group'>");
-  page += F("<button id='btnGroupNewAction' type='button' class='btn btn-primary btn-sm dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>New Action</button>");
+  page += F("<button id='btnGroupNewAction' type='button' class='btn btn-primary dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>New Action</button>");
   page += F("<div class='dropdown-menu' aria-labelledby='btnGroupNewAction'>");
   for (i = 1; i <= PEDALS; i++) {
     page += F("<button type='submit' class='dropdown-item' name='action' value='new");
@@ -739,10 +733,6 @@ void get_actions_page() {
   }
   page += F("</div>");
   page += F("</div>");
-  if (actions[b-1] != nullptr) {
-    page += F(" ");
-    page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>Delete Selected Actions</button>");
-  }
   page += F("</div>");
   page += F("</div>");
 
@@ -760,45 +750,16 @@ void get_actions_page() {
       page += F("<div class='card-body'>");
       page += F("<h5 class='card-title'>Pedal ");
       page += String(act->pedal + 1) + F("</h5>");
+      page += F("<div class='container'>");
+      page += F("<div class='row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-xl-3 row-cols-xxl-4 g-2 g-md-3 g-xl-4'>");
     }
-    page += F("<div class='form-row mt-2'>");
+    page += F("<div class='col'>");
+    page += F("<div class='d-grid gap-1'>");
 
-    page += F("<div class='col-11'>");
-
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-25'>");
-    page += F("<div class='input-group-text w-100'>On Button</div>");
-    page += F("</div>");
-    page += F("<select class='custom-select custom-select-sm' name='button");
-    page += String(i) + F("'>");
-    switch (pedals[act->pedal].mode) {
-      case PED_MOMENTARY2:
-      case PED_LATCH2:
-        maxbutton = 2;
-        break;
-
-      case PED_MOMENTARY3:
-        maxbutton = 3;
-        break;
-
-      case PED_LADDER:
-        maxbutton = LADDER_STEPS;
-        break;
-
-      default:
-        maxbutton = 1;
-        break;
-    }
-    for (unsigned int b = 1; b <= maxbutton; b++) {
-      page += F("<option value='");
-      page += String(b) + F("'");
-      if (act->button == b - 1) page += F(" selected");
-      page += F(">");
-      page += String(b) + F("</option>");
-    }
-    page += F("</select>");
-
-    page += F("<select class='custom-select custom-select-sm' name='event");
+    page += F("<div class='row g-1'>");
+    page += F("<div class='w-50'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='onFloatingSelect' name='event");
     page += String(i) + F("'>");
     switch (pedals[act->pedal].mode) {
       case PED_MOMENTARY1:
@@ -851,13 +812,54 @@ void get_actions_page() {
         break;
      }
     page += F("</select>");
+    page += F("<label for='onFloatingSelect'>On</label>");
+    page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-25'>");
-    page += F("<div class='input-group-text w-100'>Send</div>");
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='buttonFloatingSelect' name='button");
+    page += String(i) + F("'>");
+    switch (pedals[act->pedal].mode) {
+      case PED_MOMENTARY2:
+      case PED_LATCH2:
+        maxbutton = 2;
+        break;
+
+      case PED_MOMENTARY3:
+        maxbutton = 3;
+        break;
+
+      case PED_LADDER:
+        maxbutton = LADDER_STEPS;
+        break;
+
+      default:
+        maxbutton = 1;
+        break;
+    }
+    for (unsigned int b = 1; b <= maxbutton; b++) {
+      page += F("<option value='");
+      page += String(b) + F("'");
+      if (act->button == b - 1) page += F(" selected");
+      page += F(">");
+      page += String(b) + F("</option>");
+    }
+    page += F("</select>");
+    page += F("<label for='buttonFloatingSelect'>Button</label>");
     page += F("</div>");
-    page += F("<select class='custom-select custom-select-sm' name='message");
+    page += F("</div>");
+
+    page += F("<div class='w-25'>");
+    page += F("<button type='submit' name='action' value='delete");
+    page += String(i) + F("' class='btn btn-danger btn-sm'>Delete</button>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='row g-1'>");
+    page += F("<div class='w-50'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='sendFloatingSelect' name='message");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -953,93 +955,138 @@ void get_actions_page() {
     if (act->midiMessage == PED_ACTION_BPM_MINUS) page += F(" selected");
     page += F(">BPM-</option>");
     page += F("</select>");
-    page += F("<input type='number' class='form-control form-control-sm' name='code");
-    page += String(i);
-    page += F("' min='0' max='127' value='");
-    page += String(act->midiCode);
-    page += F("'>");
-    page += F("<select class='custom-select custom-select-sm' name='channel");
+    page += F("<label for='sendFloatingSelect'>Send</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='channelFloatingSelect' name='channel");
     page += String(i) + F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
       page += F("<option value='");
       page += String(c) + F("'");
       if (act->midiChannel == c) page += F(" selected");
-      page += F(">Channel ");
+      page += F(">");
       page += String(c) + F("</option>");
     }
     page += F("</select>");
+    page += F("<label for='channelFloatingSelect'>Channel</label>");
+    page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-25'>");
-    page += F("<div class='input-group-text w-100'>Led</div>");
-    page += F("</div>");
-    page += F("<input type='number' class='form-control form-control-sm' name='led");
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='number' class='form-control' id='codeFLoatingInput' name='code");
     page += String(i);
-    page += F("' min='1' max='");
-    page += String(LEDS);
-    page += F("' value='");
-    page += String(act->led + 1);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiCode);
     page += F("'>");
-    page += F("<input type='color' class='form-control form-control-sm' name='color0-");
+    page += F("<label for='codeFloatingInput'>Value</label>");
+    page += F("</div>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='row g-1'>");
+    page += F("<div class='w-50'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='number' class='form-control' id='fromFloatingInput' name='from");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiValue1);
+    page += F("'>");
+    page += F("<label for='fromFloatingInput'>From Value</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='w-50'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='number' class='form-control' id='toFloatingInput' name='to");
+    page += String(i);
+    page += F("' min='0' max='127' value='");
+    page += String(act->midiValue2);
+    page += F("'>");
+    page += F("<label for='toFloatingInput'>To Value</label>");
+    page += F("</div>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='row g-1'>");
+    page += F("<div class='w-50'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='text' class='form-control' id ='tagOffFloatingInput' name='nameoff");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->tag0);
+    page += F("'>");
+    page += F("<label for='tagOffFloatingInput'>Tag When Off</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='w-50'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='text' class='form-control' in='tagOnFloatingInput' name='nameon");
+    page += String(i);
+    page += F("' maxlength='");
+    page += String(MAXACTIONNAME) + F("' value='");
+    page += String(act->tag1);
+    page += F("'>");
+    page += F("<label for='tagOnFloatingInput'>Tag When On</label>");
+    page += F("</div>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='row g-1'>");
+    page += F("<div class='w-50'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='ledFLotingSelect' name='led");
+    page += String(i) + F("'>");
+    for (unsigned int l = 1; l <= LEDS; l++) {
+      page += F("<option value='");
+      page += String(l) + F("'");
+      if (act->led == l - 1) page += F(" selected");
+      page += F(">");
+      page += String(l) + F("</option>");
+    }
+    page += F("</select>");
+    page += F("<label for='ledFloatingSelect'>Led</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='color' class='form-control' id='color0FlotingInput' name='color0-");
     page += String(i);
     page += F("' value='");
     char color[8];
     sprintf(color, "#%06X", act->color0 & 0xFFFFFF);
     page += String(color);
     page += F("'>");
-    page += F("<input type='color' class='form-control form-control-sm' name='color1-");
+    page += F("<label for='color0FloatingInput'>Off</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='color' class='form-control' id='color1FlotingInput' name='color1-");
     page += String(i);
     page += F("' value='");
     sprintf(color, "#%06X", act->color1 & 0xFFFFFF);
     page += String(color);
-    page += F("'></div>");
-
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-25'>");
-    page += F("<div class='input-group-text w-100'>Tags</div>");
-    page += F("</div>");
-    page += F("<input type='text' class='form-control form-control-sm' placeholder='Off' name='nameoff");
-    page += String(i);
-    page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->tag0);
     page += F("'>");
-    page += F("<input type='text' class='form-control form-control-sm' placeholder='On' name='nameon");
-    page += String(i);
-    page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->tag1);
-    page += F("'></div>");
-
-    page += F("<div class='input-group input-group-sm mb-1'>");
-    page += F("<div class='input-group-prepend w-25'>");
-    page += F("<div class='input-group-text w-100'>From Off/To On</div>");
+    page += F("<label for='color1FloatingInput'>On</label>");
     page += F("</div>");
-    page += F("<input type='number' class='form-control form-control-sm' name='from");
-    page += String(i);
-    page += F("' min='0' max='127' value='");
-    page += String(act->midiValue1);
-    page += F("'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='to");
-    page += String(i);
-    page += F("' min='0' max='127' value='");
-    page += String(act->midiValue2);
-    page += F("'></div>");
-    page += F("</div>");
-
-    page += F("<div class='col-1 text-center'>");
-    page += F("<div class='form-check'>");
-    page += F("<input class='form-check-input position-static' type='checkbox' name='delete");
-    page += String(i) + F("'>");
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='w-100'></div>");
+    page += F("</div>");
     page += F("</div>");
 
     same_pedal = (act->next != nullptr && act->pedal == act->next->pedal);
     if (!same_pedal) {
+      page += F("</div>");
+      page += F("</div>");
       page += F("</div>");
       page += F("</div>");
     }
@@ -1049,7 +1096,7 @@ void get_actions_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='col-auto'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
@@ -1066,19 +1113,18 @@ void get_pedals_page() {
   get_top_page(4);
 
   page += F("<form method='post'>");
-  page += F("<div class='form-row'>");
+  page += F("<div class='container'>");
+  page += F("<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-2 g-md-3 g-xl-4'>");
 
   for (unsigned int i = 1; i <= PEDALS; i++) {
-    page += F("<div class='col-sm-6 col-md-4 col-xl-3 col-12 mb-3'>");
+    page += F("<div class='col'>");
     page += F("<div class='card'>");
     page += F("<h5 class='card-header'>Pedal ");
     page += String(i) + F("</h5>");
     page += F("<div class='card-body'>");
-    page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 50%'>");
-    page += F("<div class='input-group-text w-100'>Mode</div>");
-    page += F("</div>");
-    page += F("<select class='custom-select custom-select-sm' name='mode");
+    page += F("<div class='d-grid gap-1'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='modeFloatingSelect' name='mode");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -1120,31 +1166,21 @@ void get_pedals_page() {
       page += F(">Ladder</option>");
     }
     page += F("</select>");
+    page += F("<label for='modeFloatingSelect'>Mode</label>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 50%'>");
-    page += F("<div class='input-group-text w-100 py-0'>");
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='singleCheck");
-    page += String(i) + F("' name='singlepress") + String(i) + F("'");
-    if (pedals[i-1].pressMode == PED_PRESS_1   ||
-        pedals[i-1].pressMode == PED_PRESS_1_2 ||
-        pedals[i-1].pressMode == PED_PRESS_1_L ||
-        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
-    page += F(">");
-    page += F("<label class='custom-control-label' for='singleCheck");
-    page += String(i) + F("'>Single Press</label>");
-    page += F("</div>");
-    page += F("</div>");
-    page += F("</div>");
-    page += F("<select class='custom-select custom-select-sm' name='function1");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' name='function1");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
-    page += String(PED_NONE) + F("'");
-    if (pedals[i-1].function1 == PED_NONE) page += F(" selected");
-    page += F("></option>");
+    page += String(PED_DISABLE) + F("'");
+    if (pedals[i-1].function1 == PED_DISABLE) page += F(" selected");
+    page += F(">Disable</option>");
+    page += F("<option value='");
+    page += String(PED_ACTIONS) + F("'");
+    if (pedals[i-1].function1 == PED_ACTIONS) page += F(" selected");
+    page += F(">Actions</option>");
     page += F("<option value='");
     page += String(PED_BANK_PLUS) + F("'");
     if (pedals[i-1].function1 == PED_BANK_PLUS) page += F(" selected");
@@ -1194,31 +1230,21 @@ void get_pedals_page() {
     if (pedals[i-1].function1 == PED_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
     page += F("</select>");
+    page += F("<label for='function1FloatingSelect'>Single Press</label>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 50%'>");
-    page += F("<div class='input-group-text w-100 py-0'>");
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='doubleCheck");
-    page += String(i) + F("' name='doublepress") + String(i) + F("'");
-    if (pedals[i-1].pressMode == PED_PRESS_2   ||
-        pedals[i-1].pressMode == PED_PRESS_1_2 ||
-        pedals[i-1].pressMode == PED_PRESS_2_L ||
-        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
-    page += F(">");
-    page += F("<label class='custom-control-label' for='doubleCheck");
-    page += String(i) + F("'>Double Press</label>");
-    page += F("</div>");
-    page += F("</div>");
-    page += F("</div>");
-    page += F("<select class='custom-select custom-select-sm' name='function2");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='function2FloatingSelect' name='function2");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
-    page += String(PED_NONE) + F("'");
-    if (pedals[i-1].function2 == PED_NONE) page += F(" selected");
-    page += F("></option>");
+    page += String(PED_DISABLE) + F("'");
+    if (pedals[i-1].function2 == PED_DISABLE) page += F(" selected");
+    page += F(">Disable</option>");
+    page += F("<option value='");
+    page += String(PED_ACTIONS) + F("'");
+    if (pedals[i-1].function2 == PED_ACTIONS) page += F(" selected");
+    page += F(">Actions</option>");
     page += F("<option value='");
     page += String(PED_BANK_PLUS) + F("'");
     if (pedals[i-1].function2 == PED_BANK_PLUS) page += F(" selected");
@@ -1268,31 +1294,21 @@ void get_pedals_page() {
     if (pedals[i-1].function2 == PED_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
     page += F("</select>");
+    page += F("<label for='function2FloatingSelect'>Double Press</label>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 50%'>");
-    page += F("<div class='input-group-text w-100 py-0'>");
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='longCheck");
-    page += String(i) + F("' name='longpress") + String(i) + F("'");
-    if (pedals[i-1].pressMode == PED_PRESS_L   ||
-        pedals[i-1].pressMode == PED_PRESS_1_L ||
-        pedals[i-1].pressMode == PED_PRESS_2_L ||
-        pedals[i-1].pressMode == PED_PRESS_1_2_L) page += F(" checked");
-    page += F(">");
-    page += F("<label class='custom-control-label' for='longCheck");
-    page += String(i) + F("'>Long Press</label>");
-    page += F("</div>");
-    page += F("</div>");
-    page += F("</div>");
-    page += F("<select class='custom-select custom-select-sm' name='function3");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='function3FloatingSelect' name='function3");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
-    page += String(PED_NONE) + F("'");
-    if (pedals[i-1].function3 == PED_NONE) page += F(" selected");
-    page += F("></option>");
+    page += String(PED_DISABLE) + F("'");
+    if (pedals[i-1].function3 == PED_DISABLE) page += F(" selected");
+    page += F(">Disable</option>");
+    page += F("<option value='");
+    page += String(PED_ACTIONS) + F("'");
+    if (pedals[i-1].function3 == PED_ACTIONS) page += F(" selected");
+    page += F(">Actions</option>");
     page += F("<option value='");
     page += String(PED_BANK_PLUS) + F("'");
     if (pedals[i-1].function3 == PED_BANK_PLUS) page += F(" selected");
@@ -1342,13 +1358,11 @@ void get_pedals_page() {
     if (pedals[i-1].function3 == PED_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
     page += F("</select>");
+    page += F("<label for='function3FloatingSelect'>Long Press</label>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 50%'>");
-    page += F("<div class='input-group-text w-100'>Analog</div>");
-    page += F("</div>");
-    page += F("<select class='custom-select custom-select-sm' name='map");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='mapFlotingSelect' name='map");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -1364,58 +1378,64 @@ void get_pedals_page() {
     if (pedals[i-1].mapFunction == PED_ANTILOG) page += F(" selected");
     page += F(">Antilog</option>");
     page += F("</select>");
+    page += F("<label for='mapFloatingSelect'>Analog Response</label>");
     page += F("</div>");
 
-    page += F("<div class='input-group input-group-sm mb-2'>");
-    page += F("<div class='input-group-prepend' style='width: 25%'>");
-    page += F("<div class='input-group-text w-100'>Min</div>");
-    page += F("</div>");
-    page += F("<input type='number' class='form-control form-control-sm' name='min");
+    page += F("<div class='input-group mb-2'>");
+    page += F("<div class='form-floating w-50'>");
+    page += F("<input type='number' class='form-control' id='minFloatingInput' name='min");
     page += String(i);
     page += F("' min='0' max='");
     page += String(ADC_RESOLUTION - 1) + F("' value='");
     page += String(pedals[i-1].expZero);
     page += F("'>");
-    page += F("<div class='input-group-prepend' style='width: 25%'>");
-    page += F("<div class='input-group-text w-100'>Max</div>");
+    page += F("<label for='minFloatingInput'>Min</label>");
     page += F("</div>");
-    page += F("<input type='number' class='form-control form-control-sm' name='max");
+
+    page += F("<div class='form-floating w-50'>");
+    page += F("<input type='number' class='form-control' id='maxFloatingInput' name='max");
     page += String(i);
     page += F("' min='0' max='");
     page += String(ADC_RESOLUTION - 1) + F("' value='");
     page += String(pedals[i-1].expMax);
-    page += F("'></div>");
+    page += F("'>");
+    page += F("<label for='maxFloatingInput'>Max</label>");
+    page += F("</div>");
+    page += F("</div>");
 
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='polarityCheck");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='polarityCheck");
     page += String(i) + F("' name='polarity") + String(i) + F("'");
     if (pedals[i-1].invertPolarity) page += F(" checked");
     page += F(">");
-    page += F("<label class='custom-control-label' for='polarityCheck");
+    page += F("<label class='form-check-label' for='polarityCheck");
     page += String(i) + F("'>Invert Polarity</label>");
     page += F("</div>");
 
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='autoCheck");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='autoCheck");
     page += String(i) + F("' name='autosensing") + String(i) + F("'");
     if (pedals[i-1].autoSensing) page += F(" checked");
     page += F(">");
-    page += F("<label class='custom-control-label' for='autoCheck");
+    page += F("<label class='form-check-label' for='autoCheck");
     page += String(i) + F("'>Analog Calibration</label>");
     page += F("</div>");
 
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
-
+    page += F("</div>");
   }
   page += F("</div>");
+  page += F("</div>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='container'>");
+  page += F("<div class='row mt-3'>");
   page += F("<div class='col-auto'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
   page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
@@ -1429,44 +1449,45 @@ void get_interfaces_page() {
 
   page += F("<form method='post'>");
 
-  page += F("<div class='row'>");
+  page += F("<div class='container'>");
+  page += F("<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-2 g-md-3 g-xl-4'>");
   for (unsigned int i = 1; i <= INTERFACES; i++) {
-    page += F("<div class='col-sm-6 col-md-4 col-lg-2 col-12 mb-3'>");
+    page += F("<div class='col'>");
     page += F("<div class='card h-100'>");
     page += F("<h6 class='card-header'>");
     page += interfaces[i-1].name;
     page += F("</h6>");
     page += F("<div class='card-body'>");
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='inCheck");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='inCheck");
     page += String(i) + F("' name='in") + String(i) + F("'");
     if (interfaces[i-1].midiIn) page += F(" checked");
     page += F(">");
-    page += F("<label class='custom-control-label' for='inCheck");
+    page += F("<label class='form-check-label' for='inCheck");
     page += String(i) + F("'>In</label>");
     page += F("</div>");
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='outCheck");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='outCheck");
     page += String(i) + F("' name='out") + String(i) + F("'");
     if (interfaces[i-1].midiOut) page += F(" checked");
     page += F(">");
-    page += F("<label class='custom-control-label' for='outCheck");
+    page += F("<label class='form-check-label' for='outCheck");
     page += String(i) + F("'>Out</label>");
     page += F("</div>");
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='thruCheck");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='thruCheck");
     page += String(i) + F("' name='thru") + String(i) + F("'");
     if (interfaces[i-1].midiThru) page += F(" checked");
     page += F(">");
-    page += F("<label class='custom-control-label' for='thruCheck");
+    page += F("<label class='form-check-label' for='thruCheck");
     page += String(i) + F("'>Thru</label>");
     page += F("</div>");
-    page += F("<div class='custom-control custom-switch'>");
-    page += F("<input type='checkbox' class='custom-control-input' id='clockCheck");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='clockCheck");
     page += String(i) + F("' name='clock") + String(i) + F("'");
     if (interfaces[i-1].midiClock) page += F(" checked");
     page += F(">");
-    page += F("<label class='custom-control-label' for='clockCheck");
+    page += F("<label class='form-check-label' for='clockCheck");
     page += String(i) + F("'>Clock</label>");
     page += F("</div>");
     page += F("</div>");
@@ -1474,12 +1495,15 @@ void get_interfaces_page() {
     page += F("</div>");
   }
   page += F("</div>");
+  page += F("</div>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='container'>");
+  page += F("<div class='row mt-3'>");
   page += F("<div class='col-auto'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
   page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
@@ -1504,7 +1528,7 @@ void get_sequences_page() {
   page += F("</div>");
 
   page += F("<form method='post'>");
-  page += F("<div class='form-row mb-3'>");
+  page += F("<div class='row mb-3'>");
   page += F("<div class='col-1 text-center'>");
   page += F("<span class='badge badge-primary'>Order</span>");
   page += F("</div>");
@@ -1528,14 +1552,14 @@ void get_sequences_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='form-row mb-3'>");
+  page += F("<div class='row mb-3'>");
   for (unsigned int i = 1; i <= STEPS; i++) {
     page += F("<div class='col-1 mb-3 text-center'>");
     page += String(i);
     page += F("</div>");
 
     page += F("<div class='col-2'>");
-    page += F("<select class='custom-select custom-select-sm' name='message");
+    page += F("<select class='form-select form-select-sm' name='message");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -1602,7 +1626,7 @@ void get_sequences_page() {
     page += F("</div>");
 
     page += F("<div class='col-1'>");
-    page += F("<select class='custom-select custom-select-sm' name='channel");
+    page += F("<select class='form-select form-select-sm' name='channel");
     page += String(i) + F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
       page += F("<option value='");
@@ -1646,7 +1670,7 @@ void get_sequences_page() {
   }
   page += F("</div>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='col-auto'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
@@ -1687,7 +1711,7 @@ void get_options_page() {
 
   page += F("<form method='post'>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Device</h5>");
@@ -1707,35 +1731,35 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Boot Mode</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='bootModeWifi' name='bootmodewifi'");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='bootModeWifi' name='bootmodewifi'");
   if (bootMode == PED_BOOT_NORMAL ||
       bootMode == PED_BOOT_WIFI   ||
       bootMode == PED_BOOT_AP     ||
       bootMode == PED_BOOT_AP_NO_BLE) page += F(" checked");
   page += F(">");
-  page += F("<label class='custom-control-label' for='bootModeWifi'>WiFi</label>");
+  page += F("<label class='form-check-label' for='bootModeWifi'>WiFi</label>");
   page += F("<small id='bootModeWifiHelpBlock' class='form-text text-muted'>");
   page += F("RTP-MIDI, ipMIDI, OSC and web UI require WiFi.");
   page += F("</small>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='bootModeAP' name='bootmodeap'");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='bootModeAP' name='bootmodeap'");
   if (bootMode == PED_BOOT_AP ||
       bootMode == PED_BOOT_AP_NO_BLE) page += F(" checked");
   page += F(">");
-  page += F("<label class='custom-control-label' for='bootModeAP'>Access Point</label>");
+  page += F("<label class='form-check-label' for='bootModeAP'>Access Point</label>");
   page += F("<small id='bootModeAPHelpBlock' class='form-text text-muted'>");
   page += F("To enable AP Mode enable WiFi too.");
   page += F("</small>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='bootModeBLE' name='bootmodeble'");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='bootModeBLE' name='bootmodeble'");
   if (bootMode == PED_BOOT_NORMAL ||
       bootMode == PED_BOOT_BLE    ||
       bootMode == PED_BOOT_AP) page += F(" checked");
   page += F(">");
-  page += F("<label class='custom-control-label' for='bootModeBLE'>BLE</label>");
+  page += F("<label class='form-check-label' for='bootModeBLE'>BLE</label>");
   page += F("<small id='bootModeBLEHelpBlock' class='form-text text-muted'>");
   page += F("BLE MIDI requires BLE.");
   page += F("</small>");
@@ -1745,7 +1769,7 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>WiFi Network</h5>");
@@ -1753,7 +1777,7 @@ void get_options_page() {
   page += F("<label for='wifissid'>SSID</label>");
   //page += F("<input class='form-control' type='text' maxlength='32' id='wifissid' name='wifiSSID' placeholder='SSID' value='");
   //page += wifiSSID + F("'>");
-  page += F("<select class='custom-select' id='wifissid' name='wifiSSID'>");
+  page += F("<select class='form-select' id='wifissid' name='wifiSSID'>");
   int n = WiFi.scanNetworks();
   for (int i = 0; i < n; i++) {
     page += F("<option value='");
@@ -1792,12 +1816,12 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Web UI Theme</h5>");
   page += F("<div class='card-body'>");
-  page += F("<select class='custom-select' id='bootstraptheme' name='theme'>");
+  page += F("<select class='form-select' id='bootstraptheme' name='theme'>");
   for (unsigned int i = 0; i < 22; i++) {
     page += F("<option value='");
     page += bootswatch[i] + F("'");
@@ -1841,7 +1865,7 @@ void get_options_page() {
   page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>Momentary Switches</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='form-group col-md-6 col-12 mb-3'>");
   page += F("<label for='pressTime'>Press Time</label>");
   page += F("<input class='form-control' type='text' maxlength='32' id='pressTime' name='presstime' placeholder='' value='");
@@ -1860,7 +1884,7 @@ void get_options_page() {
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='form-group col-md-6 col-12 mb-3'>");
   page += F("<label for='longPressTime'>Long Press Time</label>");
   page += F("<input class='form-control' type='text' maxlength='32' id='longPressTime' name='longpresstime' placeholder='' value='");
@@ -1881,7 +1905,7 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
 
   page += F("<div class='col-md-6 col-12 mb-3'>");
 
@@ -1912,7 +1936,7 @@ void get_options_page() {
   page += F("<h5 class='card-header'>Encoders</h5>");
   page += F("<div class='card-body'>");
   page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
-  page += F("<select class='custom-select custom-select-sm' name='encodersensitivity'>");
+  page += F("<select class='form-select form-select-sm' name='encodersensitivity'>");
   for (unsigned int s = 1; s <= 10; s++) {
     page += F("<option value='");
     page += String(s) + F("'");
@@ -1930,30 +1954,30 @@ void get_options_page() {
   page += F("<div class='card h-60'>");
   page += F("<h5 class='card-header'>Additional Features</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='tapDanceMode' name='tapdancemode'");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='tapDanceMode' name='tapdancemode'");
   if (tapDanceMode) page += F(" checked");
   page += F(">");
-  page += F("<label class='custom-control-label' for='tapDanceMode'>Tap Dance Mode</label>");
+  page += F("<label class='form-check-label' for='tapDanceMode'>Tap Dance Mode</label>");
   page += F("<small id='tapDanceModeHelpBlock' class='form-text text-muted'>");
   page += F("The first press of pedal X switch to bank X, the second press of any pedal send the MIDI event.");
   page += F("</small>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch mb-4'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='repeatOnBankSwitch' name='repeatonbankswitch'");
+  page += F("<div class='form-check form-switch mb-4'>");
+  page += F("<input class='form-check-input' type='checkbox' id='repeatOnBankSwitch' name='repeatonbankswitch'");
   if (repeatOnBankSwitch) page += F(" checked");
   page += F(">");
-  page += F("<label class='custom-control-label' for='repeatOnBankSwitch'>Bank Switch Repeat</label>");
+  page += F("<label class='form-check-label' for='repeatOnBankSwitch'>Bank Switch Repeat</label>");
   page += F("<small id='repeatOnBankSwitchModeHelpBlock' class='form-text text-muted'>");
   page += F("On bank switch repeat the last MIDI message that was sent for that bank");
   page += F("</small>");
   page += F("</div>");
   page += F("<label for='brightnessOn'>Leds On Brightness</label>");
-  page += F("<input type='range' class='custom-range' min='0' max='255' id='brightnessOn' name='ledsonbrightness' value='");
+  page += F("<input type='range' class='form-range' min='0' max='255' id='brightnessOn' name='ledsonbrightness' value='");
   page += String(ledsOnBrightness);
   page += F("'>");
   page += F("<label for='brightnessOff'>Leds Off Brightness</label>");
-  page += F("<input type='range' class='custom-range' min='0' max='255' id='brightnessOff' name='ledsoffbrightness' value='");
+  page += F("<input type='range' class='form-range' min='0' max='255' id='brightnessOff' name='ledsoffbrightness' value='");
   page += String(ledsOffBrightness);
   page += F("'>");
   page += F("</div>");
@@ -1961,16 +1985,18 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='form-row justify-content-between'>");
-  page += F("<div class='col-4'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-auto me-auto'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
   page += F(" ");
   page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
   page += F("</div>");
-  page += F("<div class='col-8 text-right'>");
+  page += F("<div class='col-auto'>");
   page += F("<button type='submit' name='action' value='factorydefault' class='btn btn-primary btn-sm'>Reset to Factory Default</button>");
   page += F(" ");
   page += F("<button type='submit' name='action' value='reboot' class='btn btn-primary btn-sm'>Reboot</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='poweroff' class='btn btn-primary btn-sm'>Power Off</button>");
   page += F("</div>");
   page += F("</div>");
 
@@ -1989,7 +2015,7 @@ void get_configurations_page() {
   page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>New Configuration</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='col-8'>");
   page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
@@ -2000,25 +2026,25 @@ void get_configurations_page() {
   page += F("<div class='col-1'>");
   page += F("</div>");
   page += F("<div class='col-3'>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='actionsCheck1' name='actions1' checked>");
-  page += F("<label class='custom-control-label' for='actionsCheck1'>Actions</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='actionsCheck1' name='actions1' checked>");
+  page += F("<label class='form-check-label' for='actionsCheck1'>Actions</label>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='pedalsCheck1' name='pedals1' checked>");
-  page += F("<label class='custom-control-label' for='pedalsCheck1'>Pedals</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='pedalsCheck1' name='pedals1' checked>");
+  page += F("<label class='form-check-label' for='pedalsCheck1'>Pedals</label>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='interfacesCheck1' name='interfaces1' checked>");
-  page += F("<label class='custom-control-label' for='interfacesCheck1'>Interfaces</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='interfacesCheck1' name='interfaces1' checked>");
+  page += F("<label class='form-check-label' for='interfacesCheck1'>Interfaces</label>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='sequencesCheck1' name='sequences1' checked>");
-  page += F("<label class='custom-control-label' for='sequencesCheck1'>Sequences</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='sequencesCheck1' name='sequences1' checked>");
+  page += F("<label class='form-check-label' for='sequencesCheck1'>Sequences</label>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='optionsCheck1' name='options1' checked>");
-  page += F("<label class='custom-control-label' for='optionsCheck1'>Options</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='optionsCheck1' name='options1' checked>");
+  page += F("<label class='form-check-label' for='optionsCheck1'>Options</label>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -2050,9 +2076,9 @@ void get_configurations_page() {
   page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>Available Configurations</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='col-8'>");
-  page += F("<select class='custom-select' id='filename' name='filename'>");
+  page += F("<select class='form-select' id='filename' name='filename'>");
   page += confoptions;
   page += F("</select>");
   page += F("<small id='filenameHelpBlock' class='form-text text-muted'>");
@@ -2065,30 +2091,30 @@ void get_configurations_page() {
   page += F("<div class='col-1'>");
   page += F("</div>");
   page += F("<div class='col-3'>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='actionsCheck2' name='actions2' checked>");
-  page += F("<label class='custom-control-label' for='actionsCheck2'>Actions</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='actionsCheck2' name='actions2' checked>");
+  page += F("<label class='form-check-label' for='actionsCheck2'>Actions</label>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='pedalsCheck2' name='pedals2' checked>");
-  page += F("<label class='custom-control-label' for='pedalsCheck2'>Pedals</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='pedalsCheck2' name='pedals2' checked>");
+  page += F("<label class='form-check-label' for='pedalsCheck2'>Pedals</label>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='interfacesCheck2' name='interfaces2' checked>");
-  page += F("<label class='custom-control-label' for='interfacesCheck2'>Interfaces</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='interfacesCheck2' name='interfaces2' checked>");
+  page += F("<label class='form-check-label' for='interfacesCheck2'>Interfaces</label>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='sequencesCheck2' name='sequences2' checked>");
-  page += F("<label class='custom-control-label' for='sequencesCheck2'>Sequences</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='sequencesCheck2' name='sequences2' checked>");
+  page += F("<label class='form-check-label' for='sequencesCheck2'>Sequences</label>");
   page += F("</div>");
-  page += F("<div class='custom-control custom-switch'>");
-  page += F("<input type='checkbox' class='custom-control-input' id='optionsCheck2' name='options2' checked>");
-  page += F("<label class='custom-control-label' for='optionsCheck2'>Options</label>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='optionsCheck2' name='options2' checked>");
+  page += F("<label class='form-check-label' for='optionsCheck2'>Options</label>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='col-12'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button> ");
   page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Apply & Save</button> ");
@@ -2104,11 +2130,10 @@ void get_configurations_page() {
   page += F("<div class='card'>");
   page += F("<h5 class='card-header'>Upload Configuration</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='form-row'>");
+  page += F("<div class='row'>");
   page += F("<div class='col-8'>");
-  page += F("<div class='custom-file'>");
-  page += F("<input type='file' class='custom-file-input' id='customFile' name='upload'>");
-  page += F("<label class='custom-file-label text-truncate' for='customFile'>Choose file</label>");
+  page += F("<div class='input-group'>");
+  page += F("<input type='file' class='form-control' id='customFile' name='upload'>");
   page += F("</div>");
   page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
   page += F("SPIFFS is not a high performance FS. It is designed to balance safety, wear levelling and performance for bare flash devices. ");
@@ -2123,8 +2148,6 @@ void get_configurations_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-  // Add the following code if you want the name of the file appear on select
-  //page += F("<script>$('.custom-file-input').on('change', function() { let fileName = $(this).val().split('\\').pop(); $(this).next('.custom-file-label').addClass('selected').html(fileName); });</script>");
   page += F("</form>");
 
   get_footer_page();
@@ -2454,8 +2477,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     create_banks();
     alert = "";
   }
-  else if (request->arg("action").equals("delete")) {
-    const String checked("on");
+  else if (request->arg("action").startsWith("delete")) {
     unsigned int i       = 0;
     action      *act     = actions[b];
     action      *actPrev = nullptr;
@@ -2464,7 +2486,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     while (act != nullptr) {
       if (act->pedal == p || uipedal.equals("All")) {
         i++;
-        if (request->arg(String("delete") + String(i)) == checked) {
+        if (request->arg("action").equals(String("delete") + String(i))) {
           if (actPrev == nullptr) {         // first
             actions[b] = actNext;
             actNext = (actions[b] == nullptr) ? nullptr : actions[b]->next;
@@ -2560,14 +2582,9 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     a = request->arg(String("function3") + String(i+1));
     pedals[i].function3 = a.toInt();
 
-    a = request->arg(String("singlepress") + String(i+1));
-    pedals[i].pressMode = (a == checked) ? PED_PRESS_1 : 0;
-
-    a = request->arg(String("doublepress") + String(i+1));
-    pedals[i].pressMode += (a == checked) ? PED_PRESS_2 : 0;
-
-    a = request->arg(String("longpress") + String(i+1));
-    pedals[i].pressMode += (a == checked) ? PED_PRESS_L : 0;
+    pedals[i].pressMode  = (pedals[i].function1 == PED_DISABLE ? 0 : PED_PRESS_1);
+    pedals[i].pressMode += (pedals[i].function2 == PED_DISABLE ? 0 : PED_PRESS_2);
+    pedals[i].pressMode += (pedals[i].function3 == PED_DISABLE ? 0 : PED_PRESS_L);
 
     a = request->arg(String("polarity") + String(i+1));
     pedals[i].invertPolarity = (a == checked) ? PED_ENABLE : PED_DISABLE;
@@ -3285,9 +3302,7 @@ void http_setup() {
   httpServer.serveStatic("/favicon.ico", SPIFFS, "/favicon.ico").setDefaultFile("/favicon.ico").setCacheControl("max-age=600");
   httpServer.serveStatic("/logo.png", SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
   httpServer.serveStatic("/css/bootstrap.min.css", SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
-  httpServer.serveStatic("/js/bootstrap.min.js", SPIFFS, "/js/bootstrap.min.js").setDefaultFile("/js/bootstrap.min.js").setCacheControl("max-age=600");
-  httpServer.serveStatic("/js/jquery-3.5.1.slim.min.js", SPIFFS, "/js/jquery-3.5.1.slim.min.js").setDefaultFile("/js/jquery-3.5.1.slim.min.js").setCacheControl("max-age=600");
-  httpServer.serveStatic("/js/popper.min.js", SPIFFS, "/js/popper.min.js").setDefaultFile("/js/popper.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/files", SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
   httpServer.on("/",                            http_handle_root);

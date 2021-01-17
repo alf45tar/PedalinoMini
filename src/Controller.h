@@ -677,7 +677,7 @@ void controller_event_handler_analog(byte pedal, int value)
 {
   switch (pedals[pedal].function1) {
 
-    case PED_NONE: {
+    case PED_ACTIONS: {
       action *act = actions[currentBank];
       while (act != nullptr) {
         if (act->pedal == pedal) {
@@ -1020,7 +1020,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 
   if (pedals[p].pressMode == PED_DISABLE) return;
 
-  if (pedals[p].pressMode == PED_PRESS_1 && pedals[p].function1 != PED_NONE) {
+  if (pedals[p].pressMode == PED_PRESS_1 && pedals[p].function1 != PED_ACTIONS) {
     switch (eventType) {
       case AceButton::kEventPressed:
         f = pedals[p].function1;
@@ -1047,17 +1047,17 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
       case AceButton::kEventPressed:
       case AceButton::kEventReleased:
       case AceButton::kEventRepeatPressed:
-        if (pedals[p].function1 != PED_NONE) return;
-        if (pedals[p].function2 != PED_NONE) return;
-        if (pedals[p].function3 != PED_NONE) return;
-        f = PED_NONE;
+        if (pedals[p].function1 != PED_ACTIONS) return;
+        if (pedals[p].function2 != PED_ACTIONS) return;
+        if (pedals[p].function3 != PED_ACTIONS) return;
+        f = PED_ACTIONS;
         break;
     }
   }
 
   switch (f) {
 
-    case PED_NONE: {
+    case PED_ACTIONS: {
       action *act = actions[currentBank];
       while (act != nullptr) {
         if ((act->pedal == p) && (act->button == i) && (act->event == eventType)) {

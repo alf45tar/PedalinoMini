@@ -18,11 +18,11 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define INTERFACES        6
 #define PROFILES          3
 #define BANKS            20
-#define PEDALS            6
+#define PEDALS            6   // real number of pedals is board specific (see below)
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of switches in a resistor ladder
-#define LEDS             18
+#define LEDS              6   // number of WS2812B leds
 
 #define MAXACTIONNAME    10
 #define MAXBANKNAME      10
@@ -32,6 +32,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 // These pins don’t have internal pull-ups or pull-down resistors.
 
 #ifdef HELTEC_WIFI_KIT_32
+#undef  PEDALS
 #define PEDALS                6
 const byte pinD[] = {GPIO_NUM_0, GPIO_NUM_2, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35};
@@ -44,6 +45,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NU
 #define BATTERY_ADC_EN        GPIO_NUM_21   // ADC_EN is the ADC detection enable port
 #define FASTLEDS_DATA_PIN     GPIO_NUM_5
 #elif defined TTGO_T_DISPLAY
+#undef  PEDALS
 #define PEDALS                8
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_17, GPIO_NUM_35, GPIO_NUM_0};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_35, GPIO_NUM_0};
@@ -56,6 +58,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NU
 #define BATTERY_ADC_EN        GPIO_NUM_14   // ADC_EN is the ADC detection enable port
 #define FASTLEDS_DATA_PIN     GPIO_NUM_15
 #elif defined TTGO_T_EIGHT
+#undef  PEDALS
 #define PEDALS                8
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_38, GPIO_NUM_37};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_38, GPIO_NUM_37};
@@ -68,6 +71,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #define FASTLEDS_DATA_PIN     GPIO_NUM_5
 #else
+#undef  PEDALS
 #define PEDALS                7
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_0};
 const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_0};
@@ -190,6 +194,7 @@ using namespace ace_button;
 #define PED_PRESS_1_2_L         PED_PRESS_1 + PED_PRESS_2 + PED_PRESS_L
 
 #define PED_MIDI                1
+#define PED_ACTIONS             PED_MIDI
 #define PED_BANK_PLUS           2
 #define PED_BANK_MINUS          3
 #define PED_START               4
@@ -246,7 +251,6 @@ using namespace ace_button;
 #define ADC_RESOLUTION         1024
 #define ADC_RESOLUTION_BITS      10       // hardware 9 to 12-bit ADC converter resolution
                                           // software 1 to 16-bit resolution
-#define CALIBRATION_DURATION   8000       // milliseconds
 
 struct action {
   char                   tag0[MAXACTIONNAME+1];
@@ -298,11 +302,7 @@ struct pedal {
                                               6 = Continue
                                               7 = Tap
                                               8 = BPM+
-                                              9 = BPM-
-                                             10 = Bank+2
-                                             11 = Bank-2
-                                             12 = Bank+3
-                                             13 = Bank-3 */
+                                              9 = BPM- */
   byte                   function2;
   byte                   function3;
   byte                   autoSensing;     /* 0 = disable
