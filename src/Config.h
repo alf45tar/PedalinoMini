@@ -416,9 +416,9 @@ void load_factory_default()
 
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {
-    pedals[p] = {PED_NONE,       // global function on single press
-                 PED_NONE,       // global function on double press
-                 PED_NONE,       // global function on long press
+    pedals[p] = {PED_ACTIONS,    // global function on single press
+                 PED_DISABLE,    // global function on double press
+                 PED_DISABLE,    // global function on long press
                  PED_DISABLE,    // autosensing
                  (p < PEDALS/2) ? PED_MOMENTARY1 : PED_JOG_WHEEL, // mode
                  PED_PRESS_1,    // press mode
@@ -435,9 +435,9 @@ void load_factory_default()
   }
 #else
   for (byte p = 0; p < PEDALS; p++)
-    pedals[p] = {PED_NONE,       // global function on single press
-                 PED_NONE,       // global function on double press
-                 PED_NONE,       // global function on long press
+    pedals[p] = {PED_ACTIONS,    // global function on single press
+                 PED_DISABLE,    // global function on double press
+                 PED_DISABLE,    // global function on long press
                  PED_DISABLE,    // autosensing
                  PED_MOMENTARY1, // mode
                  PED_PRESS_1,    // press mode

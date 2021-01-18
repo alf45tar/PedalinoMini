@@ -755,7 +755,7 @@ void controller_event_handler_analog(byte pedal, int value)
 
     case PED_BANK_PLUS:
     case PED_BANK_MINUS:
-      currentBank = map(value, 0, MIDI_RESOLUTION - 1, constrain(pedals[pedal].expZero - 1, 0, BANKS - 1), constrain(pedals[pedal].expMax - 1, 0, BANKS - 1));
+      currentBank = map(value, 0, ADC_RESOLUTION - 1, constrain(pedals[pedal].expZero - 1, 0, BANKS - 1), constrain(pedals[pedal].expMax - 1, 0, BANKS - 1));
       currentBank = constrain(currentBank, 0, BANKS - 1);
       if (repeatOnBankSwitch)
         midi_send(lastMIDIMessage[currentBank].midiMessage,

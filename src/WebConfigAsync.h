@@ -203,9 +203,9 @@ void get_root_page() {
 
   page += F("<h4 class='display-4'>Wireless MIDI foot controller</h4>");
 
-  page += F("<div class='row' mt-3>");
+  page += F("<div class='row row-cols-1 row-cols-sm-2 row-cols-lg-4'>");
 
-  page += F("<div class='col-6 col-sm-3'>");
+  page += F("<div class='col'>");
   page += F("<h3>Product</h3>");
   page += F("<dt>Model</dt><dd>");
   page += String(MODEL);
@@ -252,7 +252,7 @@ void get_root_page() {
   page += F("</dd>");
   page += F("</div>");
 
-  page += F("<div class='col-6 col-sm-3'>");
+  page += F("<div class='col'>");
   page += F("<h3>Hardware</h3>");
   page += F("<dt>Board</dt><dd>");
   page += ARDUINO_BOARD;
@@ -302,7 +302,7 @@ void get_root_page() {
   //page += F("</dd>");
   page += F("</div>");
 
-  page += F("<div class='col-6  col-sm-3'>");
+  page += F("<div class='col'>");
   if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA) {
   page += F("<h3>Wireless STA</h3>");
   page += F("<dt>SSID</dt><dd>");
@@ -345,7 +345,7 @@ void get_root_page() {
   }
   page += F("</div>");
 
-  page += F("<div class='col-6 col-sm-3'>");
+  page += F("<div class='col'>");
   page += F("<h3>Network</h3>");
   page += F("<dt>Hostname</dt><dd>");
   page += WiFi.getHostname() + String(".local");
@@ -378,6 +378,7 @@ void get_root_page() {
   page += F("</div>");
 
   page += F("</div>");
+
   get_footer_page();
 }
 
@@ -1716,9 +1717,12 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Device</h5>");
   page += F("<div class='card-body'>");
-  page += F("<h5 class='card-title'>Name</h5>");
+
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='devicename' name='mdnsdevicename' placeholder='' value='");
   page += host + F("'>");
+  page += F("<label for='devicename'>Name</label>");
+  page += F("</div>");
   page += F("<small id='devicenameHelpBlock' class='form-text text-muted'>");
   page += F("Each device must have a different name. Enter the device name without .local. Web UI will be available at http://<i>device_name</i>.local<br>");
   page += F("Pedalino will be restarted if you change it.");
@@ -1739,20 +1743,20 @@ void get_options_page() {
       bootMode == PED_BOOT_AP_NO_BLE) page += F(" checked");
   page += F(">");
   page += F("<label class='form-check-label' for='bootModeWifi'>WiFi</label>");
+  page += F("</div>");
   page += F("<small id='bootModeWifiHelpBlock' class='form-text text-muted'>");
   page += F("RTP-MIDI, ipMIDI, OSC and web UI require WiFi.");
   page += F("</small>");
-  page += F("</div>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='bootModeAP' name='bootmodeap'");
   if (bootMode == PED_BOOT_AP ||
       bootMode == PED_BOOT_AP_NO_BLE) page += F(" checked");
   page += F(">");
   page += F("<label class='form-check-label' for='bootModeAP'>Access Point</label>");
+  page += F("</div>");
   page += F("<small id='bootModeAPHelpBlock' class='form-text text-muted'>");
   page += F("To enable AP Mode enable WiFi too.");
   page += F("</small>");
-  page += F("</div>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='bootModeBLE' name='bootmodeble'");
   if (bootMode == PED_BOOT_NORMAL ||
@@ -1760,10 +1764,10 @@ void get_options_page() {
       bootMode == PED_BOOT_AP) page += F(" checked");
   page += F(">");
   page += F("<label class='form-check-label' for='bootModeBLE'>BLE</label>");
+  page += F("</div>");
   page += F("<small id='bootModeBLEHelpBlock' class='form-text text-muted'>");
   page += F("BLE MIDI requires BLE.");
   page += F("</small>");
-  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -1774,9 +1778,7 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>WiFi Network</h5>");
   page += F("<div class='card-body'>");
-  page += F("<label for='wifissid'>SSID</label>");
-  //page += F("<input class='form-control' type='text' maxlength='32' id='wifissid' name='wifiSSID' placeholder='SSID' value='");
-  //page += wifiSSID + F("'>");
+  page += F("<div class='form-floating'>");
   page += F("<select class='form-select' id='wifissid' name='wifiSSID'>");
   int n = WiFi.scanNetworks();
   for (int i = 0; i < n; i++) {
@@ -1787,9 +1789,13 @@ void get_options_page() {
     page += WiFi.SSID(i) + F("</option>");
   }
   page += F("</select>");
-  page += F("<label for='wifipassword'>Password</label>");
+  page += F("<label for='wifissid'>SSID</label>");
+  page += F("</div>");
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='password' maxlength='32' id='wifipassword' name='wifiPassword' placeholder='password' value='");
   page += wifiPassword + F("'>");
+  page += F("<label for='wifipassword'>Password</label>");
+  page += F("</div>");
   page += F("<small class='form-text text-muted'>");
   page += F("Connect to a wifi network using SSID and password.<br>");
   page += F("Pedalino will be restarted if it is connected to a WiFi network and you change them.");
@@ -1801,12 +1807,16 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>AP Mode</h5>");
   page += F("<div class='card-body'>");
-  page += F("<label for='wifissid'>SSID</label>");
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='ssidsoftap' name='ssidSoftAP' placeholder='SSID' value='");
   page += ssidSoftAP + F("'>");
-  page += F("<label for='passwordsoftap'>Password</label>");
+  page += F("<label for='wifissidap'>SSID</label>");
+  page += F("</div>");
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='password' maxlength='32' id='passwordsoftap' name='passwordSoftAP' placeholder='password' value='");
   page += passwordSoftAP + F("'>");
+  page += F("<label for='passwordsoftap'>Password</label>");
+  page += F("</div>");
   page += F("<small class='form-text text-muted'>");
   page += F("Access Point SSID and password.<br>");
   page += F("Pedalino will be restarted if it is in AP mode and you changed them.");
@@ -1821,6 +1831,7 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Web UI Theme</h5>");
   page += F("<div class='card-body'>");
+  page += F("<div class='form-floating'>");
   page += F("<select class='form-select' id='bootstraptheme' name='theme'>");
   for (unsigned int i = 0; i < 22; i++) {
     page += F("<option value='");
@@ -1830,6 +1841,8 @@ void get_options_page() {
     page += bootswatch[i] + F("</option>");
   }
   page += F("</select>");
+  page += F("<label for='theme'>Theme</label>");
+  page += F("</div>");
   page += F("<small id='bootstrapthemeHelpBlock' class='form-text text-muted'>");
   page += F("Changing default theme require internet connection because themes are served via a CDN network. Only 'bootstrap' theme has been stored into Pedalino flash memory.");
   page += F("</small>");
@@ -1840,19 +1853,15 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Web UI Login</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='input-group input-group-sm mb-3'>");
-  page += F("<div class='input-group-prepend w-25'>");
-  page += F("<div class='input-group-text w-100'>Username</div>");
-  page += F("</div>");
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control form-control-sm' type='text' maxlength='32' id='httpusername' name='httpUsername' value='");
   page += httpUsername + F("'>");
+  page += F("<label for='httpusername'>Username</label>");
   page += F("</div>");
-  page += F("<div class='input-group input-group-sm mb-3'>");
-  page += F("<div class='input-group-prepend w-25'>");
-  page += F("<div class='input-group-text w-100'>Password</div>");
-  page += F("</div>");
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control form-control-sm' type='password' maxlength='32' id='httppassword' name='httpPassword' value='");
   page += httpPassword + F("'>");
+  page += F("<label for='httppassword'>Password</label>");
   page += F("</div>");
   page += F("<small class='form-text text-muted'>");
   page += F("Web UI administrator username and password. Leave username blank for no login request.");
@@ -1867,17 +1876,21 @@ void get_options_page() {
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
   page += F("<div class='form-group col-md-6 col-12 mb-3'>");
-  page += F("<label for='pressTime'>Press Time</label>");
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='pressTime' name='presstime' placeholder='' value='");
   page += String(pressTime) + F("'>");
+  page += F("<label for='pressTime'>Press Time</label>");
+  page += F("</div>");
   page += F("<small id='pressTimeModeHelpBlock' class='form-text text-muted'>");
   page += F("Switch press time in milliseconds. Default value is 200.");
   page += F("</small>");
   page += F("</div>");
   page += F("<div class='form-group col-md-6 col-12 mb-3'>");
-  page += F("<label for='doublePressTime'>Double Press Time</label>");
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='doublePressTime' name='doublepresstime' placeholder='' value='");
   page += String(doublePressTime) + F("'>");
+  page += F("<label for='doublePressTime'>Double Press Time</label>");
+  page += F("</div>");
   page += F("<small id='doublePressTimeModeHelpBlock' class='form-text text-muted'>");
   page += F("Set double press detection time between each press time in milliseconds. Default value is 400.<br>");
   page += F("A double press is detected if the switch is released and depressed within this time, measured from when the first press is detected.");
@@ -1886,17 +1899,21 @@ void get_options_page() {
   page += F("</div>");
   page += F("<div class='row'>");
   page += F("<div class='form-group col-md-6 col-12 mb-3'>");
-  page += F("<label for='longPressTime'>Long Press Time</label>");
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='longPressTime' name='longpresstime' placeholder='' value='");
   page += String(longPressTime) + F("'>");
+  page += F("<label for='longPressTime'>Long Press Time</label>");
+  page += F("</div>");
   page += F("<small id='longPressTimeModeHelpBlock' class='form-text text-muted'>");
   page += F("Set the long press time in milliseconds after which a continuous press and release is deemed a long press, measured from when the first press is detected. Default value is 500.");
   page += F("</small>");
   page += F("</div>");
   page += F("<div class='form-group col-md-6 col-12 mb-3'>");
-  page += F("<label for='repeatPressTime'>Repeat Press Time</label>");
+  page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='repeatPressTime' name='repeatpresstime' placeholder='' value='");
   page += String(repeatPressTime) + F("'>");
+  page += F("<label for='repeatPressTime'>Repeat Press Time</label>");
+  page += F("</div>");
   page += F("<small id='repeatPressTimeModeHelpBlock' class='form-text text-muted'>");
   page += F("Set the repeat time in milliseconds after which a continuous press and hold is treated as a stream of repeated presses, measured from when the first press is detected. Default value is 500.");
   page += F("</small>");
@@ -1913,17 +1930,17 @@ void get_options_page() {
   page += F("<h5 class='card-header'>Resistor Ladder Network</h5>");
   page += F("<div class='card-body'>");
   for (byte i = 1; i <= LADDER_STEPS + 1; i++) {
-    page += F("<div class='input-group input-group-sm mb-3'>");
-    page += F("<div class='input-group-prepend'>");
-    page += F("<div class='input-group-text'>Level ");
-    page += String(i);
-    page += F("</div>");
-    page += F("</div>");
+    page += F("<div class='form-floating'>");
     page += F("<input class='form-control form-control-sm' type='number' id='threshold");
     page += String(i) + F("' name='threshold");
     page += String(i) + F("' min='0' max='");
     page += String(ADC_RESOLUTION-1) + F("' value='");
     page += String(ladderLevels[i-1]) + F("'>");
+    page += F("<label for='threshold");
+    page += String(i);
+    page += F("'>Level ");
+    page += String(i);
+    page += F("</label>");
     page += F("</div>");;
   }
   page += F("</div>");
@@ -1935,7 +1952,7 @@ void get_options_page() {
   page += F("<div class='card h-40 mb-3'>");
   page += F("<h5 class='card-header'>Encoders</h5>");
   page += F("<div class='card-body'>");
-  page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
+  page += F("<div class='form-floating'>");
   page += F("<select class='form-select form-select-sm' name='encodersensitivity'>");
   for (unsigned int s = 1; s <= 10; s++) {
     page += F("<option value='");
@@ -1945,6 +1962,8 @@ void get_options_page() {
     page += String(s) + F("</option>");
   }
   page += F("</select>");
+  page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
+  page += F("</div>");
   page += F("<small id='encoderSensitivityHelpBlock' class='form-text text-muted'>");
   page += F("Default value is 5.");
   page += F("</small>");
@@ -1959,19 +1978,19 @@ void get_options_page() {
   if (tapDanceMode) page += F(" checked");
   page += F(">");
   page += F("<label class='form-check-label' for='tapDanceMode'>Tap Dance Mode</label>");
+  page += F("</div>");
   page += F("<small id='tapDanceModeHelpBlock' class='form-text text-muted'>");
   page += F("The first press of pedal X switch to bank X, the second press of any pedal send the MIDI event.");
   page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='form-check form-switch mb-4'>");
+  page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='repeatOnBankSwitch' name='repeatonbankswitch'");
   if (repeatOnBankSwitch) page += F(" checked");
   page += F(">");
   page += F("<label class='form-check-label' for='repeatOnBankSwitch'>Bank Switch Repeat</label>");
+  page += F("</div>");
   page += F("<small id='repeatOnBankSwitchModeHelpBlock' class='form-text text-muted'>");
   page += F("On bank switch repeat the last MIDI message that was sent for that bank");
   page += F("</small>");
-  page += F("</div>");
   page += F("<label for='brightnessOn'>Leds On Brightness</label>");
   page += F("<input type='range' class='form-range' min='0' max='255' id='brightnessOn' name='ledsonbrightness' value='");
   page += String(ledsOnBrightness);
