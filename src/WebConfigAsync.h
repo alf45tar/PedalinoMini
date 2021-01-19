@@ -116,15 +116,17 @@ void get_top_page(int p = 0) {
   page += F("</li>");
   page += F("</ul>");
   }
+  page += F("</div>");
   if (p != -1 && p != 0 && p != 7)
   {
     page += F("<form class='d-flex'>");
+    page += F("<div class='btn-group'>");
     page += currentProfile == 0 ? F("<a class='btn btn-primary' href='?profile=1' role='button'>A</a>") : F("<a class='btn btn-outline-primary' href='?profile=1' role='button'>A</a>");
     page += currentProfile == 1 ? F("<a class='btn btn-primary' href='?profile=2' role='button'>B</a>") : F("<a class='btn btn-outline-primary' href='?profile=2' role='button'>B</a>");
     page += currentProfile == 2 ? F("<a class='btn btn-primary' href='?profile=3' role='button'>C</a>") : F("<a class='btn btn-outline-primary' href='?profile=3' role='button'>C</a>");
+    page += F("</div>");
     page += F("</form>");
   }
-  page += F("</div>");
   page += F("</div>");
   page += F("</nav>");
 
@@ -1778,6 +1780,8 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>WiFi Network</h5>");
   page += F("<div class='card-body'>");
+  page += F("<div class='row g-1'>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<select class='form-select' id='wifissid' name='wifiSSID'>");
   int n = WiFi.scanNetworks();
@@ -1791,10 +1795,13 @@ void get_options_page() {
   page += F("</select>");
   page += F("<label for='wifissid'>SSID</label>");
   page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='password' maxlength='32' id='wifipassword' name='wifiPassword' placeholder='password' value='");
   page += wifiPassword + F("'>");
   page += F("<label for='wifipassword'>Password</label>");
+  page += F("</div>");
   page += F("</div>");
   page += F("<small class='form-text text-muted'>");
   page += F("Connect to a wifi network using SSID and password.<br>");
@@ -1803,24 +1810,31 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+  page += F("</div>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>AP Mode</h5>");
   page += F("<div class='card-body'>");
+  page += F("<div class='row g-1'>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='ssidsoftap' name='ssidSoftAP' placeholder='SSID' value='");
   page += ssidSoftAP + F("'>");
   page += F("<label for='wifissidap'>SSID</label>");
   page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='password' maxlength='32' id='passwordsoftap' name='passwordSoftAP' placeholder='password' value='");
   page += passwordSoftAP + F("'>");
   page += F("<label for='passwordsoftap'>Password</label>");
   page += F("</div>");
+  page += F("</div>");
   page += F("<small class='form-text text-muted'>");
   page += F("Access Point SSID and password.<br>");
   page += F("Pedalino will be restarted if it is in AP mode and you changed them.");
   page += F("</small>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -1853,19 +1867,25 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Web UI Login</h5>");
   page += F("<div class='card-body'>");
+  page += F("<div class='row g-1'>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control form-control-sm' type='text' maxlength='32' id='httpusername' name='httpUsername' value='");
   page += httpUsername + F("'>");
   page += F("<label for='httpusername'>Username</label>");
   page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control form-control-sm' type='password' maxlength='32' id='httppassword' name='httpPassword' value='");
   page += httpPassword + F("'>");
   page += F("<label for='httppassword'>Password</label>");
   page += F("</div>");
+  page += F("</div>");
   page += F("<small class='form-text text-muted'>");
   page += F("Web UI administrator username and password. Leave username blank for no login request.");
   page += F("</small>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -1929,6 +1949,7 @@ void get_options_page() {
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Resistor Ladder Network</h5>");
   page += F("<div class='card-body'>");
+  page += F("<div class='d-grid gap-1'>");
   for (byte i = 1; i <= LADDER_STEPS + 1; i++) {
     page += F("<div class='form-floating'>");
     page += F("<input class='form-control form-control-sm' type='number' id='threshold");
@@ -1943,6 +1964,7 @@ void get_options_page() {
     page += F("</label>");
     page += F("</div>");;
   }
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -2745,6 +2767,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   const String checked("on");
   bool  restartRequired = false;
+  bool  poweroffRequired = false;
 
   http_handle_globals(request);
 
@@ -2860,6 +2883,9 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   else if (request->arg("action") == String("reboot")) {
     restartRequired = true;
   }
+  else if (request->arg("action") == String("poweroff")) {
+    poweroffRequired = true;
+  }
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
   response->addHeader("Connection", "close");
@@ -2869,6 +2895,14 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   if (restartRequired) {
     delay(1000);
     ESP.restart();
+  }
+
+  if (poweroffRequired) {
+    display_off();
+    //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
+    //esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(p), 0);
+    delay(200);
+    esp_deep_sleep_start();
   }
 }
 

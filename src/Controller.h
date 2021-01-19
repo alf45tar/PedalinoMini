@@ -1048,8 +1048,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
       case AceButton::kEventReleased:
       case AceButton::kEventRepeatPressed:
         if (pedals[p].function1 != PED_ACTIONS) return;
-        if (pedals[p].function2 != PED_ACTIONS) return;
-        if (pedals[p].function3 != PED_ACTIONS) return;
+        //if (pedals[p].function2 != PED_ACTIONS) return;
+        //if (pedals[p].function3 != PED_ACTIONS) return;
         f = PED_ACTIONS;
         break;
     }
