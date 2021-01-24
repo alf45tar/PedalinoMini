@@ -132,7 +132,6 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
       jo["In"]              = interfaces[i].midiIn;
       jo["Out"]             = interfaces[i].midiOut;
       jo["Thru"]            = interfaces[i].midiThru;
-      jo["Routing"]         = interfaces[i].midiRouting;
       jo["Clock"]           = interfaces[i].midiClock;
     }
   }
@@ -147,9 +146,7 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
         jo["Message"]         = sequences[s][t].midiMessage;
         jo["Channel"]         = sequences[s][t].midiChannel;
         jo["Code"]            = sequences[s][t].midiCode;
-        jo["Value1"]          = sequences[s][t].midiValue1;
-        jo["Value2"]          = sequences[s][t].midiValue2;
-        jo["Value3"]          = sequences[s][t].midiValue3;
+        jo["Value"]           = sequences[s][t].midiValue;
       }
     }
   }
@@ -362,7 +359,6 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           interfaces[i].midiIn        = jo["In"];
           interfaces[i].midiOut       = jo["Out"];
           interfaces[i].midiThru      = jo["Thru"];
-          interfaces[i].midiRouting   = jo["Routing"];
           interfaces[i].midiClock     = jo["Clock"];
         }
       }
@@ -380,9 +376,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           sequences[s][t].midiMessage = jo["Message"];
           sequences[s][t].midiChannel = jo["Channel"];
           sequences[s][t].midiCode    = jo["Code"];
-          sequences[s][t].midiValue1  = jo["Value1"];
-          sequences[s][t].midiValue2  = jo["Value2"];
-          sequences[s][t].midiValue3  = jo["Value3"];
+          sequences[s][t].midiValue   = jo["Value"];
         }
       }
     }
@@ -483,7 +477,6 @@ void load_factory_default()
       interfaces[i].midiIn      = PED_ENABLE;
       interfaces[i].midiOut     = PED_ENABLE;
       interfaces[i].midiThru    = PED_DISABLE;
-      interfaces[i].midiRouting = PED_DISABLE;
       interfaces[i].midiClock   = PED_DISABLE;
     };
   interfaces[PED_USBMIDI].midiIn = PED_DISABLE;
@@ -494,9 +487,7 @@ void load_factory_default()
       sequences[s][t].midiMessage  = PED_EMPTY;
       sequences[s][t].midiChannel  = 1;
       sequences[s][t].midiCode     = 0;
-      sequences[s][t].midiValue1   = 0;
-      sequences[s][t].midiValue2   = 0;
-      sequences[s][t].midiValue3   = 0;
+      sequences[s][t].midiValue    = 0;
     }
   }
 

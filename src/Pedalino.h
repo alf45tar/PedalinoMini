@@ -215,6 +215,7 @@ using namespace ace_button;
 #define PED_EVENT_LONG_PRESS    AceButton::kEventLongPressed
 #define PED_EVENT_MOVE          6
 #define PED_EVENT_JOG           7
+#define PED_EVENT_NONE        255
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
@@ -340,29 +341,7 @@ struct interface {
   byte                   midiIn;          // 0 = disable, 1 = enable
   byte                   midiOut;         // 0 = disable, 1 = enable
   byte                   midiThru;        // 0 = disable, 1 = enable
-  byte                   midiRouting;     // 0 = disable, 1 = enable
   byte                   midiClock;       // 0 = disable, 1 = enable
-};
-
-struct sequence {
-  byte                   midiMessage;     /*  1 = Program Change,
-                                              2 = Control Code
-                                              3 = Note On/Note Off
-                                              4 = Bank Select+
-                                              5 = Bank Select-
-                                              6 = Program Change+
-                                              7 = Program Change-
-                                              8 = Pitch Bend
-                                              9 = Channel Pressure
-                                             10 = Start
-                                             11 = Stop
-                                             12 = Continue
-                                             13 = Sequence */
-  byte                   midiChannel;     /* MIDI channel 1-16 */
-  byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
-  byte                   midiValue1;      /* Single click */
-  byte                   midiValue2;      /* Double click */
-  byte                   midiValue3;      /* Long click */
 };
 
 struct message {
@@ -388,7 +367,7 @@ char      banknames[BANKS][MAXBANKNAME+1];        // Bank Names
 action   *actions[BANKS];                         // Actions
 bank      banks[BANKS][PEDALS];                   // The first action of every pedal
 pedal     pedals[PEDALS];                         // Pedals Setup
-sequence  sequences[SEQUENCES][STEPS];            // Sequences Setup
+message   sequences[SEQUENCES][STEPS];            // Sequences Setup
 byte      currentMIDIValue[BANKS][PEDALS][LADDER_STEPS];
 message   lastMIDIMessage[BANKS];
 byte      lastProgramChange[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -396,12 +375,12 @@ uint16_t  lastBankSelect[16]    = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 CRGB      lastLedColor[BANKS][LEDS];
 
 interface interfaces[] = {
-                           "USB MIDI   ", 0, 1, 0, 0, 0,
-                           "Legacy MIDI", 0, 1, 0, 0, 0,
-                           "RTP-MIDI   ", 1, 1, 0, 0, 0,
-                           "ipMIDI     ", 1, 1, 0, 0, 0,
-                           "BLE MIDI   ", 1, 1, 0, 0, 0,
-                           "OSC        ", 1, 1, 0, 0, 0
+                           "USB MIDI   ", 0, 1, 0, 0,
+                           "Legacy MIDI", 0, 1, 0, 0,
+                           "RTP-MIDI   ", 1, 1, 0, 0,
+                           "ipMIDI     ", 1, 1, 0, 0,
+                           "BLE MIDI   ", 1, 1, 0, 0,
+                           "OSC        ", 1, 1, 0, 0
                           };                       // Interfaces Setup
 
 AceButton       bootButton;
@@ -465,11 +444,16 @@ int    wifiLevel = 0;
 uint16_t  batteryVoltage = 4200;  // mV
 
 #ifdef DIAGNOSTIC
-#define POINTS  240                           // Logged data points
+#define POINTS                        240             // Logged data points
+#define SECONDS_BETWEEN_SAMPLES       5
+#define GRAPH_DURATION                POINTS * SECONDS_BETWEEN_SAMPLES
+#define GRAPH_DURATION_QUARTER_SEC    GRAPH_DURATION / 4
+#define GRAPH_DURATION_QUARTER_MIN    GRAPH_DURATION_QUARTER_SEC / 60
+#define GRAPH_DURATION_QUARTER_HOUR   GRAPH_DURATION_QUARTER_MIN / 60
 RTC_DATA_ATTR byte historyStart = 0;
-RTC_DATA_ATTR byte memoryHistory[POINTS];     // 0% =   0Kb    100% = 200Kb
-RTC_DATA_ATTR byte wifiHistory[POINTS];       // 0% = -90dB    100% = -10dB
-RTC_DATA_ATTR byte batteryHistory[POINTS];    // 0% =  3.0V    100% =  5.0V
+RTC_DATA_ATTR byte memoryHistory[POINTS];       // 0% =   0Kb    100% = 200Kb
+RTC_DATA_ATTR byte wifiHistory[POINTS];         // 0% = -90dB    100% = -10dB
+RTC_DATA_ATTR byte batteryHistory[POINTS];      // 0% =  3.0V    100% =  5.0V
 #endif
 
 bool powersaver = false;

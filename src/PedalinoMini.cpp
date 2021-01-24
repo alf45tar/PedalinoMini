@@ -182,7 +182,7 @@ void wifi_and_battery_level() {
       batteryHistory[historyStart] = map(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100);
       historyStart = (historyStart + 1) % POINTS;
     }
-    sec = (sec + 1) % 60;
+    sec = (sec + 1) % SECONDS_BETWEEN_SAMPLES;
 #endif
   }
 }

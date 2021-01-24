@@ -764,6 +764,11 @@ void get_actions_page() {
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='onFloatingSelect' name='event");
     page += String(i) + F("'>");
+    page += F("<option value='");
+    page += String(PED_EVENT_NONE) + F("'");
+    if (act->event == PED_EVENT_NONE) page += F(" selected");
+    page += F(">");
+    page += F("</option>");
     switch (pedals[act->pedal].mode) {
       case PED_MOMENTARY1:
       case PED_MOMENTARY2:
@@ -1531,38 +1536,20 @@ void get_sequences_page() {
   page += F("</div>");
 
   page += F("<form method='post'>");
-  page += F("<div class='row mb-3'>");
-  page += F("<div class='col-1 text-center'>");
-  page += F("<span class='badge badge-primary'>Order</span>");
-  page += F("</div>");
-  page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>MIDI Message</span>");
-  page += F("</div>");
-  page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>MIDI Channel</span>");
-  page += F("</div>");
-  page += F("<div class='col-2'>");
-  page += F("<span class='badge badge-primary'>MIDI Code/Note</span>");
-  page += F("</div>");
-  page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>MIDI Value 1</span>");
-  page += F("</div>");
-  page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>MIDI Value 2</span>");
-  page += F("</div>");
-  page += F("<div class='col-1'>");
-  page += F("<span class='badge badge-primary'>MIDI Value 3</span>");
-  page += F("</div>");
-  page += F("</div>");
 
-  page += F("<div class='row mb-3'>");
   for (unsigned int i = 1; i <= STEPS; i++) {
-    page += F("<div class='col-1 mb-3 text-center'>");
+    page += F("<div class='d-grid mb-1'>");
+    page += F("<div class='row'>");
+
+    page += F("<div class='col-1'>");
     page += String(i);
     page += F("</div>");
 
-    page += F("<div class='col-2'>");
-    page += F("<select class='form-select form-select-sm' name='message");
+    page += F("<div class='col-11'>");
+    page += F("<div class='row g-1'>");
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='messageFloatingSelect' name='message");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -1626,10 +1613,13 @@ void get_sequences_page() {
     if (sequences[s-1][i-1].midiMessage == PED_SEQUENCE) page += F(" selected");
     page += F(">Sequence</option>");
     page += F("</select>");
+    page += F("<label for='messageFloatingSelect'>Send</label>");
+    page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-1'>");
-    page += F("<select class='form-select form-select-sm' name='channel");
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='channelFloatingSelect'name='channel");
     page += String(i) + F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
       page += F("<option value='");
@@ -1639,39 +1629,39 @@ void get_sequences_page() {
       page += String(c) + F("</option>");
     }
     page += F("</select>");
+    page += F("<label for='channelFloatingSelect'>Channel</label>");
+    page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='col-2'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='code");
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='number' class='form-control' id='codeFloatingInput' name='code");
     page += String(i);
     page += F("' min='0' max='127' value='");
     page += String(sequences[s-1][i-1].midiCode);
-    page += F("'></div>");
+    page += F("'>");
+    page += F("<label for='codeFloatingInput'>Code</label>");
+    page += F("</div>");
+    page += F("</div>");
 
-    page += F("<div class='col-1'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='value1");
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='number' class='form-control' id='valueFloatingInput' name='value");
     page += String(i);
     page += F("' min='0' max='127' value='");
-    page += String(sequences[s-1][i-1].midiValue1);
-    page += F("'></div>");
+    page += String(sequences[s-1][i-1].midiValue);
+    page += F("'>");
+    page += F("<label for='valueFloatingInput'>Value</label>");
+    page += F("</div>");
+    page += F("</div>");
 
-    page += F("<div class='col-1'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='value2");
-    page += String(i);
-    page += F("' min='0' max='127' value='");
-    page += String(sequences[s-1][i-1].midiValue2);
-    page += F("'></div>");
+    page += F("</div>");
+    page += F("</div>");
 
-    page += F("<div class='col-1'>");
-    page += F("<input type='number' class='form-control form-control-sm' name='value3");
-    page += String(i);
-    page += F("' min='0' max='127' value='");
-    page += String(sequences[s-1][i-1].midiValue3);
-    page += F("'></div>");
-
-    page += F("<div class='w-100'></div>");
+    page += F("</div>");
+    page += F("</div>");
   }
-  page += F("</div>");
+
 
   page += F("<div class='row'>");
   page += F("<div class='col-auto'>");
@@ -2476,10 +2466,10 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->tag1[0]      = 0;
     act->pedal        = p;
     act->button       = 0;
-    act->led          = LEDS - 1;
+    act->led          = constrain(act->pedal, 0, LEDS - 1);
     act->color0       = CRGB::Black;;
     act->color1       = CRGB::Black;
-    act->event        = PED_EVENT_PRESS;
+    act->event        = PED_EVENT_NONE;
     act->midiMessage  = PED_EMPTY;
     act->midiChannel  = 1;
     act->midiCode     = 0;
@@ -2504,10 +2494,10 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->tag1[0]      = 0;
     act->pedal        = constrain(request->arg("action").charAt(3) - '1', 0, PEDALS - 1);
     act->button       = 0;
-    act->led          = LEDS - 1;
+    act->led          = constrain(act->pedal, 0, LEDS - 1);
     act->color0       = CRGB::Black;;
     act->color1       = CRGB::Black;
-    act->event        = PED_EVENT_PRESS;
+    act->event        = PED_EVENT_NONE;
     act->midiMessage  = PED_EMPTY;
     act->midiChannel  = 1;
     act->midiCode     = 0;
@@ -2567,8 +2557,8 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     while (act != nullptr) {
       if (act->pedal == p || uipedal.equals("All")) {
         i++;
-        strncpy(act->tag0,            request->arg(String("nameoff")     + String(i)).c_str(),    MAXACTIONNAME+1);
-        strncpy(act->tag1,            request->arg(String("nameon")     + String(i)).c_str(),    MAXACTIONNAME+1);
+        strncpy(act->tag0,            request->arg(String("nameoff")  + String(i)).c_str(), MAXACTIONNAME + 1);
+        strncpy(act->tag1,            request->arg(String("nameon")   + String(i)).c_str(), MAXACTIONNAME + 1);
         act->button       = constrain(request->arg(String("button")   + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
         act->led          = constrain(request->arg(String("led")      + String(i)).toInt() - 1, 0, LEDS - 1);
         byte r, g, b;
@@ -2705,9 +2695,6 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
     a = request->arg(String("thru") + String(i+1));
     interfaces[i].midiThru = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
-    a = request->arg(String("routing") + String(i+1));
-    interfaces[i].midiRouting = (a == checked) ? PED_ENABLE : PED_DISABLE;
-
     a = request->arg(String("clock") + String(i+1));
     interfaces[i].midiClock = (a == checked) ? PED_ENABLE : PED_DISABLE;
   }
@@ -2740,14 +2727,8 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
     a = request->arg(String("code") + String(i+1));
     sequences[s][i].midiCode = a.toInt();
 
-    a = request->arg(String("value1") + String(i+1));
-    sequences[s][i].midiValue1 = a.toInt();
-
-    a = request->arg(String("value2") + String(i+1));
-    sequences[s][i].midiValue2 = a.toInt();
-
-    a = request->arg(String("value3") + String(i+1));
-    sequences[s][i].midiValue3 = a.toInt();
+    a = request->arg(String("value") + String(i+1));
+    sequences[s][i].midiValue = a.toInt();
   }
   if (request->arg("action") == String("apply")) {
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");

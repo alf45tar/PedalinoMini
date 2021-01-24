@@ -32,9 +32,10 @@ void sort_actions()
     while (act != nullptr) {
       action *idx = act->next;
       while (idx != nullptr) {
-        if ((act->pedal > idx->pedal) ||
-           ((act->pedal == idx->pedal) && (act->button > idx->button)) ||
-           ((act->pedal == idx->pedal) && (act->button == idx->button) && (act->event > idx->event))) {
+        if ((act->pedal > idx->pedal)                                                                       ||
+           ((act->pedal == idx->pedal) && (act->button > idx->button))                                      ||
+           ((act->pedal == idx->pedal) && (act->event != PED_EVENT_NONE) && (idx->event == PED_EVENT_NONE)) ||
+           ((act->pedal == idx->pedal) && (act->event != PED_EVENT_NONE) && (act->button == idx->button) && (act->event > idx->event))) {
           action t;
           strncpy(t.tag0,    idx->tag0, MAXACTIONNAME + 1);
           strncpy(t.tag1,    idx->tag1, MAXACTIONNAME + 1);
@@ -659,10 +660,8 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
       for (byte s = 0; s < STEPS; s++)
         if (sequences[channel-1][s].midiMessage == PED_CONTROL_CHANGE)
           midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, value, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
-        else if (on_off)
-          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue1, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
         else
-          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue2, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
+          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
       DPRINT("=======================================================\n");
       currentMIDIValue[bank][pedal][button] = channel;
       lastMIDIMessage[currentBank] = {PED_SEQUENCE, code, value, channel};
@@ -680,7 +679,7 @@ void controller_event_handler_analog(byte pedal, int value)
     case PED_ACTIONS: {
       action *act = actions[currentBank];
       while (act != nullptr) {
-        if (act->pedal == pedal) {
+        if (act->pedal == pedal && act->event == PED_EVENT_MOVE) {
           value = map(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
                       0,
                       ADC_RESOLUTION - 1,
@@ -933,7 +932,7 @@ if (loadConfig && send) {
           case DIR_CCW:
             action *act = actions[currentBank];
             while (act != nullptr) {
-              if (act->pedal == i) {
+              if (act->pedal == i && act->event == PED_EVENT_JOG) {
                 switch (act->midiMessage) {
 
                   case PED_EMPTY:

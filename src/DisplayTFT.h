@@ -852,20 +852,46 @@ void drawFrame1(int16_t x, int16_t y)
       sprite.setTextFont(1);
       sprite.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
       sprite.setTextDatum(ML_DATUM);
-      sprite.drawString("-4h", 0, sprite.height() / 4);
-      sprite.drawString("-4h", 0, sprite.height() / 4 * 3 - 3);
+      String label0 = "";
+      String label1 = "-";
+      String label2 = "-";
+      String label3 = "-";
+      String label4 = "-";
+      if (GRAPH_DURATION_QUARTER_HOUR > 0) {
+        label0 += String(0*GRAPH_DURATION_QUARTER_HOUR) + "h";
+        label1 += String(1*GRAPH_DURATION_QUARTER_HOUR) + "h";
+        label2 += String(2*GRAPH_DURATION_QUARTER_HOUR) + "h";
+        label3 += String(3*GRAPH_DURATION_QUARTER_HOUR) + "h";
+        label4 += String(4*GRAPH_DURATION_QUARTER_HOUR) + "h";
+      }
+      else if (GRAPH_DURATION_QUARTER_MIN > 0) {
+        label0 += String(0*GRAPH_DURATION_QUARTER_MIN) + "m";
+        label1 += String(1*GRAPH_DURATION_QUARTER_MIN) + "m";
+        label2 += String(2*GRAPH_DURATION_QUARTER_MIN) + "m";
+        label3 += String(3*GRAPH_DURATION_QUARTER_MIN) + "m";
+        label4 += String(4*GRAPH_DURATION_QUARTER_MIN) + "m";
+      }
+      else if (GRAPH_DURATION_QUARTER_SEC > 0) {
+        label0 += String(0*GRAPH_DURATION_QUARTER_SEC) + "s";
+        label1 += String(1*GRAPH_DURATION_QUARTER_SEC) + "s";
+        label2 += String(2*GRAPH_DURATION_QUARTER_SEC) + "s";
+        label3 += String(3*GRAPH_DURATION_QUARTER_SEC) + "s";
+        label4 += String(4*GRAPH_DURATION_QUARTER_SEC) + "s";
+      }
+      sprite.drawString(label4, 0, sprite.height() / 4);
+      sprite.drawString(label4, 0, sprite.height() / 4 * 3 - 3);
       sprite.setTextDatum(MC_DATUM);
-      sprite.drawString("-3h", sprite.width() / 4, sprite.height() / 4);
-      sprite.drawString("-3h", sprite.width() / 4, sprite.height() / 4 * 3 - 3);
+      sprite.drawString(label3, sprite.width() / 4, sprite.height() / 4);
+      sprite.drawString(label3, sprite.width() / 4, sprite.height() / 4 * 3 - 3);
       sprite.setTextDatum(MC_DATUM);
-      sprite.drawString("-2h", sprite.width() / 2, sprite.height() / 4);
-      sprite.drawString("-2h", sprite.width() / 2, sprite.height() / 4 * 3 - 3);
+      sprite.drawString(label2, sprite.width() / 2, sprite.height() / 4);
+      sprite.drawString(label2, sprite.width() / 2, sprite.height() / 4 * 3 - 3);
       sprite.setTextDatum(MC_DATUM);
-      sprite.drawString("-1h", sprite.width() / 4 * 3, sprite.height() / 4);
-      sprite.drawString("-1h", sprite.width() / 4 * 3, sprite.height() / 4 * 3 - 3);
+      sprite.drawString(label1, sprite.width() / 4 * 3, sprite.height() / 4);
+      sprite.drawString(label1, sprite.width() / 4 * 3, sprite.height() / 4 * 3 - 3);
       sprite.setTextDatum(MR_DATUM);
-      sprite.drawString("0h", sprite.width() - 1, sprite.height() / 4);
-      sprite.drawString("0h", sprite.width() - 1, sprite.height() / 4 * 3 - 3);
+      sprite.drawString(label0, sprite.width() - 1, sprite.height() / 4);
+      sprite.drawString(label0, sprite.width() - 1, sprite.height() / 4 * 3 - 3);
 
       for (byte i = 0; i < POINTS - 1; i++) {
         byte h = (historyStart + i) % POINTS;
