@@ -555,23 +555,23 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
 
       if (on_off) {
         // MSB
-        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect, value, channel);
-        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect, value, channel);
-        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect, value, channel);
-        AppleMidiSendControlChange(midi::BankSelect, value, channel);
-        ipMIDISendControlChange(midi::BankSelect, value, channel);
-        BLESendControlChange(midi::BankSelect, value, channel);
-        OSCSendControlChange(midi::BankSelect, value, channel);
+        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect, code, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect, code, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect, code, channel);
+        AppleMidiSendControlChange(midi::BankSelect, code, channel);
+        ipMIDISendControlChange(midi::BankSelect, code, channel);
+        BLESendControlChange(midi::BankSelect, code, channel);
+        OSCSendControlChange(midi::BankSelect, code, channel);
         // LSB
-        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect+32, code, channel);
-        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect+32, code, channel);
-        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect+32, code, channel);
-        AppleMidiSendControlChange(midi::BankSelect+32, code, channel);
-        ipMIDISendControlChange(midi::BankSelect+32, code, channel);
-        BLESendControlChange(midi::BankSelect+32, code, channel);
-        OSCSendControlChange(midi::BankSelect+32, code, channel);
-        screen_info(midi::ControlChange, midi::BankSelect+32, code, channel, range_min, range_max);
-        currentMIDIValue[bank][pedal][button] = code;
+        DPRINT("CONTROL CHANGE.....Code %3d.....Value %3d.....Channel %2d\n", midi::BankSelect+32, value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(midi::BankSelect+32, value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(midi::BankSelect+32, value, channel);
+        AppleMidiSendControlChange(midi::BankSelect+32, value, channel);
+        ipMIDISendControlChange(midi::BankSelect+32, value, channel);
+        BLESendControlChange(midi::BankSelect+32, value, channel);
+        OSCSendControlChange(midi::BankSelect+32, value, channel);
+        screen_info(midi::ControlChange, midi::BankSelect+32, value, channel, range_min, range_max);
+        currentMIDIValue[bank][pedal][button] = value;
       }
       break;
 
@@ -714,7 +714,7 @@ void controller_event_handler_analog(byte pedal, int value)
 
             case PED_BANK_SELECT_INC:
             case PED_BANK_SELECT_DEC:
-              lastBankSelect[act->midiChannel] = constrain(value, act->midiValue1, act->midiValue2);
+              lastBankSelect[act->midiChannel] = (act->midiCode << 7) + constrain(value, act->midiValue1, act->midiValue2);
               midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
               break;
 
@@ -1096,12 +1096,12 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
             case PED_BANK_SELECT_INC:
-              lastBankSelect[act->midiChannel] = constrain(lastBankSelect[act->midiChannel] + 1, act->midiValue1, act->midiValue2);
+              lastBankSelect[act->midiChannel] = (act->midiCode << 7) + constrain((lastBankSelect[act->midiChannel] + 1) & 0b0000000001111111, act->midiValue1, act->midiValue2);
               midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
             case PED_BANK_SELECT_DEC:
-              lastBankSelect[act->midiChannel] = constrain(lastBankSelect[act->midiChannel] - 1, act->midiValue1, act->midiValue2);
+              lastBankSelect[act->midiChannel] = (act->midiCode << 7) + constrain((lastBankSelect[act->midiChannel] - 1) & 0b0000000001111111, act->midiValue1, act->midiValue2);
               midi_send(act->midiMessage, (lastBankSelect[act->midiChannel] & 0b0011111110000000) >> 7, lastBankSelect[act->midiChannel] & 0b0000000001111111, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
