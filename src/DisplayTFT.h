@@ -15,6 +15,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <Wire.h>
 
 TFT_eSPI    display  = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);
+#define DISPLAY_WIDTH   display.width()
+#define DISPLAY_HEIGHT  display.height()
 
 #endif
 

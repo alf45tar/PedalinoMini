@@ -58,13 +58,13 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "SerialMidiIn.h"
 #include "UdpMidiIn.h"
 #include "BLEMidiIn.h"
-#include "Controller.h"
 #include "DisplayLCD.h"
 #ifdef TTGO_T_DISPLAY
 #include "DisplayTFT.h"
 #else
 #include "DisplayOLED.h"
 #endif
+#include "Controller.h"
 #include "WebConfigAsync.h"
 #include "OTAUpdate.h"
 #include "WifiConnect.h"

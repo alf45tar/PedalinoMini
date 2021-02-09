@@ -435,7 +435,7 @@ void ladder_config()
       for (byte i = 0; i < LADDER_STEPS; i++) {
         display_progress_bar_title2("Press and hold", "Switch " + String(i+1));
         for (byte j = 0; j < i; j++)
-          display_progress_bar_2_label(j + 1, 128 * ladderLevels[j] / ADC_RESOLUTION);
+          display_progress_bar_2_label(j + 1, DISPLAY_WIDTH * ladderLevels[j] / ADC_RESOLUTION);
         unsigned long start = millis();
         while (millis() - start < 3000) {
           display_progress_bar_update(3000 - (millis() - start), 3000);
@@ -447,7 +447,7 @@ void ladder_config()
           ladderLevels[i] = analog.getValue();
         }
       }
-      display_progress_bar_2_label(LADDER_STEPS, 128 * ladderLevels[LADDER_STEPS-1] / ADC_RESOLUTION);
+      display_progress_bar_2_label(LADDER_STEPS, DISPLAY_WIDTH * ladderLevels[LADDER_STEPS-1] / ADC_RESOLUTION);
       delay(1000);
       ladderLevels[LADDER_STEPS] = pedals[p].invertPolarity ? 0 : ADC_RESOLUTION - 1;
       std::sort(ladderLevels, ladderLevels+LADDER_STEPS+1);
@@ -658,10 +658,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
       DPRINT("SEQUENCE.....Number %2d\n", channel);
       DPRINT("-------------------------------------------------------\n");
       for (byte s = 0; s < STEPS; s++)
-        if (sequences[channel-1][s].midiMessage == PED_CONTROL_CHANGE)
-          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, value, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
-        else
-          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
+        midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
       DPRINT("=======================================================\n");
       currentMIDIValue[bank][pedal][button] = channel;
       lastMIDIMessage[currentBank] = {PED_SEQUENCE, code, value, channel};

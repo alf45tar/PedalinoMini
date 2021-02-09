@@ -44,6 +44,9 @@ SH1106Wire                display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 SSD1306Wire               display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 #endif
 
+#define DISPLAY_WIDTH   display.getWidth()
+#define DISPLAY_HEIGHT  display.getHeight()
+
 #include <WiFi.h>
 
 OLEDDisplayUi ui(&display);
