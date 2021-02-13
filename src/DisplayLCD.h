@@ -189,8 +189,8 @@ void screen_info(int b1, int b2, int b3, int b4, int mi, int ma)
   m2 = b2;
   m3 = b3;
   m4 = b4;
-  rmin = mi;
-  rmax = ma;
+  rmin = min(mi, ma);
+  rmax = max(mi, ma);
   endMillis2 = millis() + LCD_LINE1_PERSISTENCE;
 }
 
