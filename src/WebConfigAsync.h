@@ -47,6 +47,30 @@ String uibank       = "1";
 String uipedal      = "All";
 String uisequence   = "1";
 
+unsigned int fullPageLength = 0;
+
+int networks = 0;
+
+
+bool trim_page(unsigned int start, unsigned int len, bool lastcall = false) {
+
+  unsigned int l = page.length();
+
+  fullPageLength += l;
+
+  if (start > (fullPageLength - l)) page.remove(0, start - (fullPageLength - l));
+
+  if (fullPageLength >= (start + len) || lastcall) {
+    page.remove(len - 1);
+    fullPageLength = 0;
+    return true;
+  }
+
+  if ((fullPageLength - 1) < start)  page = "";
+
+  return false;
+}
+
 
 void get_top_page(int p = 0) {
 
@@ -92,27 +116,58 @@ void get_top_page(int p = 0) {
   */
   page += F("<li class='nav-item");
   page += (p == 2 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/actions'>Actions</a>");
+  page += F("<a class='nav-link' href='/actions'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clipboard-check' viewBox='0 0 16 16'>");
+  page += F("<path fill-rule='evenodd' d='M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z'/>");
+  page += F("<path d='M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z'/>");
+  page += F("<path d='M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z'/>");
+  page += F("</svg>");
+  page += F(" Actions</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 4 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/pedals'>Pedals</a>");
+  page += F("<a class='nav-link' href='/pedals'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-controller' viewBox='0 0 16 16'>");
+  page += F("<path d='M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1v-1z'/>");
+  page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
+  page += F("</svg>");
+  page += F(" Pedal</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 5 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/interfaces'>Interfaces</a>");
+  page += F("<a class='nav-link' href='/interfaces'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-diagram-3' viewBox='0 0 16 16'>");
+  page += F("<path fill-rule='evenodd' d='M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1zM0 11.5A1.5 1.5 0 0 1 1.5 10h1A1.5 1.5 0 0 1 4 11.5v1A1.5 1.5 0 0 1 2.5 14h-1A1.5 1.5 0 0 1 0 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5A1.5 1.5 0 0 1 7.5 10h1a1.5 1.5 0 0 1 1.5 1.5v1A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z'/>");
+  page += F("</svg>");
+  page += F(" Interfaces</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 6 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/sequences'>Sequences</a>");
+  page += F("<a class='nav-link' href='/sequences'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-camera-reels' viewBox='0 0 16 16'>");
+  page += F("<path d='M6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM1 3a2 2 0 1 0 4 0 2 2 0 0 0-4 0z'/>");
+  page += F("<path d='M9 6h.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 7.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 16H2a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h7zm6 8.73V7.27l-3.5 1.555v4.35l3.5 1.556zM1 8v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1z'/>");
+  page += F("<path d='M9 6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 3a2 2 0 1 1 4 0 2 2 0 0 1-4 0z'/>");
+  page += F("</svg>");
+  page += F(" Sequences</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 7 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/options'>Options</a>");
+  page += F("<a class='nav-link' href='/options'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-gear' viewBox='0 0 16 16'>");
+  page += F("<path d='M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z'/>");
+  page += F("<path d='M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z'/>");
+  page += F("</svg>");
+  page += F(" Options</a>");
   page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 8 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/configurations'>Configurations</a>");
+  page += F("<a class='nav-link' href='/configurations'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-file-code' viewBox='0 0 16 16'>");
+  page += F("<path d='M6.646 5.646a.5.5 0 1 1 .708.708L5.707 8l1.647 1.646a.5.5 0 0 1-.708.708l-2-2a.5.5 0 0 1 0-.708l2-2zm2.708 0a.5.5 0 1 0-.708.708L10.293 8 8.646 9.646a.5.5 0 0 0 .708.708l2-2a.5.5 0 0 0 0-.708l-2-2z'/>");
+  page += F("<path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z'/>");
+  page += F("</svg>");
+  page += F(" Configurations</a>");
   page += F("</li>");
   page += F("</ul>");
   }
@@ -199,9 +254,11 @@ void get_login_page() {
   get_footer_page();
 }
 
-void get_root_page() {
+void get_root_page(unsigned int start, unsigned int len) {
 
   get_top_page();
+
+  if (trim_page(start, len)) return;
 
   page += F("<h4 class='display-4'>Wireless MIDI foot controller</h4>");
 
@@ -382,11 +439,15 @@ void get_root_page() {
   page += F("</div>");
 
   get_footer_page();
+
+  if (trim_page(start, len, true)) return;
 }
 
-void get_live_page() {
+void get_live_page(unsigned int start, unsigned int len) {
 
   get_top_page(1);
+
+  if (trim_page(start, len)) return;
 
   page += F("<div aria-live='polite' aria-atomic='true' style='position: relative;'>"
             "<div id='remotedisplay' class='toast' style='position: absolute; top: 0; right: 0; max-width: 600px;' data-autohide='false'>"
@@ -576,6 +637,8 @@ void get_live_page() {
             "context.canvas.height = 64*zoom;"
             "};");
 
+  if (trim_page(start, len)) return;
+
   for (unsigned int i = 1; i <= BANKS; i++) {
     page += F("document.getElementById('bank");
     page += String(i);
@@ -644,10 +707,10 @@ void get_live_page() {
 
   get_footer_page();
 
-  DPRINT("/live %d bytes\n", page.length());
+  if (trim_page(start, len, true)) return;
 }
 
-void get_actions_page() {
+void get_actions_page(unsigned int start, unsigned int len) {
 
   const byte   b = constrain(uibank.toInt(), 1, BANKS);
   //const byte   p = constrain(uipedal.toInt(), 1, PEDALS);
@@ -658,10 +721,16 @@ void get_actions_page() {
 
   get_top_page(2);
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='row mb-3'>");
   page += F("<div class='col-8'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Bank ");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-book' viewBox='0 0 20 20'>");
+  page += F("<path d='M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z'/>");
+  page += F("</svg>");
+  page += F(" Bank ");
   page += uibank;
   page += F("</h5>");
   page += F("<div class='card-body'>");
@@ -687,7 +756,12 @@ void get_actions_page() {
 
   page += F("<div class='col-4'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Pedal ");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-controller' viewBox='0 0 20 20'>");
+  page += F("<path d='M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1v-1z'/>");
+  page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
+  page += F("</svg>");
+  page += F(" Pedal ");
   page += uipedal + F("</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='input-group input-group-sm'>");
@@ -710,10 +784,18 @@ void get_actions_page() {
   page += F("</div>");
   page += F("</div>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<form method='post'>");
 
   page += F("<div class='card mb-3'>");
-  page += F("<h5 class='card-header'>Actions</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-clipboard-check' viewBox='0 0 20 20'>");
+  page += F("<path fill-rule='evenodd' d='M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z'/>");
+  page += F("<path d='M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z'/>");
+  page += F("<path d='M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z'/>");
+  page += F("</svg>");
+  page += F(" Actions</h5>");
   page += F("<div class='card-body'>");
 
   page += F("<div class='row'>");
@@ -727,7 +809,11 @@ void get_actions_page() {
   page += F("</div>");
   page += F("<div class='col-auto'>");
   page += F("<div class='btn-group' role='group'>");
-  page += F("<button id='btnGroupNewAction' type='button' class='btn btn-primary dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>New Action</button>");
+  page += F("<button id='btnGroupNewAction' type='button' class='btn btn-primary btn-sm dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-plus-circle-dotted' viewBox='0 0 16 16'>");
+  page += F("<path d='M8 0c-.176 0-.35.006-.523.017l.064.998a7.117 7.117 0 0 1 .918 0l.064-.998A8.113 8.113 0 0 0 8 0zM6.44.152c-.346.069-.684.16-1.012.27l.321.948c.287-.098.582-.177.884-.237L6.44.153zm4.132.271a7.946 7.946 0 0 0-1.011-.27l-.194.98c.302.06.597.14.884.237l.321-.947zm1.873.925a8 8 0 0 0-.906-.524l-.443.896c.275.136.54.29.793.459l.556-.831zM4.46.824c-.314.155-.616.33-.905.524l.556.83a7.07 7.07 0 0 1 .793-.458L4.46.824zM2.725 1.985c-.262.23-.51.478-.74.74l.752.66c.202-.23.418-.446.648-.648l-.66-.752zm11.29.74a8.058 8.058 0 0 0-.74-.74l-.66.752c.23.202.447.418.648.648l.752-.66zm1.161 1.735a7.98 7.98 0 0 0-.524-.905l-.83.556c.169.253.322.518.458.793l.896-.443zM1.348 3.555c-.194.289-.37.591-.524.906l.896.443c.136-.275.29-.54.459-.793l-.831-.556zM.423 5.428a7.945 7.945 0 0 0-.27 1.011l.98.194c.06-.302.14-.597.237-.884l-.947-.321zM15.848 6.44a7.943 7.943 0 0 0-.27-1.012l-.948.321c.098.287.177.582.237.884l.98-.194zM.017 7.477a8.113 8.113 0 0 0 0 1.046l.998-.064a7.117 7.117 0 0 1 0-.918l-.998-.064zM16 8a8.1 8.1 0 0 0-.017-.523l-.998.064a7.11 7.11 0 0 1 0 .918l.998.064A8.1 8.1 0 0 0 16 8zM.152 9.56c.069.346.16.684.27 1.012l.948-.321a6.944 6.944 0 0 1-.237-.884l-.98.194zm15.425 1.012c.112-.328.202-.666.27-1.011l-.98-.194c-.06.302-.14.597-.237.884l.947.321zM.824 11.54a8 8 0 0 0 .524.905l.83-.556a6.999 6.999 0 0 1-.458-.793l-.896.443zm13.828.905c.194-.289.37-.591.524-.906l-.896-.443c-.136.275-.29.54-.459.793l.831.556zm-12.667.83c.23.262.478.51.74.74l.66-.752a7.047 7.047 0 0 1-.648-.648l-.752.66zm11.29.74c.262-.23.51-.478.74-.74l-.752-.66c-.201.23-.418.447-.648.648l.66.752zm-1.735 1.161c.314-.155.616-.33.905-.524l-.556-.83a7.07 7.07 0 0 1-.793.458l.443.896zm-7.985-.524c.289.194.591.37.906.524l.443-.896a6.998 6.998 0 0 1-.793-.459l-.556.831zm1.873.925c.328.112.666.202 1.011.27l.194-.98a6.953 6.953 0 0 1-.884-.237l-.321.947zm4.132.271a7.944 7.944 0 0 0 1.012-.27l-.321-.948a6.954 6.954 0 0 1-.884.237l.194.98zm-2.083.135a8.1 8.1 0 0 0 1.046 0l-.064-.998a7.11 7.11 0 0 1-.918 0l-.064.998zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z'/>");
+  page += F("</svg>");
+  page += F(" New Action</button>");
   page += F("<div class='dropdown-menu' aria-labelledby='btnGroupNewAction'>");
   for (i = 1; i <= PEDALS; i++) {
     page += F("<button type='submit' class='dropdown-item' name='action' value='new");
@@ -743,6 +829,9 @@ void get_actions_page() {
   act = actions[b-1];
   same_pedal = false;
   while (act != nullptr) {
+
+    if (trim_page(start, len)) return;
+
     if (uipedal != String(act->pedal + 1) && !(uipedal == String("All"))) {
       act = act->next;
       continue;
@@ -860,7 +949,12 @@ void get_actions_page() {
 
     page += F("<div class='w-25'>");
     page += F("<button type='submit' name='action' value='delete");
-    page += String(i) + F("' class='btn btn-danger btn-sm'>Delete</button>");
+    page += String(i) + F("' class='btn btn-sm'>");
+    page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-trash' viewBox='0 0 16 16'>");
+    page += F("<path d='M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z'/>");
+    page += F("<path fill-rule='evenodd' d='M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z'/>");
+    page += F("</svg>");
+    page += F("</button>");
     page += F("</div>");
     page += F("</div>");
 
@@ -1106,19 +1200,32 @@ void get_actions_page() {
 
   page += F("<div class='row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button>");
   page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
 
   get_footer_page();
+
+  if (trim_page(start, len, true)) return;
 }
 
-void get_pedals_page() {
+void get_pedals_page(unsigned int start, unsigned int len) {
 
   get_top_page(4);
+
+  if (trim_page(start, len)) return;
 
   page += F("<form method='post'>");
   page += F("<div class='container'>");
@@ -1176,6 +1283,8 @@ void get_pedals_page() {
     page += F("</select>");
     page += F("<label for='modeFloatingSelect'>Mode</label>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
 
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' name='function1");
@@ -1241,6 +1350,8 @@ void get_pedals_page() {
     page += F("<label for='function1FloatingSelect'>Single Press</label>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='function2FloatingSelect' name='function2");
     page += String(i);
@@ -1304,6 +1415,8 @@ void get_pedals_page() {
     page += F("</select>");
     page += F("<label for='function2FloatingSelect'>Double Press</label>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
 
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='function3FloatingSelect' name='function3");
@@ -1369,6 +1482,8 @@ void get_pedals_page() {
     page += F("<label for='function3FloatingSelect'>Long Press</label>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='mapFlotingSelect' name='map");
     page += String(i);
@@ -1433,6 +1548,8 @@ void get_pedals_page() {
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</div>");
   page += F("</div>");
@@ -1440,20 +1557,33 @@ void get_pedals_page() {
   page += F("<div class='container'>");
   page += F("<div class='row mt-3'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button>");
   page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
 
   get_footer_page();
+
+  if (trim_page(start, len, true)) return;
 }
 
-void get_interfaces_page() {
+void get_interfaces_page(unsigned int start, unsigned int len) {
 
   get_top_page(5);
+
+  if (trim_page(start, len)) return;
 
   page += F("<form method='post'>");
 
@@ -1501,6 +1631,8 @@ void get_interfaces_page() {
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</div>");
   page += F("</div>");
@@ -1508,9 +1640,18 @@ void get_interfaces_page() {
   page += F("<div class='container'>");
   page += F("<div class='row mt-3'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button>");
   page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -1518,13 +1659,17 @@ void get_interfaces_page() {
   page += F("</form>");
 
   get_footer_page();
+
+  if (trim_page(start, len, true)) return;
 }
 
-void get_sequences_page() {
+void get_sequences_page(unsigned int start, unsigned int len) {
 
   const byte s = constrain(uisequence.toInt(), 0, SEQUENCES);
 
   get_top_page(6);
+
+  if (trim_page(start, len)) return;
 
   page += F("<div class='btn-group mb-3'>");
   for (unsigned int i = 1; i <= SEQUENCES; i++) {
@@ -1660,22 +1805,35 @@ void get_sequences_page() {
 
     page += F("</div>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
   }
 
 
   page += F("<div class='row'>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button>");
   page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
 
   get_footer_page();
+
+  if (trim_page(start, len, true)) return;
 }
 
-void get_options_page() {
+void get_options_page(unsigned int start, unsigned int len) {
 
   const String  bootswatch[] = { "bootstrap",
                                  "cerulean",
@@ -1701,6 +1859,8 @@ void get_options_page() {
                                  "yeti"};
 
   get_top_page(7);
+
+  if (trim_page(start, len)) return;
 
   page += F("<form method='post'>");
 
@@ -1765,6 +1925,8 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
@@ -1774,8 +1936,7 @@ void get_options_page() {
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<select class='form-select' id='wifissid' name='wifiSSID'>");
-  int n = WiFi.scanNetworks();
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < networks; i++) {
     page += F("<option value='");
     page += WiFi.SSID(i) + F("'");
     if (wifiSSID == WiFi.SSID(i)) page += F(" selected");
@@ -1822,13 +1983,15 @@ void get_options_page() {
   page += F("</div>");
   page += F("<small class='form-text text-muted'>");
   page += F("Access Point SSID and password.<br>");
-  page += F("Pedalino will be restarted if it is in AP mode and you changed them.");
+  page += F("Pedalino will be restarted if it is in AP mode and you change them.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
 
   page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
@@ -1881,6 +2044,8 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>Momentary Switches</h5>");
   page += F("<div class='card-body'>");
@@ -1932,6 +2097,8 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='row'>");
 
   page += F("<div class='col-md-6 col-12 mb-3'>");
@@ -1958,6 +2125,8 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
 
   page += F("<div class='col-md-6 col-12 mb-3'>");
 
@@ -2016,30 +2185,56 @@ void get_options_page() {
   page += F("</div>");
   page += F("</div>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='row'>");
   page += F("<div class='col-auto me-auto'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button>");
-  page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Save</button>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button> ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
   page += F("</div>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' name='action' value='factorydefault' class='btn btn-primary btn-sm'>Reset to Factory Default</button>");
-  page += F(" ");
-  page += F("<button type='submit' name='action' value='reboot' class='btn btn-primary btn-sm'>Reboot</button>");
-  page += F(" ");
-  page += F("<button type='submit' name='action' value='poweroff' class='btn btn-primary btn-sm'>Power Off</button>");
+  page += F("<button type='submit' name='action' value='factorydefault' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-wrench' viewBox='0 0 16 16'>");
+  page += F("<path d='M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019l.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z'/>");
+  page += F("</svg>");
+  page += F(" Reset to Factory Default</button> ");
+  page += F("<button type='submit' name='action' value='reboot' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-bootstrap-reboot' viewBox='0 0 16 16'>");
+  page += F("<path d='M1.161 8a6.84 6.84 0 1 0 6.842-6.84.58.58 0 0 1 0-1.16 8 8 0 1 1-6.556 3.412l-.663-.577a.58.58 0 0 1 .227-.997l2.52-.69a.58.58 0 0 1 .728.633l-.332 2.592a.58.58 0 0 1-.956.364l-.643-.56A6.812 6.812 0 0 0 1.16 8z/>");
+  page += F("<path d='M6.641 11.671V8.843h1.57l1.498 2.828h1.314L9.377 8.665c.897-.3 1.427-1.106 1.427-2.1 0-1.37-.943-2.246-2.456-2.246H5.5v7.352h1.141zm0-3.75V5.277h1.57c.881 0 1.416.499 1.416 1.32 0 .84-.504 1.324-1.386 1.324h-1.6z/>");
+  page += F("</svg>");
+  page += F(" Reboot</button> ");
+  page += F("<button type='submit' name='action' value='poweroff' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-power' viewBox='0 0 16 16'>");
+  page += F("<path d='M7.5 1v7h1V1h-1z'/>");
+  page += F("<path d='M3 8.812a4.999 4.999 0 0 1 2.578-4.375l-.485-.874A6 6 0 1 0 11 3.616l-.501.865A5 5 0 1 1 3 8.812z'/>");
+  page += F("</svg>");
+  page += F(" Power Off</button>");
   page += F("</div>");
   page += F("</div>");
 
   page += F("</form>");
 
   get_footer_page();
+
+  if (trim_page(start, len, true)) return;
 }
 
 
-void get_configurations_page() {
+void get_configurations_page(unsigned int start, unsigned int len) {
 
   get_top_page(8);
+
+  if (trim_page(start, len)) return;
 
   page += F("<form method='post'>");
 
@@ -2050,9 +2245,13 @@ void get_configurations_page() {
   page += F("<div class='col-8'>");
   page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
-  page += F("Type a name, select what to include and press 'Save as configuration' to save current profile with a name. An existing configuration with the same name will be overridden without further notice.");
-  page += F("</small>");
-  page += F("<br><button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>Save as configuration</button>");
+  page += F("Type a name, select what to include and press 'Save as Configuration' to save current profile with a name. An existing configuration with the same name will be overridden without further notice.");
+  page += F("</small><br>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save as configuration</button> ");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("</div>");
@@ -2084,6 +2283,8 @@ void get_configurations_page() {
 
   page += F("</form>");
 
+  if (trim_page(start, len)) return;
+
   DPRINT("Looking for configuration files on SPIFFS root ...\n");
   int     availableconf = 0;
   String  confoptions;
@@ -2102,6 +2303,8 @@ void get_configurations_page() {
     file = root.openNextFile();
   }
   DPRINT("done.\n");
+
+  if (trim_page(start, len)) return;
 
   page += F("<form method='post'>");
   page += F("<div class='card mb-3'>");
@@ -2145,17 +2348,41 @@ void get_configurations_page() {
   page += F("</div>");
   page += F("</div>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='row'>");
   page += F("<div class='col-12'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>Apply</button> ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>Apply & Save</button> ");
-  page += F("<button type='submit' name='action' value='download' class='btn btn-primary btn-sm'>Download</button> ");
-  page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>Delete</button> ");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button> ");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Apply & Save</button> ");
+  page += F("<button type='submit' name='action' value='download' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-download' viewBox='0 0 16 16'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z'/>");
+  page += F("</svg>");
+  page += F(" Download</button> ");
+  page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-trash' viewBox='0 0 16 16'>");
+  page += F("<path d='M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z'/>");
+  page += F("<path fill-rule='evenodd' d='M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z'/>");
+  page += F("</svg>");
+  page += F(" Delete</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
+
+  if (trim_page(start, len)) return;
 
   page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
   page += F("<div class='card'>");
@@ -2174,7 +2401,12 @@ void get_configurations_page() {
   page += F("<div class='col-1'>");
   page += F("</div>");
   page += F("<div class='col-3'>");
-  page += F("<input type='submit' value='Upload' class='btn btn-primary btn-sm'>");
+  page += F("<button type='submit' name='action' value='upload' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
+  page += F("</svg>");
+  page += F(" Upload</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -2182,142 +2414,120 @@ void get_configurations_page() {
   page += F("</form>");
 
   get_footer_page();
+
+  if (trim_page(start, len, true)) return;
 }
 
 
 size_t get_root_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
-  static bool rebuild = true;
-
-  if (rebuild) {
-    get_root_page();
-    DPRINT("HTML page lenght: %d\n", page.length());
-    rebuild = false;
-  }
-  page.getBytes(buffer, maxLen, index);
+  page = "";
+  get_root_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
-  rebuild = (byteWritten == 0);
-  if (rebuild) page = "";
+  if (byteWritten == 0) {
+    page = "";
+    fullPageLength = 0;
+  }
   return byteWritten;
 }
 
 size_t get_live_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
-  static bool rebuild = true;
-
-  if (rebuild) {
-    get_live_page();
-    DPRINT("HTML page lenght: %d\n", page.length());
-    rebuild = false;
-  }
-  page.getBytes(buffer, maxLen, index);
+  page = "";
+  get_live_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
-  rebuild = (byteWritten == 0);
-  if (rebuild) page = "";
+  if (byteWritten == 0) {
+    page = "";
+    fullPageLength = 0;
+  }
   return byteWritten;
 }
 
 size_t get_actions_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
-  static bool rebuild = true;
-
-  if (rebuild) {
-    get_actions_page();
-    DPRINT("HTML page lenght: %d\n", page.length());
-    rebuild = false;
-  }
-  page.getBytes(buffer, maxLen, index);
+  page = "";
+  get_actions_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
-  rebuild = (byteWritten == 0);
-  if (rebuild) page = "";
+  if (byteWritten == 0) {
+    page = "";
+    fullPageLength = 0;
+  }
   return byteWritten;
 }
 
 size_t get_pedals_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
-  static bool rebuild = true;
-
-  if (rebuild) {
-    get_pedals_page();
-    DPRINT("HTML page lenght: %d\n", page.length());
-    rebuild = false;
-  }
-  page.getBytes(buffer, maxLen, index);
+  page = "";
+  get_pedals_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
-  rebuild = (byteWritten == 0);
-  if (rebuild) page = "";
+  if (byteWritten == 0) {
+    page = "";
+    fullPageLength = 0;
+  }
   return byteWritten;
 }
 
 size_t get_interfaces_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
-  static bool rebuild = true;
-
-  if (rebuild) {
-    get_interfaces_page();
-    DPRINT("HTML page lenght: %d\n", page.length());
-    rebuild = false;
-  }
-  page.getBytes(buffer, maxLen, index);
+  page = "";
+  get_interfaces_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
-  rebuild = (byteWritten == 0);
-  if (rebuild) page = "";
+  if (byteWritten == 0) {
+    page = "";
+    fullPageLength = 0;
+  }
   return byteWritten;
 }
 
 size_t get_sequences_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
-  static bool rebuild = true;
-
-  if (rebuild) {
-    get_sequences_page();
-    DPRINT("HTML page lenght: %d\n", page.length());
-    rebuild = false;
-  }
-  page.getBytes(buffer, maxLen, index);
+  page = "";
+  get_sequences_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
-  rebuild = (byteWritten == 0);
-  if (rebuild) page = "";
+  if (byteWritten == 0) {
+    page = "";
+    fullPageLength = 0;
+  }
   return byteWritten;
 }
 
 size_t get_options_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
-  static bool rebuild = true;
-
-  if (rebuild) {
-    get_options_page();
-    DPRINT("HTML page lenght: %d\n", page.length());
-    rebuild = false;
-  }
-  page.getBytes(buffer, maxLen, index);
+  page = "";
+  get_options_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
-  rebuild = (byteWritten == 0);
-  if (rebuild) page = "";
+  if (byteWritten == 0) {
+    page = "";
+    fullPageLength = 0;
+  }
   return byteWritten;
 }
 
 size_t get_configurations_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
-  static bool rebuild = true;
-
-  if (rebuild) {
-    get_configurations_page();
-    DPRINT("HTML page lenght: %d\n", page.length());
-    rebuild = false;
-  }
-  page.getBytes(buffer, maxLen, index);
+  page = "";
+  get_configurations_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
-  rebuild = (byteWritten == 0);
-  if (rebuild) page = "";
+  if (byteWritten == 0) {
+    page = "";
+    fullPageLength = 0;
+  }
   return byteWritten;
 }
 
@@ -2415,6 +2625,7 @@ void http_handle_sequences(AsyncWebServerRequest *request) {
 void http_handle_options(AsyncWebServerRequest *request) {
   if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
+  networks = WiFi.scanNetworks();
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
@@ -3333,9 +3544,9 @@ void http_setup() {
   //events.setAuthentication("user", "pass");
   httpServer.addHandler(&events);
 #endif
-  httpServer.serveStatic("/favicon.ico", SPIFFS, "/favicon.ico").setDefaultFile("/favicon.ico").setCacheControl("max-age=600");
-  httpServer.serveStatic("/logo.png", SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
-  httpServer.serveStatic("/css/bootstrap.min.css", SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
+  httpServer.serveStatic("/favicon.ico",                SPIFFS, "/favicon.ico").setDefaultFile("/favicon.ico").setCacheControl("max-age=600");
+  httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
+  httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/files", SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
