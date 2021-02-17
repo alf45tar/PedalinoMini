@@ -344,8 +344,8 @@ void topOverlay()
     top.fillRoundRect(display.width() - 6, 7, 4, 8, 2, TFT_INDEX_WHITE);
     top.fillRoundRect(display.width() - 50 + 2, 1 + 2, map(constrain(batteryVoltage, 3000, 4000), 3000, 4000, 0, 40), 20 - 4, 4, TFT_INDEX_DARKGREEN);
     if (batteryVoltage > 4200) {
-      top.fillTriangle(display.width() - 26,  3, display.width() - 34, 13, display.width() - 28, 12, TFT_INDEX_WHITE);
-      top.fillTriangle(display.width() - 30, 18, display.width() - 22,  9, display.width() - 28, 12, TFT_INDEX_WHITE);
+      top.fillTriangle(display.width() - 28,  3, display.width() - 34, 11, display.width() - 28, 11, TFT_INDEX_WHITE);
+      top.fillTriangle(display.width() - 28, 18, display.width() - 23, 10, display.width() - 28, 10, TFT_INDEX_WHITE);
     }
 /*
     top.setSwapBytes(true);

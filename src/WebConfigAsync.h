@@ -84,9 +84,9 @@ void get_top_page(int p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl' crossorigin='anonymous'>");
   #else
-    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1' crossorigin='anonymous'>");
+    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl' crossorigin='anonymous'>");
   #endif
   } else {
     page += F("<link href='https://stackpath.bootstrapcdn.com/bootswatch/5.0.0/");
@@ -136,8 +136,9 @@ void get_top_page(int p = 0) {
   page += F("<li class='nav-item");
   page += (p == 5 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/interfaces'>");
-  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-diagram-3' viewBox='0 0 16 16'>");
-  page += F("<path fill-rule='evenodd' d='M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1zM0 11.5A1.5 1.5 0 0 1 1.5 10h1A1.5 1.5 0 0 1 4 11.5v1A1.5 1.5 0 0 1 2.5 14h-1A1.5 1.5 0 0 1 0 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5A1.5 1.5 0 0 1 7.5 10h1a1.5 1.5 0 0 1 1.5 1.5v1A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z'/>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-hdd-network' viewBox='0 0 16 16'>");
+  page += F("<path d='M4.5 5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zM3 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z'/>");
+  page += F("<path d='M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8.5v3a1.5 1.5 0 0 1 1.5 1.5h5.5a.5.5 0 0 1 0 1H10A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5H.5a.5.5 0 0 1 0-1H6A1.5 1.5 0 0 1 7.5 10V7H2a2 2 0 0 1-2-2V4zm1 0v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1zm6 7.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5z'/>");
   page += F("</svg>");
   page += F(" Interfaces</a>");
   page += F("</li>");
@@ -205,9 +206,9 @@ void get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0' crossorigin='anonymous'></script>");
 #else
-  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js' integrity='sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW' crossorigin='anonymousì></script>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js' integrity='sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0' crossorigin='anonymousì></script>");
 #endif
   page += F("</body>");
   page += F("</html>");
@@ -840,7 +841,12 @@ void get_actions_page(unsigned int start, unsigned int len) {
     if (!same_pedal) {
       page += F("<div class='card mt-3'>");
       page += F("<div class='card-body'>");
-      page += F("<h5 class='card-title'>Pedal ");
+      page += F("<h5 class='card-title'>");
+      page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-controller' viewBox='0 0 20 20'>");
+      page += F("<path d='M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1v-1z'/>");
+      page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
+      page += F("</svg>");
+      page += F(" Pedal ");
       page += String(act->pedal + 1) + F("</h5>");
       page += F("<div class='container'>");
       page += F("<div class='row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-xl-3 row-cols-xxl-4 g-2 g-md-3 g-xl-4'>");
@@ -1234,7 +1240,12 @@ void get_pedals_page(unsigned int start, unsigned int len) {
   for (unsigned int i = 1; i <= PEDALS; i++) {
     page += F("<div class='col'>");
     page += F("<div class='card'>");
-    page += F("<h5 class='card-header'>Pedal ");
+    page += F("<h5 class='card-header'>");
+    page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-controller' viewBox='0 0 20 20'>");
+    page += F("<path d='M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1v-1z'/>");
+    page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
+    page += F("</svg>");
+    page += F(" Pedal ");
     page += String(i) + F("</h5>");
     page += F("<div class='card-body'>");
     page += F("<div class='d-grid gap-1'>");
@@ -1593,6 +1604,10 @@ void get_interfaces_page(unsigned int start, unsigned int len) {
     page += F("<div class='col'>");
     page += F("<div class='card h-100'>");
     page += F("<h6 class='card-header'>");
+    page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-hdd-network' viewBox='0 0 20 20'>");
+    page += F("<path d='M4.5 5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zM3 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z'/>");
+    page += F("<path d='M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8.5v3a1.5 1.5 0 0 1 1.5 1.5h5.5a.5.5 0 0 1 0 1H10A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5H.5a.5.5 0 0 1 0-1H6A1.5 1.5 0 0 1 7.5 10V7H2a2 2 0 0 1-2-2V4zm1 0v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1zm6 7.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5z'/>");
+    page += F("</svg> ");
     page += interfaces[i-1].name;
     page += F("</h6>");
     page += F("<div class='card-body'>");
@@ -1682,15 +1697,19 @@ void get_sequences_page(unsigned int start, unsigned int len) {
 
   page += F("<form method='post'>");
 
+  page += F("<div class='card mb-3'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-camera-reels' viewBox='0 0 20 20'>");
+  page += F("<path d='M6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM1 3a2 2 0 1 0 4 0 2 2 0 0 0-4 0z'/>");
+  page += F("<path d='M9 6h.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 7.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 16H2a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h7zm6 8.73V7.27l-3.5 1.555v4.35l3.5 1.556zM1 8v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1z'/>");
+  page += F("<path d='M9 6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 3a2 2 0 1 1 4 0 2 2 0 0 1-4 0z'/>");
+  page += F("</svg>");
+  page += F(" Sequence ");
+  page += String(s) + F("</h5>");
+  page += F("<div class='card-body'>");
+
   for (unsigned int i = 1; i <= STEPS; i++) {
     page += F("<div class='d-grid mb-1'>");
-    page += F("<div class='row'>");
-
-    page += F("<div class='col-1'>");
-    page += String(i);
-    page += F("</div>");
-
-    page += F("<div class='col-11'>");
     page += F("<div class='row g-1'>");
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
@@ -1803,12 +1822,10 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("</div>");
     page += F("</div>");
 
-    page += F("</div>");
-    page += F("</div>");
-
     if (trim_page(start, len)) return;
   }
-
+  page += F("</div>");
+  page += F("</div>");
 
   page += F("<div class='row'>");
   page += F("<div class='col-auto'>");
@@ -1867,7 +1884,11 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Device</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-cpu' viewBox='0 0 20 20'>");
+  page += F("<path d='M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0zm-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3h-7zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z'/>");
+  page += F("</svg>");
+  page += F(" Device</h5>");
   page += F("<div class='card-body'>");
 
   page += F("<div class='form-floating'>");
@@ -1885,7 +1906,12 @@ void get_options_page(unsigned int start, unsigned int len) {
 
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Boot Mode</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-power' viewBox='0 0 20 20'>");
+  page += F("<path d='M7.5 1v7h1V1h-1z'/>");
+  page += F("<path d='M3 8.812a4.999 4.999 0 0 1 2.578-4.375l-.485-.874A6 6 0 1 0 11 3.616l-.501.865A5 5 0 1 1 3 8.812z'/>");
+  page += F("</svg>");
+  page += F(" Boot Mode</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='bootModeWifi' name='bootmodewifi'");
@@ -1930,7 +1956,12 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>WiFi Network</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-wifi' viewBox='0 0 20 20'>");
+  page += F("<path d='M15.385 6.115a.485.485 0 0 0-.048-.736A12.443 12.443 0 0 0 8 3 12.44 12.44 0 0 0 .663 5.379a.485.485 0 0 0-.048.736.518.518 0 0 0 .668.05A11.448 11.448 0 0 1 8 4c2.507 0 4.827.802 6.717 2.164.204.148.489.13.668-.049z'/>");
+  page += F("<path d='M13.229 8.271c.216-.216.194-.578-.063-.745A9.456 9.456 0 0 0 8 6c-1.905 0-3.68.56-5.166 1.526a.48.48 0 0 0-.063.745.525.525 0 0 0 .652.065A8.46 8.46 0 0 1 8 7a8.46 8.46 0 0 1 4.577 1.336c.205.132.48.108.652-.065zm-2.183 2.183c.226-.226.185-.605-.1-.75A6.472 6.472 0 0 0 8 9c-1.06 0-2.062.254-2.946.704-.285.145-.326.524-.1.75l.015.015c.16.16.408.19.611.09A5.478 5.478 0 0 1 8 10c.868 0 1.69.201 2.42.56.203.1.45.07.611-.091l.015-.015zM9.06 12.44c.196-.196.198-.52-.04-.66A1.99 1.99 0 0 0 8 11.5a1.99 1.99 0 0 0-1.02.28c-.238.14-.236.464-.04.66l.706.706a.5.5 0 0 0 .708 0l.707-.707z'/>");
+  page += F("</svg>");
+  page += F(" WiFi Network</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row g-1'>");
   page += F("<div class='w-50'>");
@@ -1964,7 +1995,11 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>AP Mode</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-broadcast-pin' viewBox='0 0 20 20'>");
+  page += F("<path d='M3.05 3.05a7 7 0 0 0 0 9.9.5.5 0 0 1-.707.707 8 8 0 0 1 0-11.314.5.5 0 0 1 .707.707zm2.122 2.122a4 4 0 0 0 0 5.656.5.5 0 0 1-.708.708 5 5 0 0 1 0-7.072.5.5 0 0 1 .708.708zm5.656-.708a.5.5 0 0 1 .708 0 5 5 0 0 1 0 7.072.5.5 0 1 1-.708-.708 4 4 0 0 0 0-5.656.5.5 0 0 1 0-.708zm2.122-2.12a.5.5 0 0 1 .707 0 8 8 0 0 1 0 11.313.5.5 0 0 1-.707-.707 7 7 0 0 0 0-9.9.5.5 0 0 1 0-.707zM6 8a2 2 0 1 1 2.5 1.937V15.5a.5.5 0 0 1-1 0V9.937A2 2 0 0 1 6 8z'/>");
+  page += F("</svg>");
+  page += F(" AP Mode</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row g-1'>");
   page += F("<div class='w-50'>");
@@ -1996,7 +2031,11 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Web UI Theme</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-display' viewBox='0 0 20 20'>");
+  page += F("<path d='M0 4s0-2 2-2h12s2 0 2 2v6s0 2-2 2h-4c0 .667.083 1.167.25 1.5H11a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1h.75c.167-.333.25-.833.25-1.5H2s-2 0-2-2V4zm1.398-.855a.758.758 0 0 0-.254.302A1.46 1.46 0 0 0 1 4.01V10c0 .325.078.502.145.602.07.105.17.188.302.254a1.464 1.464 0 0 0 .538.143L2.01 11H14c.325 0 .502-.078.602-.145a.758.758 0 0 0 .254-.302 1.464 1.464 0 0 0 .143-.538L15 9.99V4c0-.325-.078-.502-.145-.602a.757.757 0 0 0-.302-.254A1.46 1.46 0 0 0 13.99 3H2c-.325 0-.502.078-.602.145z'/>");
+  page += F("</svg>");
+  page += F(" Web UI Theme</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='form-floating'>");
   page += F("<select class='form-select' id='bootstraptheme' name='theme'>");
@@ -2018,7 +2057,12 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Web UI Login</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-key' viewBox='0 0 20 20'>");
+  page += F("<path d='M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8zm4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5z'/>");
+  page += F("<path d='M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z'/>");
+  page += F("</svg>");
+  page += F(" Web UI Login</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row g-1'>");
   page += F("<div class='w-50'>");
@@ -2046,11 +2090,13 @@ void get_options_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='card mb-3'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
+  page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Momentary Switches</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='row'>");
-  page += F("<div class='form-group col-md-6 col-12 mb-3'>");
+  page += F("<div class='row g-1'>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='pressTime' name='presstime' placeholder='' value='");
   page += String(pressTime) + F("'>");
@@ -2060,7 +2106,7 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("Switch press time in milliseconds. Default value is 200.");
   page += F("</small>");
   page += F("</div>");
-  page += F("<div class='form-group col-md-6 col-12 mb-3'>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='doublePressTime' name='doublepresstime' placeholder='' value='");
   page += String(doublePressTime) + F("'>");
@@ -2072,8 +2118,8 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
-  page += F("<div class='row'>");
-  page += F("<div class='form-group col-md-6 col-12 mb-3'>");
+  page += F("<div class='row g-1'>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='longPressTime' name='longpresstime' placeholder='' value='");
   page += String(longPressTime) + F("'>");
@@ -2083,7 +2129,7 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("Set the long press time in milliseconds after which a continuous press and release is deemed a long press, measured from when the first press is detected. Default value is 500.");
   page += F("</small>");
   page += F("</div>");
-  page += F("<div class='form-group col-md-6 col-12 mb-3'>");
+  page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control' type='text' maxlength='32' id='repeatPressTime' name='repeatpresstime' placeholder='' value='");
   page += String(repeatPressTime) + F("'>");
@@ -2096,18 +2142,18 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+  page += F("</div>");
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='row'>");
-
   page += F("<div class='col-md-6 col-12 mb-3'>");
-
-  page += F("<div class='card h-100'>");
+  page += F("<div class='card h-50 mb-3'>");
   page += F("<h5 class='card-header'>Resistor Ladder Network</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='d-grid gap-1'>");
   for (byte i = 1; i <= LADDER_STEPS + 1; i++) {
+    if ((i - 1) % 4 == 0) page += F("<div class='row g-1'>");
+    page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<input class='form-control form-control-sm' type='number' id='threshold");
     page += String(i) + F("' name='threshold");
@@ -2119,20 +2165,19 @@ void get_options_page(unsigned int start, unsigned int len) {
     page += F("'>Level ");
     page += String(i);
     page += F("</label>");
-    page += F("</div>");;
+    page += F("</div>");
+    page += F("</div>");
+    if (i % 4 == 0 || i == LADDER_STEPS + 1) page += F("</div>");
   }
-  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='col-md-6 col-12 mb-3'>");
-
-  page += F("<div class='card h-40 mb-3'>");
+  page += F("<div class='card'>");
   page += F("<h5 class='card-header'>Encoders</h5>");
-  page += F("<div class='card-body'>");
+  page += F("<div class='card-body h-50 mb-3'>");
   page += F("<div class='form-floating'>");
   page += F("<select class='form-select form-select-sm' name='encodersensitivity'>");
   for (unsigned int s = 1; s <= 10; s++) {
@@ -2150,8 +2195,12 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
 
-  page += F("<div class='card h-60'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
+  page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>Additional Features</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='form-check form-switch'>");
@@ -2172,6 +2221,14 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<small id='repeatOnBankSwitchModeHelpBlock' class='form-text text-muted'>");
   page += F("On bank switch repeat the last MIDI message that was sent for that bank");
   page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='col-md-6 col-12 mb-3'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>Leds</h5>");
+  page += F("<div class='card-body'>");
   page += F("<label for='brightnessOn'>Leds On Brightness</label>");
   page += F("<input type='range' class='form-range' min='0' max='255' id='brightnessOn' name='ledsonbrightness' value='");
   page += String(ledsOnBrightness);
@@ -2209,8 +2266,8 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F(" Reset to Factory Default</button> ");
   page += F("<button type='submit' name='action' value='reboot' class='btn btn-primary btn-sm'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-bootstrap-reboot' viewBox='0 0 16 16'>");
-  page += F("<path d='M1.161 8a6.84 6.84 0 1 0 6.842-6.84.58.58 0 0 1 0-1.16 8 8 0 1 1-6.556 3.412l-.663-.577a.58.58 0 0 1 .227-.997l2.52-.69a.58.58 0 0 1 .728.633l-.332 2.592a.58.58 0 0 1-.956.364l-.643-.56A6.812 6.812 0 0 0 1.16 8z/>");
-  page += F("<path d='M6.641 11.671V8.843h1.57l1.498 2.828h1.314L9.377 8.665c.897-.3 1.427-1.106 1.427-2.1 0-1.37-.943-2.246-2.456-2.246H5.5v7.352h1.141zm0-3.75V5.277h1.57c.881 0 1.416.499 1.416 1.32 0 .84-.504 1.324-1.386 1.324h-1.6z/>");
+  page += F("<path d='M1.161 8a6.84 6.84 0 1 0 6.842-6.84.58.58 0 0 1 0-1.16 8 8 0 1 1-6.556 3.412l-.663-.577a.58.58 0 0 1 .227-.997l2.52-.69a.58.58 0 0 1 .728.633l-.332 2.592a.58.58 0 0 1-.956.364l-.643-.56A6.812 6.812 0 0 0 1.16 8z'>");
+  page += F("<path d='M6.641 11.671V8.843h1.57l1.498 2.828h1.314L9.377 8.665c.897-.3 1.427-1.106 1.427-2.1 0-1.37-.943-2.246-2.456-2.246H5.5v7.352h1.141zm0-3.75V5.277h1.57c.881 0 1.416.499 1.416 1.32 0 .84-.504 1.324-1.386 1.324h-1.6z'>");
   page += F("</svg>");
   page += F(" Reboot</button> ");
   page += F("<button type='submit' name='action' value='poweroff' class='btn btn-primary btn-sm'>");
@@ -2251,7 +2308,7 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
   page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
   page += F("</svg>");
-  page += F(" Save as configuration</button> ");
+  page += F(" Save as Configuration</button> ");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("</div>");
