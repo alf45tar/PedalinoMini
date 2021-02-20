@@ -2330,7 +2330,7 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
   page += F("Type a name, select what to include and press 'Save as Configuration' to save current profile with a name. An existing configuration with the same name will be overridden without further notice.");
   page += F("</small><br>");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
   page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
   page += F("</svg>");
