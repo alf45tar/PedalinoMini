@@ -2093,7 +2093,11 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Momentary Switches</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-toggle-on' viewBox='0 0 20 20'>");
+  page += F("<path d='M5 3a5 5 0 0 0 0 10h6a5 5 0 0 0 0-10H5zm6 9a4 4 0 1 1 0-8 4 4 0 0 1 0 8z'/>");
+  page += F("</svg>");
+  page += F(" Momentary Switches</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row g-1'>");
   page += F("<div class='w-50'>");
@@ -2148,7 +2152,11 @@ void get_options_page(unsigned int start, unsigned int len) {
 
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-50 mb-3'>");
-  page += F("<h5 class='card-header'>Resistor Ladder Network</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-ladder' viewBox='0 0 20 20'>");
+  page += F("<path d='M4.5 1a.5.5 0 0 1 .5.5V2h6v-.5a.5.5 0 0 1 1 0v14a.5.5 0 0 1-1 0V15H5v.5a.5.5 0 0 1-1 0v-14a.5.5 0 0 1 .5-.5zM5 14h6v-2H5v2zm0-3h6V9H5v2zm0-3h6V6H5v2zm0-3h6V3H5v2z'/>");
+  page += F("</svg>");
+  page += F(" Resistor Ladder Network</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='d-grid gap-1'>");
   for (byte i = 1; i <= LADDER_STEPS + 1; i++) {
@@ -2176,7 +2184,12 @@ void get_options_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len)) return;
 
   page += F("<div class='card'>");
-  page += F("<h5 class='card-header'>Encoders</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-joystick' viewBox='0 0 20 20'>");
+  page += F("<path d='M10 2a2 2 0 0 1-1.5 1.937v5.087c.863.083 1.5.377 1.5.726 0 .414-.895.75-2 .75s-2-.336-2-.75c0-.35.637-.643 1.5-.726V3.937A2 2 0 1 1 10 2z'/>");
+  page += F("<path d='M0 9.665v1.717a1 1 0 0 0 .553.894l6.553 3.277a2 2 0 0 0 1.788 0l6.553-3.277a1 1 0 0 0 .553-.894V9.665c0-.1-.06-.19-.152-.23L9.5 6.715v.993l5.227 2.178a.125.125 0 0 1 .001.23l-5.94 2.546a2 2 0 0 1-1.576 0l-5.94-2.546a.125.125 0 0 1 .001-.23L6.5 7.708l-.013-.988L.152 9.435a.25.25 0 0 0-.152.23z'/>");
+  page += F("</svg>");
+  page += F(" Encoders</h5>");
   page += F("<div class='card-body h-50 mb-3'>");
   page += F("<div class='form-floating'>");
   page += F("<select class='form-select form-select-sm' name='encodersensitivity'>");
@@ -2201,7 +2214,11 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Additional Features</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-sliders' viewBox='0 0 20 20'>");
+  page += F("<path fill-rule='evenodd' d='M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z'/>");
+  page += F("</svg>");
+  page += F(" Additional Features</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='tapDanceMode' name='tapdancemode'");
@@ -2227,7 +2244,11 @@ void get_options_page(unsigned int start, unsigned int len) {
 
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>Leds</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-brightness-high' viewBox='0 0 20 20'>");
+  page += F("<path d='M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z'/>");
+  page += F("</svg>");
+  page += F(" Leds</h5>");
   page += F("<div class='card-body'>");
   page += F("<label for='brightnessOn'>Leds On Brightness</label>");
   page += F("<input type='range' class='form-range' min='0' max='255' id='brightnessOn' name='ledsonbrightness' value='");
@@ -2296,7 +2317,12 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<form method='post'>");
 
   page += F("<div class='card mb-3'>");
-  page += F("<h5 class='card-header'>New Configuration</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-file-code' viewBox='0 0 20 20'>");
+  page += F("<path d='M6.646 5.646a.5.5 0 1 1 .708.708L5.707 8l1.647 1.646a.5.5 0 0 1-.708.708l-2-2a.5.5 0 0 1 0-.708l2-2zm2.708 0a.5.5 0 1 0-.708.708L10.293 8 8.646 9.646a.5.5 0 0 0 .708.708l2-2a.5.5 0 0 0 0-.708l-2-2z'/>");
+  page += F("<path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z'/>");
+  page += F("</svg>");
+  page += F(" New Configuration</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
   page += F("<div class='col-8'>");
@@ -2365,7 +2391,11 @@ void get_configurations_page(unsigned int start, unsigned int len) {
 
   page += F("<form method='post'>");
   page += F("<div class='card mb-3'>");
-  page += F("<h5 class='card-header'>Available Configurations</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-files' viewBox='0 0 20 20'>");
+  page += F("<path d='M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z'/>");
+  page += F("</svg>");
+  page += F(" Available Configurations</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
   page += F("<div class='col-8'>");
@@ -2443,7 +2473,12 @@ void get_configurations_page(unsigned int start, unsigned int len) {
 
   page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
   page += F("<div class='card'>");
-  page += F("<h5 class='card-header'>Upload Configuration</h5>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
+  page += F("</svg>");
+  page += F(" Upload Configuration</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
   page += F("<div class='col-8'>");
