@@ -195,9 +195,9 @@ Once PedalinoMini™ is connected to a WiFI network and you are connected to the
 ____________|Description
 :-----------|:----------
 Mode|Select one of the following: NONE, MOMENTARY, LATCH, ANALOG, JOG WHEEL, MOMENTARY 2, MOMENTARY 3, LATCH 2, LADDER.
-Singles Press|Define a global function for the pedal when pressed. Global pedal function override any action and it is used in any bank of the profile. Select Actions to use bank specific actions. Select Disable here to disable PRESS, RELEASE and CLICK events. The global function is triggered on PRESS is Double Press and Long Press are disbaled, otherwise on CLICK.
+Singles Press|Define a global function for the pedal when single pressed (PRESS or CLICK event). Global pedal function override any action and it is used in any bank of the profile. Select Actions to use bank specific actions. Select Disable here to disable PRESS, RELEASE and CLICK events. The global function is triggered on PRESS is Double Press and Long Press are disabled here and no action exists on Double Press or Long Press, otherwise on CLICK.
 Double Press|Define a global function for the pedal when double pressed. Global pedal function override any action and it is used in any bank of the profile. Select Actions to use bank specific actions. If double press is enabled CLICK event is postponed until double press timeout (by default 400ms). Select Disable here to disable DOUBLE CLICK events.
-Long Press|Define a global function for the pedal when keep presssed (500 ms by default). Global pedal function override any action and it is used in any bank of the profile. Select Disable here to disable LONG PRESS events.
+Long Press|Define a global function for the pedal when keep presssed (by default 500 ms). Global pedal function override any action and it is used in any bank of the profile. Select Disable here to disable LONG PRESS events.
 Analog Response|Mapping between analog pedal movement and response. Accepted values: LINEAR (as is response), LOG (great acceleration but than flat), ANTILOG (start slow with a rapid increase).
 Min|It depends of pedal mode and/or pedal function (see below).
 Max|It depends of pedal mode and/or pedal function (see below).
@@ -227,12 +227,13 @@ Once Pedals setup is complete proceed with Actions setup to define which event (
 
 ________|Description
 :-------|:----------
-On Button|Every pedal support at least one "button" except for MOMENTARY 2/LATCH 2 (2 buttons), MOMENTARY 3 (3 buttons) and LADDER (6 buttons). Each button is indipendent and every action can be linked to any button.<br>Momentary switches, latches and ladders have 5 different events that can trigger an action: PRESS, RELEASE, CLICK, DOUBLE CLICK and LONG PRESS. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
+On|The event that trigger the action. Momentary switches, latches and ladders have 5 different events: PRESS, RELEASE, CLICK, DOUBLE CLICK and LONG PRESS. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
+Button|Every pedal support at least one "button" except for MOMENTARY 2/LATCH 2 (2 buttons), MOMENTARY 3 (3 buttons) and LADDER (6 buttons). Each button is indipendent and every action can be linked to any button.
 Send|The action to be triggered on event. It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.
+From Value/To Value|Define the range from a off value to a on value (see below).
+Tags When Off|Action name to display when off action is triggered.
+Tags When On|Action name to display when on action is triggered.
 Led|Select the led number and the off and on color.
-Tags|Action name to display when off or on action is triggered.
-From Off/To On|Define the range from a off value to a on value (see below).
-
 
 Action|MIDI Channel|MIDI Code|From|To
 :-----|:----------:|:-------:|:--:|:--:
