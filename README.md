@@ -188,21 +188,20 @@ Device name, username and password can be changed via web user interface in the 
 
 ## Pedals
 
-Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal/controller is connected to each of the 6 available ports.
+Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal/controller is connected to each of the 6 available ports. Port 7 and 8 (if present) are the on board buttons and they are fully configurable.
 
 ![WEBUI PEDALS](./images/webui-pedals.png "Pedals")
 
 ____________|Description
 :-----------|:----------
 Mode|Select one of the following: NONE, MOMENTARY, LATCH, ANALOG, JOG WHEEL, MOMENTARY 2, MOMENTARY 3, LATCH 2, LADDER.
-Function|Define a global function for the pedal. Global pedal function override any action and it is used in any bank of the profile. An example of global pedal function can be BANK+ (move to next bank) or BANK- (move to previous bank). Other function available here are: MTC Start (MIDI Time Code or MIDI Clock Start), MTC Stop (MIDI Time Code or MIDI Clock Stop), MTC Continue (MIDI Time Code or MIDI Clock Continue), TAP (tap tempo), BPM+ (increase tempo) and BPM- (decrease tempo). Leave blank to use Actions.
-Analog|Mapping between analog pedal movement and response. Accepted values: LINEAR (as is response), LOG (great acceleration but than flat), ANTILOG (start slow with a rapid increase).
+Singles Press|Define a global function for the pedal when pressed. Global pedal function override any action and it is used in any bank of the profile. Select Actions to use bank specific actions. Select Disable here to disable PRESS, RELEASE and CLICK events. The global function is triggered on PRESS is Double Press and Long Press are disbaled, otherwise on CLICK.
+Double Press|Define a global function for the pedal when double pressed. Global pedal function override any action and it is used in any bank of the profile. Select Actions to use bank specific actions. If double press is enabled CLICK event is postponed until double press timeout (by default 400ms). Select Disable here to disable DOUBLE CLICK events.
+Long Press|Define a global function for the pedal when keep presssed (500 ms by default). Global pedal function override any action and it is used in any bank of the profile. Select Disable here to disable LONG PRESS events.
+Analog Response|Mapping between analog pedal movement and response. Accepted values: LINEAR (as is response), LOG (great acceleration but than flat), ANTILOG (start slow with a rapid increase).
 Min|It depends of pedal mode and/or pedal function (see below).
 Max|It depends of pedal mode and/or pedal function (see below).
 Invert Polarity|Normally open (NO) and normally closed (NC) momentary switches are supported and configurable by software if the foot switch do not have a polarity switch. On analog pedal it invert the range.
-Single Press|Enable single press (including PRESS, RELEASE and CLICK events). If single press is disabled PRESS, RELEASE and CLICK events are disabled.
-Double Press|Enable double press. If double press is enabled CLICK event is postponed until double press timeout (by default 400ms). If double press is disabled DOUBLE CLICK events are disabled.
-Long Press|Enable long press. If long press is disabled LONG PRESS events are disabled.
 Analog Calibration|Enable analog pedal continuous calibration. Min and Max values are managed by PedalinoMini™. After each power on cycle move the expression pedals to its full range and PedalinoMini™ will calibrate it. During the first full movement of the pedal MIDI events could be not precise because PedalinoMini™ is still learning the full range of the pedal.
 
 
