@@ -291,6 +291,10 @@ CLOCK|Enable/disable receiving and sending CLOCK MIDI message
 
 Routing between different interfaces is enabled between every IN enabled interfaces to any OUT enabled interfaces. Do not confuse routing (different interfaces) with MIDI Thru (between IN and OUT of same interface).
 
+## Sequences
+
+![WEBUI SEQUENCES](./images/webui-sequences.png "Sequences")
+
 ## Options
 
 PedalinoMini™ has a lot of options well documented in the Options page.
