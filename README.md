@@ -2,8 +2,6 @@
 
 > Before any update save configuration, reset to factory default and reload configuration. EEPROM can change without any further advice.
 
-> January 24th, 2021 - EEPROM changed - documentation needs to be updated
-
 # PedalinoMini™
 
 ![PlatformIO CI](https://github.com/alf45tar/PedalinoMini/workflows/PlatformIO%20CI/badge.svg)
@@ -188,16 +186,16 @@ Device name, username and password can be changed via web user interface in the 
 
 ## Pedals
 
-Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal/controller is connected to each of the 6 available ports. Port 7 and 8 (if present) are the on board buttons and they are fully configurable.
+Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal/controller is connected to each of the 6 available ports. Pedal 7 and 8 (if present) are the on board buttons and they are fully configurable.
 
 ![WEBUI PEDALS](./images/webui-pedals.png "Pedals")
 
 ____________|Description
 :-----------|:----------
 Mode|Select one of the following: NONE, MOMENTARY, LATCH, ANALOG, JOG WHEEL, MOMENTARY 2, MOMENTARY 3, LATCH 2, LADDER.
-Singles Press|Define a global function for the pedal when single pressed (PRESS or CLICK event). Global pedal function override any action and it is used in any bank of the profile. Select Actions to use bank specific actions. Select Disable here to disable PRESS, RELEASE and CLICK events. The global function is triggered on PRESS is Double Press and Long Press are disabled here and no action exists on Double Press or Long Press, otherwise on CLICK.
-Double Press|Define a global function for the pedal when double pressed. Global pedal function override any action and it is used in any bank of the profile. Select Actions to use bank specific actions. If double press is enabled CLICK event is postponed until double press timeout (by default 400ms). Select Disable here to disable DOUBLE CLICK events.
-Long Press|Define a global function for the pedal when keep presssed (by default 500 ms). Global pedal function override any action and it is used in any bank of the profile. Select Disable here to disable LONG PRESS events.
+Singles Press|Define a global function for the pedal when single pressed (PRESS or CLICK event). Global pedal function override any action and it is used in any bank of the profile.<br>Select Actions to use bank specific actions.<br>Select Disable here to disable PRESS, RELEASE and CLICK events.<br>The global function is triggered on PRESS is Double Press and Long Press are disabled here and no action exists on Double Press or Long Press, otherwise on CLICK.
+Double Press|Define a global function for the pedal when double pressed. Global pedal function override any action and it is used in any bank of the profile.<br>Select Actions to use bank specific actions.<br>Select Actions to use bank specific actions.<br>Select Disable here to disable DOUBLE CLICK events.<br>If double press is enabled CLICK event is postponed until double press timeout (by default 400ms).
+Long Press|Define a global function for the pedal when keep presssed (by default 500 ms). Global pedal function override any action and it is used in any bank of the profile.<br>Select Disable here to disable LONG PRESS events.
 Analog Response|Mapping between analog pedal movement and response. Accepted values: LINEAR (as is response), LOG (great acceleration but than flat), ANTILOG (start slow with a rapid increase).
 Min|It depends of pedal mode and/or pedal function (see below).
 Max|It depends of pedal mode and/or pedal function (see below).
@@ -216,7 +214,7 @@ any|BPM-|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
 
 ## Actions
 
-Once Pedals setup is complete proceed with Actions setup to define which event (press, release, double press, long press, rotate or jog) trigger an action.
+Once Pedals setup is complete proceed with Actions setup to define which event (press, release, double press, long press, move or jog) trigger an action.
 
 1. Select a bank on top left
 2. Select a pedal on top right or "All"
@@ -229,7 +227,7 @@ ________|Description
 :-------|:----------
 On|The event that trigger the action. Momentary switches, latches and ladders have 5 different events: PRESS, RELEASE, CLICK, DOUBLE CLICK and LONG PRESS. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
 Button|Every pedal support at least one "button" except for MOMENTARY 2/LATCH 2 (2 buttons), MOMENTARY 3 (3 buttons) and LADDER (6 buttons). Each button is indipendent and every action can be linked to any button.
-Send|The action to be triggered on event. It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.
+Send|The action to be triggered on event. It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (PROGRAM CHANGE+, PROGRAM CHANGE-, BANK SELECT+, BANK SELECT-, BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.
 From Value/To Value|Define the range from a off value to a on value (see below).
 Tags When Off|Action name to display when off action is triggered.
 Tags When On|Action name to display when on action is triggered.
