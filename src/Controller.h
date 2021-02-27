@@ -1113,7 +1113,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
             case PED_ACTION_BANK_PLUS:
-              currentBank = constrain(currentBank + 1, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
+              currentBank = constrain((currentBank == (act->midiValue2 - 1)) ? (act->midiValue1 - 1) : (currentBank + 1), 0, BANKS - 1);
+              currentBank = constrain(currentBank, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
               currentBank = constrain(currentBank, 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
@@ -1127,7 +1128,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
             case PED_ACTION_BANK_MINUS:
-              currentBank = constrain(currentBank - 1, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
+              currentBank = constrain((currentBank == (act->midiValue1 - 1)) ? (act->midiValue2 - 1) : (currentBank - 1), 0, BANKS - 1);
+              currentBank = constrain(currentBank, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
               currentBank = constrain(currentBank, 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
@@ -1183,6 +1185,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 
     case PED_BANK_PLUS:
               currentBank = constrain((currentBank == (pedals[p].expMax - 1)) ? (pedals[p].expZero - 1) : (currentBank + 1), 0, BANKS - 1);
+              currentBank = constrain(currentBank, constrain(pedals[p].expZero - 1, 0, BANKS - 1), constrain(pedals[p].expMax - 1, 0, BANKS - 1));
+              currentBank = constrain(currentBank, 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
                           lastMIDIMessage[currentBank].midiCode,
@@ -1196,6 +1200,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 
     case PED_BANK_MINUS:
               currentBank = constrain((currentBank == (pedals[p].expZero - 1)) ? (pedals[p].expMax - 1) : (currentBank - 1), 0, BANKS - 1);
+              currentBank = constrain(currentBank, constrain(pedals[p].expZero - 1, 0, BANKS - 1), constrain(pedals[p].expMax - 1, 0, BANKS - 1));
+              currentBank = constrain(currentBank, 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
                           lastMIDIMessage[currentBank].midiCode,
