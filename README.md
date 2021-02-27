@@ -193,8 +193,8 @@ Once PedalinoMini™ is connected to a WiFI network and you are connected to the
 ____________|Description
 :-----------|:----------
 Mode|Select one of the following: NONE, MOMENTARY, LATCH, ANALOG, JOG WHEEL, MOMENTARY 2, MOMENTARY 3, LATCH 2, LADDER.
-Singles Press|Define a global function for the pedal when single pressed (PRESS or CLICK event). Global pedal function override any action and it is used in any bank of the profile.<br>Select Actions to use bank specific actions.<br>Select Disable here to disable PRESS, RELEASE and CLICK events.<br>The global function is triggered on PRESS is Double Press and Long Press are disabled here and no action exists on Double Press or Long Press, otherwise on CLICK.
-Double Press|Define a global function for the pedal when double pressed. Global pedal function override any action and it is used in any bank of the profile.<br>Select Actions to use bank specific actions.<br>Select Actions to use bank specific actions.<br>Select Disable here to disable DOUBLE CLICK events.<br>If double press is enabled CLICK event is postponed until double press timeout (by default 400ms).
+Singles Press|Define a global function for the pedal when single pressed (PRESS or CLICK event). Global pedal function override any action and it is used in any bank of the profile.<br>Select Actions to use bank specific actions.<br>Select Disable here to disable PRESS, RELEASE and CLICK events.<br>The global function is triggered on PRESS if Double Press and Long Press are disabled here and no action exists on Double Press or Long Press, otherwise on CLICK.
+Double Press|Define a global function for the pedal when double pressed. Global pedal function override any action and it is used in any bank of the profile.<br>Select Actions to use bank specific actions.<br>Select Disable here to disable DOUBLE CLICK events.<br>If double press is enabled CLICK event is postponed until double press timeout (by default 400ms).
 Long Press|Define a global function for the pedal when keep presssed (by default 500 ms). Global pedal function override any action and it is used in any bank of the profile.<br>Select Disable here to disable LONG PRESS events.
 Analog Response|Mapping between analog pedal movement and response. Accepted values: LINEAR (as is response), LOG (great acceleration but than flat), ANTILOG (start slow with a rapid increase).
 Min|It depends of pedal mode and/or pedal function (see below).
@@ -350,19 +350,22 @@ https://github.com/marosell
 ![marosell](https://user-images.githubusercontent.com/1125586/65741408-f1188b80-e0b9-11e9-868f-e65c7d6db10b.JPG)
 
 https://github.com/mknerr
-![](https://user-images.githubusercontent.com/25649210/83949366-60ba4b00-a7f1-11ea-8af6-402a4fcb3f37.jpeg)
+![mknerr](https://user-images.githubusercontent.com/25649210/83949366-60ba4b00-a7f1-11ea-8af6-402a4fcb3f37.jpeg)
 
 https://github.com/alf45tar
-![](https://user-images.githubusercontent.com/35426671/74613398-71459900-510e-11ea-8cb0-226436100cea.jpg)
+![alf45tar](https://user-images.githubusercontent.com/35426671/74613398-71459900-510e-11ea-8cb0-226436100cea.jpg)
 
 https://github.com/jimhiggs
-![](https://user-images.githubusercontent.com/33665935/75095781-0c0b0100-556f-11ea-99ee-fa6dd0c59d29.jpg)
+![jimhiggs](https://user-images.githubusercontent.com/33665935/75095781-0c0b0100-556f-11ea-99ee-fa6dd0c59d29.jpg)
 
 https://github.com/raidolo
-![](https://user-images.githubusercontent.com/25846804/91668083-dfc9d180-eb09-11ea-818e-1f8f97915324.jpeg)
+![raidolo](https://user-images.githubusercontent.com/25846804/91668083-dfc9d180-eb09-11ea-818e-1f8f97915324.jpeg)
 
 https://github.com/bsos
-![](https://user-images.githubusercontent.com/6843511/94213274-63c26f80-fea4-11ea-9e11-c6955389c7e1.jpeg)
+![bsos](https://user-images.githubusercontent.com/6843511/94213274-63c26f80-fea4-11ea-9e11-c6955389c7e1.jpeg)
 
 https://github.com/rigr
-![](https://user-images.githubusercontent.com/6568315/95367206-c2d8a900-08d4-11eb-9cc1-21adec9d219b.jpg)
+![rigr](https://user-images.githubusercontent.com/6568315/95367206-c2d8a900-08d4-11eb-9cc1-21adec9d219b.jpg)
+
+https://github.com/teopost
+![teopost](https://user-images.githubusercontent.com/2573389/109355786-0cc02c80-7880-11eb-9d7c-7eb23dfa2dee.png)
