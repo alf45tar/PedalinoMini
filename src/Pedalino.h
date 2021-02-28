@@ -14,10 +14,12 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
+#define VERSION         "2.1.0"
+
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
 #define PROFILES          3
-#define BANKS            20
+#define BANKS            21   // 20 banks + 1 bank for global actions
 #define PEDALS            6   // real number of pedals is board specific (see below)
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
@@ -151,29 +153,33 @@ using namespace ace_button;
 #define PED_BOOT_LADDER_CONFIG  7
 #define PED_FACTORY_DEFAULT     8
 
-#define PED_EMPTY               midi::InvalidType
-#define PED_PROGRAM_CHANGE      midi::ProgramChange
-#define PED_CONTROL_CHANGE      midi::ControlChange
-#define PED_NOTE_ON             midi::NoteOn
-#define PED_NOTE_OFF            midi::NoteOff
-#define PED_BANK_SELECT_INC     4
-#define PED_BANK_SELECT_DEC     5
-#define PED_PROGRAM_CHANGE_INC  6
-#define PED_PROGRAM_CHANGE_DEC  7
-#define PED_PITCH_BEND          midi::PitchBend
-#define PED_CHANNEL_PRESSURE    midi::AfterTouchChannel
-#define PED_MIDI_START          midi::Start
-#define PED_MIDI_STOP           midi::Stop
-#define PED_MIDI_CONTINUE       midi::Continue
-#define PED_SEQUENCE            20
-#define PED_ACTION_BANK_PLUS    21
-#define PED_ACTION_BANK_MINUS   22
-#define PED_ACTION_START        23
-#define PED_ACTION_STOP         24
-#define PED_ACTION_CONTINUE     25
-#define PED_ACTION_TAP          26
-#define PED_ACTION_BPM_PLUS     27
-#define PED_ACTION_BPM_MINUS    29
+#define PED_EMPTY                     midi::InvalidType
+#define PED_PROGRAM_CHANGE            midi::ProgramChange
+#define PED_CONTROL_CHANGE            midi::ControlChange
+#define PED_NOTE_ON                   midi::NoteOn
+#define PED_NOTE_OFF                  midi::NoteOff
+#define PED_BANK_SELECT_INC           4
+#define PED_BANK_SELECT_DEC           5
+#define PED_PROGRAM_CHANGE_INC        6
+#define PED_PROGRAM_CHANGE_DEC        7
+#define PED_PITCH_BEND                midi::PitchBend
+#define PED_CHANNEL_PRESSURE          midi::AfterTouchChannel
+#define PED_MIDI_START                midi::Start
+#define PED_MIDI_STOP                 midi::Stop
+#define PED_MIDI_CONTINUE             midi::Continue
+#define PED_SEQUENCE                  20
+#define PED_ACTION_BANK_PLUS          21
+#define PED_ACTION_BANK_MINUS         22
+#define PED_ACTION_START              23
+#define PED_ACTION_STOP               24
+#define PED_ACTION_CONTINUE           25
+#define PED_ACTION_TAP                26
+#define PED_ACTION_BPM_PLUS           27
+#define PED_ACTION_BPM_MINUS          29
+#define PED_ACTION_PROFILE_PLUS       30
+#define PED_ACTION_PROFILE_MINUS      31
+#define PED_ACTION_DEVICE_INFO        32
+#define PED_ACTION_POWER_ON_OFF       99
 
 #define PED_NONE                1
 #define PED_MOMENTARY1          2
@@ -203,10 +209,6 @@ using namespace ace_button;
 #define PED_TAP                 7
 #define PED_BPM_PLUS            8
 #define PED_BPM_MINUS           9
-#define PED_PROFILE_PLUS       10
-#define PED_PROFILE_MINUS      11
-#define PED_DEVICE_INFO        88
-#define PED_POWER_ON_OFF       99
 
 #define PED_EVENT_PRESS         AceButton::kEventPressed
 #define PED_EVENT_RELEASE       AceButton::kEventReleased
@@ -397,7 +399,7 @@ volatile bool reloadProfile   = true;
 volatile bool saveProfile     = false;
 volatile bool loadConfig      = false;
 volatile bool scrollingMode   = false;  // Display scrolling mode
-byte  currentBank             = 0;
+byte  currentBank             = 1;
 byte  currentPedal            = 0;
 byte  currentInterface        = PED_USBMIDI;
 byte  lastUsedSwitch          = 0xFF;

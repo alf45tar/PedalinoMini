@@ -628,10 +628,10 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
       display->setColor(BLACK);
     }
 
-    if (currentBank < 9)
-      display->drawString(0, 53, String("Bank 0" + String(currentBank+1)));
+    if (currentBank <= 9)
+      display->drawString(0, 53, String("Bank 0" + String(currentBank)));
     else
-      display->drawString(0, 53, String("Bank " + String(currentBank+1)));
+      display->drawString(0, 53, String("Bank " + String(currentBank)));
     display->setColor(WHITE);
 
 #ifdef WIFI
@@ -877,7 +877,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
         display->drawString(  0 + x, 9 + y, (currentProfile == 0 ? String('A') : (currentProfile == 1 ? String('B') : String('C'))));
         display->drawString( 38 + x, 9 + y, String("."));
         display->setTextAlignment(TEXT_ALIGN_RIGHT);
-        display->drawString(128 + x, 9 + y, (currentBank >= 9  ? String("") : String('0')) + String(currentBank + 1));
+        display->drawString(128 + x, 9 + y, (currentBank > 9  ? String("") : String('0')) + String(currentBank));
       }
       else {
         String name;

@@ -942,19 +942,19 @@ void drawFrame1(int16_t x, int16_t y)
         sprite.setFreeFont(&DSEG14_Classic_Bold_100);
         switch (currentProfile) {
           case 0:
-            p = "A." + ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
+            p = "A." + ((currentBank > 9  ? "" : "0") + String(currentBank ));
             sprite.setBitmapColor(TFT_RED, TFT_BLACK);
             break;
           case 1:
-            p = "B." + ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
+            p = "B." + ((currentBank > 9  ? "" : "0") + String(currentBank));
             sprite.setBitmapColor(TFT_GREEN, TFT_BLACK);
             break;
           case 2:
-            p = "C." + ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
+            p = "C." + ((currentBank > 9  ? "" : "0") + String(currentBank));
             sprite.setBitmapColor(TFT_BLUE, TFT_BLACK);
             break;
           default:
-            p = "" + ((currentBank >= 9  ? "" : "0") + String(currentBank + 1));
+            p = "" + ((currentBank > 9  ? "" : "0") + String(currentBank));
             sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
             break;
         }

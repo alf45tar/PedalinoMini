@@ -94,7 +94,7 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
     JsonArray jbnames = jdoc.createNestedArray("BankNames");
     for (byte b = 0; b < BANKS; b++) {
       JsonObject jo = jbnames.createNestedObject();
-      jo["Bank"]              = b + 1;
+      jo["Bank"]              = b;
       jo["Name"]              = banknames[b];
     }
 
@@ -276,7 +276,6 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
           int b = jo["Bank"];
-          b--;
           b = constrain(b, 0, BANKS - 1);
           strlcpy(banknames[b], jo["Name"] | "", sizeof(banknames[b]));
         }
@@ -288,7 +287,6 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
           int b = jo["Bank"];
-          b--;
           b = constrain(b, 0, BANKS - 1);
           action *act = actions[b];
           if (act == nullptr) {
@@ -398,6 +396,7 @@ void load_factory_default()
   httpUsername       = "admin";
   httpPassword       = getChipId();
   theme              = "bootstrap";
+  currentBank        = 1;
   currentProfile     = 0;
   pressTime          = PED_PRESS_TIME;
   doublePressTime    = PED_DOUBLE_PRESS_TIME;
@@ -407,6 +406,12 @@ void load_factory_default()
   tapDanceMode       = false;
   repeatOnBankSwitch = false;
   tapDanceBank       = true;
+
+  for (byte b = 0; b < BANKS; b++) {
+    memset(banknames[b], 0, MAXBANKNAME+1);
+    actions[b] = nullptr;
+  }
+  strncpy(banknames[0], "Global", MAXBANKNAME+1);
 
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {
@@ -446,31 +451,75 @@ void load_factory_default()
                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
 
-  pedals[PEDALS-1].function1 = PED_BANK_PLUS;
-  pedals[PEDALS-1].function2 = PED_BANK_MINUS;
-  pedals[PEDALS-1].function3 = PED_DEVICE_INFO;
+  pedals[PEDALS-1].function1 = PED_ACTIONS;
+  pedals[PEDALS-1].function2 = PED_ACTIONS;
+  pedals[PEDALS-1].function3 = PED_ACTIONS;
   pedals[PEDALS-1].pressMode = PED_PRESS_1_2_L;
-  pedals[PEDALS-1].expZero   = 1;
-  pedals[PEDALS-1].expMax    = BANKS;
 #ifdef TTGO_T_DISPLAY
-  pedals[PEDALS-1].function1 = PED_PROFILE_PLUS;
-  pedals[PEDALS-1].function2 = PED_POWER_ON_OFF;
-  pedals[PEDALS-1].function3 = PED_DEVICE_INFO;
-  pedals[PEDALS-1].pressMode = PED_PRESS_1_2_L;
-  pedals[PEDALS-1].expZero   = 1;
-  pedals[PEDALS-1].expMax    = PROFILES;
-
-  pedals[PEDALS-2].function1 = PED_BANK_PLUS;
-  pedals[PEDALS-2].expZero   = 1;
-  pedals[PEDALS-2].expMax    = BANKS;
-#endif
-#endif
-
-  for (byte b = 0; b < BANKS; b++) {
-    memset(banknames[b], 0, MAXBANKNAME+1);
-    actions[b] = nullptr;
-  }
+  action *act;
+  act = actions[0] = (action*)malloc(sizeof(action));
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->pedal        = PEDALS - 2;
+  act->button       = 0;
+  act->led          = 0;
+  act->color0       = CRGB::Black;;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_PRESS;
+  act->midiMessage  = PED_ACTION_BANK_PLUS;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 1;
+  act->midiValue2   = BANKS - 1;
+  act->next         = (action*)malloc(sizeof(action));
+  act = act->next;
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->pedal        = PEDALS - 1;
+  act->button       = 0;
+  act->led          = 0;
+  act->color0       = CRGB::Black;;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_CLICK;
+  act->midiMessage  = PED_ACTION_PROFILE_PLUS;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 1;
+  act->midiValue2   = PROFILES;
+  act->next         = (action*)malloc(sizeof(action));
+  act = act->next;
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->pedal        = PEDALS - 1;
+  act->button       = 0;
+  act->led          = 0;
+  act->color0       = CRGB::Black;;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_DOUBLE_CLICK;
+  act->midiMessage  = PED_ACTION_POWER_ON_OFF;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 0;
+  act->midiValue2   = 127;
+  act->next         = (action*)malloc(sizeof(action));
+  act = act->next;
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->pedal        = PEDALS - 1;
+  act->button       = 0;
+  act->led          = 0;
+  act->color0       = CRGB::Black;;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_LONG_PRESS;
+  act->midiMessage  = PED_ACTION_DEVICE_INFO;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 0;
+  act->midiValue2   = 127;
+  act->next         = nullptr;
   create_banks();
+#endif
+#endif
 
   for (byte i = 0; i < INTERFACES; i++)
     {

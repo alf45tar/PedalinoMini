@@ -978,7 +978,7 @@ if (loadConfig && send) {
                   case PED_ACTION_BANK_MINUS:
                     {
                       int b = currentBank + ((direction == DIR_CW) ? 1 : -1) * (pedals[i].invertPolarity ? -1 : 1);
-                      b = constrain(b, pedals[i].expZero - 1, pedals[i].expMax - 1);
+                      b = constrain(b, constrain(act->midiValue1, 0, BANKS - 1), constrain(act->midiValue2, 0, BANKS - 1));
                       currentBank = constrain(b, 0, BANKS - 1);
                       leds_refresh();
                       break;
@@ -1054,7 +1054,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
   switch (f) {
 
     case PED_ACTIONS: {
-      action *act = actions[currentBank];
+      bool    global = true;
+      action *act = actions[0];
       while (act != nullptr) {
         if ((act->pedal == p) && (act->button == i) && (act->event == eventType)) {
           pedals[p].lastUpdate[0] = micros();
@@ -1113,8 +1114,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
             case PED_ACTION_BANK_PLUS:
-              currentBank = constrain((currentBank == (act->midiValue2 - 1)) ? (act->midiValue1 - 1) : (currentBank + 1), 0, BANKS - 1);
-              currentBank = constrain(currentBank, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
+              currentBank = constrain((currentBank == act->midiValue2) ? act->midiValue1 : (currentBank + 1), 0, BANKS - 1);
+              currentBank = constrain(currentBank, constrain(act->midiValue1, 0, BANKS - 1), constrain(act->midiValue2, 0, BANKS - 1));
               currentBank = constrain(currentBank, 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
@@ -1128,8 +1129,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
             case PED_ACTION_BANK_MINUS:
-              currentBank = constrain((currentBank == (act->midiValue1 - 1)) ? (act->midiValue2 - 1) : (currentBank - 1), 0, BANKS - 1);
-              currentBank = constrain(currentBank, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
+              currentBank = constrain((currentBank == act->midiValue1) ? act->midiValue2 : (currentBank - 1), 0, BANKS - 1);
+              currentBank = constrain(currentBank, constrain(act->midiValue1, 0, BANKS - 1), constrain(act->midiValue2, 0, BANKS - 1));
               currentBank = constrain(currentBank, 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
@@ -1167,6 +1168,30 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               bpm = constrain(bpm - 1, 40, 300);
               MTC.setBpm(bpm);
               break;
+
+            case PED_ACTION_PROFILE_PLUS:
+              if (reloadProfile) return;
+              currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
+              reloadProfile = true;
+              break;
+
+            case PED_ACTION_PROFILE_MINUS:
+              if (reloadProfile) return;
+              currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
+              reloadProfile = true;
+              break;
+
+            case PED_ACTION_DEVICE_INFO:
+              scrollingMode = !scrollingMode;
+              break;
+
+            case PED_ACTION_POWER_ON_OFF:
+              display_off();
+              //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
+              esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(p), 0);
+              delay(200);
+              esp_deep_sleep_start();
+              break;
           }
           if (act->midiMessage != PED_PROGRAM_CHANGE) {
             CRGB off = act->color0;
@@ -1179,89 +1204,13 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
           }
         }
         act = act->next;
+        if (global && (currentBank != 0) && (act == nullptr)) {
+          global = false;
+          act = actions[currentBank];
+        }
       }
       break;
     }
-
-    case PED_BANK_PLUS:
-              currentBank = constrain((currentBank == (pedals[p].expMax - 1)) ? (pedals[p].expZero - 1) : (currentBank + 1), 0, BANKS - 1);
-              currentBank = constrain(currentBank, constrain(pedals[p].expZero - 1, 0, BANKS - 1), constrain(pedals[p].expMax - 1, 0, BANKS - 1));
-              currentBank = constrain(currentBank, 0, BANKS - 1);
-              if (repeatOnBankSwitch)
-                midi_send(lastMIDIMessage[currentBank].midiMessage,
-                          lastMIDIMessage[currentBank].midiCode,
-                          lastMIDIMessage[currentBank].midiValue,
-                          lastMIDIMessage[currentBank].midiChannel,
-                          true,
-                          0, MIDI_RESOLUTION - 1,
-                          currentBank, p, i);
-              leds_refresh();
-              break;
-
-    case PED_BANK_MINUS:
-              currentBank = constrain((currentBank == (pedals[p].expZero - 1)) ? (pedals[p].expMax - 1) : (currentBank - 1), 0, BANKS - 1);
-              currentBank = constrain(currentBank, constrain(pedals[p].expZero - 1, 0, BANKS - 1), constrain(pedals[p].expMax - 1, 0, BANKS - 1));
-              currentBank = constrain(currentBank, 0, BANKS - 1);
-              if (repeatOnBankSwitch)
-                midi_send(lastMIDIMessage[currentBank].midiMessage,
-                          lastMIDIMessage[currentBank].midiCode,
-                          lastMIDIMessage[currentBank].midiValue,
-                          lastMIDIMessage[currentBank].midiChannel,
-                          true,
-                          0, MIDI_RESOLUTION - 1,
-                          currentBank, p, i);
-              leds_refresh();
-              break;
-
-    case PED_START:
-              mtc_start();
-              break;
-
-    case PED_STOP:
-              mtc_stop();
-              break;
-
-    case PED_CONTINUE:
-              mtc_continue();
-              break;
-
-    case PED_TAP:
-              mtc_tap();
-              break;
-
-    case PED_BPM_PLUS:
-              bpm = constrain(bpm + 1, 40, 300);
-              MTC.setBpm(bpm);
-              break;
-
-    case PED_BPM_MINUS:
-              bpm = constrain(bpm - 1, 40, 300);
-              MTC.setBpm(bpm);
-              break;
-
-    case PED_PROFILE_PLUS:
-              if (reloadProfile) return;
-              currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
-              reloadProfile = true;
-              break;
-
-    case PED_PROFILE_MINUS:
-              if (reloadProfile) return;
-              currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
-              reloadProfile = true;
-              break;
-
-    case PED_DEVICE_INFO:
-              scrollingMode = !scrollingMode;
-              break;
-
-    case PED_POWER_ON_OFF:
-              display_off();
-              //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
-              esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(p), 0);
-              delay(200);
-              esp_deep_sleep_start();
-              break;
   }
 }
 
@@ -1292,51 +1241,15 @@ void controller_setup()
   for (byte i = 0; i < PEDALS; i++) {
     DPRINT("Pedal %2d     ", i + 1);
     switch (pedals[i].function1) {
-      case PED_MIDI:         DPRINT("MIDI      "); break;
-      case PED_BANK_PLUS:    DPRINT("BANK+1    "); break;
-      case PED_BANK_MINUS:   DPRINT("BANK-1    "); break;
-      case PED_START:        DPRINT("START     "); break;
-      case PED_STOP:         DPRINT("STOP      "); break;
-      case PED_CONTINUE:     DPRINT("CONTINUE  "); break;
-      case PED_TAP:          DPRINT("TAP       "); break;
-      case PED_BPM_PLUS:     DPRINT("BPM+      "); break;
-      case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
-      case PED_PROFILE_PLUS: DPRINT("PROFILE+  "); break;
-      case PED_PROFILE_MINUS:DPRINT("PROFILE-  "); break;
-      case PED_DEVICE_INFO:  DPRINT("INFO      "); break;
-      case PED_POWER_ON_OFF: DPRINT("POWER     "); break;
+      case PED_ACTIONS:      DPRINT("ACTIONS   "); break;
       default:               DPRINT("          "); break;
     }
     switch (pedals[i].function2) {
-      case PED_MIDI:         DPRINT("MIDI      "); break;
-      case PED_BANK_PLUS:    DPRINT("BANK+1    "); break;
-      case PED_BANK_MINUS:   DPRINT("BANK-1    "); break;
-      case PED_START:        DPRINT("START     "); break;
-      case PED_STOP:         DPRINT("STOP      "); break;
-      case PED_CONTINUE:     DPRINT("CONTINUE  "); break;
-      case PED_TAP:          DPRINT("TAP       "); break;
-      case PED_BPM_PLUS:     DPRINT("BPM+      "); break;
-      case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
-      case PED_PROFILE_PLUS: DPRINT("PROFILE+  "); break;
-      case PED_PROFILE_MINUS:DPRINT("PROFILE-  "); break;
-      case PED_DEVICE_INFO:  DPRINT("INFO      "); break;
-      case PED_POWER_ON_OFF: DPRINT("POWER     "); break;
+      case PED_ACTIONS:      DPRINT("ACTIONS   "); break;
       default:               DPRINT("          "); break;
     }
     switch (pedals[i].function3) {
-      case PED_MIDI:         DPRINT("MIDI      "); break;
-      case PED_BANK_PLUS:    DPRINT("BANK+1    "); break;
-      case PED_BANK_MINUS:   DPRINT("BANK-1    "); break;
-      case PED_START:        DPRINT("START     "); break;
-      case PED_STOP:         DPRINT("STOP      "); break;
-      case PED_CONTINUE:     DPRINT("CONTINUE  "); break;
-      case PED_TAP:          DPRINT("TAP       "); break;
-      case PED_BPM_PLUS:     DPRINT("BPM+      "); break;
-      case PED_BPM_MINUS:    DPRINT("BPM-      "); break;
-      case PED_PROFILE_PLUS: DPRINT("PROFILE+  "); break;
-      case PED_PROFILE_MINUS:DPRINT("PROFILE-  "); break;
-      case PED_DEVICE_INFO:  DPRINT("INFO      "); break;
-      case PED_POWER_ON_OFF: DPRINT("POWER     "); break;
+      case PED_ACTIONS:      DPRINT("ACTIONS   "); break;
       default:               DPRINT("          "); break;
     }
     DPRINT("   ");

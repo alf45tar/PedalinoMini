@@ -310,6 +310,9 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F("<dt>PlatformIO Build Env</dt><dd>");
   page += xstr(PLATFORMIO_ENV);
   page += F("</dd>");
+  page += F("<dt>Firmware</dt><dd>");
+  page += String(VERSION);
+  page += F("</dd>");
   page += F("</div>");
 
   page += F("<div class='col'>");
@@ -713,7 +716,7 @@ void get_live_page(unsigned int start, unsigned int len) {
 
 void get_actions_page(unsigned int start, unsigned int len) {
 
-  const byte   b = constrain(uibank.toInt(), 1, BANKS);
+  const byte   b = constrain(uibank.toInt(), 0, BANKS - 1);
   //const byte   p = constrain(uipedal.toInt(), 1, PEDALS);
   action      *act;
   unsigned int i;
@@ -737,15 +740,15 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<div class='card-body'>");
   page += F("<div class='input-group input-group-sm'>");
   page += F("<div class='btn-group flex-wrap'>");
-  for (i = 1; i <= BANKS; i++) {
+  for (i = 0; i < BANKS; i++) {
     page += F("<form method='get'><button type='button submit' class='btn btn-sm btn-block");
     page += (uibank == String(i) ? String(" btn-primary") : String(""));
     page += F("' name='bank' value='");
     page += String(i) + F("'>");
-    if (String(banknames[i-1]).isEmpty())
+    if (String(banknames[i]).isEmpty())
       page += String(i);
     else
-      page += String(banknames[i-1]);
+      page += String(banknames[i]);
     page += F("</button>");
     page += F("</form>");
   }
@@ -804,7 +807,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<div class='form-floating'>");
   page += F("<input type='text' class='form-control' id='bankNameFloatingInput' name='bankname' maxlength='");
   page += String(MAXBANKNAME) + F("' value='");
-  page += String(banknames[b-1]) + F("'>");
+  page += String(banknames[b]) + F("'>");
   page += F("<label for='bankNameFloatingInput'>Bank Name</label>");
   page += F("</div>");
   page += F("</div>");
@@ -827,7 +830,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</div>");
 
   i = 1;
-  act = actions[b-1];
+  act = actions[b];
   same_pedal = false;
   while (act != nullptr) {
 
@@ -1062,6 +1065,22 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += String(PED_ACTION_BPM_MINUS) + F("'");
     if (act->midiMessage == PED_ACTION_BPM_MINUS) page += F(" selected");
     page += F(">BPM-</option>");
+    page += F("<option value='");
+    page += String(PED_ACTION_PROFILE_PLUS) + F("'");
+    if (act->midiMessage == PED_ACTION_PROFILE_PLUS) page += F(" selected");
+    page += F(">Profile+</option>");
+    page += F("<option value='");
+    page += String(PED_ACTION_PROFILE_MINUS) + F("'");
+    if (act->midiMessage == PED_ACTION_PROFILE_MINUS) page += F(" selected");
+    page += F(">Profile-</option>");
+    page += F("<option value='");
+    page += String(PED_ACTION_DEVICE_INFO) + F("'");
+    if (act->midiMessage == PED_ACTION_DEVICE_INFO) page += F(" selected");
+    page += F(">Device Info</option>");
+    page += F("<option value='");
+    page += String(PED_ACTION_POWER_ON_OFF) + F("'");
+    if (act->midiMessage == PED_ACTION_POWER_ON_OFF) page += F(" selected");
+    page += F(">Power On/Off</option>");
     page += F("</select>");
     page += F("<label for='sendFloatingSelect'>Send</label>");
     page += F("</div>");
@@ -1309,54 +1328,6 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += String(PED_ACTIONS) + F("'");
     if (pedals[i-1].function1 == PED_ACTIONS) page += F(" selected");
     page += F(">Actions</option>");
-    page += F("<option value='");
-    page += String(PED_BANK_PLUS) + F("'");
-    if (pedals[i-1].function1 == PED_BANK_PLUS) page += F(" selected");
-    page += F(">Bank+</option>");
-    page += F("<option value='");
-    page += String(PED_BANK_MINUS) + F("'");
-    if (pedals[i-1].function1 == PED_BANK_MINUS) page += F(" selected");
-    page += F(">Bank-</option>");
-    page += F("<option value='");
-    page += String(PED_BPM_PLUS) + F("'");
-    if (pedals[i-1].function1 == PED_BPM_PLUS) page += F(" selected");
-    page += F(">BPM+</option>");
-    page += F("<option value='");
-    page += String(PED_BPM_MINUS) + F("'");
-    if (pedals[i-1].function1 == PED_BPM_MINUS) page += F(" selected");
-    page += F(">BPM-</option>");
-    page += F("<option value='");
-    page += String(PED_PROFILE_PLUS) + F("'");
-    if (pedals[i-1].function1 == PED_PROFILE_PLUS) page += F(" selected");
-    page += F(">Profile+</option>");
-    page += F("<option value='");
-    page += String(PED_PROFILE_MINUS) + F("'");
-    if (pedals[i-1].function1 == PED_PROFILE_MINUS) page += F(" selected");
-    page += F(">Profile-</option>");
-    page += F("<option value='");
-    page += String(PED_START) + F("'");
-    if (pedals[i-1].function1 == PED_START) page += F(" selected");
-    page += F(">MTC Start</option>");
-    page += F("<option value='");
-    page += String(PED_STOP) + F("'");
-    if (pedals[i-1].function1 == PED_STOP) page += F(" selected");
-    page += F(">MTC Stop</option>");
-    page += F("<option value='");
-    page += String(PED_CONTINUE) + F("'");
-    if (pedals[i-1].function1 == PED_CONTINUE) page += F(" selected");
-    page += F(">MTC Continue</option>");
-    page += F("<option value='");
-    page += String(PED_TAP) + F("'");
-    if (pedals[i-1].function1 == PED_TAP) page += F(" selected");
-    page += F(">Tap</option>");
-    page += F("<option value='");
-    page += String(PED_DEVICE_INFO) + F("'");
-    if (pedals[i-1].function1 == PED_DEVICE_INFO) page += F(" selected");
-    page += F(">Device Info</option>");
-    page += F("<option value='");
-    page += String(PED_POWER_ON_OFF) + F("'");
-    if (pedals[i-1].function1 == PED_POWER_ON_OFF) page += F(" selected");
-    page += F(">Power On/Off</option>");
     page += F("</select>");
     page += F("<label for='function1FloatingSelect'>Single Press</label>");
     page += F("</div>");
@@ -1375,54 +1346,6 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += String(PED_ACTIONS) + F("'");
     if (pedals[i-1].function2 == PED_ACTIONS) page += F(" selected");
     page += F(">Actions</option>");
-    page += F("<option value='");
-    page += String(PED_BANK_PLUS) + F("'");
-    if (pedals[i-1].function2 == PED_BANK_PLUS) page += F(" selected");
-    page += F(">Bank+</option>");
-    page += F("<option value='");
-    page += String(PED_BANK_MINUS) + F("'");
-    if (pedals[i-1].function2 == PED_BANK_MINUS) page += F(" selected");
-    page += F(">Bank-</option>");
-    page += F("<option value='");
-    page += String(PED_BPM_PLUS) + F("'");
-    if (pedals[i-1].function2 == PED_BPM_PLUS) page += F(" selected");
-    page += F(">BPM+</option>");
-    page += F("<option value='");
-    page += String(PED_BPM_MINUS) + F("'");
-    if (pedals[i-1].function2 == PED_BPM_MINUS) page += F(" selected");
-    page += F(">BPM-</option>");
-    page += F("<option value='");
-    page += String(PED_PROFILE_PLUS) + F("'");
-    if (pedals[i-1].function2 == PED_PROFILE_PLUS) page += F(" selected");
-    page += F(">Profile+</option>");
-    page += F("<option value='");
-    page += String(PED_PROFILE_MINUS) + F("'");
-    if (pedals[i-1].function2 == PED_PROFILE_MINUS) page += F(" selected");
-    page += F(">Profile-</option>");
-    page += F("<option value='");
-    page += String(PED_START) + F("'");
-    if (pedals[i-1].function2 == PED_START) page += F(" selected");
-    page += F(">MTC Start</option>");
-    page += F("<option value='");
-    page += String(PED_STOP) + F("'");
-    if (pedals[i-1].function2 == PED_STOP) page += F(" selected");
-    page += F(">MTC Stop</option>");
-    page += F("<option value='");
-    page += String(PED_CONTINUE) + F("'");
-    if (pedals[i-1].function2 == PED_CONTINUE) page += F(" selected");
-    page += F(">MTC Continue</option>");
-    page += F("<option value='");
-    page += String(PED_TAP) + F("'");
-    if (pedals[i-1].function2 == PED_TAP) page += F(" selected");
-    page += F(">Tap</option>");
-    page += F("<option value='");
-    page += String(PED_DEVICE_INFO) + F("'");
-    if (pedals[i-1].function2 == PED_DEVICE_INFO) page += F(" selected");
-    page += F(">Device Info</option>");
-    page += F("<option value='");
-    page += String(PED_POWER_ON_OFF) + F("'");
-    if (pedals[i-1].function2 == PED_POWER_ON_OFF) page += F(" selected");
-    page += F(">Power On/Off</option>");
     page += F("</select>");
     page += F("<label for='function2FloatingSelect'>Double Press</label>");
     page += F("</div>");
@@ -1441,54 +1364,6 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += String(PED_ACTIONS) + F("'");
     if (pedals[i-1].function3 == PED_ACTIONS) page += F(" selected");
     page += F(">Actions</option>");
-    page += F("<option value='");
-    page += String(PED_BANK_PLUS) + F("'");
-    if (pedals[i-1].function3 == PED_BANK_PLUS) page += F(" selected");
-    page += F(">Bank+</option>");
-    page += F("<option value='");
-    page += String(PED_BANK_MINUS) + F("'");
-    if (pedals[i-1].function3 == PED_BANK_MINUS) page += F(" selected");
-    page += F(">Bank-</option>");
-    page += F("<option value='");
-    page += String(PED_BPM_PLUS) + F("'");
-    if (pedals[i-1].function3 == PED_BPM_PLUS) page += F(" selected");
-    page += F(">BPM+</option>");
-    page += F("<option value='");
-    page += String(PED_BPM_MINUS) + F("'");
-    if (pedals[i-1].function3 == PED_BPM_MINUS) page += F(" selected");
-    page += F(">BPM-</option>");
-    page += F("<option value='");
-    page += String(PED_PROFILE_PLUS) + F("'");
-    if (pedals[i-1].function3 == PED_PROFILE_PLUS) page += F(" selected");
-    page += F(">Profile+</option>");
-    page += F("<option value='");
-    page += String(PED_PROFILE_MINUS) + F("'");
-    if (pedals[i-1].function3 == PED_PROFILE_MINUS) page += F(" selected");
-    page += F(">Profile-</option>");
-    page += F("<option value='");
-    page += String(PED_START) + F("'");
-    if (pedals[i-1].function3 == PED_START) page += F(" selected");
-    page += F(">MTC Start</option>");
-    page += F("<option value='");
-    page += String(PED_STOP) + F("'");
-    if (pedals[i-1].function3 == PED_STOP) page += F(" selected");
-    page += F(">MTC Stop</option>");
-    page += F("<option value='");
-    page += String(PED_CONTINUE) + F("'");
-    if (pedals[i-1].function3 == PED_CONTINUE) page += F(" selected");
-    page += F(">MTC Continue</option>");
-    page += F("<option value='");
-    page += String(PED_TAP) + F("'");
-    if (pedals[i-1].function3 == PED_TAP) page += F(" selected");
-    page += F(">Tap</option>");
-    page += F("<option value='");
-    page += String(PED_DEVICE_INFO) + F("'");
-    if (pedals[i-1].function3 == PED_DEVICE_INFO) page += F(" selected");
-    page += F(">Device Info</option>");
-    page += F("<option value='");
-    page += String(PED_POWER_ON_OFF) + F("'");
-    if (pedals[i-1].function3 == PED_POWER_ON_OFF) page += F(" selected");
-    page += F(">Power On/Off</option>");
     page += F("</select>");
     page += F("<label for='function3FloatingSelect'>Long Press</label>");
     page += F("</div>");
@@ -1900,6 +1775,18 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("Each device must have a different name. Enter the device name without .local. Web UI will be available at http://<i>device_name</i>.local<br>");
   page += F("Pedalino will be restarted if you change it.");
   page += F("</small>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-auto me-auto'>");
+  page += F("</div>");
+  page += F("<div class='col-auto'>");
+  page += F("<a href='/update' class='btn btn-primary btn-sm' role='button' aria-pressed='true'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-cloud-arrow-down' viewBox='0 0 16 16'>");
+  page += F("<path fill-rule='evenodd' d='M7.646 10.854a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 9.293V5.5a.5.5 0 0 0-1 0v3.793L6.354 8.146a.5.5 0 1 0-.708.708l2 2z'/>");
+  page += F("<path d='M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z'/>");
+  page += F("</svg>");
+  page += F(" Check for Updates</a>");
+  page += F("</div>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -2510,6 +2397,63 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len, true)) return;
 }
 
+void get_update_page(unsigned int start, unsigned int len) {
+
+#ifdef WEBCONFIG
+
+  get_top_page();
+
+  if (trim_page(start, len)) return;
+
+  page += F("<form method='post' action='/update' enctype='multipart/form-data'>");
+  page += F("<div class='card'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
+  page += F("</svg>");
+  page += F(" Firmware Update</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-8'>");
+  page += F("<div class='input-group'>");
+  page += F("<input type='file' class='form-control' id='customFile' name='upload'>");
+  page += F("</div>");
+  page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
+  page += F("Select firmware.bin or spiffs.bin and press Upload to upgrade firmware or file system image. ");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("</div>");
+  page += F("<div class='col-3'>");
+  page += F("<button type='submit' name='action' value='upload' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
+  page += F("</svg>");
+  page += F(" Update</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
+
+  get_footer_page();
+
+  if (trim_page(start, len, true)) return;
+
+#else
+  page += F("<!doctype html>");
+  page += F("<html lang='en'>");
+  page += F("<head>");
+  page += F("<title>PedalinoMini&trade;</title>");
+  page += F("</head>");
+  page += F("<body>");
+  page += F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>");
+  page += F("</body>");
+  page += F("</html>");
+#endif
+}
 
 size_t get_root_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
@@ -2613,6 +2557,20 @@ size_t get_configurations_page_chunked(uint8_t *buffer, size_t maxLen, size_t in
 
   page = "";
   get_configurations_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
+  buffer[maxLen-1] = 0; // CWE-126
+  size_t byteWritten = strlen((const char *)buffer);
+  if (byteWritten == 0) {
+    page = "";
+    fullPageLength = 0;
+  }
+  return byteWritten;
+}
+
+size_t get_update_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  page = "";
+  get_update_page(index, maxLen - 1);
   page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
   size_t byteWritten = strlen((const char *)buffer);
@@ -2731,6 +2689,14 @@ void http_handle_configurations(AsyncWebServerRequest *request) {
   request->send(response);
 }
 
+void http_handle_update(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
+  http_handle_globals(request);
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_update_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
+
 void http_handle_post_live(AsyncWebServerRequest *request) {
 
   String a;
@@ -2748,7 +2714,7 @@ void http_handle_post_live(AsyncWebServerRequest *request) {
 void http_handle_post_actions(AsyncWebServerRequest *request) {
 
   String     a;
-  const byte b = constrain(uibank.toInt() - 1, 0, BANKS - 1);
+  const byte b = constrain(uibank.toInt(), 0, BANKS - 1);
   const byte p = constrain(uipedal.toInt() - 1, 0, PEDALS - 1);
 
   strncpy(banknames[b], request->arg(String("bankname")).c_str(), MAXBANKNAME+1);
@@ -3325,6 +3291,143 @@ void http_handle_configuration_file_upload(AsyncWebServerRequest *request, Strin
   }
 }
 
+// handler for the /update form POST (once file upload finishes)
+
+void http_handle_update_file_upload_finish(AsyncWebServerRequest *request) {
+  AsyncWebServerResponse *response = request->beginResponse(200, "text/html", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/'>Update Success! Rebooting...\n");
+  response->addHeader("Connection", "close");
+  request->send(response);
+  delay(1000);
+  ESP.restart();
+}
+
+// handler for the file upload, get's the sketch bytes, and writes
+// them through the Update object
+
+void http_handle_update_file_upload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+
+  //Upload handler chunks in data
+  if (!index) {
+    // Disconnect, not to interfere with OTA process
+#ifdef WEBSOCKET
+    webSocket.enable(false);
+    webSocket.closeAll();
+#endif
+    firmwareUpdate = true;
+    delay(100);
+    leds.setAllLow();
+    leds.write();
+    DPRINT("Update Start: %s\n", filename.c_str());
+
+    int cmd = (filename.indexOf("spiffs") > -1) ? U_SPIFFS : U_FLASH;
+    // Start with max available size
+    if (Update.begin(UPDATE_SIZE_UNKNOWN, cmd)) {
+      DPRINT("Update start\n");
+#ifdef TTGO_T_DISPLAY
+    display_clear();
+    display_progress_bar_title("OTA Update");
+#else
+#endif
+    }
+    else {
+      StreamString str;
+      Update.printError(str);
+      DPRINT("Update start fail: %s", str.c_str());
+      firmwareUpdate = false;
+    }
+  }
+
+  if (!Update.hasError()) {
+    // Write chunked data to the free sketch space
+    if (Update.write(data, len) == len) {
+      if (Update.size()) {
+        unsigned int progress = 100 * Update.progress() / Update.size();
+        if (progress < 15) {
+          leds.setHigh(0);
+          leds.write();
+        }
+        else if (progress < 30) {
+          leds.setHigh(1);
+          leds.write();
+        }
+        else if (progress < 45) {
+          leds.setHigh(2);
+          leds.write();
+        }
+        else if (progress < 60) {
+          leds.setHigh(3);
+          leds.write();
+        }
+        else if (progress < 75) {
+          leds.setHigh(4);
+          leds.write();
+        }
+        else if (progress < 90) {
+          leds.setHigh(5);
+          leds.write();
+        }
+        DPRINT("Progress: %5.1f%%\n", 100.0 * Update.progress() / Update.size());
+#ifdef TTGO_T_DISPLAY
+        display_progress_bar_update(Update.progress(), Update.size());
+#else
+#endif
+      }
+    }
+    else {
+      StreamString str;
+      Update.printError(str);
+      DPRINT("Update fail: %s", str.c_str());
+#ifdef TTGO_T_DISPLAY
+      display_clear();
+      display_progress_bar_title2("Fail!", str.c_str());
+#else
+#endif
+    }
+  }
+
+  // if the final flag is set then this is the last frame of data
+  if (final) {
+    if (Update.end(true)) {   //true to set the size to the current progress
+      DPRINT("Update Success: %uB\n", index+len);
+      leds.kittCar();
+#ifdef TTGO_T_DISPLAY
+      display_clear();
+      display_progress_bar_title("Success!");
+#else
+#endif
+    } else {
+      StreamString str;
+      Update.printError(str);
+      DPRINT("Update fail: %s", str.c_str());
+#ifdef TTGO_T_DISPLAY
+      display_clear();
+      display_progress_bar_title2("Fail!", str.c_str());
+#else
+#endif
+    }
+  }
+}
+
+void http_handle_not_found(AsyncWebServerRequest *request) {
+
+  String message = "File Not Found\n\n";
+
+  message += "URI: ";
+  message += request->url();
+  message += "\nMethod: ";
+  message += (request->method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += request->args();
+  message += "\n";
+
+  for (uint8_t i = 0; i < request->args(); i++) {
+    message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
+  }
+
+  request->send(404, "text/plain", message);
+}
+
+
 #ifdef WEBSOCKET
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
 
@@ -3430,7 +3533,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
         else {
           int b;
           if (sscanf((const char *)data, "bank%d", &b) == 1)
-            currentBank = constrain(b - 1, 0, BANKS);
+            currentBank = constrain(b, 0, BANKS - 1);
             leds_refresh();
         }
       }
@@ -3476,156 +3579,6 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 }
 #endif  // NO_WEBSOCKET
 
-
-void get_update_page() {
-
-#ifdef WEBCONFIG
-  get_top_page();
-#else
-  page += F("<!doctype html>");
-  page += F("<html lang='en'>");
-  page += F("<head>");
-  page += F("<title>PedalinoMini&trade;</title>");
-  page += F("</head>");
-  page += F("<body>");
-#endif
-
-  page += F("<p></p>");
-  page += F("<form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='Update'></form>");
-
-#ifdef WEBCONFIG
-  get_footer_page();
-#else
-  page += F("</body>");
-  page += F("</html>");
-#endif
-}
-
-// handler for the /update form page
-
-void http_handle_update (AsyncWebServerRequest *request) {
-  //if (request->hasArg("theme")) theme = request->arg("theme");
-  // The connection will be closed after completion of the response.
-  // The connection SHOULD NOT be considered `persistent'.
-  // Applications that do not support persistent connections MUST include the "close" connection option in every message.
-  //httpServer.sendHeader("Connection", "close");
-  //if (!request->authenticate("admin", "password")) {
-	//		return request->requestAuthentication();
-	//}
-  get_update_page();
-  request->send(200, "text/html", page);
-}
-
-// handler for the /update form POST (once file upload finishes)
-
-void http_handle_update_file_upload_finish (AsyncWebServerRequest *request) {
-  AsyncWebServerResponse *response = request->beginResponse(200, "text/html", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/'>Update Success! Rebooting...\n");
-  response->addHeader("Connection", "close");
-  request->send(response);
-  delay(1000);
-  ESP.restart();
-}
-
-// handler for the file upload, get's the sketch bytes, and writes
-// them through the Update object
-
-void http_handle_update_file_upload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-
-  //Upload handler chunks in data
-  if (!index) {
-    // Disconnect, not to interfere with OTA process
-#ifdef WEBSOCKET
-    webSocket.enable(false);
-    webSocket.closeAll();
-#endif
-    firmwareUpdate = true;
-    leds.setAllLow();
-    leds.write();
-    DPRINT("Update Start: %s\n", filename.c_str());
-
-    int cmd = (filename.indexOf("spiffs") > -1) ? U_SPIFFS : U_FLASH;
-    // Start with max available size
-    if (Update.begin(UPDATE_SIZE_UNKNOWN, cmd)) {
-      DPRINT("Update start\n");
-    }
-    else {
-      StreamString str;
-      Update.printError(str);
-      DPRINT("Update start fail: %s", str.c_str());
-      firmwareUpdate = false;
-    }
-  }
-
-  if (!Update.hasError()) {
-    // Write chunked data to the free sketch space
-    if (Update.write(data, len) == len) {
-      if (Update.size()) {
-        unsigned int progress = 100 * Update.progress() / Update.size();
-        if (progress < 15) {
-          leds.setHigh(0);
-          leds.write();
-        }
-        else if (progress < 30) {
-          leds.setHigh(1);
-          leds.write();
-        }
-        else if (progress < 45) {
-          leds.setHigh(2);
-          leds.write();
-        }
-        else if (progress < 60) {
-          leds.setHigh(3);
-          leds.write();
-        }
-        else if (progress < 75) {
-          leds.setHigh(4);
-          leds.write();
-        }
-        else if (progress < 90) {
-          leds.setHigh(5);
-          leds.write();
-        }
-        DPRINT("Progress: %5.1f%%\n", 100.0 * Update.progress() / Update.size());
-      }
-    }
-    else {
-      StreamString str;
-      Update.printError(str);
-      DPRINT("Update fail: %s", str.c_str());
-    }
-  }
-
-  // if the final flag is set then this is the last frame of data
-  if (final) {
-    if (Update.end(true)) {   //true to set the size to the current progress
-      DPRINT("Update Success: %uB\n", index+len);
-      leds.kittCar();
-    } else {
-      StreamString str;
-      Update.printError(str);
-      DPRINT("Update fail: %s", str.c_str());
-    }
-  }
-}
-
-void http_handle_not_found(AsyncWebServerRequest *request) {
-
-  String message = "File Not Found\n\n";
-
-  message += "URI: ";
-  message += request->url();
-  message += "\nMethod: ";
-  message += (request->method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += request->args();
-  message += "\n";
-
-  for (uint8_t i = 0; i < request->args(); i++) {
-    message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
-  }
-
-  request->send(404, "text/plain", message);
-}
 
 void http_setup() {
 
