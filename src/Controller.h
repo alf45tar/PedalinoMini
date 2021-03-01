@@ -691,10 +691,6 @@ void controller_event_handler_analog(byte pedal, int value)
             case PED_EMPTY:
               break;
 
-            case PED_PROGRAM_CHANGE:
-              midi_send(act->midiMessage, act->midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
-              break;
-
             case PED_CONTROL_CHANGE:
             case PED_NOTE_ON:
             case PED_NOTE_OFF:
@@ -707,6 +703,11 @@ void controller_event_handler_analog(byte pedal, int value)
               fastleds[act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
               FastLED.show();
               lastLedColor[currentBank][act->led] = fastleds[act->led];
+              break;
+
+            case PED_PROGRAM_CHANGE:
+              lastProgramChange[act->midiChannel] = act->midiCode;
+              midi_send(act->midiMessage, act->midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
               break;
 
             case PED_BANK_SELECT_INC:
@@ -1067,7 +1068,6 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
             case PED_EMPTY:
               break;
 
-            case PED_PROGRAM_CHANGE:
             case PED_NOTE_ON:
             case PED_NOTE_OFF:
             case PED_PITCH_BEND:
@@ -1076,6 +1076,11 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
             case PED_MIDI_STOP:
             case PED_MIDI_CONTINUE:
             case PED_SEQUENCE:
+              midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
+              break;
+
+            case PED_PROGRAM_CHANGE:
+              lastProgramChange[act->midiChannel] = act->midiCode;
               midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
