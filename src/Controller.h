@@ -674,7 +674,8 @@ void controller_event_handler_analog(byte pedal, int value)
   switch (pedals[pedal].function1) {
 
     case PED_ACTIONS: {
-      action *act = actions[currentBank];
+      bool    global = true;
+      action *act = actions[0];
       while (act != nullptr) {
         if (act->pedal == pedal && act->event == PED_EVENT_MOVE) {
           value = map(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
@@ -746,6 +747,10 @@ void controller_event_handler_analog(byte pedal, int value)
           }
         }
         act = act->next;
+        if (global && (currentBank != 0) && (act == nullptr)) {
+          global = false;
+          act = actions[currentBank];
+        }
       }
       }
       break;
@@ -928,7 +933,8 @@ if (loadConfig && send) {
             break;
           case DIR_CW:
           case DIR_CCW:
-            action *act = actions[currentBank];
+            bool    global = true;
+            action *act = actions[0];
             while (act != nullptr) {
               if (act->pedal == i && act->event == PED_EVENT_JOG) {
                 switch (act->midiMessage) {
@@ -996,6 +1002,10 @@ if (loadConfig && send) {
                 DPRINT("Action: %s\n", act->name);
               }
               act = act->next;
+              if (global && (currentBank != 0) && (act == nullptr)) {
+                global = false;
+                act = actions[currentBank];
+              }
             }
             break;
         }
