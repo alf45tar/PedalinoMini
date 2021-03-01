@@ -1109,12 +1109,14 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
             case PED_PROGRAM_CHANGE_INC:
-              lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel] + 1, act->midiValue1, act->midiValue2);
+              lastProgramChange[act->midiChannel] = (lastProgramChange[act->midiChannel] == act->midiValue2) ? act->midiValue1 : lastProgramChange[act->midiChannel] + 1;
+              lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel], act->midiValue1, act->midiValue2);
               midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
             case PED_PROGRAM_CHANGE_DEC:
-              lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel] - 1, act->midiValue1, act->midiValue2);
+              lastProgramChange[act->midiChannel] = (lastProgramChange[act->midiChannel] == act->midiValue1) ? act->midiValue2 : lastProgramChange[act->midiChannel] - 1;
+              lastProgramChange[act->midiChannel] = constrain(lastProgramChange[act->midiChannel], act->midiValue1, act->midiValue2);
               midi_send(act->midiMessage, lastProgramChange[act->midiChannel], 0, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
