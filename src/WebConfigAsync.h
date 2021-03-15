@@ -771,7 +771,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<div class='input-group input-group-sm'>");
   page += F("<div class='btn-group flex-wrap'>");
   page += F("<form method='get'><button type='button submit' class='btn btn-sm");
-  page += (uipedal == String("All") ? String(" btn-primary") : String(""));
+  page += (uipedal.equals("All") ? String(" btn-primary") : String(""));
   page += F("' name='pedal' value='All'>All</button>");
   page += F("</form>");
   for (i = 1; i <= PEDALS; i++) {
@@ -836,7 +836,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
     if (trim_page(start, len)) return;
 
-    if (uipedal != String(act->pedal + 1) && !(uipedal == String("All"))) {
+    if (uipedal != String(act->pedal + 1) && !(uipedal.equals("All"))) {
       act = act->next;
       continue;
     }
@@ -1316,56 +1316,40 @@ void get_pedals_page(unsigned int start, unsigned int len) {
 
     if (trim_page(start, len)) return;
 
-    page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' name='function1");
-    page += String(i);
-    page += F("'>");
-    page += F("<option value='");
-    page += String(PED_DISABLE) + F("'");
-    if (pedals[i-1].function1 == PED_DISABLE) page += F(" selected");
-    page += F(">Disable</option>");
-    page += F("<option value='");
-    page += String(PED_ACTIONS) + F("'");
-    if (pedals[i-1].function1 == PED_ACTIONS) page += F(" selected");
-    page += F(">Actions</option>");
-    page += F("</select>");
-    page += F("<label for='function1FloatingSelect'>Single Press</label>");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='polarityCheck");
+    page += String(i) + F("' name='polarity") + String(i) + F("'");
+    if (pedals[i-1].invertPolarity) page += F(" checked");
+    page += F(">");
+    page += F("<label class='form-check-label' for='polarityCheck");
+    page += String(i) + F("'>Invert Polarity</label>");
     page += F("</div>");
 
-    if (trim_page(start, len)) return;
-
-    page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='function2FloatingSelect' name='function2");
-    page += String(i);
-    page += F("'>");
-    page += F("<option value='");
-    page += String(PED_DISABLE) + F("'");
-    if (pedals[i-1].function2 == PED_DISABLE) page += F(" selected");
-    page += F(">Disable</option>");
-    page += F("<option value='");
-    page += String(PED_ACTIONS) + F("'");
-    if (pedals[i-1].function2 == PED_ACTIONS) page += F(" selected");
-    page += F(">Actions</option>");
-    page += F("</select>");
-    page += F("<label for='function2FloatingSelect'>Double Press</label>");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='function1");
+    page += String(i) + F("' name='polarity") + String(i) + F("'");
+    if (pedals[i-1].function1 == PED_ENABLE) page += F(" checked");
+    page += F(">");
+    page += F("<label class='form-check-label' for='function1");
+    page += String(i) + F("'>Single Press</label>");
     page += F("</div>");
 
-    if (trim_page(start, len)) return;
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='function2");
+    page += String(i) + F("' name='polarity") + String(i) + F("'");
+    if (pedals[i-1].function2 == PED_ENABLE) page += F(" checked");
+    page += F(">");
+    page += F("<label class='form-check-label' for='function1");
+    page += String(i) + F("'>Double Press</label>");
+    page += F("</div>");
 
-    page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='function3FloatingSelect' name='function3");
-    page += String(i);
-    page += F("'>");
-    page += F("<option value='");
-    page += String(PED_DISABLE) + F("'");
-    if (pedals[i-1].function3 == PED_DISABLE) page += F(" selected");
-    page += F(">Disable</option>");
-    page += F("<option value='");
-    page += String(PED_ACTIONS) + F("'");
-    if (pedals[i-1].function3 == PED_ACTIONS) page += F(" selected");
-    page += F(">Actions</option>");
-    page += F("</select>");
-    page += F("<label for='function3FloatingSelect'>Long Press</label>");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='function3");
+    page += String(i) + F("' name='polarity") + String(i) + F("'");
+    if (pedals[i-1].function3 == PED_ENABLE) page += F(" checked");
+    page += F(">");
+    page += F("<label class='form-check-label' for='function1");
+    page += String(i) + F("'>Long Press</label>");
     page += F("</div>");
 
     if (trim_page(start, len)) return;
@@ -1410,15 +1394,6 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("'>");
     page += F("<label for='maxFloatingInput'>Max</label>");
     page += F("</div>");
-    page += F("</div>");
-
-    page += F("<div class='form-check form-switch'>");
-    page += F("<input class='form-check-input' type='checkbox' id='polarityCheck");
-    page += String(i) + F("' name='polarity") + String(i) + F("'");
-    if (pedals[i-1].invertPolarity) page += F(" checked");
-    page += F(">");
-    page += F("<label class='form-check-label' for='polarityCheck");
-    page += String(i) + F("'>Invert Polarity</label>");
     page += F("</div>");
 
     page += F("<div class='form-check form-switch'>");
@@ -2167,7 +2142,7 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F(" Save</button>");
   page += F("</div>");
   page += F("<div class='col-auto'>");
-  page += F("<button type='submit' name='action' value='factorydefault' class='btn btn-primary btn-sm'>");
+  page += F("<button type='submit' name='action' value='factorydefault' class='btn btn-danger btn-sm'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-wrench' viewBox='0 0 16 16'>");
   page += F("<path d='M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019l.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z'/>");
   page += F("</svg>");
@@ -2405,38 +2380,163 @@ void get_update_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<form method='post' action='/update' enctype='multipart/form-data'>");
+  page += F("<form method='post' action='/update'");
+  page += F("<div class='card mb-3'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-download' viewBox='0 0 20 20'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z'/>");
+  page += F("</svg>");
+  page += F(" Download Firmware</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-4'>");
+  page += F("Current version: <b><div>");
+  page += String(VERSION);
+  page += F("</div></b></div>");
+  page += F("<div class='col-4'>");
+  page += F("Latest version: <b>");
+  
+  //page += latestFirmwareVersion;
+  page += F("<div w3-include-html='https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/firmware/");
+  page += xstr(PLATFORMIO_ENV);
+  page += F("/version.txt?");
+  page += String(rand());
+  page += F("'></div>");
+
+  page += F("</b></div>");
+  page += F("<div class='col-1'>");
+  page += F("</div>");
+  page += F("<div class='col-3'>");
+  page += F("<button type='submit' name='action' value='cloudupdate' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-download' viewBox='0 0 16 16'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z'/>");
+  page += F("</svg>");
+  page += F(" Update</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
+
+  page += F("<script>");
+  page += F("function includeHTML() {"
+              //"/* Loop through a collection of all HTML elements: */"
+              "let z = document.getElementsByTagName('*');"
+              "for (let i = 0; i < z.length; i++) {"
+                "let elmnt = z[i];"
+                //"/* Search for elements with a certain atrribute: */"
+                "let file = elmnt.getAttribute('w3-include-html');"
+                "if (file) {"
+                  //"/* Make an HTTP request using the attribute value as the file name: */"
+                  "let xhttp = new XMLHttpRequest();"
+                  "xhttp.onreadystatechange = function() {"
+                    "if (this.readyState === 4) {"
+                      "if (this.status === 200) {elmnt.innerHTML = this.responseText;}"
+                      "if (this.status === 404) {elmnt.innerHTML = 'Page not found.';}"
+                      //"/* Remove the attribute, and call this function once more: */"
+                      "elmnt.removeAttribute('w3-include-html');"
+                      "includeHTML();"
+                    "};"
+                  "};"
+                  "xhttp.open('GET', file, true);"
+                  "xhttp.send();"
+                  //"/* Exit the function: */"
+                  "return;"
+                "};"
+              "};"
+            "};");
+  page += F("includeHTML();");
+  page += F("</script>");
+
+  //page += F("<form method='post' action='/update' id='uploadForm'>");
   page += F("<div class='card'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
   page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
   page += F("</svg>");
-  page += F(" Firmware Update</h5>");
+  page += F(" Upload Firmware</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
   page += F("<div class='col-8'>");
   page += F("<div class='input-group'>");
-  page += F("<input type='file' class='form-control' id='customFile' name='upload'>");
+  page += F("<input type='file' class='form-control' id='firmwareFile' name='upload'>");
   page += F("</div>");
   page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
-  page += F("Select firmware.bin or spiffs.bin and press Upload to upgrade firmware or file system image. ");
+  page += F("Select firmware.bin or spiffs.bin and press Upload to upgrade firmware or file system image.");
   page += F("</small>");
+  page += F("<div class='progress'>");
+  page += F("<div class='progress-bar' role='progressbar' style='width: 0%;' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100'>0%</div>");
+  page += F("</div>");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("</div>");
   page += F("<div class='col-3'>");
-  page += F("<button type='submit' name='action' value='upload' class='btn btn-primary btn-sm'>");
+  page += F("<button id='uploadButton' name='action' value='fileupdate' class='btn btn-primary btn-sm'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
   page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
   page += F("</svg>");
-  page += F(" Update</button>");
+  page += F(" Upload</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</form>");
+  //page += F("</form>");
+
+  page += F("<script>");
+  page += F("document.querySelector('#uploadButton').addEventListener('click', function() {"
+
+            " const bars = document.getElementsByClassName('progress-bar');"
+            " bars[0].style.width = '0%';"
+            " bars[0].textContent = '0%';"
+
+	          " if(document.querySelector('#firmwareFile').files.length == 0) {"
+		        "   alert('Error: No file selected');"
+		        "   return;"
+	          " }"
+
+	          " const file = document.querySelector('#firmwareFile').files[0];"
+
+	          " const allowed_mime_types = [ 'application/octet-stream', 'application/macbinary' ];"
+
+	          " const allowed_size_mb = 2;"
+
+	          " if(allowed_mime_types.indexOf(file.type) == -1) {"
+		        "   alert('Error: Incorrect file type \"' + file.type + '\"');"
+		        "   return;"
+            " }"
+
+	          " if(file.size > allowed_size_mb*1024*1024) {"
+		        "   alert('Error: file size exceeed 2M');"
+		        "   return;"
+	          " }"
+
+	          " if (!confirm('Do you want to update firmware with ' + file.name + '?')) { return; }"
+
+            " const data = new FormData();"
+            " data.append('file', document.querySelector('#firmwareFile').files[0]);"
+            " data.append('action', 'fileupdate');"
+
+            " const xhr = new XMLHttpRequest();"
+            " xhr.open('POST', '/update');"
+
+            " xhr.upload.addEventListener('progress', function(e) {"
+            "       const percent = e.lengthComputable ? (e.loaded / e.total) * 100 : 0;"
+            "       console.log(e);"
+            "       bars[0].style.width   = percent.toFixed(0) + '%';"
+            "       bars[0].textContent   = percent.toFixed(0) + '%';"
+            " }, false);"
+
+            " xhr.addEventListener('load', function(e) {"
+	          "       console.log(xhr.status);"
+	          "       console.log(xhr.response);"
+            " });"
+
+            " xhr.send(data);"
+            "});");
+  page += F("</script>");
 
   get_footer_page();
 
@@ -2570,6 +2670,7 @@ size_t get_configurations_page_chunked(uint8_t *buffer, size_t maxLen, size_t in
 size_t get_update_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
   page = "";
+  //if (index == 0) latestFirmwareVersion = get_latest_firmware_version();
   get_update_page(index, maxLen - 1);
   page.getBytes(buffer, maxLen, 0);
   buffer[maxLen-1] = 0; // CWE-126
@@ -2933,11 +3034,11 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     }
 
   }
-  if (request->arg("action") == String("apply")) {
+  if (request->arg("action").equals("apply")) {
     loadConfig = true;
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
   }
-  else if (request->arg("action") == String("save")) {
+  else if (request->arg("action").equals("save")) {
     eeprom_update_profile();
     eeprom_update_current_profile(currentProfile);
     loadConfig = true;
@@ -2967,10 +3068,10 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
     a = request->arg(String("clock") + String(i+1));
     interfaces[i].midiClock = (a == checked) ? PED_ENABLE : PED_DISABLE;
   }
-  if (request->arg("action") == String("apply")) {
+  if (request->arg("action").equals("apply")) {
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
   }
-  else if (request->arg("action") == String("save")) {
+  else if (request->arg("action").equals("save")) {
     eeprom_update_profile();
     eeprom_update_current_profile(currentProfile);
     alert = "Changes saved.";
@@ -2999,10 +3100,10 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
     a = request->arg(String("value") + String(i+1));
     sequences[s][i].midiValue = a.toInt();
   }
-  if (request->arg("action") == String("apply")) {
+  if (request->arg("action").equals("apply")) {
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
   }
-  else if (request->arg("action") == String("save")) {
+  else if (request->arg("action").equals("save")) {
     eeprom_update_profile();
     eeprom_update_current_profile(currentProfile);
     alert = "Changes saved.";
@@ -3119,21 +3220,21 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     ledsOffBrightness = request->arg("ledsoffbrightness").toInt();
   }
 
-  if (request->arg("action") == String("apply")) {
+  if (request->arg("action").equals("apply")) {
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
   }
-  else if (request->arg("action") == String("save")) {
+  else if (request->arg("action").equals("save")) {
     eeprom_update_globals();
     alert = "Changes saved.";
   }
-  else if (request->arg("action") == String("factorydefault")) {
+  else if (request->arg("action").equals("factorydefault")) {
     eeprom_initialize();
     restartRequired = true;
   }
-  else if (request->arg("action") == String("reboot")) {
+  else if (request->arg("action").equals("reboot")) {
     restartRequired = true;
   }
-  else if (request->arg("action") == String("poweroff")) {
+  else if (request->arg("action").equals("poweroff")) {
     poweroffRequired = true;
   }
 
@@ -3149,8 +3250,17 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   if (poweroffRequired) {
     display_off();
-    //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
-    //esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(p), 0);
+    for (byte b = 0; b < BANKS; b++) {
+      action *act = actions[b];
+      while (act != nullptr) {
+        if (act->midiMessage == PED_ACTION_POWER_ON_OFF) {
+          esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(act->pedal), 0);
+          b = BANKS;
+          break;
+        }
+        act = act->next;
+      }
+    }
     delay(200);
     esp_deep_sleep_start();
   }
@@ -3160,7 +3270,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
 
   const String checked("on");
 
-  if (request->arg("action") == String("new")) {
+  if (request->arg("action").equals("new")) {
     if (request->arg("newconfiguration").isEmpty())  {
       alertError = F("Configuration not saved. No configuration name provided.");
     }
@@ -3185,10 +3295,10 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
       }
     }
   }
-  else if (request->arg("action") == String("upload")) {
+  else if (request->arg("action").equals("upload")) {
     alertError = F("No file selected. Choose file using Browse button.");
   }
-  else if (request->arg("action") == String("apply")) {
+  else if (request->arg("action").equals("apply")) {
     String config = request->arg("filename");
     controller_delete();
     spiffs_load_config(config,
@@ -3204,7 +3314,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
     alert = F("Configuration '");
     alert += config + F("' loaded into current profile and running. Profile not saved.");
   }
-  else if (request->arg("action") == String("save")) {
+  else if (request->arg("action").equals("save")) {
     String config = request->arg("filename");
     controller_delete();
     spiffs_load_config(config,
@@ -3222,12 +3332,12 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
     alert = F("Configuration '");
     alert += config + F("' loaded and saved into current profile.");
   }
-  else if (request->arg("action") == String("download")) {
+  else if (request->arg("action").equals("download")) {
     AsyncWebServerResponse *response = request->beginResponse(SPIFFS, request->arg("filename"), String(), true);
     request->send(response);
     return;
   }
-  else if (request->arg("action") == String("delete")) {
+  else if (request->arg("action").equals("delete")) {
     String config = request->arg("filename");
     if (SPIFFS.remove(config)) {
       config = config.substring(1, config.length() - 4);
@@ -3291,14 +3401,20 @@ void http_handle_configuration_file_upload(AsyncWebServerRequest *request, Strin
   }
 }
 
-// handler for the /update form POST (once file upload finishes)
 
-void http_handle_update_file_upload_finish(AsyncWebServerRequest *request) {
-  AsyncWebServerResponse *response = request->beginResponse(200, "text/html", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/'>Update Success! Rebooting...\n");
-  response->addHeader("Connection", "close");
-  request->send(response);
-  delay(1000);
-  ESP.restart();
+void http_handle_post_update(AsyncWebServerRequest *request) {
+
+  if (request->arg("action").equals("cloudupdate")) {
+    firmwareUpdate = PED_UPDATE_CLOUD;
+
+  } else if (request->arg("action").equals("fileupdate")) {
+    // handler for the /update form POST (once file upload finishes)
+    AsyncWebServerResponse *response = request->beginResponse(200, "text/html", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/'>Update Success! Rebooting...\n");
+    response->addHeader("Connection", "close");
+    request->send(response);
+    delay(1000);
+    ESP.restart();
+  }
 }
 
 // handler for the file upload, get's the sketch bytes, and writes
@@ -3313,7 +3429,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
     webSocket.enable(false);
     webSocket.closeAll();
 #endif
-    firmwareUpdate = true;
+    firmwareUpdate = PED_UPDATE_HTTP;
     delay(100);
     leds.setAllLow();
     leds.write();
@@ -3333,7 +3449,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
       StreamString str;
       Update.printError(str);
       DPRINT("Update start fail: %s", str.c_str());
-      firmwareUpdate = false;
+      firmwareUpdate = PED_UPDATE_NONE;
     }
   }
 
@@ -3614,7 +3730,7 @@ void http_setup() {
   httpServer.on("/configurations",  HTTP_POST,  http_handle_post_configurations, http_handle_configuration_file_upload);
 
   httpServer.on("/update",          HTTP_GET,   http_handle_update);
-  httpServer.on("/update",          HTTP_POST,  http_handle_update_file_upload_finish, http_handle_update_file_upload);
+  httpServer.on("/update",          HTTP_POST,  http_handle_post_update, http_handle_update_file_upload);
   httpServer.onNotFound(http_handle_not_found);
 
   httpServer.begin();

@@ -65,8 +65,9 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "DisplayOLED.h"
 #endif
 #include "Controller.h"
+#include "OTAHTTPS.h"
 #include "WebConfigAsync.h"
-#include "OTAUpdate.h"
+#include "OTAUpdateArduino.h"
 #include "WifiConnect.h"
 
 #ifndef LED_BUILTIN
@@ -522,7 +523,56 @@ void setup()
 
 void loop()
 {
-  if (firmwareUpdate) return;
+  switch (firmwareUpdate) {
+    case PED_UPDATE_ARDUINO_OTA:
+    case PED_UPDATE_HTTP:
+      return;
+
+    case PED_UPDATE_CLOUD:
+      latestFirmwareVersion = get_latest_firmware_version();
+      /*
+      ota_http_update(true);
+      while (firmwareUpdate == PED_UPDATE_CLOUD) {
+        otaStatus = HttpsOTA.status();
+        if( otaStatus == HTTPS_OTA_SUCCESS) {
+          DPRINT("Firmware written successfully. To reboot device, call API ESP.restart() or PUSH restart button on device\n");
+          firmwareUpdate = PED_UPDATE_NONE;
+        } else if(otaStatus == HTTPS_OTA_FAIL) {
+          DPRINT("Firmware Upgrade Fail\n");
+          firmwareUpdate = PED_UPDATE_NONE;
+        }
+        delay(1000);
+      }
+      firmwareUpdate = PED_UPDATE_CLOUD;
+      */
+      ota_http_update();
+      while (firmwareUpdate == PED_UPDATE_CLOUD) {
+        otaStatus = HttpsOTA.status();
+        switch (otaStatus) {
+          case HTTPS_OTA_IDLE:
+            DPRINT("OTA upgrade have not started yet.\n");
+            break;
+          case HTTPS_OTA_UPDATING:
+            DPRINT("OTA upgrade is in progress.\n");
+            break;
+          case HTTPS_OTA_SUCCESS:
+            DPRINT("OTA upgrade is successful.\n");
+            ESP.restart();
+            firmwareUpdate = PED_UPDATE_NONE;
+            break;
+          case HTTPS_OTA_FAIL:
+            DPRINT("OTA upgrade failed.\n");
+            firmwareUpdate = PED_UPDATE_NONE;
+            break;
+          case HTTPS_OTA_ERR:
+            DPRINT("Error occured while creating xEventGroup().\n");
+            firmwareUpdate = PED_UPDATE_NONE;
+            break;
+        }
+        delay(1000);
+      }
+      return;
+  }
 
   bootButton.check();
 

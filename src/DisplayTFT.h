@@ -155,22 +155,32 @@ void display_progress_bar_2_label(unsigned int label, unsigned int x)
 {
   const String l(label);
 
-  display.setTextSize(1);
-  display.setFreeFont(&FreeSans9pt7b);
-  display.setTextColor(TFT_WHITE, TFT_BLACK);
-  if (x <= display.textWidth(l) / 2) {
-    display.setTextDatum(BL_DATUM);
-    display.drawString(l, 0, display.height() - display.height() / 8);
+  TFT_eSprite sprite = TFT_eSprite(&display);
+
+  sprite.setColorDepth(1);
+  sprite.createSprite(40, 40);
+
+  sprite.setTextSize(1);
+  sprite.setFreeFont(&FreeSans9pt7b);
+  sprite.setTextColor(TFT_WHITE, TFT_BLACK);
+  if (x <= sprite.textWidth(l) / 2) {
+    sprite.setTextDatum(BL_DATUM);
+    sprite.drawString(l, 0, 0);
+    sprite.pushSprite(0, display.height() - display.height() / 8);
   }
-  else if (x >= (display.width() - display.textWidth(l) / 2)) {
-    display.setTextDatum(BR_DATUM);
-    display.drawString(l, display.width() + 1, display.height() - display.height() / 8);
+  else if (x >= (display.width() - sprite.textWidth(l) / 2)) {
+    sprite.setTextDatum(BR_DATUM);
+    sprite.drawString(l, 40, 0);
+    sprite.pushSprite(display.width() - 1, display.height() - display.height() / 8);
   }
   else {
-    display.setTextDatum(BC_DATUM);
-    display.drawString(l, x, display.height() - display.height() / 8);
+    sprite.setTextDatum(BC_DATUM);
+    sprite.drawString(l, 20, 0);
+    sprite.pushSprite(x, display.height() - display.height() / 8);
   }
-  display.drawFastVLine(x, display.height() - display.height() / 8, x, display.height() - 1);
+  //display.drawFastVLine(x, display.height() - display.height() / 8, x, display.height() - 1);
+
+  sprite.deleteSprite();
 }
 
 
@@ -495,7 +505,7 @@ void bottomOverlay()
         m3 = constrain(m3, rmin, rmax);
         p = map(m3, rmin, rmax, 0, 100);
         display_progress_bar(0, display.height() - 24, display.width(), 24, p);
-        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 3, 124));
+        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 24, display.width() - 24));
         break;
 
       case midi::ProgramChange:
@@ -504,7 +514,7 @@ void bottomOverlay()
         m3 = constrain(m2, rmin, rmax);
         p = map(m2, rmin, rmax, 0, 100);
         display_progress_bar(0, display.height() - 24, display.width(), 24, p);
-        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 3, 124));
+        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 24, display.width() - 24));
         break;
 
       case midi::PitchBend:
@@ -692,14 +702,21 @@ void drawFrame1(int16_t x, int16_t y)
     }
     else {
       String name = lastPedalName;
+      display.fillRect(0, 24, display.width(), 6, TFT_INDEX_BLACK);
+      TFT_eSprite sprite = TFT_eSprite(&display);
+      sprite.setColorDepth(1);
+      sprite.createSprite(display.width(), display.height() - 30 - 24);
+      sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
+      sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
       switch (m1) {
         case midi::InvalidType:
-          display.drawRect(64-22, 15, 64+24, 15+23, TFT_WHITE);
-          display.setTextDatum(TC_DATUM);
-          display.setFreeFont(&FreeSans9pt7b);
-          display.drawString("Bank", 64 + x, 39 + y);
-          display.setFreeFont(&FreeSans24pt7b);
-          display.drawString(String(m2), 64 + x, 14 + y);
+          // ?????????????
+          sprite.drawRect(64-22, 15, 64+24, 15+23, TFT_WHITE);
+          sprite.setTextDatum(TC_DATUM);
+          sprite.setFreeFont(&FreeSans9pt7b);
+          sprite.drawString("Bank", 64, 39);
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.drawString(String(m2), 64, 14);
           break;
         case midi::NoteOn:
         case midi::NoteOff:
@@ -709,11 +726,13 @@ void drawFrame1(int16_t x, int16_t y)
         case midi::AfterTouchChannel:
           name.replace(String("###"), String(m2));
         default:
-          display.setTextDatum(MC_DATUM);
-          display.setFreeFont(&FreeSans24pt7b);
-          display.drawString(name, 64, 32);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.drawString(name, sprite.width() / 2, sprite.height() / 2);
           break;
       }
+      sprite.pushSprite(0, 30);
+      sprite.deleteSprite();
     }
   }
   else if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
@@ -999,7 +1018,7 @@ void drawFrame1(int16_t x, int16_t y)
           }
           name = String((banks[currentBank][p].pedalName[0] == ':') ? &banks[currentBank][p].pedalName[1] : banks[currentBank][p].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p][0]));
-          if (pedals[p].function1 == PED_MIDI && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
+          if (pedals[p].function1 == PED_ENABLE && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
             sprite.fillRect((sprite.width() / (PEDALS / 2 - 1)) * p - offsetBackground * display.textWidth(name) / 2 + offsetText + x,
                               0 + y,
                               display.textWidth(name) + 1,
@@ -1029,7 +1048,7 @@ void drawFrame1(int16_t x, int16_t y)
           }
           name = String((banks[currentBank][p + PEDALS / 2].pedalName[0] == ':') ? &banks[currentBank][p + PEDALS / 2].pedalName[1] : banks[currentBank][p + PEDALS / 2].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p + PEDALS / 2][0]));
-          if (pedals[p + PEDALS / 2].function1 == PED_MIDI && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
+          if (pedals[p + PEDALS / 2].function1 == PED_ENABLE && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
             sprite.fillRect((sprite.width() / (PEDALS / 2 - 1)) * p - offsetBackground * display.textWidth(name) / 2 + offsetText + x,
                               sprite.height() - 20 + y,
                               display.textWidth(name) + 1,
@@ -1063,14 +1082,14 @@ void drawFrame1(int16_t x, int16_t y)
           sprite.drawString(name, sprite.width() - 1 + x, y);
           */
           for (byte p = 0; p < PEDALS/2; p++) {
-            if ((pedals[p].function1 == PED_MIDI) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
+            if ((pedals[p].function1 == PED_ENABLE) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
               display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, 25 + y, 55, 20, constrain(map(currentMIDIValue[currentBank][p][0],
                                                                                                        banks[currentBank][p].midiValue1,
                                                                                                        banks[currentBank][p].midiValue2,
                                                                                                        0, 100),
                                                                                                    0, 100));
             }
-            if ((pedals[p + PEDALS / 2].function1 == PED_MIDI) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
+            if ((pedals[p + PEDALS / 2].function1 == PED_ENABLE) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
               display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, sprite.height() - 22 - 25 + y, 55, 20, constrain(map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue1,
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue2,

@@ -673,7 +673,7 @@ void controller_event_handler_analog(byte pedal, int value)
 {
   switch (pedals[pedal].function1) {
 
-    case PED_ACTIONS: {
+    case PED_ENABLE: {
       bool    global = true;
       action *act = actions[0];
       while (act != nullptr) {
@@ -1027,7 +1027,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 
   if (pedals[p].pressMode == PED_DISABLE) return;
 
-  if (pedals[p].pressMode == PED_PRESS_1 && pedals[p].function1 != PED_ACTIONS) {
+  if (pedals[p].pressMode == PED_PRESS_1 && pedals[p].function1 != PED_ENABLE) {
     switch (eventType) {
       case AceButton::kEventPressed:
         f = pedals[p].function1;
@@ -1054,17 +1054,17 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
       case AceButton::kEventPressed:
       case AceButton::kEventReleased:
       case AceButton::kEventRepeatPressed:
-        if (pedals[p].function1 != PED_ACTIONS) return;
-        //if (pedals[p].function2 != PED_ACTIONS) return;
-        //if (pedals[p].function3 != PED_ACTIONS) return;
-        f = PED_ACTIONS;
+        if (pedals[p].function1 != PED_ENABLE) return;
+        //if (pedals[p].function2 != PED_ENABLE) return;
+        //if (pedals[p].function3 != PED_ENABLE) return;
+        f = PED_ENABLE;
         break;
     }
   }
 
   switch (f) {
 
-    case PED_ACTIONS: {
+    case PED_ENABLE: {
       bool    global = true;
       action *act = actions[0];
       while (act != nullptr) {
@@ -1258,15 +1258,15 @@ void controller_setup()
   for (byte i = 0; i < PEDALS; i++) {
     DPRINT("Pedal %2d     ", i + 1);
     switch (pedals[i].function1) {
-      case PED_ACTIONS:      DPRINT("ACTIONS   "); break;
+      case PED_ENABLE:      DPRINT("ACTIONS   "); break;
       default:               DPRINT("          "); break;
     }
     switch (pedals[i].function2) {
-      case PED_ACTIONS:      DPRINT("ACTIONS   "); break;
+      case PED_ENABLE:      DPRINT("ACTIONS   "); break;
       default:               DPRINT("          "); break;
     }
     switch (pedals[i].function3) {
-      case PED_ACTIONS:      DPRINT("ACTIONS   "); break;
+      case PED_ENABLE:      DPRINT("ACTIONS   "); break;
       default:               DPRINT("          "); break;
     }
     DPRINT("   ");

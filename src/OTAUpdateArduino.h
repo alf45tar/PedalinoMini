@@ -24,6 +24,7 @@ void ota_begin(const char *hostname) {
   ArduinoOTA.begin();
 
   ArduinoOTA.onStart([]() {
+      firmwareUpdate = PED_UPDATE_ARDUINO_OTA;
 #ifdef WEBSOCKET
     webSocket.enable(false);
     webSocket.closeAll();

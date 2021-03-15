@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.1.0"
+#define VERSION         "2.1.1"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -153,6 +153,11 @@ using namespace ace_button;
 #define PED_BOOT_LADDER_CONFIG  7
 #define PED_FACTORY_DEFAULT     8
 
+#define PED_UPDATE_NONE         0
+#define PED_UPDATE_ARDUINO_OTA  1
+#define PED_UPDATE_HTTP         2
+#define PED_UPDATE_CLOUD        3
+
 #define PED_EMPTY                     midi::InvalidType
 #define PED_PROGRAM_CHANGE            midi::ProgramChange
 #define PED_CONTROL_CHANGE            midi::ControlChange
@@ -199,8 +204,8 @@ using namespace ace_button;
 #define PED_PRESS_2_L           PED_PRESS_2 + PED_PRESS_L
 #define PED_PRESS_1_2_L         PED_PRESS_1 + PED_PRESS_2 + PED_PRESS_L
 
-#define PED_MIDI                1
-#define PED_ACTIONS             PED_MIDI
+//#define PED_MIDI                1
+//#define PED_ACTIONS             PED_MIDI
 #define PED_BANK_PLUS           2
 #define PED_BANK_MINUS          3
 #define PED_START               4
@@ -459,7 +464,8 @@ RTC_DATA_ATTR byte batteryHistory[POINTS];      // 0% =  3.0V    100% =  5.0V
 #endif
 
 bool powersaver = false;
-bool firmwareUpdate = false;
+byte firmwareUpdate = PED_UPDATE_NONE;
+
 
 uint32_t vref = 1100;
 
@@ -495,8 +501,9 @@ String host(getChipId());
 String ssidSoftAP("Pedalino-" + getChipId());
 String passwordSoftAP(getChipId());
 
-
 #include <AsyncTCP.h>
+#define WEBSERVER_H           // to not redefine WebRequestMethod (HTTP_GET, HTTP_POST, ...)
+#define HTTP_ANY  0b01111111  // not defined otherwise
 #include <ESPAsyncWebServer.h>
 
 extern String           theme;
