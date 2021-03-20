@@ -269,8 +269,17 @@ void topOverlay()
       break;
   }
 #endif
+    } else if (frame < 200) {
+        top.setFreeFont(&FreeSans12pt7b);
+        top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+        top.setTextDatum(TL_DATUM);
+        top.drawString("Firmware:", 0, 0);
+        top.setFreeFont(&FreeSans12pt7b);
+        top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
+        top.setTextDatum(TR_DATUM);
+        top.drawString(VERSION, top.width(), 0);
     }
-    frame= (frame + 1) % (5*8*4);
+    frame= (frame + 1) % (5*8*5);
   }
   else
   if ((millis() >= endMillis2) ||

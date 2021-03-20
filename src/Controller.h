@@ -1215,7 +1215,10 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
             CRGB on  = act->color1;
             off.nscale8(ledsOffBrightness);
             on.nscale8(ledsOnBrightness);
-            fastleds[act->led] = (fastleds[act->led] == off) ? on : off;
+            if (act->midiValue1 == act->midiValue2)
+              fastleds[act->led] = (fastleds[act->led] == off) ? on : off;
+            else
+              fastleds[act->led] = (currentMIDIValue[currentBank][p][i] == act->midiValue1) ? off : on;
             FastLED.show();
             lastLedColor[currentBank][act->led] = fastleds[act->led];
           }

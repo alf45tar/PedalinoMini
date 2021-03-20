@@ -530,21 +530,6 @@ void loop()
 
     case PED_UPDATE_CLOUD:
       latestFirmwareVersion = get_latest_firmware_version();
-      /*
-      ota_http_update(true);
-      while (firmwareUpdate == PED_UPDATE_CLOUD) {
-        otaStatus = HttpsOTA.status();
-        if( otaStatus == HTTPS_OTA_SUCCESS) {
-          DPRINT("Firmware written successfully. To reboot device, call API ESP.restart() or PUSH restart button on device\n");
-          firmwareUpdate = PED_UPDATE_NONE;
-        } else if(otaStatus == HTTPS_OTA_FAIL) {
-          DPRINT("Firmware Upgrade Fail\n");
-          firmwareUpdate = PED_UPDATE_NONE;
-        }
-        delay(1000);
-      }
-      firmwareUpdate = PED_UPDATE_CLOUD;
-      */
       ota_http_update();
       while (firmwareUpdate == PED_UPDATE_CLOUD) {
         otaStatus = HttpsOTA.status();

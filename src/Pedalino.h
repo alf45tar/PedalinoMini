@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.1.1"
+#define VERSION         "2.1.2"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -490,6 +490,14 @@ uint32_t vref = 1100;
 
 #define xstr(s) sstr(s)  // stringize the result of expansion of a macro argument
 #define sstr(s) #s
+
+int map(int x, int in_min, int in_max, int out_min, int out_max) {
+    const long dividend = out_max - out_min;
+    const long divisor = in_max - in_min;
+    const long delta = x - in_min;
+
+    (divisor == 0) ? ((x <= in_min) ? out_min : out_max) : (delta * dividend + (divisor / 2)) / divisor + out_min;
+}
 
 String getChipId() {
   char chipId[9];
