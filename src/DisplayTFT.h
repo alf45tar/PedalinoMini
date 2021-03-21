@@ -322,10 +322,10 @@ void topOverlay()
       /*
       top.fillTriangle(1, 22, 30, 22, 30, 2, TFT_DARKGREY);
       int level = constrain(wifiLevel, -90, -60);
-      if      (level < -80) top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_RED);
-      else if (level < -72) top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_ORANGE);
-      else if (level < -65) top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_YELLOW);
-      else                  top.fillTriangle(1, 22, map(level, -90, -60, 1, 30), 22, map(level, -90, -60, 1, 30), map(level, -90, -60, 22, 1), TFT_DARKGREEN);
+      if      (level < -80) top.fillTriangle(1, 22, map2(level, -90, -60, 1, 30), 22, map2(level, -90, -60, 1, 30), map2(level, -90, -60, 22, 1), TFT_RED);
+      else if (level < -72) top.fillTriangle(1, 22, map2(level, -90, -60, 1, 30), 22, map2(level, -90, -60, 1, 30), map2(level, -90, -60, 22, 1), TFT_ORANGE);
+      else if (level < -65) top.fillTriangle(1, 22, map2(level, -90, -60, 1, 30), 22, map2(level, -90, -60, 1, 30), map2(level, -90, -60, 22, 1), TFT_YELLOW);
+      else                  top.fillTriangle(1, 22, map2(level, -90, -60, 1, 30), 22, map2(level, -90, -60, 1, 30), map2(level, -90, -60, 22, 1), TFT_DARKGREEN);
       for (byte c = 1; c < 6; c++)
         top.drawFastVLine(1+c*6, 0, 24, TFT_BLACK);
       */
@@ -361,7 +361,7 @@ void topOverlay()
 #ifdef BATTERY
     top.drawRoundRect(display.width() - 50, 1, 44, 20, 4, TFT_INDEX_WHITE);
     top.fillRoundRect(display.width() - 6, 7, 4, 8, 2, TFT_INDEX_WHITE);
-    top.fillRoundRect(display.width() - 50 + 2, 1 + 2, map(constrain(batteryVoltage, 3000, 4000), 3000, 4000, 0, 40), 20 - 4, 4, TFT_INDEX_DARKGREEN);
+    top.fillRoundRect(display.width() - 50 + 2, 1 + 2, map2(constrain(batteryVoltage, 3000, 4000), 3000, 4000, 0, 40), 20 - 4, 4, TFT_INDEX_DARKGREEN);
     if (batteryVoltage > 4200) {
       top.fillTriangle(display.width() - 28,  3, display.width() - 34, 11, display.width() - 28, 11, TFT_INDEX_WHITE);
       top.fillTriangle(display.width() - 28, 18, display.width() - 23, 10, display.width() - 28, 10, TFT_INDEX_WHITE);
@@ -512,22 +512,22 @@ void bottomOverlay()
 
       case midi::ControlChange:
         m3 = constrain(m3, rmin, rmax);
-        p = map(m3, rmin, rmax, 0, 100);
+        p = map2(m3, rmin, rmax, 0, 100);
         display_progress_bar(0, display.height() - 24, display.width(), 24, p);
-        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 24, display.width() - 24));
+        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map2(p, 0, 100, 24, display.width() - 24));
         break;
 
       case midi::ProgramChange:
         rmin = 0;
         rmax = MIDI_RESOLUTION - 1;
         m3 = constrain(m2, rmin, rmax);
-        p = map(m2, rmin, rmax, 0, 100);
+        p = map2(m2, rmin, rmax, 0, 100);
         display_progress_bar(0, display.height() - 24, display.width(), 24, p);
-        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 24, display.width() - 24));
+        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map2(p, 0, 100, 24, display.width() - 24));
         break;
 
       case midi::PitchBend:
-        p = map(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX, -100, 100);
+        p = map2(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX, -100, 100);
         if ( p >= 0 ) {
           display_progress_bar(0,                        display.height() - 24, display.width() / 2 + 11, 24, 0, true);
           display_progress_bar(display.width() / 2 - 12, display.height() - 24, display.width() / 2 + 11, 24, p);
@@ -540,7 +540,7 @@ void bottomOverlay()
 
       case midi::AfterTouchChannel:
         m3 = constrain(m2, rmin, rmax);
-        p = map(m3, rmin, rmax, 0, 100);
+        p = map2(m3, rmin, rmax, 0, 100);
         display_progress_bar(0, display.height() - 24, display.width(), 24, p);
         break;
     }
@@ -1092,14 +1092,14 @@ void drawFrame1(int16_t x, int16_t y)
           */
           for (byte p = 0; p < PEDALS/2; p++) {
             if ((pedals[p].function1 == PED_ENABLE) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
-              display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, 25 + y, 55, 20, constrain(map(currentMIDIValue[currentBank][p][0],
+              display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, 25 + y, 55, 20, constrain(map2(currentMIDIValue[currentBank][p][0],
                                                                                                        banks[currentBank][p].midiValue1,
                                                                                                        banks[currentBank][p].midiValue2,
                                                                                                        0, 100),
                                                                                                    0, 100));
             }
             if ((pedals[p + PEDALS / 2].function1 == PED_ENABLE) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
-              display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, sprite.height() - 22 - 25 + y, 55, 20, constrain(map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
+              display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, sprite.height() - 22 - 25 + y, 55, 20, constrain(map2(currentMIDIValue[currentBank][p + PEDALS / 2][0],
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue1,
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue2,
                                                                                                        0, 100),

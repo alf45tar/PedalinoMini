@@ -2396,19 +2396,19 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F("</div></b></div>");
   page += F("<div class='col-4'>");
   page += F("Latest version: <b>");
-  
+
   //page += latestFirmwareVersion;
-  page += F("<div w3-include-html='https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/firmware/");
+  page += F("<div id='firmwareVersion' w3-include-html='https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/firmware/");
   page += xstr(PLATFORMIO_ENV);
   page += F("/version.txt?");
-  page += String(rand());
+  page += String(rand() % (999999 - 100000 + 1) + 100000);
   page += F("'></div>");
 
   page += F("</b></div>");
   page += F("<div class='col-1'>");
   page += F("</div>");
   page += F("<div class='col-3'>");
-  page += F("<button type='submit' name='action' value='cloudupdate' class='btn btn-primary btn-sm'>");
+  page += F("<button type='submit' name='action' value='cloudupdate' class='btn btn-primary btn-sm' id='updateButton'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-download' viewBox='0 0 16 16'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
   page += F("<path d='M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z'/>");
@@ -2419,8 +2419,11 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</form>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<script>");
-  page += F("function includeHTML() {"
+  page += F("window.addEventListener('load', includeHTML);"
+            "function includeHTML() {"
               //"/* Loop through a collection of all HTML elements: */"
               "let z = document.getElementsByTagName('*');"
               "for (let i = 0; i < z.length; i++) {"
@@ -2446,10 +2449,10 @@ void get_update_page(unsigned int start, unsigned int len) {
                 "};"
               "};"
             "};");
-  page += F("includeHTML();");
   page += F("</script>");
 
-  //page += F("<form method='post' action='/update' id='uploadForm'>");
+  if (trim_page(start, len)) return;
+
   page += F("<div class='card'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
@@ -2466,14 +2469,14 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
   page += F("Select firmware.bin or spiffs.bin and press Upload to upgrade firmware or file system image.");
   page += F("</small>");
-  page += F("<div class='progress'>");
+  page += F("<div class='progress' style='display: none;' id='progressBar'>");
   page += F("<div class='progress-bar' role='progressbar' style='width: 0%;' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100'>0%</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("</div>");
   page += F("<div class='col-3'>");
-  page += F("<button id='uploadButton' name='action' value='fileupdate' class='btn btn-primary btn-sm'>");
+  page += F("<button name='action' value='fileupdate' class='btn btn-primary btn-sm' id='uploadButton'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
   page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
@@ -2483,59 +2486,101 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-  //page += F("</form>");
+
+  if (trim_page(start, len)) return;
 
   page += F("<script>");
-  page += F("document.querySelector('#uploadButton').addEventListener('click', function() {"
+  page += F("const bars = document.getElementsByClassName('progress-bar');"
 
-            " const bars = document.getElementsByClassName('progress-bar');"
-            " bars[0].style.width = '0%';"
-            " bars[0].textContent = '0%';"
+            "let fileSize = 0;\n"
+            "let progressRequested = false;\n"
 
-	          " if(document.querySelector('#firmwareFile').files.length == 0) {"
-		        "   alert('Error: No file selected');"
-		        "   return;"
-	          " }"
+            "async function onProgress() {\n"
+                "if (progressRequested) { return; }\n\n"
 
-	          " const file = document.querySelector('#firmwareFile').files[0];"
+                "progressRequested = true;\n"
+                "let response = await fetch('/progress');\n"
 
-	          " const allowed_mime_types = [ 'application/octet-stream', 'application/macbinary' ];"
+                "if (!response.ok) {\n"
+                  "throw new Error(response.statusText);\n"
+                "}\n"
 
-	          " const allowed_size_mb = 2;"
+                "let text = await response.text();\n"
+                "progressRequested = false;\n"
 
-	          " if(allowed_mime_types.indexOf(file.type) == -1) {"
-		        "   alert('Error: Incorrect file type \"' + file.type + '\"');"
-		        "   return;"
-            " }"
+                "const percent = +text;\n"
+                "bars[0].style.width = percent.toFixed(0) + '%';\n"
+                "bars[0].textContent = percent.toFixed(0) + '%';\n"
+            "}\n"
 
-	          " if(file.size > allowed_size_mb*1024*1024) {"
-		        "   alert('Error: file size exceeed 2M');"
-		        "   return;"
-	          " }"
+            "function countDown() {\n"
+                "let percent = parseInt(bars[0].style.width, 10);\n"
+                "percent--;"
+                "bars[0].style.width = percent.toFixed(0) + '%';\n"
+                "bars[0].textContent = percent.toFixed(0) + '%';\n"
+            "}\n"
 
-	          " if (!confirm('Do you want to update firmware with ' + file.name + '?')) { return; }"
+            "document.querySelector('#uploadButton').addEventListener('click', function() {\n"
 
-            " const data = new FormData();"
-            " data.append('file', document.querySelector('#firmwareFile').files[0]);"
-            " data.append('action', 'fileupdate');"
+                "const file = document.querySelector('#firmwareFile').files[0];\n"
 
-            " const xhr = new XMLHttpRequest();"
-            " xhr.open('POST', '/update');"
+	              "if (!file) {\n"
+		                "alert('No file selected');\n"
+		                "return;\n"
+	              "}\n"
 
-            " xhr.upload.addEventListener('progress', function(e) {"
-            "       const percent = e.lengthComputable ? (e.loaded / e.total) * 100 : 0;"
-            "       console.log(e);"
-            "       bars[0].style.width   = percent.toFixed(0) + '%';"
-            "       bars[0].textContent   = percent.toFixed(0) + '%';"
-            " }, false);"
+	              "const allowed_mime_types = [ 'application/octet-stream', 'application/macbinary' ];\n"
 
-            " xhr.addEventListener('load', function(e) {"
-	          "       console.log(xhr.status);"
-	          "       console.log(xhr.response);"
-            " });"
+	              "const allowed_size_mb = 2;\n"
 
-            " xhr.send(data);"
-            "});");
+	              "if(allowed_mime_types.indexOf(file.type) == -1) {\n"
+		                "alert('Incorrect file type \"' + file.type + '\"');\n"
+		                "return;"
+                "}\n"
+
+	              "if(file.size > allowed_size_mb*1024*1024) {\n"
+		                "alert('File size exceeed 2M');\n"
+		                "return;"
+	              "}\n"
+
+	              "if (!confirm('Do you want to update firmware with \"' + file.name + '\"?')) { return; };\n"
+
+                "document.getElementById('firmwareFile').style.display = 'none';\n"
+                "document.getElementById('updateButton').disabled = true;\n"
+                "document.getElementById('uploadButton').disabled = true;\n"
+                "document.getElementById('uploadHelpBlock').innerHTML = 'Updating firmware...';\n"
+                "bars[0].style.width = '0%';\n"
+                "bars[0].textContent = '0%';\n"
+                "document.getElementById('progressBar').style.display = 'block';\n"
+
+                "let timer = setInterval(onProgress, 1000);\n"
+
+                "const data = new FormData();\n"
+                "data.append('file', file);\n"
+                "data.append('action', 'fileupdate');\n"
+
+                "const xhr = new XMLHttpRequest();\n"
+                "xhr.open('POST', '/update');\n"
+
+                "xhr.upload.addEventListener('progress', function(e) {\n"
+                    "fileSize = e.total;\n"
+                "}, false);"
+
+                "xhr.addEventListener('load', async function(e) {\n"
+                    "clearInterval(timer);\n"
+                    "progressRequested = false;\n"
+                    "bars[0].style.width = '100%';\n"
+                    "bars[0].textContent = '100%';\n"
+                    "await new Promise(r => setTimeout(r, 1000));\n"
+                    "document.getElementById('progressBar').style.height = '1px';\n"
+                    "document.getElementById('uploadButton').style.display = 'none';\n"
+                    "document.getElementById('uploadHelpBlock').innerHTML = xhr.response;\n"
+                    "document.getElementById('uploadHelpBlock').style.display = 'block';\n"
+                    "setInterval(countDown, 150);\n"
+                "});\n"
+
+                "xhr.send(data);\n"
+            "});\n");
   page += F("</script>");
 
   get_footer_page();
@@ -2796,6 +2841,10 @@ void http_handle_update(AsyncWebServerRequest *request) {
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_update_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
+}
+
+void http_handle_progress(AsyncWebServerRequest *request) {
+  request->send(200, "text/plain", String(Update.isRunning() && Update.size() ? 100 * Update.progress() / Update.size() : 0));
 }
 
 void http_handle_post_live(AsyncWebServerRequest *request) {
@@ -3212,7 +3261,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   if (request->arg("ledsonbrightness").toInt() != ledsOnBrightness) {
     ledsOnBrightness = request->arg("ledsonbrightness").toInt();
-    //FastLED.setBrightness(map(ledsOnBrightness, 0, 25, 0, 255));
+    //FastLED.setBrightness(map2(ledsOnBrightness, 0, 25, 0, 255));
     //FastLED.show();
   }
 
@@ -3409,10 +3458,10 @@ void http_handle_post_update(AsyncWebServerRequest *request) {
 
   } else if (request->arg("action").equals("fileupdate")) {
     // handler for the /update form POST (once file upload finishes)
-    AsyncWebServerResponse *response = request->beginResponse(200, "text/html", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/'>Update Success! Rebooting...\n");
+    AsyncWebServerResponse *response = request->beginResponse(200, "text/html", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/update'>Update Success! Rebooting...\n");
     response->addHeader("Connection", "close");
     request->send(response);
-    delay(1000);
+    delay(3000);
     ESP.restart();
   }
 }
@@ -3709,7 +3758,8 @@ void http_setup() {
   httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
   httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
-  httpServer.serveStatic("/files", SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
+  httpServer.serveStatic("/js/uploader.js",             SPIFFS, "/js/uploader.js").setDefaultFile("/js/uploader.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
   httpServer.on("/",                            http_handle_root);
   httpServer.on("/login",           HTTP_GET,   http_handle_login);
@@ -3731,6 +3781,7 @@ void http_setup() {
 
   httpServer.on("/update",          HTTP_GET,   http_handle_update);
   httpServer.on("/update",          HTTP_POST,  http_handle_post_update, http_handle_update_file_upload);
+  httpServer.on("/progress",        HTTP_GET,   http_handle_progress);
   httpServer.onNotFound(http_handle_not_found);
 
   httpServer.begin();

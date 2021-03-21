@@ -405,7 +405,7 @@ bool smart_config()
     display_progress_bar_update(i, SMART_CONFIG_TIMEOUT-1);
     status_blink();
     delay(950);
-    leds.setHigh(map(i, 0, SMART_CONFIG_TIMEOUT-2, 0, 5));
+    leds.setHigh(map2(i, 0, SMART_CONFIG_TIMEOUT-2, 0, 5));
     leds.write();
   }
   display_progress_bar_update(1, 1);
@@ -466,7 +466,7 @@ bool wps_config()
   leds.write();
   for (int i = 0; i < 10*WPS_TIMEOUT && wpsStatus == 0; i++) {
     display_progress_bar_update(i, 10*WPS_TIMEOUT-1);
-    leds.setHigh(map(i, 0, 10*WPS_TIMEOUT-10, 5, 0));
+    leds.setHigh(map2(i, 0, 10*WPS_TIMEOUT-10, 5, 0));
     leds.write();
     delay(100);
   }
@@ -528,7 +528,7 @@ bool ap_connect(String ssid, String password)
     delay(100);
     status_blink();
     delay(300);
-    leds.setHigh(map(i, 0, WIFI_CONNECT_TIMEOUT*2-2, 0, 5));
+    leds.setHigh(map2(i, 0, WIFI_CONNECT_TIMEOUT*2-2, 0, 5));
     leds.write();
   }
   display_progress_bar_update(1, 1);

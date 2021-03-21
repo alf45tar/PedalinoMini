@@ -562,20 +562,20 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
   if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
-    //byte p = map(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
+    //byte p = map2(pedals[lastUsedPedal].pedalValue[0], 0, MIDI_RESOLUTION - 1, 0, 100);
     int p;
     switch (m1) {
 
       case midi::ControlChange:
-        //p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
+        //p = map2(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
         m3 = constrain(m3, rmin, rmax);
-        p = map(m3, rmin, rmax, 0, 100);
+        p = map2(m3, rmin, rmax, 0, 100);
         display->drawProgressBar(0, 54, 127, 8, p);
-        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map(p, 0, 100, 3, 124));
+        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map2(p, 0, 100, 3, 124));
         break;
 
       case midi::PitchBend:
-        p = map(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX, -100, 100);
+        p = map2(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX, -100, 100);
         if ( p >= 0 ) {
           display->drawProgressBar(60, 54, 67, 8, p);
           uint16_t radius = 8 / 2;
@@ -606,9 +606,9 @@ void bottomOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
         break;
 
       case midi::AfterTouchChannel:
-        ///p = map(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
+        ///p = map2(m3, 0, MIDI_RESOLUTION - 1, 0, 100);
         m3 = constrain(m2, rmin, rmax);
-        p = map(m3, rmin, rmax, 0, 100);
+        p = map2(m3, rmin, rmax, 0, 100);
         display->drawProgressBar(0, 54, 127, 8, p);
         break;
     }
@@ -952,14 +952,14 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           display->drawString(128 + x, y, name);
           for (byte p = 0; p < PEDALS/2; p++) {
             if ((pedals[p].function1 == PED_ENABLE) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
-              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 25 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p][0],
+              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 25 + y, 39, 11, constrain(map2(currentMIDIValue[currentBank][p][0],
                                                                                                        banks[currentBank][p].midiValue1,
                                                                                                        banks[currentBank][p].midiValue2,
                                                                                                        0, 100),
                                                                                                    0, 100));
             }
             if ((pedals[p + PEDALS / 2].function1 == PED_ENABLE) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
-              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 11, constrain(map(currentMIDIValue[currentBank][p + PEDALS / 2][0],
+              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 11, constrain(map2(currentMIDIValue[currentBank][p + PEDALS / 2][0],
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue1,
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue2,
                                                                                                        0, 100),

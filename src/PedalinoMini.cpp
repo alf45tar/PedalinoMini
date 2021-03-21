@@ -178,9 +178,9 @@ void wifi_and_battery_level() {
     static byte sec = 0;
 
     if (sec == 0) {
-      memoryHistory[historyStart]  = map(freeMemory, 0, 200*1024, 0, 100);
-      wifiHistory[historyStart]    = map(constrain(wifiLevel, -90, -10), -90, -10, 0, 100);
-      batteryHistory[historyStart] = map(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100);
+      memoryHistory[historyStart]  = map2(freeMemory, 0, 200*1024, 0, 100);
+      wifiHistory[historyStart]    = map2(constrain(wifiLevel, -90, -10), -90, -10, 0, 100);
+      batteryHistory[historyStart] = map2(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100);
       historyStart = (historyStart + 1) % POINTS;
     }
     sec = (sec + 1) % SECONDS_BETWEEN_SAMPLES;
@@ -535,15 +535,15 @@ void loop()
         otaStatus = HttpsOTA.status();
         switch (otaStatus) {
           case HTTPS_OTA_IDLE:
-            DPRINT("OTA upgrade have not started yet.\n");
+            //DPRINT("OTA upgrade have not started yet.\n");
             break;
           case HTTPS_OTA_UPDATING:
-            DPRINT("OTA upgrade is in progress.\n");
+            //DPRINT("OTA upgrade is in progress.\n");
             break;
           case HTTPS_OTA_SUCCESS:
             DPRINT("OTA upgrade is successful.\n");
+            DPRINT("Restart!\n");
             ESP.restart();
-            firmwareUpdate = PED_UPDATE_NONE;
             break;
           case HTTPS_OTA_FAIL:
             DPRINT("OTA upgrade failed.\n");
@@ -554,7 +554,7 @@ void loop()
             firmwareUpdate = PED_UPDATE_NONE;
             break;
         }
-        delay(1000);
+        yield();
       }
       return;
   }

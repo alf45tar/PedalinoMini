@@ -467,7 +467,7 @@ unsigned int map_analog(byte p, unsigned int value)
 {
   p = constrain(p, 0, PEDALS - 1);
   value = constrain(value, pedals[p].expZero, pedals[p].expMax);                  // make sure that the analog value is between the minimum and maximum value
-  value = map(value, pedals[p].expZero, pedals[p].expMax, 0, ADC_RESOLUTION - 1); // map the value from [minimumValue, maximumValue] to [0, ADC_RESOLUTION-1]
+  value = map2(value, pedals[p].expZero, pedals[p].expMax, 0, ADC_RESOLUTION - 1); // map the value from [minimumValue, maximumValue] to [0, ADC_RESOLUTION-1]
   switch (pedals[p].mapFunction) {
     case PED_LINEAR:
       break;
@@ -578,7 +578,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
     case PED_PITCH_BEND:
 
       if (on_off) {
-        int bend = map(value, 0, MIDI_RESOLUTION-1, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX);
+        int bend = map2(value, 0, MIDI_RESOLUTION-1, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX);
         DPRINT("PITCH BEND.....Value %5d.....Channel %2d\n", bend, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendPitchBend(bend, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendPitchBend(bend, channel);
@@ -678,7 +678,7 @@ void controller_event_handler_analog(byte pedal, int value)
       action *act = actions[0];
       while (act != nullptr) {
         if (act->pedal == pedal && act->event == PED_EVENT_MOVE) {
-          value = map(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
+          value = map2(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
                       0,
                       ADC_RESOLUTION - 1,
                       pedals[pedal].invertPolarity ? act->midiValue2 : act->midiValue1,
@@ -725,7 +725,7 @@ void controller_event_handler_analog(byte pedal, int value)
 
             case PED_ACTION_BANK_PLUS:
             case PED_ACTION_BANK_MINUS:
-              currentBank = map(value, 0, MIDI_RESOLUTION - 1, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
+              currentBank = map2(value, 0, MIDI_RESOLUTION - 1, constrain(act->midiValue1 - 1, 0, BANKS - 1), constrain(act->midiValue2 - 1, 0, BANKS - 1));
               currentBank = constrain(currentBank, 0, BANKS - 1);
               if (repeatOnBankSwitch)
                 midi_send(lastMIDIMessage[currentBank].midiMessage,
@@ -741,7 +741,7 @@ void controller_event_handler_analog(byte pedal, int value)
             case PED_ACTION_TAP:
             case PED_ACTION_BPM_PLUS:
             case PED_ACTION_BPM_MINUS:
-              bpm = map(value, 0, MIDI_RESOLUTION, 40, 300);
+              bpm = map2(value, 0, MIDI_RESOLUTION, 40, 300);
               MTC.setBpm(bpm);
               break;
           }
@@ -757,7 +757,7 @@ void controller_event_handler_analog(byte pedal, int value)
 
     case PED_BANK_PLUS:
     case PED_BANK_MINUS:
-      currentBank = map(value, 0, ADC_RESOLUTION - 1, constrain(pedals[pedal].expZero - 1, 0, BANKS - 1), constrain(pedals[pedal].expMax - 1, 0, BANKS - 1));
+      currentBank = map2(value, 0, ADC_RESOLUTION - 1, constrain(pedals[pedal].expZero - 1, 0, BANKS - 1), constrain(pedals[pedal].expMax - 1, 0, BANKS - 1));
       currentBank = constrain(currentBank, 0, BANKS - 1);
       if (repeatOnBankSwitch)
         midi_send(lastMIDIMessage[currentBank].midiMessage,
@@ -772,7 +772,7 @@ void controller_event_handler_analog(byte pedal, int value)
 
     case PED_BPM_PLUS:
     case PED_BPM_MINUS:
-      bpm = map(value, 0, MIDI_RESOLUTION, 40, 300);
+      bpm = map2(value, 0, MIDI_RESOLUTION, 40, 300);
       MTC.setBpm(bpm);
       break;
   }
