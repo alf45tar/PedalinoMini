@@ -9,6 +9,8 @@
 
 Wireless MIDI foot controller for guitarists and more.
 
+You can change the presets of your guitar rig, turn old MIDI equipment into something that’s USB-compatible, give you hands-free or foot-occupied ways to control your rig during a live performance, and it can be done with WiFi or Bluetooth. This is a full-featured MIDI controller, with three user profiles, and it can control a maximum of 36 foot switches. That’s an impressive amount of kit for such a small device; usually you’d have to spend hundreds or even thousands of dollars for a simple MIDI controller, and the PedalinoMini does everything with very cheap hardware.
+
 - Plug-and-play with any MIDI-compatible app on iOS 8 and above as well as OS X Yosemite and above.
 - High customizable using web interface
 - Bluetooth, WiFI, USB and legacy MIDI interfaces
@@ -81,7 +83,7 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode)
 2. Install Git
     - On Windows, install git from https://git-scm.com/download/win
-    - On macOS, install Command Line Tools for Xcode running `xcode-select --install` via Terminal
+    - On macOS, install Command Line Tools for Xcode running `xcode-select --install` via Terminal. Remember to run the command every time you update your macOS.
 2. In VSCode run the following commands:
     - from View->Command Palette (Ctrl+Shift+P)
         - Git: Clone
