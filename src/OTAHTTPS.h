@@ -3,9 +3,12 @@
 #include <HTTPClient.h>
 #include <HttpsOTAUpdate.h>
 
-static String           latestFirmwareVersion = VERSION;
-static String           url;
-static HttpsOTAStatus_t otaStatus;
+#define OTA_PARTITION_SIZE    0x1D0000      // 1900544 bytes
+
+String            latestFirmwareVersion = VERSION;
+String            url;
+HttpsOTAStatus_t  otaStatus;
+unsigned long     otaProgress;
 
 
 //  To get public SSL certificate of a server, execute the next command:
@@ -70,8 +73,6 @@ String get_latest_firmware_version(void) {
 
   if (!wifiEnabled) return payload;
 
-  set_clock();
-
   WiFiClientSecure *client = new WiFiClientSecure;
 
   if (client) {
@@ -108,7 +109,7 @@ String get_latest_firmware_version(void) {
             }
           }
         } else {
-          DPRINT("[HTTP] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
+          DPRINT("[HTTPS] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
         }
         https.end();
       } else {
@@ -124,16 +125,13 @@ String get_latest_firmware_version(void) {
 
 void ota_https_update_event_handler(HttpEvent_t *event) {
 
-    static unsigned int progress;
-    static unsigned int total = 2 * 1024 * 1024;
-
     switch(event->event_id) {
         case HTTP_EVENT_ERROR:
             DPRINT("HTTP_EVENT_ERROR\n");
             break;
         case HTTP_EVENT_ON_CONNECTED:
             DPRINT("HTTP_EVENT_ON_CONNECTED\n");
-            progress = 0;
+            otaProgress = 0;
 #ifdef TTGO_T_DISPLAY
     display_clear();
     display_progress_bar_title("OTA Update");
@@ -153,11 +151,11 @@ void ota_https_update_event_handler(HttpEvent_t *event) {
             break;
         case HTTP_EVENT_ON_DATA:
             DPRINT("#");
-            progress += event->data_len;
+            otaProgress += event->data_len;
 #ifdef TTGO_T_DISPLAY
-    display_progress_bar_update(progress, total);
+    display_progress_bar_update(otaProgress, OTA_PARTITION_SIZE);
 #else
-    display.drawProgressBar(4, 32, 120, 8, progress / (total / 100) );
+    display.drawProgressBar(4, 32, 120, 8, otaProgress / (OTA_PARTITION_SIZE / 100) );
     display.display();
 #endif
             break;
@@ -195,4 +193,52 @@ void ota_http_update()
   DPRINT("Starting OTA %s\n", url.c_str());
   HttpsOTA.onHttpEvent(ota_https_update_event_handler);
   HttpsOTA.begin(url.c_str(), rootCACertificate);
+}
+
+
+void get_file_from_cloud(String url, String filename) {
+
+  if (!wifiEnabled) return;
+
+  WiFiClientSecure *client = new WiFiClientSecure;
+
+  if (client) {
+
+    client->setCACert(rootCACertificate);
+
+    {
+      // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is
+      HTTPClient https;
+
+      url += F("?");
+      url += String(rand());
+
+      if (https.begin(*client, url)) {
+
+        DPRINT("[HTTPS] GET... %s\n", url.c_str());
+        // start connection and send HTTP header
+        int httpCode = https.GET();
+
+        // httpCode will be negative on error
+        if (httpCode > 0) {
+          // HTTP header has been send and Server response header has been handled
+          DPRINT("[HTTPS] GET... code: %d\n", httpCode);
+          // file found at server
+          if (httpCode == HTTP_CODE_OK) {
+            DPRINT("Writing %s ... ", filename.c_str());
+            File f = SPIFFS.open(filename, "w");
+            https.writeToStream(&f);
+            f.close();
+            DPRINT("done.\n");
+          }
+        } else {
+          DPRINT("[HTTPS] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
+        }
+        https.end();
+      } else {
+        DPRINT("[HTTPS] Unable to connect\n");
+      }
+    }
+    delete client;
+  }
 }

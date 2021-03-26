@@ -529,6 +529,12 @@ void loop()
       return;
 
     case PED_UPDATE_CLOUD:
+      //set_clock();
+      url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/css/bootstrap.min.css.gz");
+      get_file_from_cloud(url, "/css/bootstrap.min.css.gz");
+      url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/js/bootstrap.bundle.min.js.gz");
+      get_file_from_cloud(url, "/js/bootstrap.bundle.min.js.gz");
+
       latestFirmwareVersion = get_latest_firmware_version();
       ota_http_update();
       while (firmwareUpdate == PED_UPDATE_CLOUD) {

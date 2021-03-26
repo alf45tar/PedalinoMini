@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.1.3"
+#define VERSION         "2.1.4"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6

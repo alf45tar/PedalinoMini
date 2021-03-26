@@ -1326,29 +1326,29 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("</div>");
 
     page += F("<div class='form-check form-switch'>");
-    page += F("<input class='form-check-input' type='checkbox' id='function1");
-    page += String(i) + F("' name='polarity") + String(i) + F("'");
+    page += F("<input class='form-check-input' type='checkbox' id='function1Check");
+    page += String(i) + F("' name='function1") + String(i) + F("'");
     if (pedals[i-1].function1 == PED_ENABLE) page += F(" checked");
     page += F(">");
-    page += F("<label class='form-check-label' for='function1");
+    page += F("<label class='form-check-label' for='function1Check");
     page += String(i) + F("'>Single Press</label>");
     page += F("</div>");
 
     page += F("<div class='form-check form-switch'>");
-    page += F("<input class='form-check-input' type='checkbox' id='function2");
-    page += String(i) + F("' name='polarity") + String(i) + F("'");
+    page += F("<input class='form-check-input' type='checkbox' id='function2Check");
+    page += String(i) + F("' name='function2") + String(i) + F("'");
     if (pedals[i-1].function2 == PED_ENABLE) page += F(" checked");
     page += F(">");
-    page += F("<label class='form-check-label' for='function1");
+    page += F("<label class='form-check-label' for='function2Check");
     page += String(i) + F("'>Double Press</label>");
     page += F("</div>");
 
     page += F("<div class='form-check form-switch'>");
-    page += F("<input class='form-check-input' type='checkbox' id='function3");
-    page += String(i) + F("' name='polarity") + String(i) + F("'");
+    page += F("<input class='form-check-input' type='checkbox' id='function3Check");
+    page += String(i) + F("' name='function3") + String(i) + F("'");
     if (pedals[i-1].function3 == PED_ENABLE) page += F(" checked");
     page += F(">");
-    page += F("<label class='form-check-label' for='function1");
+    page += F("<label class='form-check-label' for='function3Check");
     page += String(i) + F("'>Long Press</label>");
     page += F("</div>");
 
@@ -2260,16 +2260,26 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F(" Available Configurations</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
-  page += F("<div class='col-8'>");
+  page += F("<div class='col-7'>");
   page += F("<select class='form-select' id='filename' name='filename'>");
   page += confoptions;
   page += F("</select>");
+  page += F("<div id='jsoneditor'></div>");
+
   page += F("<small id='filenameHelpBlock' class='form-text text-muted'>");
   page += F("'Apply' to load configuration into current profile.<br>");
   page += F("'Apply & Save' to load configuration into current profile and save the profile.<br>");
   page += F("'Download' to download configuration to local computer.<br>");
   page += F("'Delete' to remove configuration.");
   page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("<button id='editButton' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-pencil-square' viewBox='0 0 16 16'>");
+  page += F("<path d='M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z'/>");
+  page += F("<path fill-rule='evenodd' d='M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z'/>");
+  page += F("</svg>");
+  page += F(" Edit</button> ");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("</div>");
@@ -2296,7 +2306,19 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-
+/*
+  page += F("<link href='https://cdn.jsdelivr.net/npm/jsoneditor@9.2.0/dist/jsoneditor.min.css' rel='stylesheet' type='text/css'>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@9.2.0/dist/jsoneditor.min.js'></script>");
+  page += F("<script>");
+  page += F("document.querySelector('#editButton').addEventListener('click', function() {\n"
+                "var container = document.getElementById('jsoneditor');\n"
+                "const options = {mode: 'tree', modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], search: true};\n"
+                "var editor = new JSONEditor(container, options);\n"
+                "editor.setName('blueboard');\n"
+                "fetch('http://2ab267ac.local/files/blueboard.cfg').then( response => response.text() ).then( text => editor.setText(text) );\n"
+            "});\n");
+  page += F("</script>");
+*/
   if (trim_page(start, len)) return;
 
   page += F("<div class='row'>");
@@ -2380,14 +2402,13 @@ void get_update_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<form method='post' action='/update'");
-  page += F("<div class='card mb-3'>");
+  page += F("<div class='card mb-3' id='downloadCard'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-download' viewBox='0 0 20 20'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
   page += F("<path d='M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z'/>");
   page += F("</svg>");
-  page += F(" Download Firmware</h5>");
+  page += F(" Download Firmware from Cloud</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
   page += F("<div class='col-4'>");
@@ -2396,14 +2417,11 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F("</div></b></div>");
   page += F("<div class='col-4'>");
   page += F("Latest version: <b>");
-
-  //page += latestFirmwareVersion;
-  page += F("<div id='firmwareVersion' w3-include-html='https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/firmware/");
+  page += F("<div id='latestFirmwareVersion' w3-include-html='https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/firmware/");
   page += xstr(PLATFORMIO_ENV);
   page += F("/version.txt?");
   page += String(rand() % (999999 - 100000 + 1) + 100000);
   page += F("'></div>");
-
   page += F("</b></div>");
   page += F("<div class='col-1'>");
   page += F("</div>");
@@ -2417,11 +2435,67 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</form>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='card' id='uploadCard'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
+  page += F("</svg>");
+  page += F(" Upload Firmware from Local Computer</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-8'>");
+  page += F("<div class='input-group'>");
+  page += F("<input type='file' class='form-control' id='firmwareFile' name='upload'>");
+  page += F("</div>");
+  page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
+  page += F("Select firmware.bin or spiffs.bin and press Upload to upgrade firmware or file system image.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("</div>");
+  page += F("<div class='col-3'>");
+  page += F("<button name='action' value='fileupdate' class='btn btn-primary btn-sm' id='uploadButton'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
+  page += F("</svg>");
+  page += F(" Upload</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='card' style='display: none;' id='progressCard'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill=ìcurrentColor' class='bi bi-hourglass-split' viewBox='0 0 20 20'>");
+  page += F("<path d='M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1h-11zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2h-7zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48V8.35zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z'/>");
+  page += F("</svg>");
+  page += F(" Progress</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col'>");
+  page += F("<small id='progressBarDescription' class='form-text text-muted'>");
+  page += F("</small>");
+  page += F("<div class='progress' id='progressBar'>");
+  page += F("<div class='progress-bar' role='progressbar' style='width: 0%;' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100'>0%</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
 
   if (trim_page(start, len)) return;
 
   page += F("<script>");
+
   page += F("window.addEventListener('load', includeHTML);"
             "function includeHTML() {"
               //"/* Loop through a collection of all HTML elements: */"
@@ -2449,53 +2523,12 @@ void get_update_page(unsigned int start, unsigned int len) {
                 "};"
               "};"
             "};");
-  page += F("</script>");
 
-  if (trim_page(start, len)) return;
-
-  page += F("<div class='card'>");
-  page += F("<h5 class='card-header'>");
-  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
-  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
-  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
-  page += F("</svg>");
-  page += F(" Upload Firmware</h5>");
-  page += F("<div class='card-body'>");
-  page += F("<div class='row'>");
-  page += F("<div class='col-8'>");
-  page += F("<div class='input-group'>");
-  page += F("<input type='file' class='form-control' id='firmwareFile' name='upload'>");
-  page += F("</div>");
-  page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
-  page += F("Select firmware.bin or spiffs.bin and press Upload to upgrade firmware or file system image.");
-  page += F("</small>");
-  page += F("<div class='progress' style='display: none;' id='progressBar'>");
-  page += F("<div class='progress-bar' role='progressbar' style='width: 0%;' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100'>0%</div>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("<div class='col-1'>");
-  page += F("</div>");
-  page += F("<div class='col-3'>");
-  page += F("<button name='action' value='fileupdate' class='btn btn-primary btn-sm' id='uploadButton'>");
-  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
-  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
-  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
-  page += F("</svg>");
-  page += F(" Upload</button>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-
-  if (trim_page(start, len)) return;
-
-  page += F("<script>");
   page += F("const bars = document.getElementsByClassName('progress-bar');"
 
-            "let fileSize = 0;\n"
             "let progressRequested = false;\n"
 
-            "async function onProgress() {\n"
+            "async function onProgressCloud() {\n"
                 "if (progressRequested) { return; }\n\n"
 
                 "progressRequested = true;\n"
@@ -2506,11 +2539,63 @@ void get_update_page(unsigned int start, unsigned int len) {
                 "}\n"
 
                 "let text = await response.text();\n"
+
+                "const percent = +text;\n"
+                "if (percent != undefined) {\n"
+                    "bars[0].style.width = percent.toFixed(0) + '%';\n"
+                    "bars[0].textContent = percent.toFixed(0) + '%';\n"
+                "} else {\n"
+                    "clearInterval(timer);\n"
+                    "bars[0].style.width = '100%';\n"
+                    "bars[0].textContent = '100%';\n"
+                    "await new Promise(r => setTimeout(r, 1000));\n"
+                    "document.getElementById('progressBar').style.height = '1px';\n"
+                    "document.getElementById('progressBarDescription').innerHTML = text;\n"
+                    "setInterval(countDown, 150);\n"
+                "}\n"
+
                 "progressRequested = false;\n"
+            "}\n"
+
+            "document.querySelector('#updateButton').addEventListener('click', function() {\n"
+
+	              "if (!confirm('Do you want to update firmware from cloud?')) { return; };\n"
+
+                "document.getElementById('downloadCard').style.display = 'none';\n"
+                "document.getElementById('uploadCard').style.display = 'none';\n"
+                "document.getElementById('progressBarDescription').innerHTML = 'Updating firmware...';\n"
+
+                "bars[0].style.width = '0%';\n"
+                "bars[0].textContent = '0%';\n"
+                "document.getElementById('progressCard').style.display = 'block';\n"
+
+                "let timer = setInterval(onProgressCloud, 2000);\n"
+
+                "const data = new FormData();\n"
+                "data.append('action', 'cloudupdate');\n"
+
+                "const xhr = new XMLHttpRequest();\n"
+                "xhr.open('POST', '/update');\n"
+                "xhr.send(data);\n"
+            "});\n");
+
+  page += F("async function onProgress() {\n"
+                "if (progressRequested) { return; }\n\n"
+
+                "progressRequested = true;\n"
+                "let response = await fetch('/progress');\n"
+
+                "if (!response.ok) {\n"
+                  "throw new Error(response.statusText);\n"
+                "}\n"
+
+                "let text = await response.text();\n"
 
                 "const percent = +text;\n"
                 "bars[0].style.width = percent.toFixed(0) + '%';\n"
                 "bars[0].textContent = percent.toFixed(0) + '%';\n"
+
+                "progressRequested = false;\n"
             "}\n"
 
             "function countDown() {\n"
@@ -2531,29 +2616,29 @@ void get_update_page(unsigned int start, unsigned int len) {
 
 	              "const allowed_mime_types = [ 'application/octet-stream', 'application/macbinary' ];\n"
 
-	              "const allowed_size_mb = 2;\n"
+	              "const allowed_size = ");
+  page += String(OTA_PARTITION_SIZE) + F(";\n");
 
-	              "if(allowed_mime_types.indexOf(file.type) == -1) {\n"
+  page += F("if(allowed_mime_types.indexOf(file.type) == -1) {\n"
 		                "alert('Incorrect file type \"' + file.type + '\"');\n"
 		                "return;"
                 "}\n"
 
-	              "if(file.size > allowed_size_mb*1024*1024) {\n"
+	              "if(file.size > allowed_size) {\n"
 		                "alert('File size exceeed 2M');\n"
 		                "return;"
 	              "}\n"
 
 	              "if (!confirm('Do you want to update firmware with \"' + file.name + '\"?')) { return; };\n"
 
-                "document.getElementById('firmwareFile').style.display = 'none';\n"
-                "document.getElementById('updateButton').disabled = true;\n"
-                "document.getElementById('uploadButton').disabled = true;\n"
-                "document.getElementById('uploadHelpBlock').innerHTML = 'Updating firmware...';\n"
+                "document.getElementById('downloadCard').style.display = 'none';\n"
+                "document.getElementById('uploadCard').style.display = 'none';\n"
+                "document.getElementById('progressBarDescription').innerHTML = 'Updating firmware...';\n"
                 "bars[0].style.width = '0%';\n"
                 "bars[0].textContent = '0%';\n"
-                "document.getElementById('progressBar').style.display = 'block';\n"
+                "document.getElementById('progressCard').style.display = 'block';\n"
 
-                "let timer = setInterval(onProgress, 1000);\n"
+                "let timer = setInterval(onProgress, 2000);\n"
 
                 "const data = new FormData();\n"
                 "data.append('file', file);\n"
@@ -2562,10 +2647,6 @@ void get_update_page(unsigned int start, unsigned int len) {
                 "const xhr = new XMLHttpRequest();\n"
                 "xhr.open('POST', '/update');\n"
 
-                "xhr.upload.addEventListener('progress', function(e) {\n"
-                    "fileSize = e.total;\n"
-                "}, false);"
-
                 "xhr.addEventListener('load', async function(e) {\n"
                     "clearInterval(timer);\n"
                     "progressRequested = false;\n"
@@ -2573,14 +2654,13 @@ void get_update_page(unsigned int start, unsigned int len) {
                     "bars[0].textContent = '100%';\n"
                     "await new Promise(r => setTimeout(r, 1000));\n"
                     "document.getElementById('progressBar').style.height = '1px';\n"
-                    "document.getElementById('uploadButton').style.display = 'none';\n"
-                    "document.getElementById('uploadHelpBlock').innerHTML = xhr.response;\n"
-                    "document.getElementById('uploadHelpBlock').style.display = 'block';\n"
+                    "document.getElementById('progressBarDescription').innerHTML = xhr.response;\n"
                     "setInterval(countDown, 150);\n"
                 "});\n"
 
                 "xhr.send(data);\n"
             "});\n");
+
   page += F("</script>");
 
   get_footer_page();
@@ -2844,7 +2924,10 @@ void http_handle_update(AsyncWebServerRequest *request) {
 }
 
 void http_handle_progress(AsyncWebServerRequest *request) {
-  request->send(200, "text/plain", String(Update.isRunning() && Update.size() ? 100 * Update.progress() / Update.size() : 0));
+  if (firmwareUpdate == PED_UPDATE_CLOUD)
+    request->send(200, "text/plain", String(HttpsOTA.status() == HTTPS_OTA_UPDATING ? 100 * otaProgress / OTA_PARTITION_SIZE : 0));
+  else
+    request->send(200, "text/plain", String(Update.isRunning() && Update.size() ? 100 * Update.progress() / Update.size() : 0));
 }
 
 void http_handle_post_live(AsyncWebServerRequest *request) {
@@ -3024,13 +3107,13 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     pedals[i].mode = a.toInt();
 
     a = request->arg(String("function1") + String(i+1));
-    pedals[i].function1 = a.toInt();
+    pedals[i].function1 = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
     a = request->arg(String("function2") + String(i+1));
-    pedals[i].function2 = a.toInt();
+    pedals[i].function2 = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
     a = request->arg(String("function3") + String(i+1));
-    pedals[i].function3 = a.toInt();
+    pedals[i].function3 = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
     pedals[i].pressMode  = (pedals[i].function1 == PED_DISABLE ? 0 : PED_PRESS_1);
     pedals[i].pressMode += (pedals[i].function2 == PED_DISABLE ? 0 : PED_PRESS_2);
@@ -3455,7 +3538,7 @@ void http_handle_post_update(AsyncWebServerRequest *request) {
 
   if (request->arg("action").equals("cloudupdate")) {
     firmwareUpdate = PED_UPDATE_CLOUD;
-
+    request->send(200, "text/plain", "");
   } else if (request->arg("action").equals("fileupdate")) {
     // handler for the /update form POST (once file upload finishes)
     AsyncWebServerResponse *response = request->beginResponse(200, "text/html", (Update.hasError()) ? "Update fail!" : "<META http-equiv='refresh' content='15;URL=/update'>Update Success! Rebooting...\n");
@@ -3575,21 +3658,28 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
 
 void http_handle_not_found(AsyncWebServerRequest *request) {
 
-  String message = "File Not Found\n\n";
+  if (request->method() == HTTP_OPTIONS) {
 
-  message += "URI: ";
-  message += request->url();
-  message += "\nMethod: ";
-  message += (request->method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += request->args();
-  message += "\n";
+    request->send(200);
 
-  for (uint8_t i = 0; i < request->args(); i++) {
-    message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
+  } else {
+
+    String message = "File Not Found\n\n";
+
+    message += "URI: ";
+    message += request->url();
+    message += "\nMethod: ";
+    message += (request->method() == HTTP_GET) ? "GET" : "POST";
+    message += "\nArguments: ";
+    message += request->args();
+    message += "\n";
+
+    for (uint8_t i = 0; i < request->args(); i++) {
+      message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
+    }
+
+    request->send(404, "text/plain", message);
   }
-
-  request->send(404, "text/plain", message);
 }
 
 
@@ -3784,6 +3874,7 @@ void http_setup() {
   httpServer.on("/progress",        HTTP_GET,   http_handle_progress);
   httpServer.onNotFound(http_handle_not_found);
 
+  DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
   httpServer.begin();
 
   // Setup a 10Hz timer
