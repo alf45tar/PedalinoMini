@@ -2260,26 +2260,16 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F(" Available Configurations</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
-  page += F("<div class='col-7'>");
+  page += F("<div class='col-8'>");
   page += F("<select class='form-select' id='filename' name='filename'>");
   page += confoptions;
   page += F("</select>");
-  page += F("<div id='jsoneditor'></div>");
-
   page += F("<small id='filenameHelpBlock' class='form-text text-muted'>");
   page += F("'Apply' to load configuration into current profile.<br>");
   page += F("'Apply & Save' to load configuration into current profile and save the profile.<br>");
   page += F("'Download' to download configuration to local computer.<br>");
   page += F("'Delete' to remove configuration.");
   page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='col-1'>");
-  page += F("<button id='editButton' class='btn btn-primary btn-sm'>");
-  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-pencil-square' viewBox='0 0 16 16'>");
-  page += F("<path d='M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z'/>");
-  page += F("<path fill-rule='evenodd' d='M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z'/>");
-  page += F("</svg>");
-  page += F(" Edit</button> ");
   page += F("</div>");
   page += F("<div class='col-1'>");
   page += F("</div>");
@@ -2306,19 +2296,7 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
-/*
-  page += F("<link href='https://cdn.jsdelivr.net/npm/jsoneditor@9.2.0/dist/jsoneditor.min.css' rel='stylesheet' type='text/css'>");
-  page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@9.2.0/dist/jsoneditor.min.js'></script>");
-  page += F("<script>");
-  page += F("document.querySelector('#editButton').addEventListener('click', function() {\n"
-                "var container = document.getElementById('jsoneditor');\n"
-                "const options = {mode: 'tree', modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], search: true};\n"
-                "var editor = new JSONEditor(container, options);\n"
-                "editor.setName('blueboard');\n"
-                "fetch('http://2ab267ac.local/files/blueboard.cfg').then( response => response.text() ).then( text => editor.setText(text) );\n"
-            "});\n");
-  page += F("</script>");
-*/
+
   if (trim_page(start, len)) return;
 
   page += F("<div class='row'>");
@@ -2356,7 +2334,7 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len)) return;
 
   page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
-  page += F("<div class='card'>");
+  page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
@@ -2388,6 +2366,59 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='card mb-3'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-pencil-square' viewBox='0 0 20 20'>");
+  page += F("<path d='M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z'/>");
+  page += F("<path fill-rule='evenodd' d='M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z'/>");
+  page += F("</svg>");
+  page += F(" Configuration Editor</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-8'>");
+  page += F("<div id='jsoneditor' style='width: 100%; height: 600px;'></div>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("</div>");
+  page += F("<div class='col-3'>");
+  page += F("<button class='btn btn-primary btn-sm' id='saveButton' >");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<link href='https://cdn.jsdelivr.net/npm/jsoneditor@9.2.0/dist/jsoneditor.min.css' rel='stylesheet' type='text/css'>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@9.2.0/dist/jsoneditor.min.js'></script>");
+  page += F("<script>");
+  page += F("var container = document.getElementById('jsoneditor');\n"
+            "const options = {mode: 'tree', modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], search: true};\n"
+            "var editor = new JSONEditor(container, options);\n"
+
+            "function loadConfiguration(name) {\n"
+                "editor.setName(name);\n"
+                "fetch('/files/' + name + '.cfg').then( response => response.text() ).then( text => editor.setText(text) );\n"
+            "};\n"
+
+            "function saveConfiguration() {\n"
+                "const data = new FormData();\n"
+                "data.append('file', new File([new Blob([editor.getText()])], editor.getName()));\n"
+                "const xhr = new XMLHttpRequest();\n"
+                "xhr.open('POST', '/configurations');\n"
+                "xhr.send(data);\n"
+            "};\n"
+
+            "loadConfiguration(document.getElementById('filename').options[0].text);\n"
+
+            "document.querySelector('#filename').addEventListener('change', function(e) { loadConfiguration(e.target.value.substring(1, e.target.value.length - 4)); });\n"
+
+            "document.querySelector('#saveButton').addEventListener('click', function() { saveConfiguration(); });\n");
+  page += F("</script>");
 
   get_footer_page();
 
@@ -3497,23 +3528,25 @@ void http_handle_configuration_file_upload(AsyncWebServerRequest *request, Strin
 
     String c = "/" + filename;
     if (!(c.length() > 4 && c.lastIndexOf(".cfg") == (c.length() - 4))) c += ".cfg";   // add .cfg extension if not present
-
+/*
     if (SPIFFS.exists(c)) {
       alertError = F("File '");
       alertError += c +  "' already exists. Delete existing configuration before upload again.";
       request->redirect("/configurations");
+      DPRINT("%s\n", alertError.c_str());
       return;
     }
+*/
     // open the file on first call and store the file handle in the request object
     request->_tempFile = SPIFFS.open(c, FILE_WRITE);
 
     if (request->_tempFile) {
-      DPRINT("Upload start: %s\n", filename.c_str());
+      DPRINT("Upload start: %s\n", c.c_str());
     }
     else {
       alertError = F("Cannot upload file ");
       alertError += filename +  ".";
-      DPRINT("Upload start fail: %s\n", filename.c_str());
+      DPRINT("Upload start fail: %s\n", c.c_str());
     }
   }
 
@@ -3521,7 +3554,7 @@ void http_handle_configuration_file_upload(AsyncWebServerRequest *request, Strin
   if (!request->_tempFile || request->_tempFile.write(data,len) != len) {
     alertError = F("Upload of '");
     alertError += filename +  "' failed.";
-    DPRINT("Upload fail\n");
+    DPRINT("Upload fail: %s\n", filename.c_str());
   }
 
   // if the final flag is set then this is the last frame of data
