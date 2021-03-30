@@ -1328,7 +1328,7 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='function1Check");
     page += String(i) + F("' name='function1") + String(i) + F("'");
-    if (pedals[i-1].function1 == PED_ENABLE) page += F(" checked");
+    if (IS_SINGLE_PRESS_ENABLED(pedals[i-1].pressMode)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='function1Check");
     page += String(i) + F("'>Single Press</label>");
@@ -1337,7 +1337,7 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='function2Check");
     page += String(i) + F("' name='function2") + String(i) + F("'");
-    if (pedals[i-1].function2 == PED_ENABLE) page += F(" checked");
+    if (IS_DOUBLE_PRESS_ENABLED(pedals[i-1].pressMode)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='function2Check");
     page += String(i) + F("'>Double Press</label>");
@@ -1346,7 +1346,7 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='function3Check");
     page += String(i) + F("' name='function3") + String(i) + F("'");
-    if (pedals[i-1].function3 == PED_ENABLE) page += F(" checked");
+    if (IS_LONG_PRESS_ENABLED(pedals[i-1].pressMode)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='function3Check");
     page += String(i) + F("'>Long Press</label>");
@@ -1360,15 +1360,15 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("'>");
     page += F("<option value='");
     page += String(PED_LINEAR) + F("'");
-    if (pedals[i-1].mapFunction == PED_LINEAR) page += F(" selected");
+    if (pedals[i-1].analogResponse == PED_LINEAR) page += F(" selected");
     page += F(">Linear</option>");
     page += F("<option value='");
     page += String(PED_LOG) + F("'");
-    if (pedals[i-1].mapFunction == PED_LOG) page += F(" selected");
+    if (pedals[i-1].analogResponse == PED_LOG) page += F(" selected");
     page += F(">Log</option>");
     page += F("<option value='");
     page += String(PED_ANTILOG) + F("'");
-    if (pedals[i-1].mapFunction == PED_ANTILOG) page += F(" selected");
+    if (pedals[i-1].analogResponse == PED_ANTILOG) page += F(" selected");
     page += F(">Antilog</option>");
     page += F("</select>");
     page += F("<label for='mapFloatingSelect'>Analog Response</label>");
@@ -2176,9 +2176,11 @@ void get_configurations_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<form method='post'>");
+  page += F("<div class='row'>");
 
-  page += F("<div class='card mb-3'>");
+  page += F("<div class='col-lg-6 col-12 mb-3'>");
+  page += F("<form method='post'>");
+  page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-file-code' viewBox='0 0 20 20'>");
   page += F("<path d='M6.646 5.646a.5.5 0 1 1 .708.708L5.707 8l1.647 1.646a.5.5 0 0 1-.708.708l-2-2a.5.5 0 0 1 0-.708l2-2zm2.708 0a.5.5 0 1 0-.708.708L10.293 8 8.646 9.646a.5.5 0 0 0 .708.708l2-2a.5.5 0 0 0 0-.708l-2-2z'/>");
@@ -2187,18 +2189,11 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F(" New Configuration</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
-  page += F("<div class='col-8'>");
+  page += F("<div class='col-7'>");
   page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
-  page += F("Type a name, select what to include and press 'Save as Configuration' to save current profile with a name. An existing configuration with the same name will be overridden without further notice.");
+  page += F("Type a name, select what to include and press 'New' to save current profile with a name. An existing configuration with the same name will be overridden without further notice.");
   page += F("</small><br>");
-  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm'>");
-  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
-  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
-  page += F("</svg>");
-  page += F(" Save as Configuration</button> ");
-  page += F("</div>");
-  page += F("<div class='col-1'>");
   page += F("</div>");
   page += F("<div class='col-3'>");
   page += F("<div class='form-check form-switch'>");
@@ -2222,11 +2217,55 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<label class='form-check-label' for='optionsCheck1'>Options</label>");
   page += F("</div>");
   page += F("</div>");
+  page += F("<div class='col-2'>");
+  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm' style='width: 100%;'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F("<br>New</button> ");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</form>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='col-lg-6 col-12 mb-3'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
+  page += F("</svg>");
+  page += F(" Upload Configuration</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-10'>");
+  page += F("<div class='input-group'>");
+  page += F("<input type='file' class='form-control' id='customFile' name='upload'>");
+  page += F("</div>");
+  page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
+  page += F("SPIFFS is not a high performance FS. It is designed to balance safety, wear levelling and performance for bare flash devices. ");
+  page += F("If you want good performance from SPIFFS keep the % utilisation low.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='col-2'>");
+  page += F("<button type='submit' name='action' value='upload' class='btn btn-primary btn-sm' style='width: 100%;'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
+  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
+  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
+  page += F("</svg>");
+  page += F("<br>Upload</button>");
+  page += F("</div>");
+  page += F("</form>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
-  page += F("</form>");
 
   if (trim_page(start, len)) return;
 
@@ -2251,16 +2290,18 @@ void get_configurations_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<form method='post'>");
-  page += F("<div class='card mb-3'>");
+  page += F("<div class='col-lg-6 col-12 mb-3'>");
+
+  page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-files' viewBox='0 0 20 20'>");
   page += F("<path d='M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z'/>");
   page += F("</svg>");
   page += F(" Available Configurations</h5>");
   page += F("<div class='card-body'>");
+  page += F("<form method='post'>");
   page += F("<div class='row'>");
-  page += F("<div class='col-8'>");
+  page += F("<div class='col-7'>");
   page += F("<select class='form-select' id='filename' name='filename'>");
   page += confoptions;
   page += F("</select>");
@@ -2270,8 +2311,6 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("'Download' to download configuration to local computer.<br>");
   page += F("'Delete' to remove configuration.");
   page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='col-1'>");
   page += F("</div>");
   page += F("<div class='col-3'>");
   page += F("<div class='form-check form-switch'>");
@@ -2295,81 +2334,44 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<label class='form-check-label' for='optionsCheck2'>Options</label>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</div>");
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='row'>");
-  page += F("<div class='col-12'>");
-  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<div class='col-2'>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm' style='width: 100%;'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
   page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
   page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
   page += F("</svg>");
-  page += F(" Apply</button> ");
-  page += F(" ");
-  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<br>Apply</button><p></p>");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm' style='width: 100%;'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
   page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
   page += F("</svg>");
-  page += F(" Apply & Save</button> ");
-  page += F("<button type='submit' name='action' value='download' class='btn btn-primary btn-sm'>");
+  page += F("<br>Apply & Save</button><p></p>");
+  page += F("<button type='submit' name='action' value='download' class='btn btn-primary btn-sm' style='width: 100%;'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-download' viewBox='0 0 16 16'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
   page += F("<path d='M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z'/>");
   page += F("</svg>");
-  page += F(" Download</button> ");
-  page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm'>");
+  page += F("<br>Download</button><p></p>");
+  page += F("<button type='submit' name='action' value='delete' class='btn btn-danger btn-sm' style='width: 100%;'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-trash' viewBox='0 0 16 16'>");
   page += F("<path d='M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z'/>");
   page += F("<path fill-rule='evenodd' d='M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z'/>");
   page += F("</svg>");
-  page += F(" Delete</button>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
+  page += F("<br>Delete</button>");
   page += F("</div>");
   page += F("</form>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
 
   if (trim_page(start, len)) return;
 
-  page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
-  page += F("<div class='card mb-3'>");
-  page += F("<h5 class='card-header'>");
-  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
-  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
-  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
-  page += F("</svg>");
-  page += F(" Upload Configuration</h5>");
-  page += F("<div class='card-body'>");
-  page += F("<div class='row'>");
-  page += F("<div class='col-8'>");
-  page += F("<div class='input-group'>");
-  page += F("<input type='file' class='form-control' id='customFile' name='upload'>");
-  page += F("</div>");
-  page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
-  page += F("SPIFFS is not a high performance FS. It is designed to balance safety, wear levelling and performance for bare flash devices. ");
-  page += F("If you want good performance from SPIFFS keep the % utilisation low.");
-  page += F("</small>");
-  page += F("</div>");
-  page += F("<div class='col-1'>");
-  page += F("</div>");
-  page += F("<div class='col-3'>");
-  page += F("<button type='submit' name='action' value='upload' class='btn btn-primary btn-sm'>");
-  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
-  page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
-  page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
-  page += F("</svg>");
-  page += F(" Upload</button>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</form>");
-
-  if (trim_page(start, len)) return;
-
-  page += F("<div class='card mb-3'>");
+  page += F("<div class='col-lg-6 col-12 mb-3'>");
+  page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-pencil-square' viewBox='0 0 20 20'>");
   page += F("<path d='M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z'/>");
@@ -2378,17 +2380,15 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F(" Configuration Editor</h5>");
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
-  page += F("<div class='col-8'>");
-  page += F("<div id='jsoneditor' style='width: 100%; height: 600px;'></div>");
+  page += F("<div class='col-10'>");
+  page += F("<div id='jsoneditor' style='width: 100%; height: 480px;'></div>");
   page += F("</div>");
-  page += F("<div class='col-1'>");
-  page += F("</div>");
-  page += F("<div class='col-3'>");
-  page += F("<button class='btn btn-primary btn-sm' id='saveButton' >");
+  page += F("<div class='col-2'>");
+  page += F("<button class='btn btn-primary btn-sm' style='width: 100%;' id='saveButton'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
   page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
   page += F("</svg>");
-  page += F(" Save</button>");
+  page += F("<br>Save</button>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -2397,12 +2397,17 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@9.2.0/dist/jsoneditor.min.js'></script>");
   page += F("<script>");
   page += F("var container = document.getElementById('jsoneditor');\n"
-            "const options = {mode: 'tree', modes: ['code', 'form', 'text', 'tree', 'view', 'preview'], search: true};\n"
+            "var schema;\n"
+            "const options = {schema: schema,\n"
+                             "mode: 'tree',\n"
+                             "modes: ['code', 'form', 'text', 'tree', 'view', 'preview'],\n"
+                             "search: true};\n"
             "var editor = new JSONEditor(container, options);\n"
 
-            "function loadConfiguration(name) {\n"
-                "editor.setName(name);\n"
+            "async function loadConfiguration(name) {\n"
+                "fetch('/schema.json').then( response => response.json() ).then( json => editor.setSchema(json) );\n"
                 "fetch('/files/' + name + '.cfg').then( response => response.text() ).then( text => editor.setText(text) );\n"
+                "editor.setName(name);\n"
             "};\n"
 
             "function saveConfiguration() {\n"
@@ -2419,6 +2424,8 @@ void get_configurations_page(unsigned int start, unsigned int len) {
 
             "document.querySelector('#saveButton').addEventListener('click', function() { saveConfiguration(); });\n");
   page += F("</script>");
+  page += F("</div>");
+  page += F("</div>");
 
   get_footer_page();
 
@@ -3094,11 +3101,11 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
         strncpy(act->tag1,            request->arg(String("nameon")   + String(i)).c_str(), MAXACTIONNAME + 1);
         act->button       = constrain(request->arg(String("button")   + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
         act->led          = constrain(request->arg(String("led")      + String(i)).toInt() - 1, 0, LEDS - 1);
-        byte r, g, b;
-        sscanf(                       request->arg(String("color0-")  + String(i)).c_str(), "#%02x%02x%02x", &r, &g, &b);
-        act->color0       = (r << 16) + (g << 8) + b;
-        sscanf(                       request->arg(String("color1-")  + String(i)).c_str(), "#%02x%02x%02x", &r, &g, &b);
-        act->color1       = (r << 16) + (g << 8) + b;
+        unsigned int red, green, blue;
+        sscanf(                       request->arg(String("color0-")  + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
+        act->color0       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
+        sscanf(                       request->arg(String("color1-")  + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
+        act->color1       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
         act->event        = constrain(request->arg(String("event")    + String(i)).toInt(), 0, 255);
         act->midiMessage  = constrain(request->arg(String("message")  + String(i)).toInt(), 0, 255);
         act->midiCode     = constrain(request->arg(String("code")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
@@ -3138,23 +3145,19 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     pedals[i].mode = a.toInt();
 
     a = request->arg(String("function1") + String(i+1));
-    pedals[i].function1 = (a == checked) ? PED_ENABLE : PED_DISABLE;
+    pedals[i].pressMode  = ((a == checked) ? PED_PRESS_1 : 0);
 
     a = request->arg(String("function2") + String(i+1));
-    pedals[i].function2 = (a == checked) ? PED_ENABLE : PED_DISABLE;
+    pedals[i].pressMode += ((a == checked) ? PED_PRESS_2 : 0);
 
     a = request->arg(String("function3") + String(i+1));
-    pedals[i].function3 = (a == checked) ? PED_ENABLE : PED_DISABLE;
-
-    pedals[i].pressMode  = (pedals[i].function1 == PED_DISABLE ? 0 : PED_PRESS_1);
-    pedals[i].pressMode += (pedals[i].function2 == PED_DISABLE ? 0 : PED_PRESS_2);
-    pedals[i].pressMode += (pedals[i].function3 == PED_DISABLE ? 0 : PED_PRESS_L);
+    pedals[i].pressMode += ((a == checked) ? PED_PRESS_L : 0);
 
     a = request->arg(String("polarity") + String(i+1));
     pedals[i].invertPolarity = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
     a = request->arg(String("map") + String(i+1));
-    pedals[i].mapFunction = a.toInt();
+    pedals[i].analogResponse = a.toInt();
 
     a = request->arg(String("min") + String(i+1));
     pedals[i].expZero = constrain(a.toInt(), 0, ADC_RESOLUTION - 1);
@@ -3162,33 +3165,6 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     a = request->arg(String("max") + String(i+1));
     pedals[i].expMax = constrain(a.toInt(), 0, ADC_RESOLUTION - 1);
 
-    switch (pedals[i].function1) {
-      case PED_BANK_PLUS:
-      case PED_BANK_MINUS:
-        int from = constrain(pedals[i].expZero, 1, BANKS);
-        pedals[i].expZero = (from == pedals[i].expZero ? from : 1);
-        int to   = constrain(pedals[i].expMax,  1, BANKS);
-        pedals[i].expMax  = (to   == pedals[i].expMax ? to : BANKS);
-      break;
-    }
-    switch (pedals[i].function2) {
-      case PED_BANK_PLUS:
-      case PED_BANK_MINUS:
-        int from = constrain(pedals[i].expZero, 1, BANKS);
-        pedals[i].expZero = (from == pedals[i].expZero ? from : 1);
-        int to   = constrain(pedals[i].expMax,  1, BANKS);
-        pedals[i].expMax  = (to   == pedals[i].expMax ? to : BANKS);
-      break;
-    }
-    switch (pedals[i].function3) {
-      case PED_BANK_PLUS:
-      case PED_BANK_MINUS:
-        int from = constrain(pedals[i].expZero, 1, BANKS);
-        pedals[i].expZero = (from == pedals[i].expZero ? from : 1);
-        int to   = constrain(pedals[i].expMax,  1, BANKS);
-        pedals[i].expMax  = (to   == pedals[i].expMax ? to : BANKS);
-      break;
-    }
     if (pedals[i].expMax < pedals[i].expZero) {
       int t;
       t = pedals[i].expMax;
@@ -3881,7 +3857,7 @@ void http_setup() {
   httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
   httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
-  httpServer.serveStatic("/js/uploader.js",             SPIFFS, "/js/uploader.js").setDefaultFile("/js/uploader.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json").setDefaultFile("/schema.json").setCacheControl("max-age=600");
   httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
   httpServer.on("/",                            http_handle_root);

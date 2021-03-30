@@ -143,7 +143,7 @@ void leds_update(byte type, byte channel, byte data1, byte data2, byte bank)
 {
     action *act = actions[bank];
     while (act != nullptr) {
-      if (act->midiChannel == channel && pedals[act->pedal].function1 == PED_NONE) {
+      if (act->midiChannel == channel) {
         switch (act->midiMessage) {
 
           case PED_PROGRAM_CHANGE:
@@ -468,7 +468,7 @@ unsigned int map_analog(byte p, unsigned int value)
   p = constrain(p, 0, PEDALS - 1);
   value = constrain(value, pedals[p].expZero, pedals[p].expMax);                  // make sure that the analog value is between the minimum and maximum value
   value = map2(value, pedals[p].expZero, pedals[p].expMax, 0, ADC_RESOLUTION - 1); // map the value from [minimumValue, maximumValue] to [0, ADC_RESOLUTION-1]
-  switch (pedals[p].mapFunction) {
+  switch (pedals[p].analogResponse) {
     case PED_LINEAR:
       break;
     case PED_LOG:
@@ -671,9 +671,6 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
 //
 void controller_event_handler_analog(byte pedal, int value)
 {
-  switch (pedals[pedal].function1) {
-
-    case PED_ENABLE: {
       bool    global = true;
       action *act = actions[0];
       while (act != nullptr) {
@@ -752,30 +749,6 @@ void controller_event_handler_analog(byte pedal, int value)
           act = actions[currentBank];
         }
       }
-      }
-      break;
-
-    case PED_BANK_PLUS:
-    case PED_BANK_MINUS:
-      currentBank = map2(value, 0, ADC_RESOLUTION - 1, constrain(pedals[pedal].expZero - 1, 0, BANKS - 1), constrain(pedals[pedal].expMax - 1, 0, BANKS - 1));
-      currentBank = constrain(currentBank, 0, BANKS - 1);
-      if (repeatOnBankSwitch)
-        midi_send(lastMIDIMessage[currentBank].midiMessage,
-                  lastMIDIMessage[currentBank].midiCode,
-                  lastMIDIMessage[currentBank].midiValue,
-                  lastMIDIMessage[currentBank].midiChannel,
-                  true,
-                  0, MIDI_RESOLUTION - 1,
-                  currentBank, pedal);
-      leds_refresh();
-      break;
-
-    case PED_BPM_PLUS:
-    case PED_BPM_MINUS:
-      bpm = map2(value, 0, MIDI_RESOLUTION, 40, 300);
-      MTC.setBpm(bpm);
-      break;
-  }
 }
 
 
@@ -1021,50 +994,28 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 {
   byte p = constrain(button->getId() / 10 - 1, 0, PEDALS - 1);
   byte i = constrain(button->getId() % 10 - 1, 0, LADDER_STEPS - 1);
-  byte f = PED_NONE;
 
   DPRINT("Pedal: %d     Button: %d    EventType: %d     ButtonState: %d\n", p, i, eventType, buttonState);
 
-  if (pedals[p].pressMode == PED_DISABLE) return;
+  if (pedals[p].pressMode == 0) return;
 
-  if (pedals[p].pressMode == PED_PRESS_1 && pedals[p].function1 != PED_ENABLE) {
-    switch (eventType) {
-      case AceButton::kEventPressed:
-        f = pedals[p].function1;
-        break;
-      case AceButton::kEventDoubleClicked:
-      case AceButton::kEventLongPressed:
-      case AceButton::kEventReleased:
-      case AceButton::kEventClicked:
-      case AceButton::kEventRepeatPressed:
-        return;
-    }
-  }
-  else {
-    switch (eventType) {
-      case AceButton::kEventClicked:
-        f = pedals[p].function1;
-        break;
-      case AceButton::kEventDoubleClicked:
-        f = pedals[p].function2;
-        break;
-      case AceButton::kEventLongPressed:
-        f = pedals[p].function3;
-        break;
-      case AceButton::kEventPressed:
-      case AceButton::kEventReleased:
-      case AceButton::kEventRepeatPressed:
-        if (pedals[p].function1 != PED_ENABLE) return;
-        //if (pedals[p].function2 != PED_ENABLE) return;
-        //if (pedals[p].function3 != PED_ENABLE) return;
-        f = PED_ENABLE;
-        break;
-    }
-  }
+  switch (eventType) {
+    case AceButton::kEventClicked:
+    case AceButton::kEventPressed:
+    case AceButton::kEventReleased:
+    case AceButton::kEventRepeatPressed:
+      if (!IS_SINGLE_PRESS_ENABLED(pedals[p].pressMode)) return;
+      break;
 
-  switch (f) {
+    case AceButton::kEventDoubleClicked:
+      if (!IS_DOUBLE_PRESS_ENABLED(pedals[p].pressMode)) return;
+      break;
 
-    case PED_ENABLE: {
+    case AceButton::kEventLongPressed:
+      if (!IS_LONG_PRESS_ENABLED(pedals[p].pressMode)) return;
+      break;
+   }
+
       bool    global = true;
       action *act = actions[0];
       while (act != nullptr) {
@@ -1229,9 +1180,6 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
           act = actions[currentBank];
         }
       }
-      break;
-    }
-  }
 }
 
 
@@ -1259,20 +1207,7 @@ void controller_setup()
 
   // Build new MIDI controllers setup
   for (byte i = 0; i < PEDALS; i++) {
-    DPRINT("Pedal %2d     ", i + 1);
-    switch (pedals[i].function1) {
-      case PED_ENABLE:      DPRINT("ACTIONS   "); break;
-      default:               DPRINT("          "); break;
-    }
-    switch (pedals[i].function2) {
-      case PED_ENABLE:      DPRINT("ACTIONS   "); break;
-      default:               DPRINT("          "); break;
-    }
-    switch (pedals[i].function3) {
-      case PED_ENABLE:      DPRINT("ACTIONS   "); break;
-      default:               DPRINT("          "); break;
-    }
-    DPRINT("   ");
+    DPRINT("Pedal %2d     %s   ", i + 1, pedalPressModeName[pedals[i].pressMode]);
     switch (pedals[i].mode) {
       case PED_MOMENTARY1:  DPRINT("MOMENTARY1"); break;
       case PED_MOMENTARY2:  DPRINT("MOMENTARY2"); break;

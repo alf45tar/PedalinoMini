@@ -1,0 +1,327 @@
+{
+    "properties": {
+
+        "Globals": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 1,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "Hostname": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 32
+                    },
+                    "BootMode": {
+                        "type": "integer",
+                        "enum": [1, 2, 3, 4, 5]
+                    },
+                    "SSID": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 32
+                    },
+                    "WiFiPassword": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 32
+                    },
+                    "SSIDsoftAP": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 32
+                    },
+                    "PasswordSoftAP": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 32
+                    },
+                    "HTTPUsername": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 32
+                    },
+                    "HTTPPassword": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 32
+                    },
+                    "Theme": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 32
+                    },
+                    "PressTime": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                    },
+                    "DoublePressTime": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                    },
+                    "LongPressTime": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                    },
+                    "RepeatPressTime": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                    },
+                    "EncoderSesitivity": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10
+                    },
+                    "TapDanceMode": {
+                        "type": "boolean"
+                    },
+                    "RepeatOnBankSwitch": {
+                        "type": "boolean"
+                    },
+                    "TapDanceBank": {
+                        "type": "boolean"
+                    },
+                    "LedsOnBrightness": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "LedsOffBrightness": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    }
+                }
+            }
+        },
+
+
+        "Ladder": {
+            "type": "array",
+            "minItems": 7,
+            "maxItems": 7,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "Step": {
+                        "type": "integer",
+                        "enum": [1, 2, 3, 4, 5, 6, 7]
+                    },
+                    "Level": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1023
+                    }
+                }
+            }
+        },
+
+
+        "BankNames": {
+            "type": "array",
+            "minItems": 21,
+            "maxItems": 21,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "Bank": {
+                        "type": "integer",
+                        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                    },
+                    "Name": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 10
+                    }
+                }
+            }
+        },
+
+        "Actions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "Bank": {
+                        "type": "integer",
+                        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                    },
+                    "Pedal": {
+                        "type": "integer",
+                        "enum": [1, 2, 3, 4, 5, 6, 7, 8]
+                    },
+                    "Button": {
+                        "type": "integer",
+                        "enum": [1, 2, 3, 4, 5, 6]
+                    },
+                    "Led": {
+                        "type": "integer",
+                        "minLength": 0,
+                        "maxLength": 255
+                    },
+                    "Color0": {
+                        "type": "string"
+                    },
+                    "Color1": {
+                        "type": "string"
+                    },
+                    "NameOff": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 10
+                    },
+                    "NameOn": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 10
+                    },
+                    "Event": {
+                        "type": "integer"
+                    },
+                    "Message": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "Channel": {
+                        "type": "integer",
+                        "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    },
+                    "Code": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "Value1": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "Value2": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    }
+                }
+            }
+        },
+
+
+        "Sequences": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "Sequence": {
+                        "type": "integer",
+                        "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                    },
+                    "Step": {
+                        "type": "integer",
+                        "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    },
+                    "Message": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "Channel": {
+                        "type": "integer",
+                        "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    },
+                    "Code": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "Value": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    }
+                }
+            }
+        },
+
+        "Interfaces": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "Interface": {
+                        "type": "integer",
+                        "enum": [0, 1, 2, 3, 4, 5, 6]
+                    },
+                    "Name": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 11
+                    },
+                    "In": {
+                        "type": "boolean"
+                    },
+                    "Out": {
+                        "type": "boolean"
+                    },
+                    "Thru": {
+                        "type": "boolean"
+                    },
+                    "Clock": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+
+        "Pedals": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 8,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "Pedal": {
+                        "type": "integer",
+                        "enum": [1, 2, 3, 4, 5, 6, 7, 8]
+                    },
+                    "Mode": {
+                        "type": "string",
+                        "enum": ["None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder"]
+                    },
+                    "InvertPolarity": {
+                        "type": "boolean"
+                    },
+                    "PressMode": {
+                        "type": "string",
+                        "enum": ["None", "1", "2", "12", "L", "1L","2L", "12L"]
+                    },
+                    "AnalogResponse": {
+                        "type": "string",
+                        "enum": ["Linear", "Log", "Antilog"]
+                    },
+                    "Min": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1023
+                    },
+                    "Max": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1023
+                    },
+                    "AutoSensing": {
+                        "type": "boolean"
+                    }
+                }
+
+            }
+        }
+    }
+}

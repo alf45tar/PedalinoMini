@@ -1027,7 +1027,7 @@ void drawFrame1(int16_t x, int16_t y)
           }
           name = String((banks[currentBank][p].pedalName[0] == ':') ? &banks[currentBank][p].pedalName[1] : banks[currentBank][p].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p][0]));
-          if (pedals[p].function1 == PED_ENABLE && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
+          if (IS_SINGLE_PRESS_ENABLED(pedals[p].pressMode) && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
             sprite.fillRect((sprite.width() / (PEDALS / 2 - 1)) * p - offsetBackground * display.textWidth(name) / 2 + offsetText + x,
                               0 + y,
                               display.textWidth(name) + 1,
@@ -1057,7 +1057,7 @@ void drawFrame1(int16_t x, int16_t y)
           }
           name = String((banks[currentBank][p + PEDALS / 2].pedalName[0] == ':') ? &banks[currentBank][p + PEDALS / 2].pedalName[1] : banks[currentBank][p + PEDALS / 2].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p + PEDALS / 2][0]));
-          if (pedals[p + PEDALS / 2].function1 == PED_ENABLE && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
+          if (IS_SINGLE_PRESS_ENABLED(pedals[p + PEDALS / 2].pressMode) && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
             sprite.fillRect((sprite.width() / (PEDALS / 2 - 1)) * p - offsetBackground * display.textWidth(name) / 2 + offsetText + x,
                               sprite.height() - 20 + y,
                               display.textWidth(name) + 1,
@@ -1091,14 +1091,14 @@ void drawFrame1(int16_t x, int16_t y)
           sprite.drawString(name, sprite.width() - 1 + x, y);
           */
           for (byte p = 0; p < PEDALS/2; p++) {
-            if ((pedals[p].function1 == PED_ENABLE) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
+            if (IS_SINGLE_PRESS_ENABLED(pedals[p].pressMode) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
               display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, 25 + y, 55, 20, constrain(map2(currentMIDIValue[currentBank][p][0],
                                                                                                        banks[currentBank][p].midiValue1,
                                                                                                        banks[currentBank][p].midiValue2,
                                                                                                        0, 100),
                                                                                                    0, 100));
             }
-            if ((pedals[p + PEDALS / 2].function1 == PED_ENABLE) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
+            if (IS_SINGLE_PRESS_ENABLED(pedals[p + PEDALS / 2].pressMode) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
               display_progress_bar_sprite(sprite, (sprite.width() / (PEDALS / 2)) * p + 2 + x, sprite.height() - 22 - 25 + y, 55, 20, constrain(map2(currentMIDIValue[currentBank][p + PEDALS / 2][0],
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue1,
                                                                                                        banks[currentBank][p + PEDALS / 2].midiValue2,

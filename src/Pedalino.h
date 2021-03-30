@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.1.5"
+#define VERSION         "2.2.0"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -196,6 +196,8 @@ using namespace ace_button;
 #define PED_LATCH2              8
 #define PED_LADDER              9
 
+const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder"};
+
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
 #define PED_PRESS_L             4
@@ -203,6 +205,12 @@ using namespace ace_button;
 #define PED_PRESS_1_L           PED_PRESS_1 + PED_PRESS_L
 #define PED_PRESS_2_L           PED_PRESS_2 + PED_PRESS_L
 #define PED_PRESS_1_2_L         PED_PRESS_1 + PED_PRESS_2 + PED_PRESS_L
+
+#define IS_SINGLE_PRESS_ENABLED(x)         (((x)&1)==1)
+#define IS_DOUBLE_PRESS_ENABLED(x)         (((x)&2)==2)
+#define IS_LONG_PRESS_ENABLED(x)           (((x)&4)==4)
+
+const char *pedalPressModeName[] = {"None", "1", "2", "12", "L", "1L","2L", "12L"};
 
 //#define PED_MIDI                1
 //#define PED_ACTIONS             PED_MIDI
@@ -227,6 +235,8 @@ using namespace ace_button;
 #define PED_LINEAR              0
 #define PED_LOG                 1
 #define PED_ANTILOG             2
+
+const char *pedalAnalogResponse[] = {"Linear", "Log", "Antilog"};
 
 #define PED_USBMIDI             0
 #define PED_DINMIDI             1
@@ -302,17 +312,6 @@ struct bank {
 };
 
 struct pedal {
-  byte                   function1;       /*  1 = None (use Actions)
-                                              2 = Bank+
-                                              3 = Bank-
-                                              4 = Start
-                                              5 = Stop
-                                              6 = Continue
-                                              7 = Tap
-                                              8 = BPM+
-                                              9 = BPM- */
-  byte                   function2;
-  byte                   function3;
   byte                   autoSensing;     /* 0 = disable
                                              1 = enable   */
   byte                   mode;            /* 1 = none
@@ -332,7 +331,7 @@ struct pedal {
                                              6 = double and long click
                                              7 = single, double and long click */
   byte                   invertPolarity;
-  byte                   mapFunction;
+  byte                   analogResponse;
   int                    expZero;           // [0, ADC_RESOLUTION-1]
   int                    expMax;            // [0, ADC_RESOLUTION-1]
   int                    pedalValue[2];     // [0, ADC_RESOLUTION-1]

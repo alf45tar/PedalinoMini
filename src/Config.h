@@ -65,7 +65,7 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
     jo["LedsOffBrightness"]   = ledsOffBrightness;
 
     JsonArray jladder = jdoc.createNestedArray("Ladder");
-    for (byte s = 0; s < LADDER_STEPS; s++) {
+    for (byte s = 0; s < LADDER_STEPS + 1; s++) {
       JsonObject jo = jladder.createNestedObject();
       jo["Step"]            = s + 1;
       jo["Level"]           = ladderLevels[s];
@@ -77,16 +77,13 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
     for (byte p = 0; p < PEDALS; p++) {
       JsonObject jo = jpedals.createNestedObject();
       jo["Pedal"]           = p + 1;
-      jo["Function1"]       = pedals[p].function1;
-      jo["Function2"]       = pedals[p].function2;
-      jo["Function3"]       = pedals[p].function3;
-      jo["AutoSensing"]     = pedals[p].autoSensing;
-      jo["Mode"]            = pedals[p].mode;
-      jo["PressMode"]       = pedals[p].pressMode;
-      jo["InvertPolarity"]  = pedals[p].invertPolarity;
-      jo["MapFunction"]     = pedals[p].mapFunction;
+      jo["Mode"]            = pedalModeName[pedals[p].mode];
+      jo["InvertPolarity"]  = (pedals[p].invertPolarity == PED_ENABLE);
+      jo["PressMode"]       = pedalPressModeName[pedals[p].pressMode];
+      jo["AnalogResponse"]     = pedalAnalogResponse[pedals[p].analogResponse];
       jo["Min"]             = pedals[p].expZero;
       jo["Max"]             = pedals[p].expMax;
+      jo["AutoSensing"]     = (pedals[p].autoSensing == PED_ENABLE);
     }
   }
 
@@ -98,20 +95,23 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
       jo["Name"]              = banknames[b];
     }
 
+
     JsonArray jactions = jdoc.createNestedArray("Actions");
     for (byte b = 0; b < BANKS; b++) {
       action *act = actions[b];
       while (act != nullptr) {
+        char color[8];
         JsonObject jo = jactions.createNestedObject();
-        jo["Bank"]            = b + 1;
+        jo["Bank"]            = b;
         jo["Pedal"]           = act->pedal + 1;
         jo["Button"]          = act->button + 1;
         jo["Led"]             = act->led + 1;
-        jo["Color0"]          = act->color0;
-        jo["Color1"]          = act->color1;
+        snprintf(color, 8, "#%06x", act->color0);
+        jo["Color0"]          = color;
+        snprintf(color, 8, "#%06x", act->color1);
+        jo["Color1"]          = color;
         jo["NameOff"]         = act->tag0;
         jo["NameOn"]          = act->tag1;
-        jo["Name"]            = act->name;
         jo["Event"]           = act->event;
         jo["Message"]         = act->midiMessage;
         jo["Channel"]         = act->midiChannel;
@@ -129,10 +129,10 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
       JsonObject jo = jinterfaces.createNestedObject();
       jo["Interface"]       = i + 1;
       jo["Name"]            = interfaces[i].name;
-      jo["In"]              = interfaces[i].midiIn;
-      jo["Out"]             = interfaces[i].midiOut;
-      jo["Thru"]            = interfaces[i].midiThru;
-      jo["Clock"]           = interfaces[i].midiClock;
+      jo["In"]              = (interfaces[i].midiIn    == PED_ENABLE);
+      jo["Out"]             = (interfaces[i].midiOut   == PED_ENABLE);
+      jo["Thru"]            = (interfaces[i].midiThru  == PED_ENABLE);
+      jo["Clock"]           = (interfaces[i].midiClock == PED_ENABLE);
     }
   }
 
@@ -258,16 +258,33 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           int p = jo["Pedal"];
           p--;
           p = constrain(p, 0, PEDALS - 1);
-          pedals[p].function1       = jo["Function1"];
-          pedals[p].function2       = jo["Function2"];
-          pedals[p].function3       = jo["Function3"];
-          pedals[p].autoSensing     = jo["AutoSensing"];
-          pedals[p].mode            = jo["Mode"];
-          pedals[p].pressMode       = jo["PressMode"];
-          pedals[p].invertPolarity  = jo["InvertPolarity"];
-          pedals[p].mapFunction     = jo["MapFunction"];
+
+          pedals[p].mode = PED_NONE;
+          for (byte m = 1; m <= PED_LADDER; m++)
+            if (pedalModeName[m] == jo["Mode"]) {
+              pedals[p].mode = m;
+              break;
+            }
+
+          pedals[p].invertPolarity  = (jo["InvertPolarity"] ? PED_ENABLE : PED_DISABLE);
+
+          pedals[p].pressMode = 0;
+          for (byte m = 0; m <= PED_PRESS_1_2_L; m++)
+            if (pedalPressModeName[m] == jo["PressMode"]) {
+              pedals[p].pressMode = m;
+              break;
+            }
+
+          pedals[p].analogResponse = PED_LINEAR;
+          for (byte m = 0; m <= PED_ANTILOG; m++)
+            if (pedalAnalogResponse[m] == jo["AnalogResponse"]) {
+              pedals[p].analogResponse = m;
+              break;
+            }
+
           pedals[p].expZero         = jo["Min"];
           pedals[p].expMax          = jo["Max"];
+          pedals[p].autoSensing     = (jo["AutoSensing"] ? PED_ENABLE : PED_DISABLE);
         }
       }
     }
@@ -286,6 +303,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
         delete_actions();
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
+          unsigned int red, green, blue;
           int b = jo["Bank"];
           b = constrain(b, 0, BANKS - 1);
           action *act = actions[b];
@@ -301,11 +319,12 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
             actions[b]->button         = constrain(actions[b]->button, 0, LADDER_STEPS - 1);
             actions[b]->led            = jo["Led"];
             actions[b]->led--;
-            actions[b]->color0         = jo["Color0"];
-            actions[b]->color1         = jo["Color1"];
+            sscanf(jo["Color0"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
+            actions[b]->color0         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
+            sscanf(jo["Color1"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
+            actions[b]->color1         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
             strlcpy(actions[b]->tag0,    jo["NameOff"] | "", sizeof(actions[b]->tag0));
-            strlcpy(actions[b]->tag1,    jo["NameOn"] | "",  sizeof(actions[b]->tag1));
-            strlcpy(actions[b]->name,    jo["Name"] | "",    sizeof(actions[b]->name));
+            strlcpy(actions[b]->tag1,    jo["NameOn"]  | "", sizeof(actions[b]->tag1));
             actions[b]->event          = jo["Event"];
             actions[b]->midiMessage    = jo["Message"];
             actions[b]->midiChannel    = jo["Channel"];
@@ -328,11 +347,12 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
                   act->button         = constrain(act->button, 0, LADDER_STEPS - 1);
                   act->led            = jo["Led"];
                   act->led--;
-                  act->color0         = jo["Color0"];
-                  act->color1         = jo["Color1"];
+                  sscanf(jo["Color0"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
+                  act->color0         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
+                  sscanf(jo["Color1"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
+                  act->color1         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
                   strlcpy(act->tag0,    jo["NameOff"] | "", sizeof(act->tag0));
-                  strlcpy(act->tag1,    jo["NameOn"] | "",  sizeof(act->tag1));
-                  strlcpy(act->name,    jo["Name"] | "",    sizeof(act->name));
+                  strlcpy(act->tag1,    jo["NameOn"]  | "", sizeof(act->tag1));
                   act->event          = jo["Event"];
                   act->midiMessage    = jo["Message"];
                   act->midiChannel    = jo["Channel"];
@@ -354,10 +374,10 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           i--;
           i = constrain(i, 0, INTERFACES - 1);
           strlcpy(interfaces[i].name, jo["Name"] | "", sizeof(interfaces[i].name));
-          interfaces[i].midiIn        = jo["In"];
-          interfaces[i].midiOut       = jo["Out"];
-          interfaces[i].midiThru      = jo["Thru"];
-          interfaces[i].midiClock     = jo["Clock"];
+          interfaces[i].midiIn        = (jo["In"]    ? PED_ENABLE : PED_DISABLE);
+          interfaces[i].midiOut       = (jo["Out"]   ? PED_ENABLE : PED_DISABLE);
+          interfaces[i].midiThru      = (jo["Thru"]  ? PED_ENABLE : PED_DISABLE);
+          interfaces[i].midiClock     = (jo["Clock"] ? PED_ENABLE : PED_DISABLE);
         }
       }
     }
@@ -415,10 +435,7 @@ void load_factory_default()
 
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {
-    pedals[p] = {PED_ENABLE,    // global function on single press
-                 PED_DISABLE,    // global function on double press
-                 PED_DISABLE,    // global function on long press
-                 PED_DISABLE,    // autosensing
+    pedals[p] = {PED_DISABLE,    // autosensing
                  (p < PEDALS/2) ? PED_MOMENTARY1 : PED_JOG_WHEEL, // mode
                  PED_PRESS_1,    // press mode
                  PED_DISABLE,    // invert polarity
@@ -434,10 +451,7 @@ void load_factory_default()
   }
 #else
   for (byte p = 0; p < PEDALS; p++)
-    pedals[p] = {PED_ENABLE,    // global function on single press
-                 PED_DISABLE,    // global function on double press
-                 PED_DISABLE,    // global function on long press
-                 PED_DISABLE,    // autosensing
+    pedals[p] = {PED_DISABLE,    // autosensing
                  PED_MOMENTARY1, // mode
                  PED_PRESS_1,    // press mode
                  PED_DISABLE,    // invert polarity
@@ -451,9 +465,6 @@ void load_factory_default()
                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
                 };
 
-  pedals[PEDALS-1].function1 = PED_ENABLE;
-  pedals[PEDALS-1].function2 = PED_ENABLE;
-  pedals[PEDALS-1].function3 = PED_ENABLE;
   pedals[PEDALS-1].pressMode = PED_PRESS_1_2_L;
 #ifdef TTGO_T_DISPLAY
   action *act;
