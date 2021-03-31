@@ -80,7 +80,7 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
       jo["Mode"]            = pedalModeName[pedals[p].mode];
       jo["InvertPolarity"]  = (pedals[p].invertPolarity == PED_ENABLE);
       jo["PressMode"]       = pedalPressModeName[pedals[p].pressMode];
-      jo["AnalogResponse"]     = pedalAnalogResponse[pedals[p].analogResponse];
+      jo["AnalogResponse"]  = pedalAnalogResponse[pedals[p].analogResponse];
       jo["Min"]             = pedals[p].expZero;
       jo["Max"]             = pedals[p].expMax;
       jo["AutoSensing"]     = (pedals[p].autoSensing == PED_ENABLE);
@@ -112,8 +112,93 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
         jo["Color1"]          = color;
         jo["NameOff"]         = act->tag0;
         jo["NameOn"]          = act->tag1;
-        jo["Event"]           = act->event;
-        jo["Message"]         = act->midiMessage;
+        jo["Event"]           = eventName[act->event];
+        switch (act->midiMessage) {
+          case PED_EMPTY:
+            jo["Message"] = "None";
+            break;
+          case PED_PROGRAM_CHANGE:
+            jo["Message"] = "Program Change";
+            break;
+          case PED_CONTROL_CHANGE:
+            jo["Message"] = "Control Change";
+            break;
+          case PED_NOTE_ON:
+            jo["Message"] = "Note On";
+            break;
+          case PED_NOTE_OFF:
+            jo["Message"] = "Note Off";
+            break;
+          case PED_BANK_SELECT_INC:
+            jo["Message"] = "Bank Select+";
+            break;
+          case PED_BANK_SELECT_DEC:
+            jo["Message"] = "Bank Select-";
+            break;
+          case PED_PROGRAM_CHANGE_INC:
+            jo["Message"] = "Program Change+";
+            break;
+          case PED_PROGRAM_CHANGE_DEC:
+            jo["Message"] = "Program Change-";
+            break;
+          case PED_PITCH_BEND:
+            jo["Message"] = "Pitch Bend";
+            break;
+          case PED_CHANNEL_PRESSURE:
+            jo["Message"] = "Channel Pressure";
+            break;
+          case PED_MIDI_START:
+            jo["Message"] = "Midi Start";
+            break;
+          case PED_MIDI_STOP:
+            jo["Message"] = "Midi Stop";
+            break;
+          case PED_MIDI_CONTINUE:
+            jo["Message"] = "Midi Continue";
+            break;
+          case PED_SEQUENCE:
+            jo["Message"] = "Sequence";
+            break;
+          case PED_ACTION_BANK_PLUS:
+            jo["Message"] = "Bank+";
+            break;
+          case PED_ACTION_BANK_MINUS:
+            jo["Message"] = "Bank-";
+            break;
+          case PED_ACTION_START:
+            jo["Message"] = "Start";
+            break;
+          case PED_ACTION_STOP:
+            jo["Message"] = "Stop";
+            break;
+          case PED_ACTION_CONTINUE:
+            jo["Message"] = "Continue";
+            break;
+          case PED_ACTION_TAP:
+            jo["Message"] = "Tap";
+            break;
+          case PED_ACTION_BPM_PLUS:
+            jo["Message"] = "BPM+";
+            break;
+          case PED_ACTION_BPM_MINUS:
+            jo["Message"] = "BPM-";
+            break;
+          case PED_ACTION_PROFILE_PLUS:
+            jo["Message"] = "Profile+";
+            break;
+          case PED_ACTION_PROFILE_MINUS:
+            jo["Message"] = "Profile-";
+            break;
+          case PED_ACTION_DEVICE_INFO:
+            jo["Message"] = "Device Info";
+            break;
+          case PED_ACTION_POWER_ON_OFF:
+            jo["Message"] = "Power On/Off";
+            break;
+          default:
+            jo["Message"] = "None";
+            break;
+        }
         jo["Channel"]         = act->midiChannel;
         jo["Code"]            = act->midiCode;
         jo["Value1"]          = act->midiValue1;
@@ -310,7 +395,6 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           if (act == nullptr) {
             actions[b] = (action*)malloc(sizeof(action));
             assert(actions[b] != nullptr);
-            //if (!actions[b]) return;
             actions[b]->pedal          = jo["Pedal"];
             actions[b]->pedal--;
             actions[b]->pedal          = constrain(actions[b]->pedal, 0, PEDALS - 1);
@@ -325,8 +409,41 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
             actions[b]->color1         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
             strlcpy(actions[b]->tag0,    jo["NameOff"] | "", sizeof(actions[b]->tag0));
             strlcpy(actions[b]->tag1,    jo["NameOn"]  | "", sizeof(actions[b]->tag1));
-            actions[b]->event          = jo["Event"];
-            actions[b]->midiMessage    = jo["Message"];
+            actions[b]->event = PED_EVENT_NONE;
+            for (byte m = 0; m <= PED_EVENT_NONE; m++)
+              if (eventName[m] == jo["Event"]) {
+                actions[b]->event = m;
+                break;
+              }
+            String msg = jo["Message"];
+            if      (msg.equals("None"))              actions[b]->midiMessage = PED_EMPTY;
+            else if (msg.equals("Program Change"))    actions[b]->midiMessage = PED_PROGRAM_CHANGE;
+            else if (msg.equals("Control Change"))    actions[b]->midiMessage = PED_CONTROL_CHANGE;
+            else if (msg.equals("Note On"))           actions[b]->midiMessage = PED_NOTE_ON;
+            else if (msg.equals("Note Off"))          actions[b]->midiMessage = PED_NOTE_OFF;
+            else if (msg.equals("Bank Select+"))      actions[b]->midiMessage = PED_BANK_SELECT_INC;
+            else if (msg.equals("Bank Select-"))      actions[b]->midiMessage = PED_BANK_SELECT_DEC;
+            else if (msg.equals("Program Change+"))   actions[b]->midiMessage = PED_PROGRAM_CHANGE_INC;
+            else if (msg.equals("Program Change-"))   actions[b]->midiMessage = PED_PROGRAM_CHANGE_DEC;
+            else if (msg.equals("Pitch Bend"))        actions[b]->midiMessage = PED_PITCH_BEND;
+            else if (msg.equals("Channel Pressure"))  actions[b]->midiMessage = PED_CHANNEL_PRESSURE;
+            else if (msg.equals("Midi Start"))        actions[b]->midiMessage = PED_MIDI_START;
+            else if (msg.equals("Midi Stop"))         actions[b]->midiMessage = PED_MIDI_STOP;
+            else if (msg.equals("Midi Continue"))     actions[b]->midiMessage = PED_MIDI_CONTINUE;
+            else if (msg.equals("Sequence"))          actions[b]->midiMessage = PED_SEQUENCE;
+            else if (msg.equals("Bank+"))             actions[b]->midiMessage = PED_ACTION_BANK_PLUS;
+            else if (msg.equals("Bank-"))             actions[b]->midiMessage = PED_ACTION_BANK_MINUS;
+            else if (msg.equals("Start"))             actions[b]->midiMessage = PED_ACTION_START;
+            else if (msg.equals("Stop"))              actions[b]->midiMessage = PED_ACTION_STOP;
+            else if (msg.equals("Continue"))          actions[b]->midiMessage = PED_ACTION_CONTINUE;
+            else if (msg.equals("Tap"))               actions[b]->midiMessage = PED_ACTION_TAP;
+            else if (msg.equals("BPM+"))              actions[b]->midiMessage = PED_ACTION_BPM_PLUS;
+            else if (msg.equals("BPM-"))              actions[b]->midiMessage = PED_ACTION_BPM_MINUS;
+            else if (msg.equals("Profile+"))          actions[b]->midiMessage = PED_ACTION_PROFILE_PLUS;
+            else if (msg.equals("Profile-"))          actions[b]->midiMessage = PED_ACTION_PROFILE_MINUS;
+            else if (msg.equals("Device Info"))       actions[b]->midiMessage = PED_ACTION_DEVICE_INFO;
+            else if (msg.equals("Power On/Off"))      actions[b]->midiMessage = PED_ACTION_POWER_ON_OFF;
+            else                                      actions[b]->midiMessage = PED_EMPTY;
             actions[b]->midiChannel    = jo["Channel"];
             actions[b]->midiCode       = jo["Code"];
             actions[b]->midiValue1     = jo["Value1"];
@@ -353,8 +470,41 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
                   act->color1         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
                   strlcpy(act->tag0,    jo["NameOff"] | "", sizeof(act->tag0));
                   strlcpy(act->tag1,    jo["NameOn"]  | "", sizeof(act->tag1));
-                  act->event          = jo["Event"];
-                  act->midiMessage    = jo["Message"];
+                  act->event = PED_EVENT_NONE;
+                  for (byte m = 0; m <= PED_EVENT_NONE; m++)
+                    if (eventName[m] == jo["Event"]) {
+                      act->event = m;
+                      break;
+                    }
+                  String msg = jo["Message"];
+                  if      (msg.equals("None"))              act->midiMessage = PED_EMPTY;
+                  else if (msg.equals("Program Change"))    act->midiMessage = PED_PROGRAM_CHANGE;
+                  else if (msg.equals("Control Change"))    act->midiMessage = PED_CONTROL_CHANGE;
+                  else if (msg.equals("Note On"))           act->midiMessage = PED_NOTE_ON;
+                  else if (msg.equals("Note Off"))          act->midiMessage = PED_NOTE_OFF;
+                  else if (msg.equals("Bank Select+"))      act->midiMessage = PED_BANK_SELECT_INC;
+                  else if (msg.equals("Bank Select-"))      act->midiMessage = PED_BANK_SELECT_DEC;
+                  else if (msg.equals("Program Change+"))   act->midiMessage = PED_PROGRAM_CHANGE_INC;
+                  else if (msg.equals("Program Change-"))   act->midiMessage = PED_PROGRAM_CHANGE_DEC;
+                  else if (msg.equals("Pitch Bend"))        act->midiMessage = PED_PITCH_BEND;
+                  else if (msg.equals("Channel Pressure"))  act->midiMessage = PED_CHANNEL_PRESSURE;
+                  else if (msg.equals("Midi Start"))        act->midiMessage = PED_MIDI_START;
+                  else if (msg.equals("Midi Stop"))         act->midiMessage = PED_MIDI_STOP;
+                  else if (msg.equals("Midi Continue"))     act->midiMessage = PED_MIDI_CONTINUE;
+                  else if (msg.equals("Sequence"))          act->midiMessage = PED_SEQUENCE;
+                  else if (msg.equals("Bank+"))             act->midiMessage = PED_ACTION_BANK_PLUS;
+                  else if (msg.equals("Bank-"))             act->midiMessage = PED_ACTION_BANK_MINUS;
+                  else if (msg.equals("Start"))             act->midiMessage = PED_ACTION_START;
+                  else if (msg.equals("Stop"))              act->midiMessage = PED_ACTION_STOP;
+                  else if (msg.equals("Continue"))          act->midiMessage = PED_ACTION_CONTINUE;
+                  else if (msg.equals("Tap"))               act->midiMessage = PED_ACTION_TAP;
+                  else if (msg.equals("BPM+"))              act->midiMessage = PED_ACTION_BPM_PLUS;
+                  else if (msg.equals("BPM-"))              act->midiMessage = PED_ACTION_BPM_MINUS;
+                  else if (msg.equals("Profile+"))          act->midiMessage = PED_ACTION_PROFILE_PLUS;
+                  else if (msg.equals("Profile-"))          act->midiMessage = PED_ACTION_PROFILE_MINUS;
+                  else if (msg.equals("Device Info"))       act->midiMessage = PED_ACTION_DEVICE_INFO;
+                  else if (msg.equals("Power On/Off"))      act->midiMessage = PED_ACTION_POWER_ON_OFF;
+                  else                                      act->midiMessage = PED_EMPTY;
                   act->midiChannel    = jo["Channel"];
                   act->midiCode       = jo["Code"];
                   act->midiValue1     = jo["Value1"];

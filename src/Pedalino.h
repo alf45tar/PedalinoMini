@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.2.0"
+#define VERSION         "2.2.1"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -228,9 +228,13 @@ const char *pedalPressModeName[] = {"None", "1", "2", "12", "L", "1L","2L", "12L
 #define PED_EVENT_CLICK         AceButton::kEventClicked
 #define PED_EVENT_DOUBLE_CLICK  AceButton::kEventDoubleClicked
 #define PED_EVENT_LONG_PRESS    AceButton::kEventLongPressed
-#define PED_EVENT_MOVE          6
-#define PED_EVENT_JOG           7
-#define PED_EVENT_NONE        255
+#define PED_EVENT_REPEAT        AceButton::kEventRepeatPressed
+#define PED_EVENT_LONG_RELEASED AceButton::kEventLongReleased
+#define PED_EVENT_MOVE          7
+#define PED_EVENT_JOG           8
+#define PED_EVENT_NONE          9
+
+const char *eventName[] = {"Press", "Release", "Click", "Double Click", "Long Press", "Repeat", "Long Released", "Move", "Jog", "None"};
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
