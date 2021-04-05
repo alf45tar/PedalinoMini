@@ -60,24 +60,20 @@ New features and bug corrections will be released to this public repository when
 
   _Select the level of sponsorship which best fit to you. Sponsorship starts from $1 per month._
 
-  <iframe src="https://ghbtns.com/github-btn.html?user=alf45tar&type=sponsor&size=large" frameborder="0" scrolling="0" width="180" height="30" title="GitHub"></iframe>
-
-  Goal is 12 sponsors in total. Starting point is 2 sponsors as of April 5th, 2021.
+  >Goal is 12 sponsors in total. Starting point is 2 sponsors as of April 5th, 2021.
 
 - **Double the stars**
 
   _Add a star to the project if you do not want be a sponsor._
 
-  <iframe src="https://ghbtns.com/github-btn.html?user=alf45tar&repo=PedalinoMini&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
-
-  Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
+  >Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
 
 - **3 months from now**
   _Be patience if a star is still too much for you._
 
-  Remaining days <iframe src="https://free.timeanddate.com/countdown/i7qww1o7/n48/cf12/cm0/cu5/ct0/cs1/cac000/co0/cr0/ss0/cac000/cpc000/pct/tc000/fs100/szw320/szh135/iso2021-06-04T00:00:00/pd2" allowtransparency="true" frameborder="0" width="154" height="30"></iframe>
+  >Goal is reached on July 4th, 2021.
 
-When the goal is reached sponsors will continue to receive in advance new versions and new goals will set.
+When one of the previous goal will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
 Included in the sponsors only version as of Apr 5th, 2021:
 
