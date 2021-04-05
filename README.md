@@ -64,13 +64,13 @@ New features and bug corrections will be released to this public repository when
 
 - **Double the stars**
 
-  _Add a star to the project if you do not want be a sponsor._
+  _Add a star to the project if you don't want be a sponsor._
 
   >Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
 
 - **3 months from now**
 
-  _Be patience if a star is still too much for you._
+  _Be patience if you are not ready to add a star._
 
   >Goal is reached on July 4th, 2021.
 
