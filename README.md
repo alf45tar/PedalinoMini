@@ -50,6 +50,40 @@ You can change the presets of your guitar rig, turn old MIDI equipment into some
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
 - OTA (Over the Air) firmware update or via HTTP (<http://pedalino.local/update>)
 
+## Sponsors
+
+New features, bug corrections, priority reply will be offered at zero-day to **sponsors only**. Sponsors will have access to a private repository.
+
+New features and bug corrections will be released to this public repository when one of the following goals is met (whichever come first):
+
+- **10 new sponsors**
+
+  _Select the level of sponsorship which best fit to you. Sponsorship starts from $1 per month._
+
+  <iframe src="https://ghbtns.com/github-btn.html?user=alf45tar&type=sponsor&size=large" frameborder="0" scrolling="0" width="180" height="30" title="GitHub"></iframe>
+
+  Goal is 12 sponsors in total. Starting point is 2 sponsors as of April 5th, 2021.
+
+- **Double the stars**
+
+  _Add a star to the project if you do not want be a sponsor._
+
+  <iframe src="https://ghbtns.com/github-btn.html?user=alf45tar&repo=PedalinoMini&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
+
+  Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
+
+- **3 months from now**
+  _Be patience if a star is still too much for you._
+
+  Remaining days <iframe src="https://free.timeanddate.com/countdown/i7qww1o7/n48/cf12/cm0/cu5/ct0/cs1/cac000/co0/cr0/ss0/cac000/cpc000/pct/tc000/fs100/szw320/szh135/iso2021-06-04T00:00:00/pd2" allowtransparency="true" frameborder="0" width="154" height="30"></iframe>
+
+When the goal is reached sponsors will continue to receive in advance new versions and new goals will set.
+
+Included in the sponsors only version as of Apr 5th, 2021:
+
+- Detection and actions triggered on REPEAT PRESSED and LONG RELEASE event.
+- Latest Bootstrap 5 release and WebUI themes
+
 ## Bill of materials
 
 The shortest bill of materials ever: an ESP32 board and a OLED display. That's it.
@@ -84,7 +118,7 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 2. Install Git
     - On Windows, install git from https://git-scm.com/download/win
     - On macOS, install Command Line Tools for Xcode running `xcode-select --install` via Terminal. Remember to run the command every time you update your macOS.
-2. In VSCode run the following commands:
+3. In VSCode run the following commands:
     - from View->Command Palette (Ctrl+Shift+P)
         - Git: Clone
         - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
@@ -195,9 +229,9 @@ Once PedalinoMini™ is connected to a WiFI network and you are connected to the
 ____________|Description
 :-----------|:----------
 Mode|Select one of the following: NONE, MOMENTARY, LATCH, ANALOG, JOG WHEEL, MOMENTARY 2, MOMENTARY 3, LATCH 2, LADDER.
-Singles Press|Define a global function for the pedal when single pressed (PRESS or CLICK event). Global pedal function override any action and it is used in any bank of the profile.<br>Select Actions to use bank specific actions.<br>Select Disable here to disable PRESS, RELEASE and CLICK events.<br>The global function is triggered on PRESS if Double Press and Long Press are disabled here and no action exists on Double Press or Long Press, otherwise on CLICK.
-Double Press|Define a global function for the pedal when double pressed. Global pedal function override any action and it is used in any bank of the profile.<br>Select Actions to use bank specific actions.<br>Select Disable here to disable DOUBLE CLICK events.<br>If double press is enabled CLICK event is postponed until double press timeout (by default 400ms).
-Long Press|Define a global function for the pedal when keep presssed (by default 500 ms). Global pedal function override any action and it is used in any bank of the profile.<br>Select Disable here to disable LONG PRESS events.
+Singles Press|Select Enable/Disable here to enable/disable PRESS, RELEASE and CLICK events.<br>CLICK event is detected after a PRESS and RELEASE event.
+Double Press|Select Enable/Disable here to enable/disable DOUBLE CLICK events.<br>If double press is enabled CLICK event is postponed until double press timeout (by default 400ms).
+Long Press|Select Enable/Disable here to enable/disable LONG PRESS, REPEAT PRESSED and LONG RELEASE events.<br>LONG PRESS event is detected after a PRESS event with no RELEASE event within the long press timeout (by default 500ms).<br>After a LONG PRESS event a REPEAT PRESSED event is triggered every repeat press timeout (by default 500ms) until the button is keep pressed.<br>After a LONG PRESS event the RELEASE event is replaced by a LONG RELEASE event.<br>Two sequences of events are possible: PRESS and RELEASE or PRESS, LONG PRESS, REPEAT PRESS (optional) and LONG RELEASE.
 Analog Response|Mapping between analog pedal movement and response. Accepted values: LINEAR (as is response), LOG (great acceleration but than flat), ANTILOG (start slow with a rapid increase).
 Min|It depends of pedal mode and/or pedal function (see below).
 Max|It depends of pedal mode and/or pedal function (see below).
@@ -216,18 +250,18 @@ any|BPM-|BPM lower limit (from 40 to 300).|BPM upper limit (from 40 to 300).
 
 ## Actions
 
-Once Pedals setup is complete proceed with Actions setup to define which event (press, release, double press, long press, move or jog) trigger an action.
+Once Pedals setup is complete proceed with Actions setup to define which event (press, release, double press, long press, repeat pressed, long release, move or jog) trigger an action.
 
-1. Select a bank on top left
+1. Select a bank on top left. Bank 0 is also called gloabl bank. Actions added to bank 0 are active in all the others banks.
 2. Select a pedal on top right or "All"
-2. (Optional) Enter the Bank Name
-3. Click on New Action and select a pedal on the dropdown menu. The pedal number of an action cannot be changed anymore without delete and recreate the action.
+3. (Optional) Enter the Bank Name
+4. Click on New Action and select a pedal on the dropdown menu. The pedal number of an action cannot be changed anymore without delete and recreate the action.
 
 ![WEBUI PEDALS](./images/webui-actions.png "Actions")
 
 ________|Description
 :-------|:----------
-On|The event that trigger the action. Momentary switches, latches and ladders have 5 different events: PRESS, RELEASE, CLICK, DOUBLE CLICK and LONG PRESS. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
+On|The event that trigger the action. Momentary switches, latches and ladders have 7 different events: PRESS, RELEASE, CLICK, DOUBLE CLICK, LONG PRESS, REPEAT PRESSED and LONG RELEASE. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
 Button|Every pedal support at least one "button" except for MOMENTARY 2/LATCH 2 (2 buttons), MOMENTARY 3 (3 buttons) and LADDER (6 buttons). Each button is indipendent and every action can be linked to any button.
 Send|The action to be triggered on event. It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK SELECT+, BANK SELECT-, PROGRAM CHANGE+, PROGRAM CHANGE-, BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.
 From Value/To Value|Define the range from a off value to a on value (see below).
@@ -306,6 +340,7 @@ PedalinoMini™ has a lot of options well documented in the Options page.
 ## Configurations
 
 The complete profile setup can be saved as configuration to be used later or just for backup reason in case of hardware failure. Configuration files can be downloaded and shared with others PedalinoMini™ users.
+A complete configuration file editor is provided for advanced operations.
 
 ![WEBUI CONFIGURATIONS](./images/webui-configurations.png "Configurations")
 
