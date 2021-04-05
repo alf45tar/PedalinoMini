@@ -69,11 +69,12 @@ New features and bug corrections will be released to this public repository when
   >Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
 
 - **3 months from now**
+
   _Be patience if a star is still too much for you._
 
   >Goal is reached on July 4th, 2021.
 
-When one of the previous goal will be reached sponsors will continue to receive in advance new versions and new goals will set.
+When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
 Included in the sponsors only version as of Apr 5th, 2021:
 
