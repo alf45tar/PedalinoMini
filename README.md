@@ -74,14 +74,14 @@ New features and bug corrections will be released to this public repository when
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
-Next release to sponsors only will be the official [PedalinoMini Case 1](https://github.com/alf45tar/PedalinoMini-Case-1).
-
 The following features
 
 - Detection and actions triggered on REPEAT PRESSED and LONG RELEASE event
 - Latest Bootstrap 5 release and WebUI themes
 
 has been released to public on May 12th, 2021 thanks to the following sponsors: @MaxZak2020, @Alt Shift Creative, @serhatsoyyigit, @Kubbik1, @rigr, @jwyse, @teopost, @davidin73, @juani13973, @ba********, @MiqViq, @jisv48.
+
+Next release to sponsors only is the [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1).
 
 ## Bill of materials
 
