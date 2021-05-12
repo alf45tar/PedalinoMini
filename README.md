@@ -1,7 +1,5 @@
 [![](./images/PedalinoMini-Case-1.png)](https://www.youtube.com/watch?v=PgAAQd82aIo)
 
-> Before any update save configuration, reset to factory default and reload configuration. EEPROM can change without any further advice.
-
 # PedalinoMini™
 
 ![PlatformIO CI](https://github.com/alf45tar/PedalinoMini/workflows/PlatformIO%20CI/badge.svg)
@@ -60,7 +58,7 @@ New features and bug corrections will be released to this public repository when
 
   _Select the level of sponsorship which best fit to you. Sponsorship starts from $1 per month._
 
-  >Goal is 12 sponsors in total. Starting point is 2 sponsors as of April 5th, 2021.
+  >Goal is 22 sponsors in total. Starting point is 12 sponsors as of May 12th, 2021.
 
 - **Double the stars**
 
@@ -68,22 +66,26 @@ New features and bug corrections will be released to this public repository when
 
   >Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
 
-- **3 months from now**
+- **3 months from May 12th, 2021**
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on July 4th, 2021.
+  >Goal is reached on August 11th, 2021.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
-Included in the sponsors only version as of Apr 5th, 2021:
+Next release to sponsors only will be the official [PedalinoMini Case 1](https://github.com/alf45tar/PedalinoMini-Case-1).
 
-- Detection and actions triggered on REPEAT PRESSED and LONG RELEASE event.
+The following features
+
+- Detection and actions triggered on REPEAT PRESSED and LONG RELEASE event
 - Latest Bootstrap 5 release and WebUI themes
+
+has been released to public on May 12th, 2021 thanks to the following sponsors: @MaxZak2020, @Alt Shift Creative, @serhatsoyyigit, @Kubbik1, @rigr, @jwyse, @teopost, @davidin73, @juani13973, @ba********, @MiqViq, @jisv48.
 
 ## Bill of materials
 
-The shortest bill of materials ever: an ESP32 board and a OLED display. That's it.
+The shortest bill of materials ever: an ESP32 board and a OgoLED display. That's it.
 
 - Any ESP32 board supported by [Arduino core for ESP32 WiFi chip](https://github.com/espressif/arduino-esp32)
   - Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
@@ -125,6 +127,8 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
         - Click “Upload File System Image” under Platform. Do not skip this step otherwise the WebUI will not works properly.
 
 That's all folks.
+
+> Before any update save configuration, reset to factory default and reload configuration. EEPROM can change without any further advice.
 
 ## USB MIDI
 

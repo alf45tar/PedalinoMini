@@ -182,7 +182,7 @@
                     },
                     "Event": {
                         "type": "string",
-                        "enum": ["None", "Press", "Release", "Click", "Double Click", "Long Press", "Move", "Jog"]
+                        "enum": ["None", "Press", "Release", "Click", "Double Click", "Long Press", "Repeat Pressed", "Long Release", "Move", "Jog"]
                     },
                     "Message": {
                         "type": "string",

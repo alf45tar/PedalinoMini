@@ -1281,7 +1281,7 @@ void display_init()
     display.setSwapBytes(true);
     display.pushImage((display.width() - PEDALINO_LOGO_WIDTH) / 2, (display.height() - PEDALINO_LOGO_HEIGHT) / 2, PEDALINO_LOGO_WIDTH, PEDALINO_LOGO_HEIGHT, PedalinoLogo);
     delay(1000);
-
+/*
 #ifdef WIFI
   if (wifiEnabled) {
     display.fillScreen(TFT_WHITE);
@@ -1299,7 +1299,7 @@ void display_init()
     delay(1000);
   }
 #endif
-
+*/
     display.fillScreen(TFT_BLACK);
 }
 

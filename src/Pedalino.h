@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.2.1"
+#define VERSION         "2.2.2"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -234,7 +234,7 @@ const char *pedalPressModeName[] = {"None", "1", "2", "12", "L", "1L","2L", "12L
 #define PED_EVENT_JOG           8
 #define PED_EVENT_NONE          9
 
-const char *eventName[] = {"Press", "Release", "Click", "Double Click", "Long Press", "Repeat", "Long Released", "Move", "Jog", "None"};
+const char *eventName[] = {"Press", "Release", "Click", "Double Click", "Long Press", "Repeat Pressed", "Long Released", "Move", "Jog", "None"};
 
 #define PED_LINEAR              0
 #define PED_LOG                 1

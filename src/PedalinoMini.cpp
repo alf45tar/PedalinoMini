@@ -534,6 +534,8 @@ void loop()
       get_file_from_cloud(url, "/css/bootstrap.min.css.gz");
       url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/js/bootstrap.bundle.min.js.gz");
       get_file_from_cloud(url, "/js/bootstrap.bundle.min.js.gz");
+      url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/schema.json");
+      get_file_from_cloud(url, "/schema.json");
 
       latestFirmwareVersion = get_latest_firmware_version();
       ota_http_update();

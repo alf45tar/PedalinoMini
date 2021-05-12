@@ -1003,7 +1003,6 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
     case AceButton::kEventClicked:
     case AceButton::kEventPressed:
     case AceButton::kEventReleased:
-    case AceButton::kEventRepeatPressed:
       if (!IS_SINGLE_PRESS_ENABLED(pedals[p].pressMode)) return;
       break;
 
@@ -1012,6 +1011,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
       break;
 
     case AceButton::kEventLongPressed:
+    case AceButton::kEventLongReleased:
+    case AceButton::kEventRepeatPressed:
       if (!IS_LONG_PRESS_ENABLED(pedals[p].pressMode)) return;
       break;
    }
@@ -1296,6 +1297,7 @@ void controller_setup()
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
         //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
         //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
         pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
         pedals[i].buttonConfig->setClickDelay(pressTime);
         pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
@@ -1319,6 +1321,7 @@ void controller_setup()
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
         //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
         //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
         pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
         pedals[i].buttonConfig->setClickDelay(pressTime);
         pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
@@ -1345,6 +1348,7 @@ void controller_setup()
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
         //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
         //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
         pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
         pedals[i].buttonConfig->setClickDelay(pressTime);
         pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
@@ -1394,6 +1398,7 @@ void controller_setup()
         pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
         //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
         //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
         pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
         pedals[i].buttonConfig->setClickDelay(pressTime);
         pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);

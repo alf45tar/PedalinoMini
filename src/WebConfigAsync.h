@@ -84,18 +84,20 @@ void get_top_page(int p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6' crossorigin='anonymous'>");
   #else
-    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl' crossorigin='anonymous'>");
+    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6' crossorigin='anonymous'>");
   #endif
   } else {
-    page += F("<link href='https://stackpath.bootstrapcdn.com/bootswatch/5.0.0/");
+    page += F("<link href='https://cdn.jsdelivr.net/gh/thomaspark/bootswatch@24b59286fd245781674d7b78582ba7e11ab34b09/dist/");
     page += theme;
     page += F("/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   }
+  //page += F("<link href='/css/sidebars.css' rel='stylesheet'>");
   page += F("</head>");
 
   page += F("<body>");
+
   if (p >= 0) {
   page += F("<div class='container-fluid mt-3 mb-3'>");
 
@@ -108,12 +110,10 @@ void get_top_page(int p = 0) {
   page += F("</button>");
   page += F("<div class='collapse navbar-collapse' id='navbarNavDropdown'>");
   page += F("<ul class='navbar-nav mr-auto'>");
-  /*
-  page += F("<li class='nav-item");
-  page += (p == 1 ? F(" active'>") : F("'>"));
-  page += F("<a class='nav-link' href='/live'>Live</a>");
-  page += F("</li>");
-  */
+  //page += F("<li class='nav-item");
+  //page += (p == 1 ? F(" active'>") : F("'>"));
+  //page += F("<a class='nav-link' href='/live'>Live</a>");
+  //page += F("</li>");
   page += F("<li class='nav-item");
   page += (p == 2 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/actions'>");
@@ -186,6 +186,95 @@ void get_top_page(int p = 0) {
   page += F("</div>");
   page += F("</nav>");
 
+
+/*
+  page += F("<div class='d-flex flex-column bg-light' style='width: 4.5rem;'>");
+  page += F("<a href='/' id='bootstrap' class='d-block p-3 link-dark text-decoration-none' title='PedalinoMini' data-bs-toggle='tooltip' data-bs-placement='right'>");
+  page += F("<img src='/logo.png' width='32' height='32'>");
+  page += F("<span class='visually-hidden'>Icon-only</span>");
+  page += F("</a>");
+  page += F("<ul class='nav nav-pills nav-flush flex-column mb-auto text-center'>");
+  page += F("<li class='nav-item'>");
+  page += F("<a href='/actions' class='nav-link active py-3 border-bottom' title='Actions' data-bs-toggle='tooltip' data-bs-placement='right'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' class='bi bi-clipboard-check' viewBox='0 0 16 16'>");
+  page += F("<path fill-rule='evenodd' d='M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z'/>");
+  page += F("<path d='M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z'/>");
+  page += F("<path d='M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z'/>");
+  page += F("<use xlink:href='#home'/></svg>");
+  page += F("</a>");
+  page += F("</li>");
+  page += F("<li class='nav-item'>");
+  page += F("<a href='/pedals' class='nav-link py-3 border-bottom' title='Pedals' data-bs-toggle='tooltip' data-bs-placement='right'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' class='bi bi-controller' viewBox='0 0 16 16'>");
+  page += F("<path d='M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1v-1z'/>");
+  page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
+  page += F("</svg>");
+  page += F("</a>");
+  page += F("</li>");
+  page += F("<li class='nav-item'>");
+  page += F("<a href='/interfaces' class='nav-link py-3 border-bottom' title='Interfaces' data-bs-toggle='tooltip' data-bs-placement='right'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' class='bi bi-hdd-network' viewBox='0 0 16 16'>");
+  page += F("<path d='M4.5 5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zM3 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z'/>");
+  page += F("<path d='M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8.5v3a1.5 1.5 0 0 1 1.5 1.5h5.5a.5.5 0 0 1 0 1H10A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5H.5a.5.5 0 0 1 0-1H6A1.5 1.5 0 0 1 7.5 10V7H2a2 2 0 0 1-2-2V4zm1 0v1a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1zm6 7.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5z'/>");
+  page += F("</svg>");
+  page += F("</a>");
+  page += F("</li>");
+  page += F("<li class='nav-item'>");
+  page += F("<a href='/sequences' class='nav-link py-3 border-bottom' title='Sequences' data-bs-toggle='tooltip' data-bs-placement='right'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' class='bi bi-camera-reels' viewBox='0 0 16 16'>");
+  page += F("<path d='M6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM1 3a2 2 0 1 0 4 0 2 2 0 0 0-4 0z'/>");
+  page += F("<path d='M9 6h.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 7.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 16H2a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h7zm6 8.73V7.27l-3.5 1.555v4.35l3.5 1.556zM1 8v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1z'/>");
+  page += F("<path d='M9 6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 3a2 2 0 1 1 4 0 2 2 0 0 1-4 0z'/>");
+  page += F("</svg>");
+  page += F("</a>");
+  page += F("</li>");
+  page += F("<li class='nav-item'>");
+  page += F("<a href='/options' class='nav-link py-3 border-bottom' title='Options' data-bs-toggle='tooltip' data-bs-placement='right'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' class='bi bi-gear' viewBox='0 0 16 16'>");
+  page += F("<path d='M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z'/>");
+  page += F("<path d='M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z'/>");
+  page += F("</svg>");
+  page += F("</a>");
+  page += F("</li>");
+  page += F("<li class='nav-item'>");
+  page += F("<a href='/configurations' class='nav-link py-3 border-bottom' title='Configurations' data-bs-toggle='tooltip' data-bs-placement='right'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' class='bi bi-file-code' viewBox='0 0 16 16'>");
+  page += F("<path d='M6.646 5.646a.5.5 0 1 1 .708.708L5.707 8l1.647 1.646a.5.5 0 0 1-.708.708l-2-2a.5.5 0 0 1 0-.708l2-2zm2.708 0a.5.5 0 1 0-.708.708L10.293 8 8.646 9.646a.5.5 0 0 0 .708.708l2-2a.5.5 0 0 0 0-.708l-2-2z'/>");
+  page += F("<path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z'/>");
+  page += F("</svg>");
+  page += F("</a>");
+  page += F("</li>");
+
+  page += F("</ul>");
+  page += F("<div class='dropdown border-top'>");
+  page += F("<a href='#' class='d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle' id='dropdownUser3' data-bs-toggle='dropdown' aria-expanded='false'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' class='bi bi-stack' viewBox='0 0 16 16'>");
+  page += F("<path d='m14.12 10.163 1.715.858c.22.11.22.424 0 .534L8.267 15.34a.598.598 0 0 1-.534 0L.165 11.555a.299.299 0 0 1 0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0l5.317-2.66zM7.733.063a.598.598 0 0 1 .534 0l7.568 3.784a.3.3 0 0 1 0 .535L8.267 8.165a.598.598 0 0 1-.534 0L.165 4.382a.299.299 0 0 1 0-.535L7.733.063z'/>");
+  page += F("<path d='m14.12 6.576 1.715.858c.22.11.22.424 0 .534l-7.568 3.784a.598.598 0 0 1-.534 0L.165 7.968a.299.299 0 0 1 0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0l5.317-2.659z'/>");
+  page += F("</svg>");
+  page += F("</a>");
+  page += F("<ul class='dropdown-menu text-small shadow' aria-labelledby='dropdownUser3'>");
+  page += F("<li><a class='dropdown-item' href='#'>Profile A</a></li>");
+  page += F("<li><a class='dropdown-item' href='#'>Profile B</a></li>");
+  page += F("<li><a class='dropdown-item' href='#'>Profile C</a></li>");
+  page += F("<li><hr class='dropdown-divider'></li>");
+  page += F("<li><a class='dropdown-item' href='#'>Sign out</a></li>");
+  page += F("</ul>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<script>");
+  page += F("(function () {\n"
+              "'use strict'\n"
+              "var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle=\"tooltip\"]'))\n"
+              "tooltipTriggerList.forEach(function (tooltipTriggerEl) {\n"
+                "new bootstrap.Tooltip(tooltipTriggerEl)\n"
+              "})\n"
+            "})()\n");
+  page += F("</script>");
+
+  page += F("<div class='container mt-3 mb-3'>");
+*/
+
   if (alert != "") {
     page += F("<div class='alert alert-success alert-dismissible fade show' role='alert'>");
     page += alert;
@@ -206,9 +295,9 @@ void get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf' crossorigin='anonymous'></script>");
 #else
-  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js' integrity='sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0' crossorigin='anonymousì></script>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js' integrity='sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf' crossorigin='anonymousì></script>");
 #endif
   page += F("</body>");
   page += F("</html>");
@@ -728,7 +817,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len)) return;
 
   page += F("<div class='row mb-3'>");
-  page += F("<div class='col-8'>");
+  page += F("<div class='col-8 col-md-9 col-xl-10'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-book' viewBox='0 0 20 20'>");
@@ -738,10 +827,14 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += uibank;
   page += F("</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='input-group input-group-sm'>");
-  page += F("<div class='btn-group flex-wrap'>");
+  //page += F("<div class='input-group input-group-sm'>");
+  //page += F("<div class='btn-group flex-wrap'>");
+  page += F("<form method='get'>");
+  page += F("<div class='container g-0'>");
+  page += F("<div class='row g-0'>");
   for (i = 0; i < BANKS; i++) {
-    page += F("<form method='get'><button type='button submit' class='btn btn-sm btn-block");
+    page += F("<div class='col text-center g-0'>");
+    page += F("<button type='button submit' class='btn btn-sm btn-block");
     page += (uibank == String(i) ? String(" btn-primary") : String(""));
     page += F("' name='bank' value='");
     page += String(i) + F("'>");
@@ -750,15 +843,17 @@ void get_actions_page(unsigned int start, unsigned int len) {
     else
       page += String(banknames[i]);
     page += F("</button>");
-    page += F("</form>");
+    page += F("</div>");
+    if ((i + 1) % 7 == 0) page += F("<div class='w-100'></div>");
   }
   page += F("</div>");
   page += F("</div>");
+  page += F("</form>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<div class='col-4'>");
+  page += F("<div class='col-4 col-md-3 col-xl-2'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-controller' viewBox='0 0 20 20'>");
@@ -768,21 +863,27 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F(" Pedal ");
   page += uipedal + F("</h5>");
   page += F("<div class='card-body'>");
-  page += F("<div class='input-group input-group-sm'>");
-  page += F("<div class='btn-group flex-wrap'>");
-  page += F("<form method='get'><button type='button submit' class='btn btn-sm");
+  //page += F("<div class='input-group input-group-sm'>");
+  //page += F("<div class='btn-group flex-wrap'>");
+  page += F("<form method='get'>");
+  page += F("<div class='container g-0'>");
+  page += F("<div class='row row-cols-3'>");
+  page += F("<div class='col text-center'>");
+  page += F("<button type='button submit' class='btn btn-sm");
   page += (uipedal.equals("All") ? String(" btn-primary") : String(""));
   page += F("' name='pedal' value='All'>All</button>");
-  page += F("</form>");
+  page += F("</div>");
   for (i = 1; i <= PEDALS; i++) {
-    page += F("<form method='get'><button type='button submit' class='btn btn-sm");
+    page += F("<div class='col text-center'>");
+    page += F("<button type='button submit' class='btn btn-sm");
     page += (uipedal == String(i) ? String(" btn-primary") : String(""));
     page += F("' name='pedal' value='");
     page += String(i) + F("'>") + String(i) + F("</button>");
-    page += F("</form>");
+    page += F("</div>");
   }
   page += F("</div>");
   page += F("</div>");
+  page += F("</form>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -899,6 +1000,16 @@ void get_actions_page(unsigned int start, unsigned int len) {
         if (act->event == PED_EVENT_LONG_PRESS) page += F(" selected");
         page += F(">");
         page += F("Long Press</option>");
+        page += F("<option value='");
+        page += String(PED_EVENT_REPEAT) + F("'");
+        if (act->event == PED_EVENT_REPEAT) page += F(" selected");
+        page += F(">");
+        page += F("Repeat Pressed</option>");
+        page += F("<option value='");
+        page += String(PED_EVENT_LONG_RELEASED) + F("'");
+        if (act->event == PED_EVENT_LONG_RELEASED) page += F(" selected");
+        page += F(">");
+        page += F("Long Released</option>");
         break;
 
       case PED_ANALOG:
@@ -2454,7 +2565,7 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += String(VERSION);
   page += F("</div></b></div>");
   page += F("<div class='col-4'>");
-  page += F("Latest version: <b>");
+  page += F("Latest public version: <b>");
   page += F("<div id='latestFirmwareVersion' w3-include-html='https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/firmware/");
   page += xstr(PLATFORMIO_ENV);
   page += F("/version.txt?");
@@ -3857,6 +3968,7 @@ void http_setup() {
   httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
   httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
+  //httpServer.serveStatic("/css/sidebars.css",           SPIFFS, "/css/sidebars.css").setDefaultFile("/css/sidebars.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json").setDefaultFile("/schema.json").setCacheControl("max-age=600");
   httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
