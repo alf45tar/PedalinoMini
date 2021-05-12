@@ -1,4 +1,4 @@
-[![](./images/youtube-video.jpg)](https://www.youtube.com/watch?v=ZqCsKDWJVQs)
+[![](./images/PedalinoMini-Case-1.png)](https://www.youtube.com/watch?v=PgAAQd82aIo)
 
 > Before any update save configuration, reset to factory default and reload configuration. EEPROM can change without any further advice.
 
@@ -403,3 +403,6 @@ https://github.com/rigr
 
 https://github.com/teopost
 ![teopost](https://user-images.githubusercontent.com/2573389/109355786-0cc02c80-7880-11eb-9d7c-7eb23dfa2dee.png)
+
+https://github.com/gallochri
+![gallochri](https://user-images.githubusercontent.com/404229/116277564-e3d7ed00-a785-11eb-99e5-e77df0bbd130.jpg)
