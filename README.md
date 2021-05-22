@@ -81,14 +81,13 @@ The following features
 
 has been released to public on May 12th, 2021 thanks to the following sponsors: @MaxZak2020, @Alt Shift Creative, @serhatsoyyigit, @Kubbik1, @rigr, @jwyse, @teopost, @davidin73, @juani13973, @ba********, @MiqViq, @jisv48.
 
-[PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) will be release to sponsors only.
-
 Sponsors version additions/fixes since May 12th, 2021:
 
 - Bootstrap 5.0.1
 - Fixed BOOT button actions in default configuration
 - Fixed compilation error when BATTERY flag defined for board without battery support
-- Fixed battery spike in chart
+
+[PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
 ## Bill of materials
 
