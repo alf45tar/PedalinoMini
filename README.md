@@ -86,6 +86,9 @@ Sponsors version additions/fixes since May 12th, 2021:
 - Bootstrap 5.0.1
 - Fixed BOOT button actions in default configuration
 - Fixed compilation error when BATTERY flag defined for board without battery support
+- Fixed battery indicator for generic ESP32 board without battery support
+- Fixed TTGO T-Display glitches
+- Enable/disable incoming and outcoming MIDI messages display
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
