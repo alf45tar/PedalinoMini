@@ -420,8 +420,11 @@ https://github.com/teopost
 https://github.com/gallochri
 ![gallochri](https://user-images.githubusercontent.com/404229/116277564-e3d7ed00-a785-11eb-99e5-e77df0bbd130.jpg)
 
-https://github.com/juani13973
+https://github.com/juani13973/pedalinio-18-footswitches-prototype
 ![juani13973](https://user-images.githubusercontent.com/77895272/120079259-599be500-c0b3-11eb-9603-fcdf18e27eb4.JPG)
 
 https://github.com/MaxZak2020
 ![MaxZak2020](https://user-images.githubusercontent.com/74506186/120315265-d366e500-c2e4-11eb-92f9-1ba9e9d01312.jpg)
+
+https://github.com/aFunkyBass
+![aFunkyBass](https://user-images.githubusercontent.com/66510206/121218730-493df400-c883-11eb-9394-602709fa271e.jpg)
