@@ -89,6 +89,7 @@ Sponsors version additions/fixes since May 12th, 2021:
 - Fixed battery indicator for generic ESP32 board without battery support
 - Fixed TTGO T-Display glitches
 - Enable/disable incoming and outcoming MIDI messages display
+- Universal expression pedal
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -372,6 +373,7 @@ Bank Name|Empty|![](./images/oled-display1.gif)|If the current bank name is empt
 Bank Name|Any|![](./images/oled-display2.gif)|If current bank name is not empty the bank name is displayed within the 6 pedal names. PedalinoMini™ assumes the first action tag for the pedal as its pedal name. The bank name screen will switch every 4 seconds to display pedals current value if no event occurs.
 Bank Name|:|![](./images/oled-display3.gif)|If the bank name start with colon (:) the bank name is always shown (if no event occurs).
 Bank Name|.|![](./images/oled-display4.gif)|If bank name start with point (.) the current values are shown and events update values in real time without any display switch.
+Bank Name|##||A double hashtag sign (##) in bank name is replaced with the bank number.
 Action Tags|:|![](./images/oled-display6.gif)|If action tag start with colon (:) the display is not switched when an event occurs.
 Action Tags|.|![]()|If action tag end with dot (.) the corresponding led and color is set on boot.
 Action Tag|###|![](./images/oled-display7.gif)|A triple hashtag sign (###) in action tag is replaced with the current value of the parameter.
