@@ -430,3 +430,9 @@ https://github.com/MaxZak2020
 
 https://github.com/aFunkyBass
 ![aFunkyBass](https://user-images.githubusercontent.com/66510206/121218730-493df400-c883-11eb-9394-602709fa271e.jpg)
+
+https://github.com/akosbeke
+![akosbeke](https://user-images.githubusercontent.com/7037649/124348379-e4f42300-dbe9-11eb-90aa-9a2cc2da19a1.jpg)
+
+https://github.com/borsei222
+![borsei222](https://user-images.githubusercontent.com/86922846/124502833-81721d00-ddc4-11eb-82b1-7ade0704b464.jpg)
