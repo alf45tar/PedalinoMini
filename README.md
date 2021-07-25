@@ -91,6 +91,9 @@ Sponsors version additions/fixes since May 12th, 2021:
 - Enable/disable incoming and outcoming MIDI messages display
 - Universal expression pedal
 - Fixed normal banks actions are not triggered when there are no actions in global bank
+- Fixed actions disappering on WebUI after profile switch
+- Drag & drop banks reorder
+- Current bank saved before profile switch (only via pedal)
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
