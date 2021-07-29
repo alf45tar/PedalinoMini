@@ -94,6 +94,7 @@ Sponsors version additions/fixes since May 12th, 2021:
 - Fixed actions disappering on WebUI after profile switch
 - Drag & drop banks reorder
 - Current bank saved before profile switch (only via pedal)
+- Fixed Network MIDI/AppleMIDI/RTP-MIDI not working in AP mode
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
