@@ -39,6 +39,8 @@ void ota_begin(const char *hostname) {
     display.drawString(display.getWidth() / 2, display.getHeight() / 2 - 10, "OTA Update");
     display.display();
 #endif
+    fill_solid(fastleds, LEDS, CRGB::Black);
+    FastLED.show();
   });
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
@@ -48,6 +50,11 @@ void ota_begin(const char *hostname) {
     display.drawProgressBar(4, 32, 120, 8, progress / (total / 100) );
     display.display();
 #endif
+    byte ledProgress = (progress / (total / (LEDS * 100))) / 100;
+    fill_solid(fastleds, ledProgress + 1, CRGB::Red);
+    byte ledDim = (progress / (total / (LEDS * 100))) % 100;
+    fastleds[ledProgress].nscale8(ledDim);
+    FastLED.show();
   });
 
   ArduinoOTA.onEnd([]() {
@@ -61,6 +68,8 @@ void ota_begin(const char *hostname) {
     display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Restart");
     display.display();
 #endif
+    fill_solid(fastleds, LEDS, CRGB::Green);
+    FastLED.show();
   });
 }
 

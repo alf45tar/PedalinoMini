@@ -125,6 +125,12 @@ void create_banks()
   }
 }
 
+void leds_off()
+{
+  // Set all leds off
+  FastLED.clear(true);
+}
+
 void leds_refresh()
 {
   // Set the last leds color of the current bank after a bank switch or led update
@@ -484,6 +490,10 @@ unsigned int map_analog(byte p, unsigned int value)
 
 void midi_send(byte message, byte code, byte value, byte channel, bool on_off, byte range_min, byte range_max, byte bank, byte pedal, byte button = 0)
 {
+  code    = constrain(code,    0, MIDI_RESOLUTION - 1);
+  value   = constrain(value,   0, MIDI_RESOLUTION - 1);
+  channel = constrain(channel, 1, 16);
+
   switch (message) {
 
     case PED_NOTE_ON:
@@ -578,7 +588,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
     case PED_PITCH_BEND:
 
       if (on_off) {
-        int bend = map2(value, 0, MIDI_RESOLUTION-1, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX);
+        int bend = map2(value, 0, MIDI_RESOLUTION - 1, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX);
         DPRINT("PITCH BEND.....Value %5d.....Channel %2d\n", bend, channel);
         if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendPitchBend(bend, channel);
         if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendPitchBend(bend, channel);
@@ -589,6 +599,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         const unsigned ubend = unsigned(bend - int(MIDI_PITCHBEND_MIN));
         screen_info(midi::PitchBend, ubend & 0x7f, (ubend >> 7) & 0x7f, channel, range_min, range_max);
         currentMIDIValue[bank][pedal][button] = value;
+        lastMIDIMessage[currentBank] = {PED_PITCH_BEND, code, value, channel};
       }
       break;
 
@@ -604,6 +615,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         OSCSendAfterTouch(value, channel);
         screen_info(midi::AfterTouchChannel, value, 0, channel, range_min, range_max);
         currentMIDIValue[bank][pedal][button] = value;
+        lastMIDIMessage[currentBank] = {PED_CHANNEL_PRESSURE, code, value, channel};
       }
       break;
 
@@ -671,8 +683,8 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
 //
 void controller_event_handler_analog(byte pedal, int value)
 {
-      bool    global = true;
-      action *act = actions[0];
+      bool    global = actions[0] != nullptr;
+      action *act    = actions[0] == nullptr ? actions[currentBank] : actions[0];
       while (act != nullptr) {
         if (act->pedal == pedal && act->event == PED_EVENT_MOVE) {
           value = map2(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
@@ -683,10 +695,18 @@ void controller_event_handler_analog(byte pedal, int value)
           value = constrain(value, act->midiValue1, act->midiValue2);
           lastUsedPedal = pedal;
           lastUsed = pedal;
-          strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
+          lastSlot = act->slot;
+          if (act->midiMessage != PED_EMPTY) strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
           DPRINT("Action: %s\n", act->name);
           switch (act->midiMessage) {
             case PED_EMPTY:
+              midi_send(lastMIDIMessage[currentBank].midiMessage, lastMIDIMessage[currentBank].midiCode, value, lastMIDIMessage[currentBank].midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+              fastleds[act->led] = lastColor;
+              //fastleds[act->led] = fastleds[act->led].lerp8(lastColor, (255 * value) / (MIDI_RESOLUTION - 1));
+              //fastleds[act->led].nscale8(ledsOffBrightness + ((ledsOnBrightness - ledsOffBrightness) * value) / (MIDI_RESOLUTION - 1));
+              fastleds[act->led].nscale8((255 * value) / (MIDI_RESOLUTION - 1));
+              FastLED.show();
+              lastLedColor[currentBank][act->led] = fastleds[act->led];
               break;
 
             case PED_CONTROL_CHANGE:
@@ -694,6 +714,14 @@ void controller_event_handler_analog(byte pedal, int value)
             case PED_NOTE_OFF:
             case PED_PITCH_BEND:
             case PED_CHANNEL_PRESSURE:
+              midi_send(act->midiMessage, act->midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+              fastleds[act->led] = act->color0;
+              fastleds[act->led] = fastleds[act->led].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
+              fastleds[act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
+              FastLED.show();
+              lastLedColor[currentBank][act->led] = fastleds[act->led];
+              break;
+
             case PED_SEQUENCE:
               midi_send(act->midiMessage, act->midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
               fastleds[act->led] = act->color0;
@@ -829,6 +857,7 @@ void controller_run(bool send = true)
     reloadProfile = false;
     DPRINT("Loading profile ...\n");
     eeprom_read_profile(currentProfile);
+    lastColor = CRGB::Black;
     for (byte b = 0; b < BANKS; b++) {
       lastMIDIMessage[b] = {PED_EMPTY, 0, 0, 1};
       for (byte p = 0; p < PEDALS; p++)
@@ -951,6 +980,7 @@ if (loadConfig && send) {
                     pedals[i].lastUpdate[0] = micros();
                     lastUsedPedal = i;
                     lastUsed = i;
+                    lastSlot = act->slot;
                     strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
                     break;
 
@@ -995,7 +1025,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
   byte p = constrain(button->getId() / 10 - 1, 0, PEDALS - 1);
   byte i = constrain(button->getId() % 10 - 1, 0, LADDER_STEPS - 1);
 
-  DPRINT("Pedal: %d     Button: %d    EventType: %d     ButtonState: %d\n", p, i, eventType, buttonState);
+  DPRINT("Pedal: %d     Button: %d    EventType: %d     ButtonState: %d\n", p + 1, i + 1, eventType, buttonState);
 
   if (pedals[p].pressMode == 0) return;
 
@@ -1017,15 +1047,17 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
       break;
    }
 
-      bool    global = true;
-      action *act = actions[0];
+      bool    global = actions[0] != nullptr;
+      action *act    = actions[0] == nullptr ? actions[currentBank] : actions[0];
       while (act != nullptr) {
         if ((act->pedal == p) && (act->button == i) && (act->event == eventType)) {
           pedals[p].lastUpdate[0] = micros();
           lastUsedPedal = p;
           lastUsed = p;
+          lastSlot = act->slot;
           strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
           DPRINT("Action: %s\n", act->name);
+          lastSlot = act->slot;
           switch (act->midiMessage) {
             case PED_EMPTY:
               break;
@@ -1083,7 +1115,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;
 
             case PED_ACTION_BANK_PLUS:
-              currentBank = constrain((currentBank == act->midiValue2) ? act->midiValue1 : (currentBank + 1), 0, BANKS - 1);
+              currentBank = constrain((currentBank == constrain(act->midiValue2, 0, BANKS - 1)) ? act->midiValue1 : (currentBank + 1), 0, BANKS - 1);
               currentBank = constrain(currentBank, constrain(act->midiValue1, 0, BANKS - 1), constrain(act->midiValue2, 0, BANKS - 1));
               currentBank = constrain(currentBank, 0, BANKS - 1);
               if (repeatOnBankSwitch)
@@ -1140,22 +1172,26 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 
             case PED_ACTION_PROFILE_PLUS:
               if (reloadProfile) return;
+              eeprom_update_current_bank();
               currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
               reloadProfile = true;
               break;
 
             case PED_ACTION_PROFILE_MINUS:
               if (reloadProfile) return;
+              eeprom_update_current_bank();
               currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
               reloadProfile = true;
               break;
 
             case PED_ACTION_DEVICE_INFO:
               scrollingMode = !scrollingMode;
+              leds_refresh();
               break;
 
             case PED_ACTION_POWER_ON_OFF:
               display_off();
+              leds_off();
               //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
               esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(p), 0);
               delay(200);
@@ -1173,6 +1209,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               fastleds[act->led] = (currentMIDIValue[currentBank][p][i] == act->midiValue1) ? off : on;
             FastLED.show();
             lastLedColor[currentBank][act->led] = fastleds[act->led];
+            lastColor = on;
           }
         }
         act = act->next;
@@ -1199,6 +1236,7 @@ void controller_setup()
   lastUsedSwitch = 0xFF;
   lastUsedPedal  = 0xFF;
   lastUsed       = 0xFF;
+  lastSlot       = SLOTS;
   memset(lastPedalName, 0, MAXACTIONNAME+1);
   controller_delete();
 
@@ -1378,6 +1416,7 @@ void controller_setup()
         if (lastUsedPedal == 0xFF) {
           lastUsedPedal = i;
           lastUsed = i;
+          lastSlot = SLOTS;
           strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXACTIONNAME+1);
         }
         DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
@@ -1428,6 +1467,11 @@ void controller_setup()
   }
 
   // Set initial led color for all banks
+  lastColor = CRGB::Black;
+  for (byte b = 0; b < BANKS; b++)
+    for (byte l = 0; l < LEDS; l++)
+      lastLedColor[b][l] = CRGB::Black;
+
   for (byte b = 0; b < BANKS; b++) {
     bool ledstatus[LEDS];
     for (byte l = 0; l < LEDS; l++)

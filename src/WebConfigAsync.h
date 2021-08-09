@@ -74,6 +74,9 @@ bool trim_page(unsigned int start, unsigned int len, bool lastcall = false) {
 
 void get_top_page(int p = 0) {
 
+  while (reloadProfile)
+    delay(100);
+
   page = "";
 
   page += F("<!doctype html>");
@@ -84,15 +87,16 @@ void get_top_page(int p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC' crossorigin='anonymous'>");
   #else
-    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6' crossorigin='anonymous'>");
+    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC' crossorigin='anonymous'>");
   #endif
   } else {
     page += F("<link href='https://cdn.jsdelivr.net/gh/thomaspark/bootswatch@24b59286fd245781674d7b78582ba7e11ab34b09/dist/");
     page += theme;
     page += F("/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   }
+  page += F("<script src='/js/Sortable.min.js' integrity='' crossorigin='anonymous'></script>");
   //page += F("<link href='/css/sidebars.css' rel='stylesheet'>");
   page += F("</head>");
 
@@ -295,9 +299,9 @@ void get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM' crossorigin='anonymous'></script>");
 #else
-  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js' integrity='sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf' crossorigin='anonymousì></script>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js' integrity='sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM' crossorigin='anonymousì></script>");
 #endif
   page += F("</body>");
   page += F("</html>");
@@ -449,6 +453,11 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F("<dt>Free Heap Size</dt><dd>");
   page += freeMemory / 1024;
   page += F(" kB</dd>");
+  page += F("<dt>Battery Voltage</dt><dd>");
+  page += String(batteryVoltage / 1000.0, 1);
+  page += F(" V ");
+  page += batteryVoltage > 4300 ? F("plugged") : F("on battery");
+  page += F("</dd>");
   //page += F("<dt>Running On Core</dt><dd>");
   //page += xPortGetCoreID();
   //page += F("</dd>");
@@ -579,35 +588,35 @@ void get_live_page(unsigned int start, unsigned int len) {
             "<p></p>"
 
             "<div class='btn-group'>"
-            "<button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
+            "<button type='button' class='btn btn-primary dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
             "MIDI Clock</button>"
-            "<div class='dropdown-menu'>"
-            "<a id='clock-master' class='dropdown-item' href='#'>Master</a>"
-            "<a id='clock-slave'  class='dropdown-item' href='#'>Slave</a>"
-            "</div>"
+            "<ul class='dropdown-menu'>"
+            "<li><a id='clock-master' class='dropdown-item' href='#'>Master</a></li>"
+            "<li><a id='clock-slave'  class='dropdown-item' href='#'>Slave</a></li>"
+            "</ul>"
             "</div>"
 
             "<div class='btn-group'>"
-            "<button type='button' class='btn btn-outline-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
+            "<button type='button' class='btn btn-outline-primary dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
             "Time Signature</button>"
-            "<div class='dropdown-menu'>"
-            "<a id='4_4' class='dropdown-item' href='#'>4/4 Common Time</a>"
-            "<a id='3_4' class='dropdown-item' href='#'>3/4 Waltz Time</a>"
-            "<a id='2_4' class='dropdown-item' href='#'>2/4 March Time</a>"
-            "<a id='3_8' class='dropdown-item' href='#'>3/8</a>"
-            "<a id='6_8' class='dropdown-item' href='#'>6/8</a>"
-            "<a id='9_8' class='dropdown-item' href='#'>9/8</a>"
-            "<a id='12_8' class='dropdown-item' href='#'>12/8</a>"
-            "</div>"
+            "<ul class='dropdown-menu'>"
+            "<li><a id='4_4' class='dropdown-item' href='#'>4/4 Common Time</a></li>"
+            "<li><a id='3_4' class='dropdown-item' href='#'>3/4 Waltz Time</a></li>"
+            "<li><a id='2_4' class='dropdown-item' href='#'>2/4 March Time</a></li>"
+            "<li><a id='3_8' class='dropdown-item' href='#'>3/8</a></li>"
+            "<li><a id='6_8' class='dropdown-item' href='#'>6/8</a></li>"
+            "<li><a id='9_8' class='dropdown-item' href='#'>9/8</a></li>"
+            "<li><a id='12_8' class='dropdown-item' href='#'>12/8</a></li>"
+            "</ul>"
             "</div>"
 
             "<div class='btn-group'>"
-            "<button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
+            "<button type='button' class='btn btn-primary dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
             "MTC</button>"
-            "<div class='dropdown-menu'>"
-            "<a id='mtc-master' class='dropdown-item' href='#'>Master</a>"
-            "<a id='mtc-slave' class='dropdown-item' href='#'>Slave</a>"
-            "</div>"
+            "<ul class='dropdown-menu'>"
+            "<li><a id='mtc-master' class='dropdown-item' href='#'>Master</a></li>"
+            "<li><a id='mtc-slave' class='dropdown-item' href='#'>Slave</a></li>"
+            "</ul>"
             "</div>"
             "<p></p>"
 
@@ -829,13 +838,17 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<div class='card-body'>");
   //page += F("<div class='input-group input-group-sm'>");
   //page += F("<div class='btn-group flex-wrap'>");
-  page += F("<form method='get'>");
+  page += F("<form method='get' id='banks-form'>");
+  page += F("<input type='hidden' id='banksorder' name='banksorder' value=''/>");
   page += F("<div class='container g-0'>");
-  page += F("<div class='row g-0'>");
+  page += F("<div id='banklist' class='row g-0'>");
   for (i = 0; i < BANKS; i++) {
     page += F("<div class='col text-center g-0'>");
+    page += F("<div class='grid-square'>");
     page += F("<button type='button submit' class='btn btn-sm btn-block");
     page += (uibank == String(i) ? String(" btn-primary") : String(""));
+    page += F("' id='");
+    page += String(i);
     page += F("' name='bank' value='");
     page += String(i) + F("'>");
     if (String(banknames[i]).isEmpty())
@@ -844,7 +857,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
       page += String(banknames[i]);
     page += F("</button>");
     page += F("</div>");
-    if ((i + 1) % 7 == 0) page += F("<div class='w-100'></div>");
+    page += F("</div>");
+    //if ((i + 1) % (BANKS / 3) == 0) page += F("<div class='w-100'></div>");
   }
   page += F("</div>");
   page += F("</div>");
@@ -852,6 +866,24 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+
+  page += F("<script>");
+  page += F("var el = document.getElementById('banklist');"
+            "var sortable = Sortable.create(el);"
+
+            "let banksForm = document.getElementById('banks-form');"
+            "banksForm.addEventListener('submit', function (e) {"
+              // get ids for all currently bank list items
+              "let bank_ids = document.querySelectorAll('#banklist  button');"
+              "let bank_ids_list = [];"
+              "for (let i = 0; i < bank_ids.length; i++) {"
+                "bank_ids_list.push(bank_ids[i].id);"
+              "}"
+              // fill in the hidden input
+              "let banks_input = document.getElementById('banksorder');"
+              "banks_input.value = bank_ids_list.join(',');"
+            "});");
+  page += F("</script>");
 
   page += F("<div class='col-4 col-md-3 col-xl-2'>");
   page += F("<div class='card h-100'>");
@@ -953,7 +985,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
       page += F(" Pedal ");
       page += String(act->pedal + 1) + F("</h5>");
       page += F("<div class='container'>");
-      page += F("<div class='row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-xl-3 row-cols-xxl-4 g-2 g-md-3 g-xl-4'>");
+      page += F("<div class='row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-xl-3 g-2 g-md-3 g-xl-4'>");
     }
     page += F("<div class='col'>");
     page += F("<div class='d-grid gap-1'>");
@@ -1276,16 +1308,17 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("</div>");
 
     page += F("<div class='row g-1'>");
-    page += F("<div class='w-50'>");
+    page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='ledFLotingSelect' name='led");
     page += String(i) + F("'>");
-    for (unsigned int l = 1; l <= LEDS; l++) {
+    for (unsigned int l = 0; l <= LEDS; l++) {
       page += F("<option value='");
-      page += String(l) + F("'");
-      if (act->led == l - 1) page += F(" selected");
+      page += String(l+1) + F("'");
+      if (act->led == l) page += F(" selected");
       page += F(">");
-      page += String(l) + F("</option>");
+      if (l != LEDS) page += String(l+1);
+      page += F("</option>");
     }
     page += F("</select>");
     page += F("<label for='ledFloatingSelect'>Led</label>");
@@ -1314,6 +1347,27 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += String(color);
     page += F("'>");
     page += F("<label for='color1FloatingInput'>On</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='w-25'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='slotFLotingSelect' name='slot");
+    page += String(i) + F("'>");
+    for (unsigned int s = 0; s < SLOTS; s++) {
+      page += F("<option value='");
+      page += String(s+1) + F("'");
+      if (act->slot == s) page += F(" selected");
+      page += F(">");
+      page += String(s+1) + F("</option>");
+    }
+    page += F("<option value='");
+    page += String(SLOTS+1) + F("'");
+    if (act->slot == SLOTS) page += F(" selected");
+    page += F(">");
+    page += F("</option>");
+    page += F("</select>");
+    page += F("<label for='slotFloatingSelect'>Slot</label>");
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
@@ -1575,7 +1629,7 @@ void get_interfaces_page(unsigned int start, unsigned int len) {
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='inCheck");
     page += String(i) + F("' name='in") + String(i) + F("'");
-    if (interfaces[i-1].midiIn) page += F(" checked");
+    if (IS_INTERFACE_ENABLED(interfaces[i-1].midiIn)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='inCheck");
     page += String(i) + F("'>In</label>");
@@ -1583,7 +1637,7 @@ void get_interfaces_page(unsigned int start, unsigned int len) {
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='outCheck");
     page += String(i) + F("' name='out") + String(i) + F("'");
-    if (interfaces[i-1].midiOut) page += F(" checked");
+    if (IS_INTERFACE_ENABLED(interfaces[i-1].midiOut)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='outCheck");
     page += String(i) + F("'>Out</label>");
@@ -1603,6 +1657,22 @@ void get_interfaces_page(unsigned int start, unsigned int len) {
     page += F(">");
     page += F("<label class='form-check-label' for='clockCheck");
     page += String(i) + F("'>Clock</label>");
+    page += F("</div>");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='showInCheck");
+    page += String(i) + F("' name='showin") + String(i) + F("'");
+    if (IS_SHOW_ENABLED(interfaces[i-1].midiIn)) page += F(" checked");
+    page += F(">");
+    page += F("<label class='form-check-label' for='showInCheck");
+    page += String(i) + F("'>Show Incoming</label>");
+    page += F("</div>");
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='showOutCheck");
+    page += String(i) + F("' name='showout") + String(i) + F("'");
+    if (IS_SHOW_ENABLED(interfaces[i-1].midiOut)) page += F(" checked");
+    page += F(">");
+    page += F("<label class='form-check-label' for='showOutCheck");
+    page += String(i) + F("'>Show Outcoming</label>");
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
@@ -2986,7 +3056,6 @@ void http_handle_globals(AsyncWebServerRequest *request) {
     uiprofile = request->arg("profile");
     currentProfile = constrain(uiprofile.toInt() - 1, 0, PROFILES - 1);
     reloadProfile = true;
-    eeprom_read_profile(currentProfile);
   }
 
   if (request->hasArg("theme") ) {
@@ -3013,10 +3082,41 @@ void http_handle_live(AsyncWebServerRequest *request) {
 }
 
 void http_handle_actions(AsyncWebServerRequest *request) {
+
+  String list;
+  action *a[BANKS];
+  char    n[BANKS][MAXBANKNAME+1];
+
   if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
-  if (request->hasArg("bank"))  uibank   = request->arg("bank");
-  if (request->hasArg("pedal")) uipedal  = request->arg("pedal");
+  if (request->hasArg("bank"))        uibank   = request->arg("bank");
+  if (request->hasArg("pedal"))       uipedal  = request->arg("pedal");
+  if (request->hasArg("banksorder"))  list     = request->arg("banksorder");
+
+  for (byte b = 0; b < BANKS; b++) {
+    a[b] = actions[b];
+    strncpy(n[b], banknames[b], MAXBANKNAME+1);
+  }
+
+  int  i1 = 0;
+  int  i2 = list.indexOf(",");
+  byte to = 0;
+  while (to < BANKS && i2 != -1) {
+    long from = constrain(list.substring(i1, i2).toInt(), 0, BANKS - 1);
+    a[to] = actions[from];
+    strncpy(n[to], banknames[from], MAXBANKNAME+1);
+    to++;
+    i1 = i2 + 1;
+    i2 = (i2 == list.lastIndexOf(",")) ? list.length() : list.indexOf(",", i1);
+  }
+
+  for (byte b = 0; b < BANKS; b++) {
+    actions[b] = a[b];
+    strncpy(banknames[b], n[b], MAXBANKNAME+1);
+  }
+
+  create_banks();
+
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_actions_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
@@ -3117,7 +3217,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->tag1[0]      = 0;
     act->pedal        = p;
     act->button       = 0;
-    act->led          = constrain(act->pedal, 0, LEDS - 1);
+    act->led          = LEDS;
     act->color0       = CRGB::Black;;
     act->color1       = CRGB::Black;
     act->event        = PED_EVENT_NONE;
@@ -3126,6 +3226,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->midiCode     = 0;
     act->midiValue1   = 0;
     act->midiValue2   = 127;
+    act->slot         = SLOTS;
     act->next         = nullptr;
     sort_actions();
     create_banks();
@@ -3145,7 +3246,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->tag1[0]      = 0;
     act->pedal        = constrain(request->arg("action").charAt(3) - '1', 0, PEDALS - 1);
     act->button       = 0;
-    act->led          = constrain(act->pedal, 0, LEDS - 1);
+    act->led          = LEDS;
     act->color0       = CRGB::Black;;
     act->color1       = CRGB::Black;
     act->event        = PED_EVENT_NONE;
@@ -3154,6 +3255,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->midiCode     = 0;
     act->midiValue1   = 0;
     act->midiValue2   = 127;
+    act->slot         = SLOTS;
     act->next         = nullptr;
     sort_actions();
     create_banks();
@@ -3211,7 +3313,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
         strncpy(act->tag0,            request->arg(String("nameoff")  + String(i)).c_str(), MAXACTIONNAME + 1);
         strncpy(act->tag1,            request->arg(String("nameon")   + String(i)).c_str(), MAXACTIONNAME + 1);
         act->button       = constrain(request->arg(String("button")   + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
-        act->led          = constrain(request->arg(String("led")      + String(i)).toInt() - 1, 0, LEDS - 1);
+        act->led          = constrain(request->arg(String("led")      + String(i)).toInt() - 1, 0, LEDS);
         unsigned int red, green, blue;
         sscanf(                       request->arg(String("color0-")  + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
         act->color0       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
@@ -3223,6 +3325,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
         act->midiValue1   = constrain(request->arg(String("from")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
         act->midiValue2   = constrain(request->arg(String("to")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
         act->midiChannel  = constrain(request->arg(String("channel")  + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+        act->slot         = constrain(request->arg(String("slot")     + String(i)).toInt() - 1, 0, SLOTS);;
       }
       act = act->next;
     }
@@ -3309,8 +3412,14 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
     a = request->arg(String("in") + String(i+1));
     interfaces[i].midiIn = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
+    a = request->arg(String("showin") + String(i+1));
+    interfaces[i].midiIn += (a == checked) ? PED_SHOW : 0;
+
     a = request->arg(String("out") + String(i+1));
     interfaces[i].midiOut = (a == checked) ? PED_ENABLE : PED_DISABLE;
+
+    a = request->arg(String("showout") + String(i+1));
+    interfaces[i].midiOut += (a == checked) ? PED_SHOW : 0;
 
     a = request->arg(String("thru") + String(i+1));
     interfaces[i].midiThru = (a == checked) ? PED_ENABLE : PED_DISABLE;
@@ -3683,8 +3792,6 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
 #endif
     firmwareUpdate = PED_UPDATE_HTTP;
     delay(100);
-    leds.setAllLow();
-    leds.write();
     DPRINT("Update Start: %s\n", filename.c_str());
 
     int cmd = (filename.indexOf("spiffs") > -1) ? U_SPIFFS : U_FLASH;
@@ -3709,31 +3816,6 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
     // Write chunked data to the free sketch space
     if (Update.write(data, len) == len) {
       if (Update.size()) {
-        unsigned int progress = 100 * Update.progress() / Update.size();
-        if (progress < 15) {
-          leds.setHigh(0);
-          leds.write();
-        }
-        else if (progress < 30) {
-          leds.setHigh(1);
-          leds.write();
-        }
-        else if (progress < 45) {
-          leds.setHigh(2);
-          leds.write();
-        }
-        else if (progress < 60) {
-          leds.setHigh(3);
-          leds.write();
-        }
-        else if (progress < 75) {
-          leds.setHigh(4);
-          leds.write();
-        }
-        else if (progress < 90) {
-          leds.setHigh(5);
-          leds.write();
-        }
         DPRINT("Progress: %5.1f%%\n", 100.0 * Update.progress() / Update.size());
 #ifdef TTGO_T_DISPLAY
         display_progress_bar_update(Update.progress(), Update.size());
@@ -3757,7 +3839,6 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
   if (final) {
     if (Update.end(true)) {   //true to set the size to the current progress
       DPRINT("Update Success: %uB\n", index+len);
-      leds.kittCar();
 #ifdef TTGO_T_DISPLAY
       display_clear();
       display_progress_bar_title("Success!");
@@ -3968,6 +4049,7 @@ void http_setup() {
   httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
   httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/Sortable.min.js",         SPIFFS, "/js/Sortable.min.js").setDefaultFile("/js/Sortable.min.js").setCacheControl("max-age=600");
   //httpServer.serveStatic("/css/sidebars.css",           SPIFFS, "/css/sidebars.css").setDefaultFile("/css/sidebars.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json").setDefaultFile("/schema.json").setCacheControl("max-age=600");
   httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());

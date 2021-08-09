@@ -112,6 +112,7 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
         jo["Color1"]          = color;
         jo["NameOff"]         = act->tag0;
         jo["NameOn"]          = act->tag1;
+        jo["Slot"]            = act->slot;
         jo["Event"]           = eventName[act->event];
         switch (act->midiMessage) {
           case PED_EMPTY:
@@ -214,10 +215,12 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
       JsonObject jo = jinterfaces.createNestedObject();
       jo["Interface"]       = i + 1;
       jo["Name"]            = interfaces[i].name;
-      jo["In"]              = (interfaces[i].midiIn    == PED_ENABLE);
-      jo["Out"]             = (interfaces[i].midiOut   == PED_ENABLE);
+      jo["In"]              = (IS_INTERFACE_ENABLED(interfaces[i].midiIn));
+      jo["Out"]             = (IS_INTERFACE_ENABLED(interfaces[i].midiOut));
       jo["Thru"]            = (interfaces[i].midiThru  == PED_ENABLE);
       jo["Clock"]           = (interfaces[i].midiClock == PED_ENABLE);
+      jo["ShowIncoming"]    = (IS_SHOW_ENABLED(interfaces[i].midiIn));
+      jo["ShowOutcoming"]   = (IS_SHOW_ENABLED(interfaces[i].midiOut));
     }
   }
 
@@ -409,6 +412,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
             actions[b]->color1         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
             strlcpy(actions[b]->tag0,    jo["NameOff"] | "", sizeof(actions[b]->tag0));
             strlcpy(actions[b]->tag1,    jo["NameOn"]  | "", sizeof(actions[b]->tag1));
+            actions[b]->slot           = jo["Slot"];
             actions[b]->event = PED_EVENT_NONE;
             for (byte m = 0; m <= PED_EVENT_NONE; m++)
               if (eventName[m] == jo["Event"]) {
@@ -470,6 +474,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
                   act->color1         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
                   strlcpy(act->tag0,    jo["NameOff"] | "", sizeof(act->tag0));
                   strlcpy(act->tag1,    jo["NameOn"]  | "", sizeof(act->tag1));
+                  act->slot           = jo["Slot"];
                   act->event = PED_EVENT_NONE;
                   for (byte m = 0; m <= PED_EVENT_NONE; m++)
                     if (eventName[m] == jo["Event"]) {
@@ -528,6 +533,8 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           interfaces[i].midiOut       = (jo["Out"]   ? PED_ENABLE : PED_DISABLE);
           interfaces[i].midiThru      = (jo["Thru"]  ? PED_ENABLE : PED_DISABLE);
           interfaces[i].midiClock     = (jo["Clock"] ? PED_ENABLE : PED_DISABLE);
+          interfaces[i].midiIn        += (jo["ShowIncoming"]  ? PED_SHOW : 0);
+          interfaces[i].midiOut       += (jo["ShowOutcoming"] ? PED_SHOW : 0);
         }
       }
     }
@@ -623,7 +630,7 @@ void load_factory_default()
   act->tag1[0]      = 0;
   act->pedal        = PEDALS - 2;
   act->button       = 0;
-  act->led          = 0;
+  act->led          = LEDS;
   act->color0       = CRGB::Black;;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_PRESS;
@@ -632,13 +639,14 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 1;
   act->midiValue2   = BANKS - 1;
+  act->slot         = SLOTS;
   act->next         = (action*)malloc(sizeof(action));
   act = act->next;
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
   act->pedal        = PEDALS - 1;
   act->button       = 0;
-  act->led          = 0;
+  act->led          = LEDS;
   act->color0       = CRGB::Black;;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_CLICK;
@@ -647,13 +655,14 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 1;
   act->midiValue2   = PROFILES;
+  act->slot         = SLOTS;
   act->next         = (action*)malloc(sizeof(action));
   act = act->next;
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
   act->pedal        = PEDALS - 1;
   act->button       = 0;
-  act->led          = 0;
+  act->led          = LEDS;
   act->color0       = CRGB::Black;;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_DOUBLE_CLICK;
@@ -662,13 +671,14 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 0;
   act->midiValue2   = 127;
+  act->slot         = SLOTS;
   act->next         = (action*)malloc(sizeof(action));
   act = act->next;
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
   act->pedal        = PEDALS - 1;
   act->button       = 0;
-  act->led          = 0;
+  act->led          = LEDS;
   act->color0       = CRGB::Black;;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_LONG_PRESS;
@@ -677,6 +687,58 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 0;
   act->midiValue2   = 127;
+  act->slot         = SLOTS;
+  act->next         = nullptr;
+  create_banks();
+#else
+  action *act;
+  act = actions[0] = (action*)malloc(sizeof(action));
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->pedal        = PEDALS - 1;
+  act->button       = 0;
+  act->led          = LEDS;
+  act->color0       = CRGB::Black;;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_CLICK;
+  act->midiMessage  = PED_ACTION_PROFILE_PLUS;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 1;
+  act->midiValue2   = PROFILES;
+  act->slot         = SLOTS;
+  act->next         = (action*)malloc(sizeof(action));
+  act = act->next;
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->pedal        = PEDALS - 1;
+  act->button       = 0;
+  act->led          = LEDS;
+  act->color0       = CRGB::Black;;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_DOUBLE_CLICK;
+  act->midiMessage  = PED_ACTION_PROFILE_MINUS;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 0;
+  act->midiValue2   = 127;
+  act->slot         = SLOTS;
+  act->next         = (action*)malloc(sizeof(action));
+  act = act->next;
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->pedal        = PEDALS - 1;
+  act->button       = 0;
+  act->led          = LEDS;
+  act->color0       = CRGB::Black;;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_LONG_PRESS;
+  act->midiMessage  = PED_ACTION_DEVICE_INFO;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 0;
+  act->midiValue2   = 127;
+  act->slot         = SLOTS;
   act->next         = nullptr;
   create_banks();
 #endif
@@ -923,6 +985,31 @@ void eeprom_update_profile(byte profile = currentProfile)
   DPRINT(" ... done\n");
 }
 
+void eeprom_update_current_bank(byte profile = currentProfile, byte bank = currentBank)
+{
+  DPRINT("Updating NVS Profile ");
+
+  switch (profile) {
+    case 0:
+      preferences.begin("A", false);
+      DPRINT("A");
+      break;
+    case 1:
+      preferences.begin("B", false);
+      DPRINT("B");
+      break;
+    case 2:
+      preferences.begin("C", false);
+      DPRINT("C");
+      break;
+  }
+  DPRINT(" ...\n");
+  preferences.putUChar("Current Bank", bank);
+  preferences.end();
+  DPRINT("[NVS][Current Bank]:  %d\n", bank);
+  DPRINT("done\n");
+}
+
 void eeprom_read_global()
 {
   DPRINT("Reading NVS Global ... ");
@@ -997,6 +1084,8 @@ void eeprom_read_profile(byte profile = currentProfile)
       DPRINT("C");
       break;
   }
+  DPRINT(" ... ");
+
   preferences.getBytes("Pedals",      &pedals,      sizeof(pedals));
   preferences.getBytes("BankNames",   &banknames,   sizeof(banknames));
   preferences.getBytes("Interfaces",  &interfaces,  sizeof(interfaces));

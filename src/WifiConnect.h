@@ -25,10 +25,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define SMART_CONFIG_TIMEOUT    15
 #define WPS_TIMEOUT             30
 
-#define WIFI_LED        2
-#define WIFI_LED_OFF()  digitalWrite(WIFI_LED, LOW)
-#define WIFI_LED_ON()   digitalWrite(WIFI_LED, HIGH)
-
 #ifdef WIFI
 
 void wifi_connect();
@@ -330,17 +326,8 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 }
 
 
-void status_blink()
-{
-  WIFI_LED_ON();
-  delay(50);
-  WIFI_LED_OFF();
-}
-
 void ap_mode_start()
 {
-  WIFI_LED_OFF();
-
   WiFi.disconnect();  // mandatory after the unsuccessful try to connect to an AP
                       // and before setting up the softAP
 
@@ -368,8 +355,6 @@ void ap_mode_start()
 
 void ap_mode_stop()
 {
-  WIFI_LED_OFF();
-
   stop_services();
 
   if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA) {
@@ -399,14 +384,16 @@ bool smart_config()
 
   DPRINT("SmartConfig started\n");
   display_progress_bar_title("SmartConfig");
-  leds.setAllLow();
-  leds.write();
-  for (int i = 0; i < SMART_CONFIG_TIMEOUT && !WiFi.smartConfigDone(); i++) {
-    display_progress_bar_update(i, SMART_CONFIG_TIMEOUT-1);
-    status_blink();
-    delay(950);
-    leds.setHigh(map2(i, 0, SMART_CONFIG_TIMEOUT-2, 0, 5));
-    leds.write();
+  unsigned long startCrono = millis();
+  unsigned long crono = 0;
+  CRGB          color = CRGB::Cyan;
+  color.nscale8(ledsOnBrightness);
+  while (!WiFi.smartConfigDone() && crono / 1000 < SMART_CONFIG_TIMEOUT) {
+    if (crono %  200 < 5) display_progress_bar_update(crono / 200, SMART_CONFIG_TIMEOUT*5-1);
+    if (crono % 1500 < 5) fill_solid(fastleds, LEDS, color);
+    fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
+    FastLED.show();
+    crono = millis() - startCrono;
   }
   display_progress_bar_update(1, 1);
 
@@ -426,21 +413,10 @@ bool smart_config()
   else
     DPRINT("SmartConfig timeout\n");
 
-  if (WiFi.smartConfigDone())
-  {
-    WiFi.stopSmartConfig();
-    leds.kittCar();
-    display_clear();
-    return true;
-  }
-  else
-  {
-    WiFi.stopSmartConfig();
-    leds.setAllLow();
-    leds.write();
-    display_clear();
-    return false;
-  }
+  WiFi.stopSmartConfig();
+  display_clear();
+
+  return WiFi.smartConfigDone();
 }
 
 bool wps_config()
@@ -462,31 +438,33 @@ bool wps_config()
 
   DPRINT("WPS started\n");
   display_progress_bar_title2("Press WPS button on AP", "WPS Setup");
-  leds.setAllLow();
-  leds.write();
-  for (int i = 0; i < 10*WPS_TIMEOUT && wpsStatus == 0; i++) {
-    display_progress_bar_update(i, 10*WPS_TIMEOUT-1);
-    leds.setHigh(map2(i, 0, 10*WPS_TIMEOUT-10, 5, 0));
-    leds.write();
-    delay(100);
+  unsigned long startCrono = millis();
+  unsigned long crono = 0;
+  CRGB          color = CRGB::Magenta;
+  color.nscale8(ledsOnBrightness);
+  while (wpsStatus == 0 && crono / 1000 < WPS_TIMEOUT) {
+    if (crono %  200 < 5) display_progress_bar_update(crono / 200, WPS_TIMEOUT*5-1);
+    if (crono % 1500 < 5) fill_solid(fastleds, LEDS, color);
+    fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
+    FastLED.show();
+    crono = millis() - startCrono;
   }
   display_progress_bar_update(1, 1);
-  leds.setAllLow();
-  leds.write();
 
   if (wpsStatus == 1) {
     // Wait for WiFi to connect to AP
     display_progress_bar_title2("Connecting to", WiFi.SSID());
-    for (byte i = 0; i < WIFI_CONNECT_TIMEOUT * 2 && !WiFi.isConnected(); i++) {
-      display_progress_bar_update(i, WIFI_CONNECT_TIMEOUT*2-1);
-      status_blink();
-      delay(100);
-      status_blink();
-      delay(300);
+    unsigned long startCrono = millis();
+    unsigned long crono = millis() - startCrono;
+    while (!WiFi.isConnected() && crono / 1000 < WIFI_CONNECT_TIMEOUT) {
+      if (crono % 200 < 5) display_progress_bar_update(crono / 200, WIFI_CONNECT_TIMEOUT * 5 - 1);
+      fastleds[(crono / 500) % LEDS] = CRGB::Blue;
+      fastleds[(crono / 500) % LEDS].nscale8(ledsOnBrightness);
+      fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
+      FastLED.show();
+      crono = millis() - startCrono;
     }
     display_progress_bar_update(1, 1);
-
-    WiFi.isConnected() ? WIFI_LED_ON() : WIFI_LED_OFF();
 
     if (WiFi.isConnected()) {
       wifiSSID = WiFi.SSID();
@@ -520,28 +498,18 @@ bool ap_connect(String ssid, String password)
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), password.c_str());
   display_progress_bar_title2("Connecting to", ssid);
-  leds.setAllLow();
-  leds.write();
-  for (byte i = 0; i < WIFI_CONNECT_TIMEOUT * 2 && !WiFi.isConnected(); i++) {
-    display_progress_bar_update(i, WIFI_CONNECT_TIMEOUT*2-1);
-    status_blink();
-    delay(100);
-    status_blink();
-    delay(300);
-    leds.setHigh(map2(i, 0, WIFI_CONNECT_TIMEOUT*2-2, 0, 5));
-    leds.write();
+  unsigned long startCrono = millis();
+  unsigned long crono = millis() - startCrono;
+  while (!WiFi.isConnected() && crono / 1000 < WIFI_CONNECT_TIMEOUT) {
+    if (crono % 200 < 5) display_progress_bar_update(crono / 200, WIFI_CONNECT_TIMEOUT * 5 - 1);
+    fastleds[(crono / 500) % LEDS] = CRGB::Blue;
+    fastleds[(crono / 500) % LEDS].nscale8(ledsOnBrightness);
+    fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
+    FastLED.show();
+    crono = millis() - startCrono;
   }
   display_progress_bar_update(1, 1);
 
-  if (WiFi.isConnected()) {
-    WIFI_LED_ON();
-    leds.setAllHigh();
-    leds.write();
-    delay(100);
-  }
-  else WIFI_LED_OFF();
-  leds.setAllLow();
-  leds.write();
   display_clear();
 
   return WiFi.isConnected();

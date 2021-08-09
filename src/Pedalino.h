@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.2.2"
+#define VERSION         "2.2.10"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -24,7 +24,11 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of switches in a resistor ladder
-#define LEDS              6   // number of WS2812B leds
+#define LEDS             10   // number of WS2812B leds
+#define SLOTS_ROWS        2
+#define SLOTS_COLS        4
+#define SLOTS             SLOTS_ROWS * SLOTS_COLS
+
 
 #define MAXACTIONNAME    10
 #define MAXBANKNAME      10
@@ -90,13 +94,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define PIN_A(x)          pinA[x]
 
 #include <FastLED.h>
-CRGB fastleds[LEDS];
-
-#include "ShiftOut.h"
-
-#define NUMBER_OF_SHIFT_REGISTERS 1
-
-ShiftOut<NUMBER_OF_SHIFT_REGISTERS> leds;
+CRGB fastleds[LEDS+1];                  // fastleds[LEDS] not used
 
 // Serial MIDI interfaces
 
@@ -251,6 +249,10 @@ const char *pedalAnalogResponse[] = {"Linear", "Log", "Antilog"};
 
 #define PED_DISABLE             0
 #define PED_ENABLE              1
+#define PED_SHOW                2
+
+#define IS_INTERFACE_ENABLED(x)   (((x) & PED_ENABLE) == PED_ENABLE)
+#define IS_SHOW_ENABLED(x)        (((x) & PED_SHOW  ) == PED_SHOW  )
 
 #define PED_MTC_NONE            0
 #define PED_MTC_SLAVE           1
@@ -282,7 +284,7 @@ struct action {
   };
   byte                   pedal;
   byte                   button;
-  byte                   led;
+  byte                   led;             // 0..LEDS-1 existing leds, if equal to LEDS no led assigned to action
   uint32_t               color0;
   uint32_t               color1;
   byte                   event;
@@ -303,6 +305,7 @@ struct action {
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue1;
   byte                   midiValue2;
+  byte                   slot;            // 0..SLOTS-1 real slots. If equal to SLOTS no slot selected
   action                *next;
 };
 
@@ -380,22 +383,25 @@ pedal     pedals[PEDALS];                         // Pedals Setup
 message   sequences[SEQUENCES][STEPS];            // Sequences Setup
 byte      currentMIDIValue[BANKS][PEDALS][LADDER_STEPS];
 message   lastMIDIMessage[BANKS];
+CRGB      lastColor;
 byte      lastProgramChange[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint16_t  lastBankSelect[16]    = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 CRGB      lastLedColor[BANKS][LEDS];
 
 interface interfaces[] = {
-                           "USB MIDI   ", 0, 1, 0, 0,
-                           "Legacy MIDI", 0, 1, 0, 0,
-                           "RTP-MIDI   ", 1, 1, 0, 0,
-                           "ipMIDI     ", 1, 1, 0, 0,
-                           "BLE MIDI   ", 1, 1, 0, 0,
-                           "OSC        ", 1, 1, 0, 0
+                           "USB MIDI   ", 0,          PED_ENABLE + PED_SHOW, 0, 0,
+                           "Legacy MIDI", 0,          PED_ENABLE + PED_SHOW, 0, 0,
+                           "RTP-MIDI   ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
+                           "ipMIDI     ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
+                           "BLE MIDI   ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
+                           "OSC        ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0
                           };                       // Interfaces Setup
 
 AceButton       bootButton;
 ButtonConfig    bootButtonConfig;
 uint16_t        ladderLevels[LADDER_STEPS+1] = {497, 660, 752, 816, 876, 945, ADC_RESOLUTION - 1};  // TC-Helicon Switch 6
+
+char slots[SLOTS_ROWS][SLOTS_COLS][MAXBANKNAME+1];
 
 bool  tapDanceMode            = false;
 bool  repeatOnBankSwitch      = false;
@@ -413,6 +419,7 @@ byte  currentInterface        = PED_USBMIDI;
 byte  lastUsedSwitch          = 0xFF;
 byte  lastUsedPedal           = 0xFF;
 byte  lastUsed                = 0xFF;   // Pedal or switch
+byte  lastSlot                = SLOTS;
 char  lastPedalName[MAXACTIONNAME+1] = "";
 bool  selectBank              = true;
 byte  currentMidiTimeCode     = PED_MTC_NONE;
@@ -498,6 +505,9 @@ long map2(long x, long in_min, long in_max, long out_min, long out_max) {
     const long dividend = out_max - out_min;
     const long divisor = in_max - in_min;
     const long delta = x - in_min;
+
+    if (x == in_min) return out_min;
+    if (x == in_max) return out_max;
 
     return (divisor == 0 ? (x <= in_min ? out_min : out_max) : (delta * dividend + (divisor / 2)) / divisor + out_min);
 }

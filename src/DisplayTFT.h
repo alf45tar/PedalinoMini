@@ -78,7 +78,7 @@ void display_progress_bar_title2(String title1, String title2)
 
 }
 
-void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t progress, bool invert = false)
+void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t progress, bool invert = false, String label = "")
 {
   height += height % 2;
 
@@ -107,6 +107,19 @@ void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t heigh
     bar.fillCircle(radius, radius, innerRadius, TFT_INDEX_ORANGE);
     bar.fillRect(radius + 1, 2, maxProgressWidth, height - 4, TFT_INDEX_ORANGE);
     bar.fillCircle(radius + maxProgressWidth, radius, innerRadius, TFT_INDEX_ORANGE);
+    if (!label.isEmpty()) {
+      bar.setFreeFont(&FreeSansBold9pt7b);
+      if (maxProgressWidth - 2 < bar.textWidth(label)) {
+        //bar.setTextDatum(MC_DATUM);
+        //bar.setTextColor(TFT_INDEX_ORANGE, TFT_INDEX_BLACK);
+        //bar.drawString(label, width / 2, radius - 2);
+      }
+      else {
+        bar.setTextDatum(MR_DATUM);
+        bar.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_ORANGE);
+        bar.drawString(label, radius + maxProgressWidth, radius - 2);
+      }
+    }
   }
 
   bar.pushSprite(x, y);
@@ -183,7 +196,6 @@ void display_progress_bar_2_label(unsigned int label, unsigned int x)
   sprite.deleteSprite();
 }
 
-
 void topOverlay()
 {
   TFT_eSprite top = TFT_eSprite(&display);
@@ -192,9 +204,9 @@ void topOverlay()
   top.createSprite(display.width(), 24);
 
   if (scrollingMode) {
-    static byte frame = 0;
+    static unsigned int frame = 0;
 
-    if (frame < 40) {
+    if (frame < 100) {
         top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
         top.setFreeFont(&FreeSansBold12pt7b);
         top.setTextDatum(MC_DATUM);
@@ -202,7 +214,7 @@ void topOverlay()
         top.setTextFont(1);
         top.setTextDatum(BL_DATUM);
         top.drawString("TM", top.width() - 40, top.height() / 2 - 5);
-    } else if (frame < 80) {
+    } else if (frame < 200) {
         top.setFreeFont(&FreeSans12pt7b);
         top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
         top.setTextDatum(TL_DATUM);
@@ -211,65 +223,127 @@ void topOverlay()
         top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
         top.setTextDatum(TR_DATUM);
         top.drawString(host, top.width(), 0);
-    } else if (frame < 120) {
+    } else if (frame < 300) {
 #ifdef WIFI
-  switch (WiFi.getMode()) {
-    case WIFI_AP:
-    case WIFI_AP_STA:
-      top.setFreeFont(&FreeSans12pt7b);
-      top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
-      top.setTextDatum(TL_DATUM);
-      top.drawString("AP:", 0, 0);
-      top.setFreeFont(&FreeSans12pt7b);
-      top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
-      top.setTextDatum(TR_DATUM);
-      top.drawString(ssidSoftAP, top.width(), 0);
-      break;
-    case WIFI_STA:
-      top.setFreeFont(&FreeSans12pt7b);
-      top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
-      top.setTextDatum(TL_DATUM);
-      top.drawString("SSID:", 0, 0);
-      top.setFreeFont(&FreeSans12pt7b);
-      top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
-      top.setTextDatum(TR_DATUM);
-      top.drawString(wifiSSID, top.width(), 0);
-      break;
-    case WIFI_MODE_MAX:
-    case WIFI_MODE_NULL:
-      break;
-  }
+        switch (WiFi.getMode()) {
+          case WIFI_AP:
+          case WIFI_AP_STA:
+            top.setFreeFont(&FreeSans12pt7b);
+            top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+            top.setTextDatum(TL_DATUM);
+            top.drawString("AP:", 0, 0);
+            top.setFreeFont(&FreeSans12pt7b);
+            top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
+            top.setTextDatum(TR_DATUM);
+            top.drawString(ssidSoftAP, top.width(), 0);
+            break;
+          case WIFI_STA:
+            top.setFreeFont(&FreeSans12pt7b);
+            top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+            top.setTextDatum(TL_DATUM);
+            top.drawString("SSID:", 0, 0);
+            top.setFreeFont(&FreeSans12pt7b);
+            top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
+            top.setTextDatum(TR_DATUM);
+            top.drawString(wifiSSID, top.width(), 0);
+            break;
+          case WIFI_MODE_MAX:
+          case WIFI_MODE_NULL:
+            break;
+        }
 #endif
-    } else if (frame < 160) {
+    } else if (frame < 400) {
 #ifdef WIFI
-  switch (WiFi.getMode()) {
-    case WIFI_AP:
-    case WIFI_AP_STA:
-      top.setFreeFont(&FreeSans12pt7b);
-      top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
-      top.setTextDatum(TL_DATUM);
-      top.drawString("AP IP:", 0, 0);
-      top.setFreeFont(&FreeSans12pt7b);
-      top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
-      top.setTextDatum(TR_DATUM);
-      top.drawString(WiFi.softAPIP().toString(), top.width(), 0);
-      break;
-    case WIFI_STA:
-      top.setFreeFont(&FreeSans12pt7b);
-      top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
-      top.setTextDatum(TL_DATUM);
-      top.drawString("IP:", 0, 0);
-      top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
-      top.setTextDatum(TR_DATUM);
-      top.setFreeFont(&FreeSans12pt7b);
-      top.drawString(WiFi.localIP().toString(), top.width(), 0);
-      break;
-    case WIFI_MODE_MAX:
-    case WIFI_MODE_NULL:
-      break;
-  }
+        switch (WiFi.getMode()) {
+          case WIFI_AP:
+          case WIFI_AP_STA:
+            top.setFreeFont(&FreeSans12pt7b);
+            top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+            top.setTextDatum(TL_DATUM);
+            top.drawString("AP IP:", 0, 0);
+            top.setFreeFont(&FreeSans12pt7b);
+            top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
+            top.setTextDatum(TR_DATUM);
+            top.drawString(WiFi.softAPIP().toString(), top.width(), 0);
+            break;
+          case WIFI_STA:
+            top.setFreeFont(&FreeSans12pt7b);
+            top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+            top.setTextDatum(TL_DATUM);
+            top.drawString("IP:", 0, 0);
+            top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
+            top.setTextDatum(TR_DATUM);
+            top.setFreeFont(&FreeSans12pt7b);
+            top.drawString(WiFi.localIP().toString(), top.width(), 0);
+            break;
+          case WIFI_MODE_MAX:
+          case WIFI_MODE_NULL:
+            break;
+        }
 #endif
-    } else if (frame < 200) {
+    } else if (frame < 600) {
+      top.setFreeFont(&FreeSansBold9pt7b);
+      top.setTextDatum(MC_DATUM);
+
+#ifdef BLE
+      if (bleEnabled) {
+        if (bleMidiConnected) {
+          top.fillRect(0, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+          top.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
+        }
+        else {
+          top.fillRect(0, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
+          top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+        }
+        top.drawRoundRect(0, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
+        top.drawRoundRect(0, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
+        top.drawRoundRect(0, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
+        top.drawString("BLE", 1 * display.width() / 8, 11);
+      }
+#endif
+
+#ifdef WIFI
+      if (wifiEnabled) {
+        if (appleMidiConnected) {
+          top.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+          top.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
+        }
+        else {
+          top.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
+          top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+        }
+        top.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
+        top.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
+        top.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
+        top.drawString("MIDI",   3 * display.width() / 8, 11);
+        if (interfaces[PED_IPMIDI].midiIn || interfaces[PED_IPMIDI].midiOut) {
+          top.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+          top.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
+        }
+        else {
+          top.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_BLACK);
+          top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+        }
+        top.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
+        top.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
+        top.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
+        top.drawString("ipMidi", 5 * display.width() / 8, 11);
+
+        if (interfaces[PED_OSC].midiIn    || interfaces[PED_OSC].midiOut) {
+          top.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+          top.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
+        }
+        else {
+          top.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
+          top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
+        }
+        top.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
+        top.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
+        top.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
+        top.drawString("OSC", 7 * display.width() / 8, 11);
+      }
+#endif
+    } else if (frame < 600) {
         top.setFreeFont(&FreeSans12pt7b);
         top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
         top.setTextDatum(TL_DATUM);
@@ -279,7 +353,7 @@ void topOverlay()
         top.setTextDatum(TR_DATUM);
         top.drawString(VERSION, top.width(), 0);
     }
-    frame= (frame + 1) % (5*8*5);
+    frame = (frame + 1) % 600;
   }
   else
   if ((millis() >= endMillis2) ||
@@ -329,14 +403,6 @@ void topOverlay()
       for (byte c = 1; c < 6; c++)
         top.drawFastVLine(1+c*6, 0, 24, TFT_BLACK);
       */
-      /*
-      top.setSwapBytes(true);
-      if      (wifiLevel < -90) top.pushImage(1, 1, 32, 22, w0);
-      else if (wifiLevel < -80) top.pushImage(1, 1, 32, 22, w25);
-      else if (wifiLevel < -70) top.pushImage(1, 1, 32, 22, w50);
-      else if (wifiLevel < -60) top.pushImage(1, 1, 32, 22, w75);
-      else                   top.pushImage(1, 1, 32, 22, w100);
-      */
     }
 #endif
 
@@ -348,34 +414,16 @@ void topOverlay()
       top.drawLine(36,  1, 41,  6, TFT_INDEX_BLUE);
       top.drawLine(36, 22, 41, 16, TFT_INDEX_BLUE);
      }
-    /*
-    top.setSwapBytes(true);
-    if (bleMidiConnected)
-      if (wifiEnabled) top.pushImage(40, 1, 16, 22, bt);
-      else top.pushImage(1, 1, 16, 22, bt);
-    else if (wifiEnabled) top.fillRect(40, 1, 16, 22, TFT_BLACK);
-      else top.fillRect(1, 1, 16, 22, TFT_BLACK);
-    */
 #endif
 
 #ifdef BATTERY
     top.drawRoundRect(display.width() - 50, 1, 44, 20, 4, TFT_INDEX_WHITE);
     top.fillRoundRect(display.width() - 6, 7, 4, 8, 2, TFT_INDEX_WHITE);
-    top.fillRoundRect(display.width() - 50 + 2, 1 + 2, map2(constrain(batteryVoltage, 3000, 4000), 3000, 4000, 0, 40), 20 - 4, 4, TFT_INDEX_DARKGREEN);
-    if (batteryVoltage > 4200) {
+    top.fillRoundRect(display.width() - 50 + 2, 1 + 2, map2(constrain(batteryVoltage, 3000, 4100), 3100, 4100, 0, 40), 20 - 4, 4, TFT_INDEX_DARKGREEN);
+    if (batteryVoltage > 4400) {
       top.fillTriangle(display.width() - 28,  3, display.width() - 34, 11, display.width() - 28, 11, TFT_INDEX_WHITE);
       top.fillTriangle(display.width() - 28, 18, display.width() - 23, 10, display.width() - 28, 10, TFT_INDEX_WHITE);
     }
-/*
-    top.setSwapBytes(true);
-    if      (batteryVoltage > 4200) top.pushImage(display.width() - 50, 1, 50, 22, bcharge);
-    else if (batteryVoltage > 4000) top.pushImage(display.width() - 50, 1, 50, 22, b100);
-    else if (batteryVoltage > 3800) top.pushImage(display.width() - 50, 1, 50, 22, b75);
-    else if (batteryVoltage > 3600) top.pushImage(display.width() - 50, 1, 50, 22, b50);
-    else if (batteryVoltage > 3400) top.pushImage(display.width() - 50, 1, 50, 22, b25);
-    else if (batteryVoltage > 3200) top.pushImage(display.width() - 50, 1, 50, 22, b10);
-    else top.pushImage(display.width() - 50, 1, 50, 22, b0);
-*/
 #endif
 
     top.setFreeFont(&FreeSansBold9pt7b);
@@ -500,8 +548,6 @@ void topOverlay()
 
 void bottomOverlay()
 {
-  if (scrollingMode) return;
-
   if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
     int p;
     switch (m1) {
@@ -513,8 +559,10 @@ void bottomOverlay()
       case midi::ControlChange:
         m3 = constrain(m3, rmin, rmax);
         p = map2(m3, rmin, rmax, 0, 100);
-        display_progress_bar(0, display.height() - 24, display.width(), 24, p);
-        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map2(p, 0, 100, 24, display.width() - 24));
+        if (lastPedalName[0] == 0)
+          display_progress_bar(0, display.height() - 24, display.width(), 24, p);
+        else
+          display_progress_bar(0, display.height() - 24, display.width(), 24, p, false, String(m3));
         break;
 
       case midi::ProgramChange:
@@ -522,8 +570,10 @@ void bottomOverlay()
         rmax = MIDI_RESOLUTION - 1;
         m3 = constrain(m2, rmin, rmax);
         p = map2(m2, rmin, rmax, 0, 100);
-        display_progress_bar(0, display.height() - 24, display.width(), 24, p);
-        if (lastPedalName[0] != 0) display_progress_bar_2_label(m3, map2(p, 0, 100, 24, display.width() - 24));
+        if (lastPedalName[0] == 0)
+          display_progress_bar(0, display.height() - 24, display.width(), 24, p);
+        else
+          display_progress_bar(0, display.height() - 24, display.width(), 24, p, false, String(m3));
         break;
 
       case midi::PitchBend:
@@ -545,89 +595,14 @@ void bottomOverlay()
         break;
     }
   }
-  else if (scrollingMode || MTC.getMode() != MidiTimeCode::SynchroNone) {
-
-    TFT_eSprite bottom = TFT_eSprite(&display);
-
-    bottom.setColorDepth(4);
-    bottom.createSprite(display.width(), 24);
-    bottom.fillRect(0, 0, display.width(), 24, TFT_INDEX_BLACK);
-
-    bottom.setFreeFont(&FreeSansBold9pt7b);
-    bottom.setTextDatum(MC_DATUM);
-
-#ifdef BLE
-    if (bleEnabled) {
-       if (bleMidiConnected) {
-        bottom.fillRect(0, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
-        bottom.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
-      }
-      else {
-        bottom.fillRect(0, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
-        bottom.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
-      }
-      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
-      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
-      bottom.drawRoundRect(0, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
-      bottom.drawString("BLE", 1 * display.width() / 8, 11);
-    }
-#endif
-
-#ifdef WIFI
-    if (wifiEnabled) {
-      if (appleMidiConnected) {
-        bottom.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
-        bottom.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
-      }
-      else {
-        bottom.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
-        bottom.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
-      }
-      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
-      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
-      bottom.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
-      bottom.drawString("MIDI",   3 * display.width() / 8, 11);
-      if (interfaces[PED_IPMIDI].midiIn || interfaces[PED_IPMIDI].midiOut) {
-        bottom.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
-        bottom.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
-      }
-      else {
-        bottom.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_BLACK);
-        bottom.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
-      }
-      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
-      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
-      bottom.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
-      bottom.drawString("ipMidi", 5 * display.width() / 8, 11);
-
-      if (interfaces[PED_OSC].midiIn    || interfaces[PED_OSC].midiOut) {
-        bottom.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
-        bottom.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
-      }
-      else {
-        bottom.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
-        bottom.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
-      }
-      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
-      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
-      bottom.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
-      bottom.drawString("OSC", 7 * display.width() / 8, 11);
-    }
-#endif
-
-    bottom.pushSprite(0, display.height() - 24);
-  }
 }
 
 
 void drawFrame1(int16_t x, int16_t y)
 {
   if (millis() < endMillis2 && lastPedalName[0] != ':') {
-
-    //ui.disableAutoTransition();
-    //ui.switchToFrame(0);
     if (strlen(lastPedalName) != 0 && lastPedalName[strlen(lastPedalName) - 1] == '.') lastPedalName[strlen(lastPedalName) - 1] = 0;
-    if (!scrollingMode && lastPedalName[0] == 0) {
+    if (lastPedalName[0] == 0) {
       display.fillRect(0, 24, display.width(), 6, TFT_INDEX_BLACK);
       TFT_eSprite sprite = TFT_eSprite(&display);
       sprite.setColorDepth(1);
@@ -642,7 +617,7 @@ void drawFrame1(int16_t x, int16_t y)
           sprite.setFreeFont(&FreeSans24pt7b);
           sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
           sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
-          display.fillRect(0, display.height() - 24, display.width(), 24, TFT_INDEX_BLACK);
+          display.fillRect(0, display.height() - 24, display.width(), 24, TFT_BLACK);
           break;
         case midi::NoteOn:
         case midi::NoteOff:
@@ -1073,7 +1048,7 @@ void drawFrame1(int16_t x, int16_t y)
         // Center area
         if (((millis() - ms < 4000) && (banknames[currentBank][0] != '.')) || (banknames[currentBank][0] == ':')) {
           // Display bank name
-          sprite.drawRect(0, 20, sprite.width(), sprite.height() - 42, 1);
+          //sprite.drawRect(0, 20, sprite.width(), sprite.height() - 42, 1);
           name = (banknames[currentBank][0] == ':') ? &banknames[currentBank][1] : banknames[currentBank];
           name.replace(String("##"), String(currentBank));
           sprite.setFreeFont(&FreeSansBold18pt7b);
@@ -1113,7 +1088,6 @@ void drawFrame1(int16_t x, int16_t y)
         sprite.pushSprite(0, 30);
         sprite.deleteSprite();
       }
-      //ui.disableAutoTransition();
     }
   }
 
@@ -1319,7 +1293,7 @@ void display_update()
 
     interruptCounter3 = 0;
 
-    if (uiUpdate) {
+    if (uiUpdate && !reloadProfile) {
       topOverlay();
       drawFrame1(0, 0);
       bottomOverlay();

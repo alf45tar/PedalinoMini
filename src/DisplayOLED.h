@@ -409,11 +409,6 @@ void display_progress_bar_2_label(unsigned int label, unsigned int x)
 
 void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 {
-#ifdef BATTERY2
-  static uint16_t voltage = bat.voltage();
-  static uint8_t  level   = bat.level(voltage);
-#endif
-
     display->setTextAlignment(TEXT_ALIGN_LEFT);
 
 #ifdef WIFI
@@ -444,23 +439,14 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
   if ((millis() >= endMillis2) ||
       (millis() < endMillis2 && MTC.getMode() == MidiTimeCode::SynchroNone)) {
 
-#ifdef BATTERY2
+#ifdef BATTERY
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(batteryIndicator);
-    voltage = (199*voltage + bat.voltage()) / 200;
-    level   = (199*level + bat.level(voltage)) / 200;
-    /*
-    if      (level == 100) display->drawString(128, 0, String((millis() >> 10) % 4));
-    else if (level >   70) display->drawString(128, 0, String(3));
-    else if (level >   40) display->drawString(128, 0, String(2));
-    else if (level >   10) display->drawString(128, 0, String(1));
-    else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
-    else display->drawString(128, 0, String(4));
-    */
-    if      (voltage > 3700) display->drawString(128, 0, String((millis() >> 10) % 4));
-    else if (voltage > 3600) display->drawString(128, 0, String(3));
-    else if (voltage > 3300) display->drawString(128, 0, String(2));
-    else if (voltage > 3100) display->drawString(128, 0, String(1));
+    if      (batteryVoltage > 4300) display->drawString(128, 0, String((millis() >> 10) % 4));
+    else if (batteryVoltage > 3800) display->drawString(128, 0, String(4));
+    else if (batteryVoltage > 3600) display->drawString(128, 0, String(3));
+    else if (batteryVoltage > 3400) display->drawString(128, 0, String(2));
+    else if (batteryVoltage > 3200) display->drawString(128, 0, String(1));
     else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
     else display->drawString(128, 0, String(4));
 #endif
@@ -1114,7 +1100,6 @@ void display_init()
     display.clear();
     display.drawXbm((display.getWidth() - WIFI_LOGO_WIDTH) / 2, (display.getHeight() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
     display.display();
-    leds.kittCar();
   }
 #endif
 
@@ -1123,7 +1108,7 @@ void display_init()
     display.clear();
     display.drawXbm((display.getWidth() - BLUETOOTH_LOGO_WIDTH) / 2, (display.getHeight() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
     display.display();
-    leds.kittCar();
+
   }
 #endif
 
@@ -1174,7 +1159,7 @@ void display_ui_update_enable()
 
 void display_update()
 {
-  if (uiUpdate) ui.update();
+  if (uiUpdate && !reloadProfile) ui.update();
 }
 
 void display_off()

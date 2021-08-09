@@ -58,7 +58,7 @@ New features and bug corrections will be released to this public repository when
 
   _Select the level of sponsorship which best fit to you. Sponsorship starts from $1 per month._
 
-  >Goal is 22 sponsors in total. Starting point is 12 sponsors as of May 12th, 2021.
+  >Goal is 32 sponsors in total. Starting point is 22 sponsors as of August 9th, 2021.
 
 - **Double the stars**
 
@@ -66,11 +66,11 @@ New features and bug corrections will be released to this public repository when
 
   >Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
 
-- **3 months from May 12th, 2021**
+- **3 months from August 9th, 2021**
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on August 11th, 2021.
+  >Goal is reached on November 10th, 2021.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
@@ -81,9 +81,9 @@ The following features
 
 has been released to public on May 12th, 2021 thanks to the following sponsors: @MaxZak2020, @Alt Shift Creative, @serhatsoyyigit, @Kubbik1, @rigr, @jwyse, @teopost, @davidin73, @juani13973, @ba********, @MiqViq, @jisv48.
 
-Sponsors version additions/fixes since May 12th, 2021:
+The following features/fixes:
 
-- Bootstrap 5.0.1
+- Bootstrap 5.0.2
 - Fixed BOOT button actions in default configuration
 - Fixed compilation error when BATTERY flag defined for board without battery support
 - Fixed battery indicator for generic ESP32 board without battery support
@@ -94,6 +94,14 @@ Sponsors version additions/fixes since May 12th, 2021:
 - Fixed actions disappering on WebUI after profile switch
 - Drag & drop banks reorder
 - Current bank saved before profile switch (only via pedal)
+- Fixed Network MIDI/AppleMIDI/RTP-MIDI not working in AP mode
+- Leds effects
+
+has been released to public on August 9th, 2021 thanks to the following sponsors: richardjs, P********, j*****, TarFilarek. wespac001 x 2, DR-Mello, DWSQUIRES, e36910, itsptadeu,
+
+Sponsors version additions/fixes since August 9th, 2021:
+
+- None
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -107,11 +115,11 @@ The shortest bill of materials ever: an ESP32 board and a OgoLED display. That's
 
 Not enough short?
 
-- An all-in-one [TTGO T-Eight ESP32](https://github.com/LilyGO/TTGO-T-Eight-ESP32) with a bigger OLED display (1.3"), 4MB PSRAM and onboard lithium battery interface
+- An all-in-one [TTGO T-Display](http://www.lilygo.cn/prod_view.aspx?TypeId=50033&Id=1126&FId=t3:50033:3) with an 1.14" IPS display and onboard lithium battery interface
 
 - An all-in-one [Heltec WiFi Kit 32](https://heltec.org/project/wifi-kit-32/) with an integrated OLED display (0.96") and onboard lithium battery interface
 
-- The new [TTGO T-Display](http://www.lilygo.cn/prod_view.aspx?TypeId=50033&Id=1126&FId=t3:50033:3) with an 1.14" IPS display and onboard lithium battery interface
+- An all-in-one [TTGO T-Eight ESP32](https://github.com/LilyGO/TTGO-T-Eight-ESP32) with a bigger OLED display (1.3"), 4MB PSRAM and onboard lithium battery interface
 
 USB MIDI and DIN MIDI connection requires additional hardware.
 

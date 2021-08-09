@@ -180,6 +180,11 @@
                         "minLength": 0,
                         "maxLength": 10
                     },
+                    "Slot": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 8
+                    },
                     "Event": {
                         "type": "string",
                         "enum": ["None", "Press", "Release", "Click", "Double Click", "Long Press", "Repeat Pressed", "Long Release", "Move", "Jog"]
@@ -300,6 +305,12 @@
                         "type": "boolean"
                     },
                     "Clock": {
+                        "type": "boolean"
+                    },
+                    "ShowIncoming": {
+                        "type": "boolean"
+                    },
+                    "ShowOutcoming": {
                         "type": "boolean"
                     }
                 }

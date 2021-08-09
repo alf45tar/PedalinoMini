@@ -14,10 +14,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <hardware/BLEMIDI_ESP32_NimBLE.h>
 #endif
 
-#define BLE_LED         2
-#define BLE_LED_OFF()   digitalWrite(BLE_LED, LOW)
-#define BLE_LED_ON()    digitalWrite(BLE_LED, HIGH)
-
 // Bluetooth LE MIDI interface
 
 #ifdef BLE

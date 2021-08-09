@@ -58,6 +58,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "SerialMidiIn.h"
 #include "UdpMidiIn.h"
 #include "BLEMidiIn.h"
+#include "LedsEffects.h"
 #include "DisplayLCD.h"
 #ifdef TTGO_T_DISPLAY
 #include "DisplayTFT.h"
@@ -69,18 +70,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "WebConfigAsync.h"
 #include "OTAUpdateArduino.h"
 #include "WifiConnect.h"
-
-#ifndef LED_BUILTIN
-#define LED_BUILTIN    2
-#endif
-
-#ifndef WIFI_LED
-#define WIFI_LED        LED_BUILTIN  // onboard LED, used as status indicator
-#endif
-
-#ifndef BLE_LED
-#define BLE_LED         LED_BUILTIN  // onboard LED, used as status indicator
-#endif
 
 
 void IRAM_ATTR onButtonLeft()
@@ -139,6 +128,7 @@ void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t but
 
     case AceButton::kEventLongPressed:
       scrollingMode = !scrollingMode;
+      leds_refresh();
       break;
   }
 }
@@ -156,6 +146,7 @@ void wifi_and_battery_level() {
 #endif
 
 #ifdef BATTERY
+#ifdef BATTERY_ADC_EN
     /*
       BATTERY_ADC_EN is the ADC detection enable port
       If the USB port is used for power supply, it is turned on by default.
@@ -163,12 +154,16 @@ void wifi_and_battery_level() {
     */
     pinMode(BATTERY_ADC_EN, OUTPUT);
     digitalWrite(BATTERY_ADC_EN, HIGH);
-    delay(5);
+    delay(10);
+#endif
     uint16_t v = analogRead(BATTERY_PIN);
+#ifdef BATTERY_ADC_EN
     digitalWrite(BATTERY_ADC_EN, LOW);
-
+#endif
     uint16_t voltage = ((uint32_t)v * 2 * 33 * vref) / 10240;   //  float voltage = ((float)v / 1024.0) * 2.0 * 3.3 * (vref / 1000.0);
-    if (abs(voltage - batteryVoltage) > 200)
+    uint16_t difference = abs(voltage - batteryVoltage);
+    //DPRINT("%d %d %d\n", voltage, batteryVoltage, difference);
+    if (difference > 200)
       batteryVoltage = (uint16_t)voltage;
     else
       batteryVoltage = (7 * batteryVoltage + voltage) / 8;
@@ -192,9 +187,6 @@ void wifi_and_battery_level() {
 void setup()
 {
   //esp_spiram_add_to_heapalloc();
-
-  pinMode(WIFI_LED, OUTPUT);
-  pinMode(BLE_LED, OUTPUT);
 
   display_init();
 
@@ -300,14 +292,12 @@ void setup()
   eeprom_read_global();
 
   FastLED.addLeds<NEOPIXEL, FASTLEDS_DATA_PIN>(fastleds, LEDS);
-  for (byte l = 0; l < LEDS; l++)
-    fastleds[l] = CRGB::Black;
+  fill_solid(fastleds, LEDS, CRGB::Black);
   FastLED.show();
+  lastColor = CRGB::Black;
   for (byte b = 0; b < BANKS; b++)
     for (byte l = 0; l < LEDS; l++)
       lastLedColor[b][l] = CRGB::Black;
-
-  //leds.begin(SERIAL_DATA_PIN, CLOCK_PIN, LATCH_PIN);
 
   // Reset to factory default if BOOT key is pressed and hold for alt least 15 seconds at power on
 
@@ -319,60 +309,40 @@ void setup()
   if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) {
     newBootMode = PED_BOOT_NORMAL;
     display_progress_bar_title2("Release button for", "Normal Boot");
-    leds.setAllLow();
-    leds.write();
   }
   while ((digitalRead(FACTORY_DEFAULT_PIN) == LOW) && (duration < 16000)) {
     if (duration > 1000 && duration < 3000 && newBootMode != PED_BOOT_BLE) {
       newBootMode = PED_BOOT_BLE;
       display_progress_bar_title2("Release button for", "Bluetooth Only");
-      leds.setHigh(0);
-      leds.write();
     }
     else if (duration > 3000 && duration < 5000 && newBootMode != PED_BOOT_WIFI) {
       newBootMode = PED_BOOT_WIFI;
       display_progress_bar_title2("Release button for", "WiFi Only");
-      leds.setHigh(1);
-      leds.write();
     }
     else if (duration > 5000 && duration < 7000 && newBootMode != PED_BOOT_AP) {
       newBootMode = PED_BOOT_AP;
       display_progress_bar_title2("Release button for", "Access Point");
-      leds.setHigh(2);
-      leds.write();
     }
     else if (duration > 7000 && duration < 9000 && newBootMode != PED_BOOT_AP_NO_BLE) {
       newBootMode = PED_BOOT_AP_NO_BLE;
       display_progress_bar_title2("Release button for", "AP without BLE");
-      leds.setHigh(3);
-      leds.write();
     }
     else if (duration > 9000 && duration < 11000 && newBootMode != PED_BOOT_RESET_WIFI) {
       newBootMode = PED_BOOT_RESET_WIFI;
       display_progress_bar_title2("Release button for", "WiFi Reset");
-      leds.setHigh(4);
-      leds.write();
     }
     else if (duration > 11000 && duration < 13000 && newBootMode != PED_BOOT_LADDER_CONFIG) {
       newBootMode = PED_BOOT_LADDER_CONFIG;
       display_progress_bar_title2("Release button for", "Ladder Config");
-      leds.setHigh(5);
-      leds.write();
     }
     else if (duration > 13000 && duration < 16000 && newBootMode != PED_FACTORY_DEFAULT) {
       newBootMode = PED_FACTORY_DEFAULT;
       display_progress_bar_title2("Hold button for", "Factory Default");
-      leds.setAllLow();
-      leds.write();
     }
     DPRINT("#");
     lcdSetCursor(duration / 500, 0);
     lcdPrint("#");
     display_progress_bar_update(duration, 16000);
-    WIFI_LED_ON();
-    delay(50);
-    WIFI_LED_OFF();
-    delay(50);
     duration = millis() - milliStart;
   }
 
@@ -425,6 +395,16 @@ void setup()
       break;
 
     case PED_BOOT_AP:
+#ifdef BLE
+      bleEnabled = true;
+#else
+      bleEnabled = false;
+#endif
+#ifdef WIFI
+      wifiEnabled = true;
+#else
+      wifiEnabled = false;
+#endif
       break;
 
     case PED_BOOT_RESET_WIFI:
@@ -445,8 +425,6 @@ void setup()
         DPRINT("\nReset EEPROM to factory default\n");
         lcdSetCursor(0, 1);
         lcdPrint("Factory default ");
-        leds.kittCar();
-        delay(1000);
         eeprom_initialize();
         //eeprom_read_global();
         ESP.restart();
@@ -515,9 +493,6 @@ void setup()
 #endif
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
-
-  leds.setAllLow();
-  leds.write();
 }
 
 
@@ -569,40 +544,6 @@ void loop()
 
   bootButton.check();
 
-#ifdef WIFI
-  if (!appleMidiConnected && !bleMidiConnected) WIFI_LED_OFF();
-#endif
-#ifdef BLE
-  if (!bleMidiConnected && !appleMidiConnected) BLE_LED_OFF();
-#endif
-  if (appleMidiConnected ||  bleMidiConnected) {
-    // led fast blinking (5 times per second)
-    if (millis() - wifiLastOn > 200) {
-      if (bleMidiConnected) BLE_LED_ON();
-      if (appleMidiConnected) WIFI_LED_ON();
-      wifiLastOn = millis();
-    }
-    else if (millis() - wifiLastOn > 100) {
-      BLE_LED_OFF();
-      WIFI_LED_OFF();
-    }
-  }
-#ifdef WIFI
-  else if (!bleMidiConnected)
-    // led always on if connected to an AP or one or more client connected the the internal AP
-    switch (WiFi.getMode()) {
-      case WIFI_STA:
-        WiFi.isConnected() ? WIFI_LED_ON() : WIFI_LED_OFF();
-        break;
-      case WIFI_AP:
-        WiFi.softAPgetStationNum() > 0 ? WIFI_LED_ON() : WIFI_LED_OFF();
-        break;
-      default:
-        WIFI_LED_OFF();
-        break;
-    }
-#endif
-
   screen_update();
 
   MTC.loop();
@@ -626,7 +567,8 @@ void loop()
 
 #ifdef WIFI
   if (wifiEnabled) {
-    if (WiFi.isConnected()) {
+    //if (WiFi.isConnected())
+    {
       if (interfaces[PED_RTPMIDI].midiIn && RTP_MIDI.read())
         DPRINTMIDI("RTP MIDI", RTP_MIDI.getType(), RTP_MIDI.getChannel(), RTP_MIDI.getData1(), RTP_MIDI.getData2());
 
@@ -645,4 +587,20 @@ void loop()
 
   // Update display
   display_update();
+
+  if (scrollingMode) {
+    switch (currentProfile) {
+      case 0:
+        //blendwave();
+        ease2();
+        break;
+      case 1:
+        pacifica_loop();
+        break;
+      case 2:
+        pride();
+        break;
+    }
+    FastLED.show();
+  }
 }
