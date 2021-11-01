@@ -101,7 +101,11 @@ has been released to public on August 9th, 2021 thanks to the following sponsors
 
 Sponsors version additions/fixes since August 9th, 2021:
 
-- None
+- Bootstrap 5.1.3
+- JSON Editor 9.5.6
+- Reduced debounce interval from 20ms to 5ms
+- Added "Set Led Color" action
+- Redesigned Sequences (new web UI, new configuration file) - EEPROM breaking change
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -333,7 +337,7 @@ Interface|Description
 USB MIDI|Plug&play USB MIDI interface. Requires additional hardware (see schematic).
 Legacy MIDI|Legacy serial MIDI interface with 5 pins DIN connectors. Requires additional hardware (see schematic).
 RTP-MIDI|RTP-MIDI also know as AppleMIDI or Network MIDI. It is based on UDP protocol and it requires WiFi.
-ipMIDI|ipMIDI is a multicast UDP protocol and it requires WiFi. ipMIDI works only if both end points are connected to the same 2.4 GHz WiFi network. Same router is not enough when one end point is connected to a 5 GHz WiFi netowrk or to a different 2.4 GHz WiFI network hosted by the same router.
+ipMIDI|ipMIDI is a multicast UDP protocol and it requires WiFi. ipMIDI works only if both end points are connected to the same 2.4 GHz WiFi network. Same router is not enough when one end point is connected to a 5 GHz WiFi network or to a different 2.4 GHz WiFI network hosted by the same router.
 BLE MIDI|Requires Bluetooth Low Energy (BLE).
 OSC|OSC messages are based on UDP protocol and it requires WiFi.
 
@@ -448,3 +452,6 @@ https://github.com/akosbeke
 
 https://github.com/borsei222
 ![borsei222](https://user-images.githubusercontent.com/86922846/124502833-81721d00-ddc4-11eb-82b1-7ade0704b464.jpg)
+
+https://github.com/TarFilarek
+![TarFilarek](https://user-images.githubusercontent.com/64553282/139289650-594a5aac-00a3-489f-adf7-b22673826392.mp4)
