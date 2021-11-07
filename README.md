@@ -106,6 +106,8 @@ Sponsors version additions/fixes since August 9th, 2021:
 - Reduced debounce interval from 20ms to 5ms
 - Added "Set Led Color" action
 - Redesigned Sequences (new web UI, new configuration file) - EEPROM breaking change
+- Improved Actions web UI
+- Bank duplication
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
