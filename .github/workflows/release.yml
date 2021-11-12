@@ -26,7 +26,7 @@ jobs:
         pip install platformio
 
     - name: Run PlatformIO build on selected platforms
-      run: pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32
+      run: pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
 
     - name: Copy binary files
       run: |
@@ -42,6 +42,9 @@ jobs:
         rm -rf ./firmware/heltec_wifi_kit_32/*
         echo ${{ github.event.inputs.tag }} > ./firmware/heltec_wifi_kit_32/version.txt
         cp .pio/build/heltec_wifi_kit_32/firmware.bin ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.bin
+        rm -rf ./firmware/esp-wrover-kit/*
+        echo ${{ github.event.inputs.tag }} > ./firmware/esp-wrover-kit/version.txt
+        cp .pio/build/esp-wrover-kit/firmware.bin ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.bin
 
     - name: Commit and push firmware ${{ github.event.inputs.tag }} files
       run: |
