@@ -70,7 +70,7 @@ New features and bug corrections will be released to this public repository when
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on May 13th, 2021.
+  >Goal is reached on May 13th, 2022.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
