@@ -58,7 +58,7 @@ New features and bug corrections will be released to this public repository when
 
   _Select the level of sponsorship which best fit to you. Sponsorship starts from $1 per month._
 
-  >Goal is 32 sponsors in total. Starting point is 22 sponsors as of August 9th, 2021.
+  >Goal is 35 sponsors in total. Starting point is 25 sponsors as of November 12th, 2021.
 
 - **Double the stars**
 
@@ -66,11 +66,11 @@ New features and bug corrections will be released to this public repository when
 
   >Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
 
-- **3 months from August 9th, 2021**
+- **6 months from November 12th, 2021**
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on November 10th, 2021.
+  >Goal is reached on May 13th, 2021.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
@@ -99,7 +99,7 @@ The following features/fixes:
 
 has been released to public on August 9th, 2021 thanks to the following sponsors: richardjs, P********, j*****, TarFilarek. wespac001 x 2, DR-Mello, DWSQUIRES, e36910, itsptadeu,
 
-Sponsors version additions/fixes since August 9th, 2021:
+The following features:
 
 - Bootstrap 5.1.3
 - JSON Editor 9.5.6
@@ -108,6 +108,12 @@ Sponsors version additions/fixes since August 9th, 2021:
 - Redesigned Sequences (new web UI, new configuration file) - EEPROM breaking change
 - Improved Actions web UI
 - Bank duplication
+
+has been released to public on November 12th, 2021. Thanks to the new sponsors: RomanKlein777, michaelhauser, bobvc133, bmarshall91, p*************.
+
+Sponsors version additions/fixes since November 12th, 2021:
+
+- None
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 

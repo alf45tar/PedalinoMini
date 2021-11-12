@@ -4,7 +4,7 @@
  *  @brief      MIDI Library for the Arduino - Platform
  *  @license    MIT - Copyright (c) 2015 Francois Best
  *  @author     lathoub, Francois Best - al45tar
- *  @date       07/09/2020
+ *  @date       24/10/21
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,6 +76,11 @@ public:
 	{
 		return true;
 	};
+
+    void end()
+    {
+        mSerial.end();
+    }
 
 	void write(byte value)
 	{

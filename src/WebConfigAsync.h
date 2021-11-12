@@ -87,12 +87,12 @@ void get_top_page(int p = 0) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3' crossorigin='anonymous'>");
   #else
-    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC' crossorigin='anonymous'>");
+    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3' crossorigin='anonymous'>");
   #endif
   } else {
-    page += F("<link href='https://cdn.jsdelivr.net/gh/thomaspark/bootswatch@24b59286fd245781674d7b78582ba7e11ab34b09/dist/");
+    page += F("<link href='https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/");
     page += theme;
     page += F("/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   }
@@ -299,9 +299,9 @@ void get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p' crossorigin='anonymous'></script>");
 #else
-  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js' integrity='sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM' crossorigin='anonymousì></script>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js' integrity='sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p' crossorigin='anonymousì></script>");
 #endif
   page += F("</body>");
   page += F("</html>");
@@ -938,10 +938,27 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<div class='row'>");
   page += F("<div class='col-auto me-auto'>");
   page += F("<div class='form-floating'>");
-  page += F("<input type='text' class='form-control' id='bankNameFloatingInput' name='bankname' maxlength='");
+  page += F("<input type='text' class='form-control' id='bankNameInput' name='bankname' maxlength='");
   page += String(MAXBANKNAME) + F("' value='");
   page += String(banknames[b]) + F("'>");
-  page += F("<label for='bankNameFloatingInput'>Bank Name</label>");
+  page += F("<label for='bankNameInput'>Bank Name</label>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='col-auto me-auto'>");
+  page += F("<div class='btn-group' role='group'>");
+  page += F("<button id='btnGroupCopyBank' type='button' class='btn btn-primary btn-sm dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-layers' viewBox='0 0 16 16'>");
+  page += F("<path d='M8.235 1.559a.5.5 0 0 0-.47 0l-7.5 4a.5.5 0 0 0 0 .882L3.188 8 .264 9.559a.5.5 0 0 0 0 .882l7.5 4a.5.5 0 0 0 .47 0l7.5-4a.5.5 0 0 0 0-.882L12.813 8l2.922-1.559a.5.5 0 0 0 0-.882l-7.5-4zm3.515 7.008L14.438 10 8 13.433 1.562 10 4.25 8.567l3.515 1.874a.5.5 0 0 0 .47 0l3.515-1.874zM8 9.433 1.562 6 8 2.567 14.438 6 8 9.433z'/>");
+  page += F("</svg>");
+  page += F(" Duplicate Bank To</button>");
+  page += F("<div class='dropdown-menu' aria-labelledby='btnGroupCopyBank'>");
+  for (i = 0; i < BANKS; i++) {
+    page += F("<button type='submit' class='dropdown-item' name='action' value='copy");
+    page += String(i) + F("'>");
+    (banknames[i][0] == 0) ? page += String(i) : page += String(banknames[i]);
+    page += F("</button>");
+  }
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("<div class='col-auto'>");
@@ -990,10 +1007,43 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='col'>");
     page += F("<div class='d-grid gap-1'>");
 
+    page += "<input type='hidden' id='pedalMode";
+    page += String(i);
+    page += F("' name='pedalMode");
+    page += String(i);
+    page +=F("' value='");
+    switch (pedals[act->pedal].mode) {
+      case PED_MOMENTARY1:
+      case PED_MOMENTARY2:
+      case PED_MOMENTARY3:
+        page +=F("momentary");
+        break;
+
+      case PED_LATCH1:
+      case PED_LATCH2:
+        page +=F("latch");
+        break;
+
+      case PED_LADDER:
+        page +=F("ladder");
+        break;
+
+      case PED_ANALOG:
+        page +=F("analog");
+        break;
+
+      case PED_JOG_WHEEL:
+        page +=F("jogwheel");
+        break;
+    }
+    page +=F("'>");
+
     page += F("<div class='row g-1'>");
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='onFloatingSelect' name='event");
+    page += F("<select class='form-select' id='onSelect");
+    page += String(i);
+    page += F("' name='event");
     page += String(i) + F("'>");
     page += F("<option value='");
     page += String(PED_EVENT_NONE) + F("'");
@@ -1061,14 +1111,16 @@ void get_actions_page(unsigned int start, unsigned int len) {
         break;
      }
     page += F("</select>");
-    page += F("<label for='onFloatingSelect'>On</label>");
+    page += F("<label for='onSelect");
+    page += String(i);
+    page += F("'>On</label>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='buttonFloatingSelect' name='button");
-    page += String(i) + F("'>");
+    page += F("<select class='form-select' id='buttonSelect' name='button");
+    page += String(i) + F("'");
     switch (pedals[act->pedal].mode) {
       case PED_MOMENTARY2:
       case PED_LATCH2:
@@ -1085,8 +1137,10 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
       default:
         maxbutton = 1;
+        page += F(" disabled");
         break;
     }
+    page += F(">");
     for (unsigned int b = 1; b <= maxbutton; b++) {
       page += F("<option value='");
       page += String(b) + F("'");
@@ -1095,7 +1149,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
       page += String(b) + F("</option>");
     }
     page += F("</select>");
-    page += F("<label for='buttonFloatingSelect'>Button</label>");
+    page += F("<label for='buttonSelect'>Button</label>");
     page += F("</div>");
     page += F("</div>");
 
@@ -1113,7 +1167,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='row g-1'>");
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='sendFloatingSelect' name='message");
+    page += F("<select class='form-select' id='sendSelect");
+    page += String(i);
+    page += F("' onchange='init_action(");
+    page += String(i);
+    page += F(")' name='message");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -1217,6 +1275,18 @@ void get_actions_page(unsigned int start, unsigned int len) {
     if (act->midiMessage == PED_ACTION_PROFILE_MINUS) page += F(" selected");
     page += F(">Profile-</option>");
     page += F("<option value='");
+    page += String(PED_ACTION_LED_COLOR) + F("'");
+    if (act->midiMessage == PED_ACTION_LED_COLOR) page += F(" selected");
+    page += F(">Set Led Color</option>");
+    page += F("<option value='");
+    page += String(PED_ACTION_REPEAT) + F("'");
+    if (act->midiMessage == PED_ACTION_REPEAT) page += F(" selected");
+    page += F(">Repeat</option>");
+    page += F("<option value='");
+    page += String(PED_ACTION_REPEAT_OVERWRITE) + F("'");
+    if (act->midiMessage == PED_ACTION_REPEAT_OVERWRITE) page += F(" selected");
+    page += F(">Repeat Overwrite</option>");
+    page += F("<option value='");
     page += String(PED_ACTION_DEVICE_INFO) + F("'");
     if (act->midiMessage == PED_ACTION_DEVICE_INFO) page += F(" selected");
     page += F(">Device Info</option>");
@@ -1225,13 +1295,17 @@ void get_actions_page(unsigned int start, unsigned int len) {
     if (act->midiMessage == PED_ACTION_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
     page += F("</select>");
-    page += F("<label for='sendFloatingSelect'>Send</label>");
+    page += F("<label for='sendSelect");
+    page += String(i);
+    page += F("'>Send</label>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='channelFloatingSelect' name='channel");
+    page += F("<select class='form-select' id='channelSelect");
+    page += String(i);
+    page += F("' name='channel");
     page += String(i) + F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
       page += F("<option value='");
@@ -1241,18 +1315,28 @@ void get_actions_page(unsigned int start, unsigned int len) {
       page += String(c) + F("</option>");
     }
     page += F("</select>");
-    page += F("<label for='channelFloatingSelect'>Channel</label>");
+    page += F("<label for='channelSelect");
+    page += String(i);
+    page += F("' id='channelLabel");
+    page += String(i);
+    page += F("'>Channel</label>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
-    page += F("<input type='number' class='form-control' id='codeFLoatingInput' name='code");
+    page += F("<input type='number' class='form-control' id='codeInput");
+    page += String(i);
+    page += F("' name='code");
     page += String(i);
     page += F("' min='0' max='127' value='");
     page += String(act->midiCode);
     page += F("'>");
-    page += F("<label for='codeFloatingInput'>Value</label>");
+    page += F("<label for='codeInput");
+    page += String(i);
+    page += F("' id='codeLabel");
+    page += String(i);
+    page += F("'>Value</label>");
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
@@ -1260,23 +1344,35 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='row g-1'>");
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
-    page += F("<input type='number' class='form-control' id='fromFloatingInput' name='from");
+    page += F("<input type='number' class='form-control' id='fromInput");
+    page += String(i);
+    page += F("' name='from");
     page += String(i);
     page += F("' min='0' max='127' value='");
     page += String(act->midiValue1);
     page += F("'>");
-    page += F("<label for='fromFloatingInput'>From Value</label>");
+    page += F("<label for='fromInput");
+    page += String(i);
+    page += F("' id='fromLabel");
+    page += String(i);
+    page += F("'>From Value</label>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
-    page += F("<input type='number' class='form-control' id='toFloatingInput' name='to");
+    page += F("<input type='number' class='form-control' id='toInput");
+    page += String(i);
+    page += F("' name='to");
     page += String(i);
     page += F("' min='0' max='127' value='");
     page += String(act->midiValue2);
     page += F("'>");
-    page += F("<label for='toFloatingInput'>To Value</label>");
+    page += F("<label for='toInput");
+    page += String(i);
+    page += F("' id='toLabel");
+    page += String(i);
+    page += F("'>To Value</label>");
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
@@ -1284,25 +1380,37 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='row g-1'>");
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
-    page += F("<input type='text' class='form-control' id ='tagOffFloatingInput' name='nameoff");
+    page += F("<input type='text' class='form-control' id ='tagOffInput");
+    page += String(i);
+    page += F("' name='nameoff");
     page += String(i);
     page += F("' maxlength='");
     page += String(MAXACTIONNAME) + F("' value='");
     page += String(act->tag0);
     page += F("'>");
-    page += F("<label for='tagOffFloatingInput'>Tag When Off</label>");
+    page += F("<label for='tagOffInput");
+    page += String(i);
+    page += F("' id='tagOffLabel");
+    page += String(i);
+    page += F("'>Tag When Off</label>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
-    page += F("<input type='text' class='form-control' in='tagOnFloatingInput' name='nameon");
+    page += F("<input type='text' class='form-control' id='tagOnInput");
+    page += String(i);
+    page += F("' name='nameon");
     page += String(i);
     page += F("' maxlength='");
     page += String(MAXACTIONNAME) + F("' value='");
     page += String(act->tag1);
     page += F("'>");
-    page += F("<label for='tagOnFloatingInput'>Tag When On</label>");
+    page += F("<label for='tagOnInput");
+    page += String(i);
+    page += F("' id='tagOnLabel");
+    page += String(i);
+    page += F("'>Tag When On</label>");
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
@@ -1310,7 +1418,9 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='row g-1'>");
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='ledFLotingSelect' name='led");
+    page += F("<select class='form-select' id='ledSelect");
+    page += String(i);
+    page += F("' name='led");
     page += String(i) + F("'>");
     for (unsigned int l = 0; l <= LEDS; l++) {
       page += F("<option value='");
@@ -1321,38 +1431,56 @@ void get_actions_page(unsigned int start, unsigned int len) {
       page += F("</option>");
     }
     page += F("</select>");
-    page += F("<label for='ledFloatingSelect'>Led</label>");
+    page += F("<label for='ledSelect");
+    page += String(i);
+    page += F("' id='ledLabel");
+    page += String(i);
+    page += F("'>Led</label>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
-    page += F("<input type='color' class='form-control' id='color0FlotingInput' name='color0-");
+    page += F("<input type='color' class='form-control' id='color0Input");
+    page += String(i);
+    page += F("' name='color0-");
     page += String(i);
     page += F("' value='");
     char color[8];
     sprintf(color, "#%06X", act->color0 & 0xFFFFFF);
     page += String(color);
     page += F("'>");
-    page += F("<label for='color0FloatingInput'>Off</label>");
+    page += F("<label for='color0Input");
+    page += String(i);
+    page += F("' id='color0Label");
+    page += String(i);
+    page += F("'>Off</label>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
-    page += F("<input type='color' class='form-control' id='color1FlotingInput' name='color1-");
+    page += F("<input type='color' class='form-control' id='color1Input");
+    page += String(i);
+    page += F("' name='color1-");
     page += String(i);
     page += F("' value='");
     sprintf(color, "#%06X", act->color1 & 0xFFFFFF);
     page += String(color);
     page += F("'>");
-    page += F("<label for='color1FloatingInput'>On</label>");
+    page += F("<label for='color1Input");
+    page += String(i);
+    page += F("' id='color1Label");
+    page += String(i);
+    page += F("'>On</label>");
     page += F("</div>");
     page += F("</div>");
 
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='slotFLotingSelect' name='slot");
+    page += F("<select class='form-select' id='slotSelect");
+    page += String(i);
+    page += F("' name='slot");
     page += String(i) + F("'>");
     for (unsigned int s = 0; s < SLOTS; s++) {
       page += F("<option value='");
@@ -1367,7 +1495,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F(">");
     page += F("</option>");
     page += F("</select>");
-    page += F("<label for='slotFloatingSelect'>Slot</label>");
+    page += F("<label for='slotSelect");
+    page += String(i);
+    page += F("' id='slotLabel");
+    page += String(i);
+    page += F("'>Slot</label>");
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
@@ -1406,6 +1538,191 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</form>");
 
+  page += F("<script>");
+  page += F("document.addEventListener('DOMContentLoaded', init_actions());");
+  page += F("function init_actions() {");
+  for (byte s = 1; s < i; s++) {
+    page += F("  init_action(");
+    page += String(s);
+    page += F(");");
+  }
+  page += F("};");
+  page += F("function init_action(i) {"
+            "   let analog;"
+            "   switch (document.getElementById('onSelect' + i).options[document.getElementById('onSelect' + i).selectedIndex].text) {"
+            "     case 'Move':"
+            "     case 'Jog':"
+            "       analog = true;"
+            "       break;"
+            "     default:"
+            "       analog = false;"
+            "       break;"
+            "   };"
+            "   document.getElementById('channelLabel'  + i).innerHTML = 'Channel';"
+            "   document.getElementById('codeLabel'     + i).innerHTML = 'Code';"
+            "   document.getElementById('fromLabel'     + i).innerHTML = 'From Value';"
+            "   document.getElementById('toLabel'       + i).innerHTML = 'To Value';"
+            "   document.getElementById('tagOffLabel'   + i).innerHTML = 'Tag 1';"
+            "   document.getElementById('tagOnLabel'    + i).innerHTML = 'Tag 2';"
+            "   document.getElementById('channelSelect' + i).disabled = false;"
+            "   document.getElementById('codeInput'     + i).disabled = false;"
+            "   document.getElementById('fromInput'     + i).disabled = false;"
+            "   document.getElementById('toInput'       + i).disabled = false;"
+            "   document.getElementById('tagOffInput'   + i).disabled = false;"
+            "   document.getElementById('tagOnInput'    + i).disabled = false;"
+            "   document.getElementById('ledSelect'     + i).disabled = false;"
+            "   document.getElementById('color0Input'   + i).disabled = false;"
+            "   document.getElementById('color1Input'   + i).disabled = false;"
+            "   document.getElementById('slotSelect'    + i).disabled = false;"
+            "   switch (document.getElementById('sendSelect' + i).options[document.getElementById('sendSelect' + i).selectedIndex].text) {"
+            "     case 'Program Change':"
+            "       document.getElementById('codeLabel'     + i).innerHTML = 'PC';"
+            "       document.getElementById('fromInput'     + i).disabled = true;"
+            "       document.getElementById('toInput'       + i).disabled = true;"
+            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       break;"
+            "     case 'Note On':"
+            "     case 'Note Off':"
+            "       document.getElementById('codeLabel'     + i).innerHTML = 'Note';"
+            "       document.getElementById('fromLabel'     + i).innerHTML = 'From Velocity';"
+            "       document.getElementById('toLabel'       + i).innerHTML = 'To Velocity';"
+            "       document.getElementById('fromInput'     + i).disabled = true;"
+            "       document.getElementById('toInput'       + i).disabled = true;"
+            "       break;"
+            "     case 'Control Change':"
+            "       switch (document.getElementById('pedalMode' + i).value) {"
+            "         case 'momentary':"
+            "         case 'ladder':"
+            "           document.getElementById('codeLabel'     + i).innerHTML = 'CC';"
+            "           document.getElementById('fromLabel'     + i).innerHTML = 'Value 1';"
+            "           document.getElementById('toLabel'       + i).innerHTML = 'Value 2';"
+            "           document.getElementById('tagOffLabel'   + i).innerHTML = 'Tag 1';"
+            "           document.getElementById('tagOnLabel'    + i).innerHTML = 'Tag 2';"
+            "           document.getElementById('color0Label'   + i).innerHTML = 'Color 1';"
+            "           document.getElementById('color1Label'   + i).innerHTML = 'Color 2';"
+            "           break;"
+            "         case 'latch':"
+            "           document.getElementById('fromLabel'     + i).innerHTML = 'Value';"
+            "           document.getElementById('toLabel'       + i).innerHTML = '';"
+            "           document.getElementById('tagOffLabel'   + i).innerHTML = 'Tag';"
+            "           document.getElementById('tagOnLabel'    + i).innerHTML = '';"
+            "           document.getElementById('color0Label'   + i).innerHTML = 'Color';"
+            "           document.getElementById('color1Label'   + i).innerHTML = '';"
+            "           document.getElementById('toInput'       + i).disabled = true;"
+            "           document.getElementById('tagOnInput'    + i).disabled = true;"
+            "           document.getElementById('color1Input'   + i).disabled = true;"
+            "           break;"
+            "         case 'analog':"
+            "         case 'jogwheel':"
+            "           document.getElementById('tagOnInput'    + i).disabled = true;"
+            "       }"
+            "       break;"
+            "     case 'Program Change+':"
+            "     case 'Program Change-':"
+            "       document.getElementById('codeLabel'     + i).innerHTML = 'PC';"
+            "       document.getElementById('fromLabel'     + i).innerHTML = 'From PC';"
+            "       document.getElementById('toLabel'       + i).innerHTML = 'To PC';"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       break;"
+            "     case 'Bank Select+':"
+            "     case 'Bank Select-':"
+            "       document.getElementById('fromLabel'     + i).innerHTML = 'MSB';"
+            "       document.getElementById('toLabel'       + i).innerHTML = 'LSB';"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       break;"
+            "     case 'Pitch Bend':"
+            "     case 'Channel Pressure':"
+            "       document.getElementById('color0Label'   + i).innerHTML = 'Min';"
+            "       document.getElementById('color1Label'   + i).innerHTML = 'Max';"
+            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       break;"
+            "     case 'Bank+':"
+            "     case 'Bank-':"
+            "       document.getElementById('fromLabel'     + i).innerHTML = 'From Bank';"
+            "       document.getElementById('toLabel'       + i).innerHTML = 'To Bank';"
+            "       document.getElementById('channelSelect' + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       document.getElementById('tagOnInput'    + i).disabled = true;"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('color0Input'   + i).disabled = true;"
+            "       document.getElementById('color1Input'   + i).disabled = true;"
+            "       document.getElementById('slotSelect'    + i).disabled = true;"
+            "       break;"
+            "     case 'Profile+':"
+            "     case 'Profile-':"
+            "       document.getElementById('fromLabel'     + i).innerHTML = 'From Profile';"
+            "       document.getElementById('toLabel'       + i).innerHTML = 'To Profile';"
+            "       document.getElementById('channelSelect' + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       document.getElementById('tagOnInput'    + i).disabled = true;"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('color0Input'   + i).disabled = true;"
+            "       document.getElementById('color1Input'   + i).disabled = true;"
+            "       document.getElementById('slotSelect'    + i).disabled = true;"
+            "       break;"
+            "     case 'Sequence':"
+            "       document.getElementById('channelLabel'  + i).innerHTML = 'Sequence';"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('fromInput'     + i).disabled = true;"
+            "       document.getElementById('toInput'       + i).disabled = true;"
+            "       break;"
+            "     case 'Set Led Color':"
+            "       document.getElementById('channelSelect' + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('fromInput'     + i).disabled = true;"
+            "       document.getElementById('toInput'       + i).disabled = true;"
+            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       document.getElementById('tagOnInput'    + i).disabled = true;"
+            "       document.getElementById('slotSelect'    + i).disabled = true;"
+            "       break;"
+            "     case 'Repeat':"
+            "       document.getElementById('channelSelect' + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('fromInput'     + i).disabled = true;"
+            "       document.getElementById('toInput'       + i).disabled = true;"
+            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       document.getElementById('tagOnInput'    + i).disabled = true;"
+            "       document.getElementById('color0Input'   + i).disabled = true;"
+            "       document.getElementById('color1Input'   + i).disabled = true;"
+            "       document.getElementById('slotSelect'    + i).disabled = true;"
+            "       break;"
+            "     case 'Repeat Overwrite':"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       document.getElementById('tagOnInput'    + i).disabled = true;"
+            "       document.getElementById('slotSelect'    + i).disabled = true;"
+            "       break;"
+            "     case 'Start':"
+            "     case 'Stop':"
+            "     case 'Continue':"
+            "     case 'MTC Start':"
+            "     case 'MTC Stop':"
+            "     case 'MTC Continue':"
+            "     case 'Tap':"
+            "     case 'BPM+':"
+            "     case 'BPM-':"
+            "     case 'Device Info':"
+            "     case 'Power On/Off':"
+            "     default:"
+            "       document.getElementById('channelSelect' + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('fromInput'     + i).disabled = true;"
+            "       document.getElementById('toInput'       + i).disabled = true;"
+            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       document.getElementById('tagOnInput'    + i).disabled = true;"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('color0Input'   + i).disabled = true;"
+            "       document.getElementById('color1Input'   + i).disabled = true;"
+            "       document.getElementById('slotSelect'    + i).disabled = true;"
+            "       break;"
+            "   }"
+            "};");
+  page += F("</script>");
+
   get_footer_page();
 
   if (trim_page(start, len, true)) return;
@@ -1434,7 +1751,7 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("<div class='card-body'>");
     page += F("<div class='d-grid gap-1'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='modeFloatingSelect' name='mode");
+    page += F("<select class='form-select' id='modeSelect' name='mode");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -1476,7 +1793,7 @@ void get_pedals_page(unsigned int start, unsigned int len) {
       page += F(">Ladder</option>");
     }
     page += F("</select>");
-    page += F("<label for='modeFloatingSelect'>Mode</label>");
+    page += F("<label for='modeSelect'>Mode</label>");
     page += F("</div>");
 
     if (trim_page(start, len)) return;
@@ -1536,28 +1853,28 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     if (pedals[i-1].analogResponse == PED_ANTILOG) page += F(" selected");
     page += F(">Antilog</option>");
     page += F("</select>");
-    page += F("<label for='mapFloatingSelect'>Analog Response</label>");
+    page += F("<label for='mapSelect'>Analog Response</label>");
     page += F("</div>");
 
     page += F("<div class='input-group mb-2'>");
     page += F("<div class='form-floating w-50'>");
-    page += F("<input type='number' class='form-control' id='minFloatingInput' name='min");
+    page += F("<input type='number' class='form-control' id='minInput' name='min");
     page += String(i);
     page += F("' min='0' max='");
     page += String(ADC_RESOLUTION - 1) + F("' value='");
     page += String(pedals[i-1].expZero);
     page += F("'>");
-    page += F("<label for='minFloatingInput'>Min</label>");
+    page += F("<label for='minInput'>Min</label>");
     page += F("</div>");
 
     page += F("<div class='form-floating w-50'>");
-    page += F("<input type='number' class='form-control' id='maxFloatingInput' name='max");
+    page += F("<input type='number' class='form-control' id='maxInput' name='max");
     page += String(i);
     page += F("' min='0' max='");
     page += String(ADC_RESOLUTION - 1) + F("' value='");
     page += String(pedals[i-1].expMax);
     page += F("'>");
-    page += F("<label for='maxFloatingInput'>Max</label>");
+    page += F("<label for='maxInput'>Max</label>");
     page += F("</div>");
     page += F("</div>");
 
@@ -1742,9 +2059,13 @@ void get_sequences_page(unsigned int start, unsigned int len) {
   for (unsigned int i = 1; i <= STEPS; i++) {
     page += F("<div class='d-grid mb-1'>");
     page += F("<div class='row g-1'>");
-    page += F("<div class='w-25'>");
+    page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='messageFloatingSelect' name='message");
+    page += F("<select class='form-select' id='messageSelect");
+    page += String(i);
+    page += F("' onchange='init_line(");
+    page += String(i);
+    page += F(")' name='message");
     page += String(i);
     page += F("'>");
     page += F("<option value='");
@@ -1807,46 +2128,124 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += String(PED_SEQUENCE) + F("'");
     if (sequences[s-1][i-1].midiMessage == PED_SEQUENCE) page += F(" selected");
     page += F(">Sequence</option>");
+    page += F("<option value='");
+    page += String(PED_ACTION_LED_COLOR) + F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) page += F(" selected");
+    page += F(">Set Led Color</option>");
     page += F("</select>");
-    page += F("<label for='messageFloatingSelect'>Send</label>");
+    page += F("<label for='messageSelect");
+    page += String(i);
+    page += F("'>Send</label>");
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='w-25'>");
+    page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='channelFloatingSelect'name='channel");
+    page += F("<select class='form-select' id='channelSelect");
+    page += String(i);
+    page += F("' name='channel");
     page += String(i) + F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
       page += F("<option value='");
       page += String(c) + F("'");
-      if (sequences[s-1][i-1].midiChannel == c) page += F(" selected");
+      if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) {
+        if (c == 1) page += F(" selected");
+      }
+      else if (sequences[s-1][i-1].midiChannel == c) page += F(" selected");
       page += F(">");
       page += String(c) + F("</option>");
     }
     page += F("</select>");
-    page += F("<label for='channelFloatingSelect'>Channel</label>");
+    page += F("<label for='channelSelect");
+    page += String(i);
+    page += F("' id='channelLabel");
+    page += String(i);
+    page += F("'>Channel</label>");
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='w-25'>");
+    page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
-    page += F("<input type='number' class='form-control' id='codeFloatingInput' name='code");
+    page += F("<input type='number' class='form-control' id='codeInput");
+    page += String(i);
+    page += F("' name='code");
     page += String(i);
     page += F("' min='0' max='127' value='");
-    page += String(sequences[s-1][i-1].midiCode);
+    if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR)
+      page += String(0);
+    else
+      page += String(sequences[s-1][i-1].midiCode);
     page += F("'>");
-    page += F("<label for='codeFloatingInput'>Code</label>");
+    page += F("<label for='codeInput");
+    page += String(i);
+    page += F("' id='codeLabel");
+    page += String(i);
+    page += F("'>Code</label>");
     page += F("</div>");
     page += F("</div>");
 
-    page += F("<div class='w-25'>");
+    page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
-    page += F("<input type='number' class='form-control' id='valueFloatingInput' name='value");
+    page += F("<input type='number' class='form-control' id='valueInput");
+    page += String(i);
+    page += F("' name='value");
     page += String(i);
     page += F("' min='0' max='127' value='");
-    page += String(sequences[s-1][i-1].midiValue);
+    if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR)
+      page += String(0);
+    else
+      page += String(sequences[s-1][i-1].midiValue);
     page += F("'>");
-    page += F("<label for='valueFloatingInput'>Value</label>");
+    page += F("<label for='valueInput");
+    page += String(i);
+    page += F("' id='valueLabel");
+    page += String(i);
+    page += F("'>Value</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='col'>");
+    page += F("<div class='form-floating'>");
+    page += F("<select class='form-select' id='ledSelect");
+    page += String(i);
+    page += F("' name='led");
+    page += String(i) + F("'>");
+    for (unsigned int l = 0; l <= LEDS; l++) {
+      page += F("<option value='");
+      page += String(l+1) + F("'");
+      if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) {
+        if (sequences[s-1][i-1].led == l) page += F(" selected");
+      }
+      else if (l == LEDS) page += F(" selected");
+      page += F(">");
+      if (l != LEDS) page += String(l+1);
+      page += F("</option>");
+    }
+    page += F("</select>");
+    page += F("<label for='ledSelect");
+    page += String(i);
+    page += F("'>Led</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    page += F("<div class='col'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='color' class='form-control' id='colorInput");
+    page += String(i);
+    page += F("' name='color");
+    page += String(i);
+    page += F("' value='");
+    if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) {
+      char color[8];
+      sprintf(color, "#%06X", sequences[s-1][i-1].color & 0xFFFFFF);
+      page += String(color);
+    }
+    else
+      page += String("0xFFFFFF");
+    page += F("'>");
+    page += F("<label for='colorInput");
+    page += String(i);
+    page += F("'>Color</label>");
     page += F("</div>");
     page += F("</div>");
 
@@ -1875,6 +2274,86 @@ void get_sequences_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
+
+  page += F("<script>");
+  page += F("document.addEventListener('DOMContentLoaded', init_lines());");
+  page += F("function init_lines() {");
+  for (byte s = 1; s <= STEPS; s++) {
+    page += F("  init_line(");
+    page += String(s);
+    page += F(");");
+  }
+  page += F("};");
+  page += F("function init_line(i) {"
+            "   document.getElementById('channelLabel'  + i).innerHTML = 'Channel';"
+            "   document.getElementById('codeLabel'     + i).innerHTML = 'Code';"
+            "   document.getElementById('valueLabel'    + i).innerHTML = 'Value';"
+            "   document.getElementById('channelSelect' + i).disabled = false;"
+            "   document.getElementById('codeInput'     + i).disabled = false;"
+            "   document.getElementById('valueInput'    + i).disabled = false;"
+            "   document.getElementById('ledSelect'     + i).disabled = false;"
+            "   document.getElementById('colorInput'    + i).disabled = false;"
+            "   switch (document.getElementById('messageSelect' + i).options[document.getElementById('messageSelect' + i).selectedIndex].text) {"
+            "     case 'Program Change':"
+            "     case 'Program Change+':"
+            "     case 'Program Change-':"
+            "       document.getElementById('codeLabel'     + i).innerHTML = 'PC';"
+            "       document.getElementById('valueInput'    + i).disabled = true;"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('colorInput'    + i).disabled = true;"
+            "       break;"
+            "     case 'Control Change':"
+            "       document.getElementById('codeLabel'     + i).innerHTML = 'CC';"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('colorInput'    + i).disabled = true;"
+            "       break;"
+            "     case 'Note On':"
+            "     case 'Note Off':"
+            "       document.getElementById('codeLabel'     + i).innerHTML = 'Note';"
+            "       document.getElementById('valueLabel'    + i).innerHTML = 'Velocity';"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('colorInput'    + i).disabled = true;"
+            "       break;"
+            "     case 'Bank Select+':"
+            "     case 'Bank Select-':"
+            "       document.getElementById('channelLabel'  + i).innerHTML = 'Channel';"
+            "       document.getElementById('codeLabel'     + i).innerHTML = 'MSB';"
+            "       document.getElementById('valueLabel'    + i).innerHTML = 'LSB';"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('colorInput'    + i).disabled = true;"
+            "       break;"
+            "     case 'Pitch Bend':"
+            "     case 'Channel Pressure':"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('colorInput'    + i).disabled = true;"
+            "       break;"
+            "     case 'Sequence':"
+            "       document.getElementById('channelLabel'  + i).innerHTML = 'Sequence';"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('valueInput'    + i).disabled = true;"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('colorInput'    + i).disabled = true;"
+            "       break;"
+            "     case 'Set Led Color':"
+            "       document.getElementById('channelSelect' + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('valueInput'    + i).disabled = true;"
+            "       break;"
+            "     case 'Start':"
+            "     case 'Stop':"
+            "     case 'Continue':"
+            "     case '':"
+            "     default:"
+            "       document.getElementById('channelSelect' + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('valueInput'    + i).disabled = true;"
+            "       document.getElementById('ledSelect'     + i).disabled = true;"
+            "       document.getElementById('colorInput'    + i).disabled = true;"
+            "       break;"
+            "   }"
+            "};");
+  page += F("</script>");
 
   get_footer_page();
 
@@ -2574,8 +3053,8 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<link href='https://cdn.jsdelivr.net/npm/jsoneditor@9.2.0/dist/jsoneditor.min.css' rel='stylesheet' type='text/css'>");
-  page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@9.2.0/dist/jsoneditor.min.js'></script>");
+  page += F("<link href='https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.css' rel='stylesheet' type='text/css'>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.js'></script>");
   page += F("<script>");
   page += F("var container = document.getElementById('jsoneditor');\n"
             "var schema;\n"
@@ -3195,7 +3674,6 @@ void http_handle_post_live(AsyncWebServerRequest *request) {
 
 void http_handle_post_actions(AsyncWebServerRequest *request) {
 
-  String     a;
   const byte b = constrain(uibank.toInt(), 0, BANKS - 1);
   const byte p = constrain(uipedal.toInt() - 1, 0, PEDALS - 1);
 
@@ -3303,6 +3781,24 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     }
     create_banks();
     alert = F("Selected action(s) deleted.");
+  }
+  else if (request->arg("action").startsWith("copy")) {
+    if (actions[b] != nullptr) {
+      byte destination = request->arg("action").substring(4).toInt();
+      destination = constrain(destination, 0, BANKS - 1);
+      action *act = actions[b];
+      while (act != nullptr) {
+        action *a = (action*)malloc(sizeof(action));
+        assert(a != nullptr);
+        memcpy(a, act, sizeof(action));
+        a->next = actions[destination];
+        actions[destination] = a;
+        act = act->next;
+      }
+      sort_actions();
+      create_banks();
+      alert = F("Bank copied.");
+    }
   }
   else if (request->arg("action").equals("apply") || request->arg("action").equals("save")) {
     unsigned int i      = 0;
@@ -3447,17 +3943,33 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
   const byte s = constrain(uisequence.toInt() - 1, 0, SEQUENCES);
 
   for (unsigned int i = 0; i < STEPS; i++) {
-    a = request->arg(String("channel") + String(i+1));
-    sequences[s][i].midiChannel = a.toInt();
 
     a = request->arg(String("message") + String(i+1));
-    sequences[s][i].midiMessage = a.toInt();
+    sequences[s][i].midiMessage = constrain(a.toInt(), 0, 255);
 
-    a = request->arg(String("code") + String(i+1));
-    sequences[s][i].midiCode = a.toInt();
+    switch (sequences[s][i].midiMessage) {
 
-    a = request->arg(String("value") + String(i+1));
-    sequences[s][i].midiValue = a.toInt();
+      case PED_ACTION_LED_COLOR:
+        a = request->arg(String("led") + String(i+1));
+        sequences[s][i].led = constrain(a.toInt() - 1, 0, LEDS);
+
+        a = request->arg(String("color") + String(i+1));
+        unsigned int red, green, blue;
+        sscanf(request->arg(String("color") + String(i+1)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
+        sequences[s][i].color = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
+        break;
+
+      default:
+        a = request->arg(String("channel") + String(i+1));
+        sequences[s][i].midiChannel = constrain(a.toInt(), 1, 16);
+
+        a = request->arg(String("code") + String(i+1));
+        sequences[s][i].midiCode = constrain(a.toInt(), 0, MIDI_RESOLUTION - 1);
+
+        a = request->arg(String("value") + String(i+1));
+        sequences[s][i].midiValue = constrain(a.toInt(), 0, MIDI_RESOLUTION - 1);
+        break;
+    }
   }
   if (request->arg("action").equals("apply")) {
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
@@ -3609,6 +4121,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   if (poweroffRequired) {
     display_off();
+    leds_off();
     for (byte b = 0; b < BANKS; b++) {
       action *act = actions[b];
       while (act != nullptr) {

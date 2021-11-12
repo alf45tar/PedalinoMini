@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.2.10"
+#define VERSION         "2.2.13"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -133,7 +133,7 @@ typedef uint8_t   byte;
 #include <AceButton.h>                  // https://github.com/bxparks/AceButton
 using namespace ace_button;
 
-#define DEBOUNCE_INTERVAL      20
+#define DEBOUNCE_INTERVAL       5
 #define PED_PRESS_TIME        200
 #define PED_DOUBLE_PRESS_TIME 400
 #define PED_LONG_PRESS_TIME   500
@@ -182,6 +182,9 @@ using namespace ace_button;
 #define PED_ACTION_PROFILE_PLUS       30
 #define PED_ACTION_PROFILE_MINUS      31
 #define PED_ACTION_DEVICE_INFO        32
+#define PED_ACTION_LED_COLOR          33
+#define PED_ACTION_REPEAT             34
+#define PED_ACTION_REPEAT_OVERWRITE   35
 #define PED_ACTION_POWER_ON_OFF       99
 
 #define PED_NONE                1
@@ -370,10 +373,20 @@ struct message {
                                              10 = Start
                                              11 = Stop
                                              12 = Continue
-                                             13 = Sequence */
-  byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
-  byte                   midiValue;       /* Control Code value, Note velocity */
-  byte                   midiChannel;     /* MIDI channel 1-16 */
+                                             13 = Sequence
+                                             33 = Set Led Color */
+  union {
+    struct  {
+      byte              midiCode;         /* Program Change, Control Code, Note or Pitch Bend value to send */
+      byte              midiValue;        /* Control Code value, Note velocity */
+      byte              midiChannel;      /* MIDI channel 1-16 */
+    };
+    struct  {
+      byte              led;              // 0..LEDS-1 existing leds, if equal to LEDS ...
+      uint32_t          color;
+    };
+  };
+
 };
 
 char      banknames[BANKS][MAXBANKNAME+1];        // Bank Names

@@ -190,6 +190,9 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
           case PED_ACTION_PROFILE_MINUS:
             jo["Message"] = "Profile-";
             break;
+          case PED_ACTION_LED_COLOR:
+            jo["Message"] = "Set Led Color";
+            break;
           case PED_ACTION_DEVICE_INFO:
             jo["Message"] = "Device Info";
             break;
@@ -231,10 +234,108 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
         JsonObject jo = jsequences.createNestedObject();
         jo["Sequence"]        = s + 1;
         jo["Step"]            = t + 1;
-        jo["Message"]         = sequences[s][t].midiMessage;
-        jo["Channel"]         = sequences[s][t].midiChannel;
-        jo["Code"]            = sequences[s][t].midiCode;
-        jo["Value"]           = sequences[s][t].midiValue;
+        switch (sequences[s][t].midiMessage) {
+          case PED_EMPTY:
+            jo["Message"] = "None";
+            break;
+          case PED_PROGRAM_CHANGE:
+            jo["Message"] = "Program Change";
+            break;
+          case PED_CONTROL_CHANGE:
+            jo["Message"] = "Control Change";
+            break;
+          case PED_NOTE_ON:
+            jo["Message"] = "Note On";
+            break;
+          case PED_NOTE_OFF:
+            jo["Message"] = "Note Off";
+            break;
+          case PED_BANK_SELECT_INC:
+            jo["Message"] = "Bank Select+";
+            break;
+          case PED_BANK_SELECT_DEC:
+            jo["Message"] = "Bank Select-";
+            break;
+          case PED_PROGRAM_CHANGE_INC:
+            jo["Message"] = "Program Change+";
+            break;
+          case PED_PROGRAM_CHANGE_DEC:
+            jo["Message"] = "Program Change-";
+            break;
+          case PED_PITCH_BEND:
+            jo["Message"] = "Pitch Bend";
+            break;
+          case PED_CHANNEL_PRESSURE:
+            jo["Message"] = "Channel Pressure";
+            break;
+          case PED_MIDI_START:
+            jo["Message"] = "Midi Start";
+            break;
+          case PED_MIDI_STOP:
+            jo["Message"] = "Midi Stop";
+            break;
+          case PED_MIDI_CONTINUE:
+            jo["Message"] = "Midi Continue";
+            break;
+          case PED_SEQUENCE:
+            jo["Message"] = "Sequence";
+            break;
+          case PED_ACTION_BANK_PLUS:
+            jo["Message"] = "Bank+";
+            break;
+          case PED_ACTION_BANK_MINUS:
+            jo["Message"] = "Bank-";
+            break;
+          case PED_ACTION_START:
+            jo["Message"] = "Start";
+            break;
+          case PED_ACTION_STOP:
+            jo["Message"] = "Stop";
+            break;
+          case PED_ACTION_CONTINUE:
+            jo["Message"] = "Continue";
+            break;
+          case PED_ACTION_TAP:
+            jo["Message"] = "Tap";
+            break;
+          case PED_ACTION_BPM_PLUS:
+            jo["Message"] = "BPM+";
+            break;
+          case PED_ACTION_BPM_MINUS:
+            jo["Message"] = "BPM-";
+            break;
+          case PED_ACTION_PROFILE_PLUS:
+            jo["Message"] = "Profile+";
+            break;
+          case PED_ACTION_PROFILE_MINUS:
+            jo["Message"] = "Profile-";
+            break;
+          case PED_ACTION_LED_COLOR:
+            jo["Message"] = "Set Led Color";
+            break;
+          case PED_ACTION_DEVICE_INFO:
+            jo["Message"] = "Device Info";
+            break;
+          case PED_ACTION_POWER_ON_OFF:
+            jo["Message"] = "Power On/Off";
+            break;
+          default:
+            jo["Message"] = "None";
+            break;
+        }
+        switch (sequences[s][t].midiMessage) {
+          case PED_ACTION_LED_COLOR:
+            jo["Led"]             = sequences[s][t].led + 1;
+            char color[8];
+            snprintf(color, 8, "#%06x", sequences[s][t].color);
+            jo["Color"]           = color;
+            break;
+          default:
+            jo["Channel"]         = sequences[s][t].midiChannel;
+            jo["Code"]            = sequences[s][t].midiCode;
+            jo["Value"]           = sequences[s][t].midiValue;
+            break;
+        }
       }
     }
   }
@@ -445,6 +546,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
             else if (msg.equals("BPM-"))              actions[b]->midiMessage = PED_ACTION_BPM_MINUS;
             else if (msg.equals("Profile+"))          actions[b]->midiMessage = PED_ACTION_PROFILE_PLUS;
             else if (msg.equals("Profile-"))          actions[b]->midiMessage = PED_ACTION_PROFILE_MINUS;
+            else if (msg.equals("Set Led Color"))     actions[b]->midiMessage = PED_ACTION_LED_COLOR;
             else if (msg.equals("Device Info"))       actions[b]->midiMessage = PED_ACTION_DEVICE_INFO;
             else if (msg.equals("Power On/Off"))      actions[b]->midiMessage = PED_ACTION_POWER_ON_OFF;
             else                                      actions[b]->midiMessage = PED_EMPTY;
@@ -507,6 +609,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
                   else if (msg.equals("BPM-"))              act->midiMessage = PED_ACTION_BPM_MINUS;
                   else if (msg.equals("Profile+"))          act->midiMessage = PED_ACTION_PROFILE_PLUS;
                   else if (msg.equals("Profile-"))          act->midiMessage = PED_ACTION_PROFILE_MINUS;
+                  else if (msg.equals("Set Led Color"))     act->midiMessage = PED_ACTION_LED_COLOR;
                   else if (msg.equals("Device Info"))       act->midiMessage = PED_ACTION_DEVICE_INFO;
                   else if (msg.equals("Power On/Off"))      act->midiMessage = PED_ACTION_POWER_ON_OFF;
                   else                                      act->midiMessage = PED_EMPTY;
@@ -542,16 +645,59 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
+          unsigned int red, green, blue;
           int s = jo["Sequence"];
           s--;
           s = constrain(s, 0, SEQUENCES - 1);
           int t = jo["Step"];
           t--;
           t = constrain(t, 0, STEPS - 1);
-          sequences[s][t].midiMessage = jo["Message"];
-          sequences[s][t].midiChannel = jo["Channel"];
-          sequences[s][t].midiCode    = jo["Code"];
-          sequences[s][t].midiValue   = jo["Value"];
+          String msg = jo["Message"];
+            if      (msg.equals("None"))              sequences[s][t].midiMessage = PED_EMPTY;
+            else if (msg.equals("Program Change"))    sequences[s][t].midiMessage = PED_PROGRAM_CHANGE;
+            else if (msg.equals("Control Change"))    sequences[s][t].midiMessage = PED_CONTROL_CHANGE;
+            else if (msg.equals("Note On"))           sequences[s][t].midiMessage = PED_NOTE_ON;
+            else if (msg.equals("Note Off"))          sequences[s][t].midiMessage = PED_NOTE_OFF;
+            else if (msg.equals("Bank Select+"))      sequences[s][t].midiMessage = PED_BANK_SELECT_INC;
+            else if (msg.equals("Bank Select-"))      sequences[s][t].midiMessage = PED_BANK_SELECT_DEC;
+            else if (msg.equals("Program Change+"))   sequences[s][t].midiMessage = PED_PROGRAM_CHANGE_INC;
+            else if (msg.equals("Program Change-"))   sequences[s][t].midiMessage = PED_PROGRAM_CHANGE_DEC;
+            else if (msg.equals("Pitch Bend"))        sequences[s][t].midiMessage = PED_PITCH_BEND;
+            else if (msg.equals("Channel Pressure"))  sequences[s][t].midiMessage = PED_CHANNEL_PRESSURE;
+            //else if (msg.equals("Midi Start"))        sequences[s][t].midiMessage = PED_MIDI_START;
+            //else if (msg.equals("Midi Stop"))         sequences[s][t].midiMessage = PED_MIDI_STOP;
+            //else if (msg.equals("Midi Continue"))     sequences[s][t].midiMessage = PED_MIDI_CONTINUE;
+            else if (msg.equals("Sequence"))          sequences[s][t].midiMessage = PED_SEQUENCE;
+            //else if (msg.equals("Bank+"))             sequences[s][t].midiMessage = PED_ACTION_BANK_PLUS;
+            //else if (msg.equals("Bank-"))             sequences[s][t].midiMessage = PED_ACTION_BANK_MINUS;
+            else if (msg.equals("Start"))             sequences[s][t].midiMessage = PED_ACTION_START;
+            else if (msg.equals("Stop"))              sequences[s][t].midiMessage = PED_ACTION_STOP;
+            else if (msg.equals("Continue"))          sequences[s][t].midiMessage = PED_ACTION_CONTINUE;
+            //else if (msg.equals("Tap"))               sequences[s][t].midiMessage = PED_ACTION_TAP;
+            //else if (msg.equals("BPM+"))              sequences[s][t].midiMessage = PED_ACTION_BPM_PLUS;
+            //else if (msg.equals("BPM-"))              sequences[s][t].midiMessage = PED_ACTION_BPM_MINUS;
+            //else if (msg.equals("Profile+"))          sequences[s][t].midiMessage = PED_ACTION_PROFILE_PLUS;
+            //else if (msg.equals("Profile-"))          sequences[s][t].midiMessage = PED_ACTION_PROFILE_MINUS;
+            else if (msg.equals("Set Led Color"))     sequences[s][t].midiMessage = PED_ACTION_LED_COLOR;
+            //else if (msg.equals("Device Info"))       sequences[s][t].midiMessage = PED_ACTION_DEVICE_INFO;
+            //else if (msg.equals("Power On/Off"))      sequences[s][t].midiMessage = PED_ACTION_POWER_ON_OFF;
+            else                                      sequences[s][t].midiMessage = PED_EMPTY;
+          switch (sequences[s][t].midiMessage) {
+            case PED_ACTION_LED_COLOR:
+              sequences[s][t].led         = jo["Led"];
+              sequences[s][t].led         = constrain(sequences[s][t].led, 0, LEDS);
+              sscanf(jo["Color"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
+              sequences[s][t].color       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
+              break;
+            default:
+              sequences[s][t].midiChannel = jo["Channel"];
+              sequences[s][t].midiChannel = constrain(sequences[s][t].midiChannel, 1, 16);
+              sequences[s][t].midiCode    = jo["Code"];
+              sequences[s][t].midiCode    = constrain(sequences[s][t].midiCode,    0, MIDI_RESOLUTION - 1);
+              sequences[s][t].midiValue   = jo["Value"];
+              sequences[s][t].midiValue    = constrain(sequences[s][t].midiValue,  0, MIDI_RESOLUTION - 1);
+              break;
+          }
         }
       }
     }

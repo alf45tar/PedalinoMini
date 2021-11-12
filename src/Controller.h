@@ -153,6 +153,8 @@ void leds_update(byte type, byte channel, byte data1, byte data2, byte bank)
         switch (act->midiMessage) {
 
           case PED_PROGRAM_CHANGE:
+          case PED_PROGRAM_CHANGE_INC:
+          case PED_PROGRAM_CHANGE_DEC:
             if (type == midi::ProgramChange)
               if (act->midiCode == data1) {
                 lastLedColor[bank][act->led] = act->color1;
@@ -670,7 +672,15 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
       DPRINT("SEQUENCE.....Number %2d\n", channel);
       DPRINT("-------------------------------------------------------\n");
       for (byte s = 0; s < STEPS; s++)
-        midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
+        if (sequences[channel-1][s].midiMessage == PED_ACTION_LED_COLOR) {
+          sequences[channel-1][s].led = constrain(sequences[channel-1][s].led, 0, LEDS);
+          fastleds[sequences[channel-1][s].led] = sequences[channel-1][s].color;
+          fastleds[sequences[channel-1][s].led].nscale8(ledsOnBrightness);
+          FastLED.show();
+          lastLedColor[currentBank][sequences[channel-1][s].led] = fastleds[sequences[channel-1][s].led];
+        }
+        else
+          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
       DPRINT("=======================================================\n");
       currentMIDIValue[bank][pedal][button] = channel;
       lastMIDIMessage[currentBank] = {PED_SEQUENCE, code, value, channel};
@@ -687,24 +697,43 @@ void controller_event_handler_analog(byte pedal, int value)
       action *act    = actions[0] == nullptr ? actions[currentBank] : actions[0];
       while (act != nullptr) {
         if (act->pedal == pedal && act->event == PED_EVENT_MOVE) {
-          value = map2(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
+          if (act->midiMessage == PED_ACTION_REPEAT) {
+            value = map2(value,                                      // map from [0, ADC_RESOLUTION-1] to [0, 127] MIDI value
+                      0,
+                      ADC_RESOLUTION - 1,
+                      pedals[pedal].invertPolarity ? MIDI_RESOLUTION - 1 : 0,
+                      pedals[pedal].invertPolarity ? 0 : MIDI_RESOLUTION - 1);
+            value = constrain(value, 0, MIDI_RESOLUTION - 1);
+          }
+          else {
+            value = map2(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
                       0,
                       ADC_RESOLUTION - 1,
                       pedals[pedal].invertPolarity ? act->midiValue2 : act->midiValue1,
                       pedals[pedal].invertPolarity ? act->midiValue1 : act->midiValue2);
-          value = constrain(value, act->midiValue1, act->midiValue2);
+            value = constrain(value, act->midiValue1, act->midiValue2);
+          }
           lastUsedPedal = pedal;
           lastUsed = pedal;
           lastSlot = act->slot;
-          if (act->midiMessage != PED_EMPTY) strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
+          if (act->midiMessage != PED_EMPTY ||
+              act->midiMessage != PED_ACTION_REPEAT ||
+              act->midiMessage != PED_ACTION_REPEAT_OVERWRITE) strncpy(lastPedalName, act->name, MAXACTIONNAME+1);
           DPRINT("Action: %s\n", act->name);
           switch (act->midiMessage) {
-            case PED_EMPTY:
-              midi_send(lastMIDIMessage[currentBank].midiMessage, lastMIDIMessage[currentBank].midiCode, value, lastMIDIMessage[currentBank].midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+            case PED_ACTION_REPEAT:
+              midi_send(lastMIDIMessage[currentBank].midiMessage, lastMIDIMessage[currentBank].midiCode, value, lastMIDIMessage[currentBank].midiChannel, true, 0, MIDI_RESOLUTION - 1, currentBank, pedal);
               fastleds[act->led] = lastColor;
-              //fastleds[act->led] = fastleds[act->led].lerp8(lastColor, (255 * value) / (MIDI_RESOLUTION - 1));
-              //fastleds[act->led].nscale8(ledsOffBrightness + ((ledsOnBrightness - ledsOffBrightness) * value) / (MIDI_RESOLUTION - 1));
               fastleds[act->led].nscale8((255 * value) / (MIDI_RESOLUTION - 1));
+              FastLED.show();
+              lastLedColor[currentBank][act->led] = fastleds[act->led];
+              break;
+
+            case PED_ACTION_REPEAT_OVERWRITE:
+              midi_send(lastMIDIMessage[currentBank].midiMessage, lastMIDIMessage[currentBank].midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+              fastleds[act->led] = act->color0;
+              fastleds[act->led] = fastleds[act->led].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
+              fastleds[act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
               FastLED.show();
               lastLedColor[currentBank][act->led] = fastleds[act->led];
               break;
@@ -768,6 +797,14 @@ void controller_event_handler_analog(byte pedal, int value)
             case PED_ACTION_BPM_MINUS:
               bpm = map2(value, 0, MIDI_RESOLUTION, 40, 300);
               MTC.setBpm(bpm);
+              break;
+
+            case PED_ACTION_LED_COLOR:
+              fastleds[act->led] = act->color0;
+              fastleds[act->led] = fastleds[act->led].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
+              fastleds[act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
+              FastLED.show();
+              lastLedColor[currentBank][act->led] = fastleds[act->led];
               break;
           }
         }
@@ -1001,6 +1038,14 @@ if (loadConfig && send) {
                                     pedals[i].invertPolarity ? 40 : 300);
                     MTC.setBpm(bpm);
                     break;
+
+                  case PED_ACTION_LED_COLOR:
+                    fastleds[act->led] = act->color0;
+                    fastleds[act->led] = fastleds[act->led].lerp8(act->color1, 255 * 0 / (MIDI_RESOLUTION - 1));
+                    fastleds[act->led].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * 0 / (MIDI_RESOLUTION - 1));
+                    FastLED.show();
+                    lastLedColor[currentBank][act->led] = fastleds[act->led];
+                    break;
                 }
                 DPRINT("Action: %s\n", act->name);
               }
@@ -1184,6 +1229,12 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               reloadProfile = true;
               break;
 
+            case PED_ACTION_LED_COLOR:
+              fastleds[act->led] = act->color0;
+              FastLED.show();
+              lastLedColor[currentBank][act->led] = fastleds[act->led];
+            break;
+
             case PED_ACTION_DEVICE_INFO:
               scrollingMode = !scrollingMode;
               leds_refresh();
@@ -1198,18 +1249,26 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               esp_deep_sleep_start();
               break;
           }
-          if (act->midiMessage != PED_PROGRAM_CHANGE) {
+          if (act->midiMessage == PED_PROGRAM_CHANGE) {
+            fastleds[act->led] = act->color1;
+            FastLED.show();
+            lastLedColor[currentBank][act->led] = fastleds[act->led];
+            lastColor = fastleds[act->led];
+          }
+          else if (act->midiMessage != PED_ACTION_LED_COLOR) {
             CRGB off = act->color0;
             CRGB on  = act->color1;
             off.nscale8(ledsOffBrightness);
             on.nscale8(ledsOnBrightness);
-            if (act->midiValue1 == act->midiValue2)
+            if (act->midiValue1 == act->midiValue2) {
               fastleds[act->led] = (fastleds[act->led] == off) ? on : off;
-            else
+            }
+            else {
               fastleds[act->led] = (currentMIDIValue[currentBank][p][i] == act->midiValue1) ? off : on;
+            }
             FastLED.show();
             lastLedColor[currentBank][act->led] = fastleds[act->led];
-            lastColor = on;
+            lastColor = fastleds[act->led];
           }
         }
         act = act->next;

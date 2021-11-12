@@ -216,6 +216,7 @@
                                 "BPM-",
                                 "Profile+",
                                 "Profile-",
+                                "Set Led Color",
                                 "Device Info",
                                 "Power On/Off"]
                     },
@@ -257,9 +258,23 @@
                         "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                     },
                     "Message": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 255
+                        "type": "string",
+                        "enum": ["None",
+                                "Program Change",
+                                "Control Change",
+                                "Note On",
+                                "Note Off",
+                                "Bank Select+",
+                                "Bank Select-",
+                                "Program Change+",
+                                "Program Change-",
+                                "Pitch Bend",
+                                "Channel Pressure",
+                                "Sequence",
+                                "Start",
+                                "Stop",
+                                "Continue",
+                                "Set Led Color"]
                     },
                     "Channel": {
                         "type": "integer",
@@ -274,6 +289,9 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 255
+                    },
+                    "Color": {
+                        "type": "string"
                     }
                 }
             }
