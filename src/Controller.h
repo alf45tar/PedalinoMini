@@ -8,6 +8,8 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                                    (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
+#ifndef CONTROLLER_H_
+#define CONTROLLER_H_
 
 #include <algorithm>
 
@@ -1561,3 +1563,5 @@ void controller_setup()
     controller_run(false);            // to avoid spurious readings
   }
 }
+
+#endif /* CONTROLLER_H_ */

@@ -1,3 +1,6 @@
+#ifndef TICKERTIMER_H_
+#define TICKERTIMER_H_
+
 #include <Ticker.h>
 
 Ticker        timer1, timer2, timer3;
@@ -35,3 +38,5 @@ void Timer3Attach(uint32_t ms)
 {
  timer3.attach_ms(ms, onTimer3);
 }
+
+#endif /* TICKERTIMER_H_ */

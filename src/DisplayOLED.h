@@ -8,6 +8,8 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                                    (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
+#ifndef DISPLAYOLED_H_
+#define DISPLAYOLED_H_
 
 #include "Fonts.h"
 
@@ -1166,3 +1168,5 @@ void display_off()
 {
   display.displayOff();
 }
+
+#endif /* DISPLAYOLED_H_ */

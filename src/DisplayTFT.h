@@ -9,6 +9,9 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#ifndef DISPLAYTFT_H_
+#define DISPLAYTFT_H_
+
 #ifdef TTGO_T_DISPLAY
 #include <TFT_eSPI.h>
 #include <SPI.h>
@@ -1308,3 +1311,5 @@ void display_off()
   display.writecommand(TFT_DISPOFF);
   display.writecommand(TFT_SLPIN);
 }
+
+#endif /* DISPLAYTFT_H_ */

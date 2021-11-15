@@ -9,6 +9,9 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#ifndef OTAUPDATEARDUINO_H_
+#define OTAUPDATEARDUINO_H_
+
 #ifdef NOWIFI
 #define ota_begin(...)
 #define ota_handle(...)
@@ -78,3 +81,5 @@ inline void ota_handle() {
 }
 
 #endif  // NOWIFI
+
+#endif /* OTAUPDATEARDUINO_H_ */

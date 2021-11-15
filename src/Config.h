@@ -8,6 +8,8 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                                    (c) 2018-2021 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
+#ifndef CONFIG_H_
+#define CONFIG_H_
 
 #include <Preferences.h>
 #include <nvs_flash.h>
@@ -1348,3 +1350,5 @@ void eeprom_init_or_erase()
       break;
   }
 }
+
+#endif /* CONFIG_H_ */

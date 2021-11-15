@@ -4,6 +4,8 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
+#ifndef BLUFISECURITY_H_
+#define BLUFISECURITY_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -215,3 +217,5 @@ void blufi_security_deinit(void)
     free(blufi_sec);
     blufi_sec =  NULL;
 }
+
+#endif /* BLUFISECURITY_H_ */

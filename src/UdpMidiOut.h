@@ -9,6 +9,9 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#ifndef UDPMIDIOUT_H_
+#define UDPMIDIOUT_H_
+
 #ifdef WIFI
 #include <WiFi.h>
 #include <WiFiClient.h>
@@ -542,3 +545,5 @@ void OSCSendSystemReset(void)
   oscUDPout.send(udpMsg);
 }
 #endif  //  NOWIFI
+
+#endif /* UDPMIDIOUT_H_ */

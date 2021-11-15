@@ -9,6 +9,8 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#ifndef WIFICONNECT_H_
+#define WIFICONNECT_H_
 
 #include <WiFi.h>
 #include <WiFiClient.h>
@@ -548,3 +550,5 @@ void wifi_connect()
 }
 
 #endif  // WIFI
+
+#endif /* WIFICONNECT_H_ */

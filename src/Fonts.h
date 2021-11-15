@@ -1,6 +1,9 @@
 // Created by http://oleddisplay.squix.ch/
 // Edited with the glyphEditor https://rawgit.com/lorol/esp8266-oled-ssd1306/master/resources/glyphEditor.html
 
+#ifndef FONTS_H_
+#define FONTS_H_
+
 const uint8_t DSEG7_Classic_Bold_50[] PROGMEM = {
 0x29, // Width: 41
 0x37, // Height: 55
@@ -890,3 +893,5 @@ const GFXglyph DSEG14_Classic_Bold_100Glyphs[] PROGMEM = {
 const GFXfont DSEG14_Classic_Bold_100 PROGMEM = {
 (uint8_t  *)DSEG14_Classic_Bold_100Bitmaps,  (GFXglyph *)DSEG14_Classic_Bold_100Glyphs, 0x20, 0x43,   109};
 #endif
+
+#endif /* FONTS_H_ */

@@ -24,7 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- #pragma once
+#ifndef ESPSERIALMIDI_H_
+#define ESPSERIALMIDI_H_
 
 #include "midi_Namespace.h"
 
@@ -137,3 +138,5 @@ END_MIDI_NAMESPACE
 #define MIDI_CREATE_CUSTOM_INSTANCE_ESP(Type, SerialPort, Name, Settings)           \
     MIDI_NAMESPACE::ESPSerialMIDI<Type, Settings> serial##Name(SerialPort);\
     MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::ESPSerialMIDI<Type, Settings>, Settings> Name((MIDI_NAMESPACE::ESPSerialMIDI<Type, Settings>&)serial##Name);
+
+#endif /* ESPSERIALMIDI_H_ */

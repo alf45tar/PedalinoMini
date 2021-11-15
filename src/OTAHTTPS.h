@@ -1,3 +1,6 @@
+#ifndef OTAHTTPS_H_
+#define OTAHTTPS_H_
+
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
@@ -242,3 +245,5 @@ void get_file_from_cloud(String url, String filename) {
     delete client;
   }
 }
+
+#endif /* OTAHTTPS_H_ */

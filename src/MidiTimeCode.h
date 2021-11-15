@@ -9,12 +9,10 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-//                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    /*
 // Thanks to https://github.com/adanselm/padchokola
 
-
-#ifndef _MIDI_CLOCK_MTC_H_
-#define _MIDI_CLOCK_MTC_H_
+#ifndef MIDITIMECODE_H_
+#define MIDITIMECODE_H_
 
 #include <Arduino.h>
 #include <Ticker.h>
@@ -182,4 +180,4 @@ class MidiTimeCode
     static const MTCQuarterFrameType  mMTCQuarterFrameTypes[8];
 };
 
-#endif
+#endif /* MIDITIMECODE_H_ */

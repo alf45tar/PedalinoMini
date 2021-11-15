@@ -8,6 +8,8 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                                    (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
+#ifndef BLEMIDIIN_H_
+#define BLEMIDIIN_H_
 
 #undef CLASSIC_BT_ENABLED
 
@@ -283,3 +285,5 @@ void ble_midi_start_service()
 }
 
 #endif  // BLE
+
+#endif /* BLEMIDIIN_H_ */

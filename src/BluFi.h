@@ -4,6 +4,8 @@
 * android source code: https://github.com/EspressifApp/EspBlufi
 * iOS source code: https://github.com/EspressifApp/EspBlufiForiOS
 ****************************************************************************/
+#ifndef BLUFI_H_
+#define BLUFI_H_
 
 #include <esp_system.h>
 #include <esp_wifi.h>
@@ -296,3 +298,5 @@ void blufi_config(void)
 
     esp_blufi_profile_init();
 }
+
+#endif /* BLUFI_H_ */

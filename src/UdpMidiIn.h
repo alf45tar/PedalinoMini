@@ -9,6 +9,9 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#ifndef UDPMIDIIN_H_
+#define UDPMIDIIN_H_
+
 #ifdef WIFI
 #include <WiFi.h>
 #include <WiFiClient.h>
@@ -1257,3 +1260,5 @@ void oscOnPacket(AsyncUDPPacket packet) {
 }
 
 #endif  // NOWIFI
+
+#endif /* UDPMIDIIN_H_ */

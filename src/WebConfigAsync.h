@@ -9,6 +9,9 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#ifndef WEBCONFIGASYNC_H_
+#define WEBCONFIGASYNC_H_
+
 String theme         = "bootstrap";
 String httpUsername  = "admin";
 String httpPassword  = getChipId();
@@ -4627,3 +4630,5 @@ inline void http_run() {
 }
 
 #endif  // WIFI
+
+#endif /* WEBCONFIGASYNC_H_ */

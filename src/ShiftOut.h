@@ -26,8 +26,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
-#ifndef ShiftOut_h
-#define ShiftOut_h
+
+#ifndef SHIFTOUT_H_
+#define SHIFTOUT_H_
 
 #include "Arduino.h"
 
@@ -116,4 +117,4 @@ class ShiftOut<3> : public _ShiftOut<3, uint32_t> {};
 template<>
 class ShiftOut<4> : public _ShiftOut<4, uint32_t> {};
 
-#endif
+#endif /* SHIFTOUT_H_ */

@@ -9,10 +9,10 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-#include <Arduino.h>
+#ifndef PEDALINO_H_
+#define PEDALINO_H_
 
-#ifndef _PEDALINO_H
-#define _PEDALINO_H
+#include <Arduino.h>
 
 #define VERSION         "2.3.0"
 
@@ -578,4 +578,4 @@ void mtc_stop();
 void mtc_continue();
 void mtc_tap();
 
-#endif // _PEDALINO_H
+#endif /* PEDALINO_H_ */

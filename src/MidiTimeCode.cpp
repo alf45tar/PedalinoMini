@@ -13,7 +13,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 // Thanks to https://github.com/adanselm/padchokola
 //
 
-
 #include "MidiTimeCode.h"
 
 // Allow 3 sec between taps at max (eq. to 20BPM)

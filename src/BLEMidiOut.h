@@ -8,6 +8,8 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                                    (c) 2018-2020 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
+#ifndef BLEMIDIOUT_H_
+#define BLEMIDIOUT_H_
 
 #ifdef BLE
 #include <BLEMIDI_Transport.h>
@@ -136,3 +138,5 @@ void BLESendSystemReset(void)
 }
 
 #endif  // NOBLE
+
+#endif /* BLEMIDIOUT_H_ */

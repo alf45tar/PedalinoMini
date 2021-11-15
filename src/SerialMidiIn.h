@@ -9,6 +9,9 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#ifndef SERIALMIDIIN_H_
+#define SERIALMIDIIN_H_
+
 #include <MIDI.h>
 
 
@@ -479,3 +482,5 @@ void serial_midi_connect()
   // Enable/disable MIDI Thru
   interfaces[PED_DINMIDI].midiThru ? DIN_MIDI.turnThruOn() : DIN_MIDI.turnThruOff();
 }
+
+#endif /* SERIALMIDIIN_H_ */

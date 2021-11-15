@@ -9,6 +9,9 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#ifndef DISPLAYLCD_H_
+#define DISPLAYLCD_H_
+
 #define LCD_ROWS  2
 #define LCD_COLS  16
 
@@ -326,3 +329,5 @@ void screen_update(bool force = false) {
       lcdNoCursor();
   }
 }
+
+#endif /* DISPLAYLCD_H_ */
