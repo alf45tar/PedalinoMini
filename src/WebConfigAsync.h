@@ -17,8 +17,10 @@ String httpUsername  = "admin";
 String httpPassword  = getChipId();
 bool   authenticated = false;
 
-#ifdef NOWIFI
+#ifndef WIFI
+
 inline void http_run() {};
+
 #else
 
 #include <WiFi.h>

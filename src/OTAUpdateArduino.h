@@ -12,9 +12,11 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef OTAUPDATEARDUINO_H_
 #define OTAUPDATEARDUINO_H_
 
-#ifdef NOWIFI
+#ifndef WIFI
+
 #define ota_begin(...)
 #define ota_handle(...)
+
 #else
 
 #include <WiFi.h>

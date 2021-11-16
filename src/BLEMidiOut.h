@@ -14,18 +14,17 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifdef BLE
 #include <BLEMIDI_Transport.h>
 #include <hardware/BLEMIDI_ESP32_NimBLE.h>
-#endif
 
 // Bluetooth LE MIDI interface
-
-#ifdef BLE
 BLEMIDI_CREATE_INSTANCE(host.c_str(), BLE_MIDI);
+
 #endif
 
 bool                  bleMidiConnected = false;
 unsigned long         bleLastOn        = 0;
 
-#ifdef NOBLE
+#ifndef BLE
+
 #define BLEMidiReceive(...)
 #define BLESendNoteOn(...)
 #define BLESendNoteOff(...)
@@ -45,6 +44,7 @@ unsigned long         bleLastOn        = 0;
 #define BLESendStop(...)
 #define BLESendActiveSensing(...)
 #define BLESendSystemReset(...)
+
 #else
 
 void BLESendNoteOn(byte note, byte velocity, byte channel)
@@ -137,6 +137,6 @@ void BLESendSystemReset(void)
   if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendSystemReset();
 }
 
-#endif  // NOBLE
+#endif  // BLE
 
 #endif /* BLEMIDIOUT_H_ */

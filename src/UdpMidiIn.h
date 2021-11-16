@@ -159,10 +159,12 @@ void printMIDI (const char *interface, const midi::MidiType type, const midi::Ch
 }
 
 
-#ifdef NOWIFI
+#ifndef WIFI
+
 #define apple_midi_start(...)
 #define ip_midi_start(...)
 #define oscUDP_listen(...)
+
 #else
 
 // Forward messages received from Apple MIDI interface to other interfaces

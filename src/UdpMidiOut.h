@@ -48,7 +48,8 @@ bool                    appleMidiConnected = false;
 String                  appleMidiSessionName;
 unsigned long           wifiLastOn         = 0;
 
-#ifdef NOWIFI
+#ifndef WIFI
+
 #define AppleMidiSendNoteOn(...)
 #define AppleMidiSendNoteOff(...)
 #define AppleMidiSendAfterTouchPoly(...)
@@ -109,6 +110,7 @@ unsigned long           wifiLastOn         = 0;
 #define OSCSendStop(...)
 #define OSCSendActiveSensing(...)
 #define OSCSendSystemReset(...)
+
 #else
 
 void AppleMidiSendNoteOn(byte note, byte velocity, byte channel)
@@ -544,6 +546,6 @@ void OSCSendSystemReset(void)
   oscMsg.send(udpMsg).empty();
   oscUDPout.send(udpMsg);
 }
-#endif  //  NOWIFI
+#endif  //  WIFI
 
 #endif /* UDPMIDIOUT_H_ */
