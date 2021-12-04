@@ -1,56 +1,338 @@
 <!DOCTYPE html>
-<html lang="en" class="">
-  <head>
-    <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
-    <title>Install PedalinoMini™</title>
-    <script
-      type="module"
-      src="https://unpkg.com/esp-web-tools@6.0.0/dist/web/install-button.js?module"
-    ></script>
-  </head>
-  <body>
-    <h1>Install PedalinoMini™</h1>
+<html>
+<head>
+  <meta charset="utf-8">
+	<meta content='width=device-width' name='viewport'>
+  <meta name="theme-color" content="#222222">
+  <link rel="shortcut icon" href="favicon.png"> 
+	<title>Install PedalinoMini™</title>
+  <script
+    type="module"
+    src="installer/install-button-342.js"
+  ></script>
+	<style>
+		body {
+			font-family: Verdana, Helvetica, sans-serif;
+			text-align: center;
+			background-color: #222;
+			margin: 0;
+      color: #fff;
+		}
+    
+    .sub {
+      margin: -18px 0 18px 0;
+      color: #09f;
+    }
+    
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='white'><polygon points='0,0 100,0 50,50'/></svg>") no-repeat;
+      background-size: 12px;
+      background-position: 206px 17px;
+      padding-left: 12px !important;
+      background-repeat: no-repeat;
+      outline: none;
+    }
+    select:-moz-focusring {
+      transition-duration: 0s;
+      color: transparent;
+      text-shadow: 0 0 0 #fff;
+    }
+    option {
+      background-color: var(--c-3);
+      color: var(--c-f);
+    }
+    
+    .btn {
+      outline: none;
+      cursor: pointer;
+      padding: 8px;
+      margin: 10px;
+      width: 230px;
+      font-family: Verdana, Helvetica, sans-serif;
+      font-size: 19px;
+      background-color: #333;
+      color: white;
+      border: 0px solid white;
+      border-radius: 25px;
+    }
+    
+    img {
+      width: 770px;
+      max-width: 80%;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      margin: 3vh 0 5px 0;
+      animation: fi 1s;
+    }
+    
+    @keyframes fi {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+    }
+    
+    .main {
+      animation: fi 1.5s .7s both;
+    }
+    
+    a {
+      color: #fff;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    
+    ol {
+      margin: auto;
+      text-align: left;
+      display: inline-block;
+    }
+    
+    li::marker {
+      text-decoration: bold;
+      color: #09f;
+    }
+    
+    li {
+      margin: 5px;
+    }
+    
+    .clickable {
+      cursor: pointer;
+    }
+    
+    .container {
+      width: 80%;
+      max-width: 510px;
+      margin: auto;
+      border-radius: 5px;
+      box-sizing: border-box;
+      background-color: #222;
+      overflow: hidden;
+    }
+    
+    .inst-button {
+      padding: 5px 0;
+    }
 
-    <div class="pick-variant">
-      <ol style='text-align:left'>
-        <li>Connect the ESP device to your computer</br>using USB or serial-to-USB adapter</li></br>
-        <li>Select the firmware variant suitable for</br>your device</li></br>
-        <li>Hit "Install" and select the correct port</br>or find help if <a href="https://alf45tar.github.io/docs/Getting-Started/" target='_blank' style='color:#aaa;'>no device found</a></li>
-      </ol>
-      </br>
-      <select>
-        <optgroup label="Release">
-          <option value="manifest/firmware223.json">2.3.0</option>
-          <option value="manifest/firmware222.json">2.2.2</option>
-        </optgroup>
-        <optgroup label="Development">
-          <option value="manifest/firmware231.json">2.3.1</option>
-          <option value="manifest/firmware240.json">2.4.0</option>
-        </optgroup>
-      </select>
-      </br></br>
-      <p>
-        <esp-web-install-button id="inst">
-          <i slot="unsupported">
-            Your browser does not support Web Serial.</br>Open this page in Google Chrome or</br>Microsoft Edge instead
-            <span class="not-supported-i hidden">(but not on your iOS device)</span>.
-          </i>
-        </esp-web-install-button>
-      </p>
-    </div>
-    <div style='text-align:right;font-size:11px;'>
-      <hr/>
-      <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
-    </div>
-    <script>
-      const selectEl = document.querySelector(".pick-variant select");
-      const installEl = document.querySelector("esp-web-install-button");
-      installEl.manifest = selectEl.value;
-      selectEl.addEventListener("change", () => {
-        installEl.manifest = selectEl.value;
-      });
+    .log {
+      padding: 6px 20px 8px 20px;
+      display: none;
+    }
+    
+    #reset-button {
+      display: none;
+    }
 
-    </script>
-  </body>
+    .info-top {
+      font-size: 32px;
+      display: inline-block;
+    }
+    
+    .info-bot {
+      display: inline-block;
+    }
+
+    #state {
+      float: left;
+    }
+
+    #progress {
+      float: right;
+    }
+
+    #bar {
+      height: 12px;
+      width: 100%;
+      margin: 26px 0 8px 0;
+      border-radius: 25px;
+      background: linear-gradient(to right, red, orange , yellow, #0a0, cyan, #09f);
+      overflow: hidden;
+      position: relative;
+    }
+
+    #bar-inner {
+      transform: translate(-50%,-10%);
+      width: 200%;
+      height: 120%;
+      background: linear-gradient(to right, #fff 50%, #444 50%);
+      transition: transform 3s;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    #env {
+      float: left;
+    }
+
+    #extra {
+      float: right;
+    }
+	</style>
+</head>
+<body onload="checkSupported()">
+<img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAG0AAAAfCAMAAADazLOuAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABLUExURQAAAAB81gCU/zKq///mo7sWMN8bO+ZIYtZaAP9rAP+HMsCiG+TAIOnMS0KqNU7KPnLUZOrq6v///4CAgGhoaL+/v6CgoExMTAAAAAlm4O8AAAAZdFJOU////////////////////////////////wABNAq3AAAACXBIWXMAAA7DAAAOwwHHb6hkAAACN0lEQVRIS73VjVLCMBAEYIr8CYKkrdj3f1J37zaXFCpTO+piaDgbPq9px9VQ0qyrvKj4q6m0Zr1h+M7xF1zRmnWzqV9/0d2jttGotO1uv9dUObwej5oqp7fzWVPl8n69aprzoOUUbbvdIbV3OLwitXc6vSG1d7m8I3feSEN0j2CeNbOY4MxigjOLCc4sZsTV2l1cCyy4wIILLLjAxtykltq2rbTU+qi01N5rXNO2leaFORoija2l5MM5a02ac9Ya16Sk5tgaPrUpjZub0BL6YqSxKwbH77XUUmSkJXSl8QtaMuyJhq5maL5nTKVpZC13VmtMpTFT2g4vJjTuGfMzzXftiUZnhdtgb1xofvypRon5TjNnxYN9zJo6K5ruSIzQtGuVZn0x91rKvdHBvm39E7SyZ4y06Gz8BDBFKzsXmhcwyfsGZ9VpbhoiCinaxPNmGWmWWrNU2jB0q6HvOhN1JUtCixQtp2g51ZVUXIPS2RMAD++T2nY/DrDjOMDO4wC7jmNYj3d73nrXug8Yt9uNB8xNU1cKNXWlUFNXCjV1pZhGTE83m2vWfYf/NGj4Bg1zu5JD3/MnH5ZWfLOksbmGWGjgXMN5/C2GXYGFFW9Nmtle6Xut0Gm+JsayCj8z0nhjGvYJzVf4aSzmNYsr+u7Q2JIdoX3YOQjOslmsW1jJ3120nE9gfo79hTaNdcsqVR610lvO47pllae9ReZ805zKo2a3iaY5c75pTmVCA6dJ5H7N0sr/asPwBehb7ifEhusRAAAAAElFTkSuQmCC">
+<div class="main">
+<h2>Welcome to the PedalinoMini web installer!</h2>
+
+<div id="flasher">
+
+<ol>
+  <li>Plug in your ESP to a USB port. We will install PedalinoMini™ <span id="verstr">2.3.0</span> to it.</li>
+  <li id="coms">Hit "Install" and select the correct COM port. <a onclick="showSerialHelp()">No device found?</a></li>
+  <li>Wait a while, the process is a lot faster if you stay on this tab.</li>
+</ol><br><br>
+
+<div class="container inst-button">
+  <esp-web-install-button
+    id="inst"
+    manifest="bin/release_0_12_0/manifest.json"
+    hide-progress
+    erase-first
+  >
+    <button class="btn" slot="activate">Install</button>
+  </esp-web-install-button><br>
+
+  <!-- add new builds here -->
+  <select id="ver" class="btn" onchange="setManifest()">
+    <optgroup label="Release">
+      <option data-manifest="bin/release_0_12_0/manifest.json"
+        data-ethernet="bin/release_0_12_0/manifest_e.json"
+        >0.12.0</option>
+    </optgroup>
+    <optgroup label="Sound Reactive">
+      <option data-manifest="bin/sr_0_12_1-b1/manifest.json"
+        data-ethernet="bin/sr_0_12_1-b1/manifest_e.json"
+        >0.12.1-b1</option>
+    </optgroup>
+    <optgroup label="Beta">
+      <option data-manifest="bin/beta/manifest.json"
+        data-ethernet="bin/beta/manifest_e.json"
+        >0.13.0-b4</option>
+    </optgroup>
+  </select><br><br>
+  
+  <input type="checkbox" id="erase" name="erase" onchange="toggleErase()" checked>
+  <label for="erase"> Clean install (deletes presets and settings)</label><br><br>
+  <div id="eth">
+    <input type="checkbox" id="ethernet" name="ethernet" onchange="setManifest()">
+    <label for="ethernet"> My board has Ethernet</label><br>
+  </div>
+</div>
+
+<div class="container log">
+  <span class="info-top" id="state">Initializing...</span>
+  <span class="info-top" id="progress"></span><br>
+  <div id="bar"><div id="bar-inner"></div></div>
+  <span class="info-bot" id="env">&nbsp;</span>
+  <span class="info-bot" id="extra">&nbsp;</span>
+</div>
+<div id="reset-button">
+  <br><button class="btn" onclick="reset()">&#8635; Start over</button><br>
+</div>
+
+</div>
+<br>Powered by <a href="https://esphome.github.io/esp-web-tools/" target="_blank">ESP Web Tools</a>
+
+<script>
+  function handleStateEvent(ev) {
+    var obj = ev.detail;
+    //console.log(obj);
+    var s = obj.state;
+    if (s == "writing") {
+      //progress
+      var i = obj.details.percentage;
+      document.getElementById('state').textContent = "Writing...";
+      document.getElementById('progress').textContent = i + "%";
+      document.getElementById('extra').textContent = `${(obj.details.bytesWritten/1000).toFixed(1)} / ${(obj.details.bytesTotal/1000).toFixed(1)} kB`
+      //bar
+      var a = (i < 50) ? 1.0 : 1.0 - (i-50)*0.02;
+      document.getElementById('bar-inner').style.transform = `translate(-${(100-i)/2}%,-10%)`
+      document.getElementById('bar-inner').style.background = `linear-gradient(to right, rgba(255,255,255,${a}) 50%, #444 50%)`;
+    } else {
+      document.getElementById('state').textContent = obj.message;
+      
+      //env
+      var manifestName = obj.manifest?.name;
+      var chipFamily = obj.chipFamily;
+      var env = "";
+      if (manifestName) {
+        env = obj.manifest.name;
+        if (chipFamily) env += " - "
+      }
+      if (chipFamily) env += obj.chipFamily;
+      if (env == "") env = "&nbsp;";
+      document.getElementById('env').innerHTML = env;
+      
+      //hide button and show log
+      if (s == "initializing") {
+        document.getElementsByClassName('inst-button')[0].style.display = "none";
+        document.getElementsByClassName('log')[0].style.display = "block";
+      } else if (s == "finished") {
+        document.getElementById('reset-button').style.display = "block";
+      } else if (s == "error") {
+        document.getElementById('state').textContent = "Error!";
+        document.getElementById('extra').textContent = obj.message;
+        document.getElementById('reset-button').style.display = "block";
+        if (!obj.chipFamily) document.getElementById('env').textContent = "";
+      }
+    }
+  }
+  
+  const espWebInstallButton = document.querySelector("esp-web-install-button");
+  espWebInstallButton.addEventListener("state-changed", handleStateEvent);
+
+  function toggleErase() {
+    if (document.getElementById('erase').checked) {
+      document.getElementById('inst').setAttribute('erase-first','');
+    } else {
+      document.getElementById('inst').removeAttribute('erase-first');
+    }
+  }
+  
+  function setManifest() {
+    var sel = document.getElementById('ver');
+    var opt = sel.options[sel.selectedIndex];
+    var m = opt.dataset.manifest;
+    var me = opt.dataset.ethernet;
+    document.getElementById('eth').style.display = me ? "block":"none";
+    if (me && document.getElementById('ethernet').checked) {
+      m = me;
+    }
+    document.getElementById('inst').setAttribute('manifest',m);
+    document.getElementById('verstr').textContent = opt.text;
+  }
+  
+  function reset() {
+    document.getElementById('bar-inner').style.transform = `translate(-50%,-10%)`
+    document.getElementById('bar-inner').style.background = `linear-gradient(to right, rgba(255,255,255,1.0) 50%, #444 50%)`;
+    document.getElementById('progress').textContent = "";
+    document.getElementById('extra').textContent = "";
+    document.getElementsByClassName('inst-button')[0].style.display = "block";
+    document.getElementsByClassName('log')[0].style.display = "none";
+    document.getElementById('reset-button').style.display = "none";
+  }
+  
+  function checkSupported() {
+    if (document.getElementById('inst').hasAttribute('install-unsupported')) unsupported();
+    else setManifest();
+  }
+  
+  function unsupported() {
+    document.getElementById('flasher').innerHTML = "Sorry, your browser is not yet supported!<br>Please try on Desktop Chrome or Edge.<br>"
+  }
+  
+  function showSerialHelp() {
+    document.getElementById('coms').innerHTML = `Hit "Install" and select the correct COM port.<br><br>
+    You might be missing the drivers for your board.<br>
+    Here are drivers for chips commonly used in ESP boards:<br>
+    <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP2102 (square chip)</a><br>
+    <a href="https://github.com/nodemcu/nodemcu-devkit/tree/master/Drivers" target="_blank">CH34x (rectangular chip)</a><br><br>
+    Make sure your USB cable supports data transfer.<br><br>
+    `;
+  }
+</script>
+</body>
 </html>
