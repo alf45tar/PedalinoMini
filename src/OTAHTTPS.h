@@ -189,7 +189,7 @@ void ota_http_update()
   url += xstr(PLATFORMIO_ENV);
   url += F("-");
   url += latestFirmwareVersion;
-  url += F(".bin");
+  url += F("-firmware.bin");
   DPRINT("Starting OTA %s\n", url.c_str());
   HttpsOTA.onHttpEvent(ota_https_update_event_handler);
   HttpsOTA.begin(url.c_str(), rootCACertificate);

@@ -26,31 +26,42 @@ jobs:
         pip install platformio
 
     - name: Run PlatformIO build on selected platforms
-      run: pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
+      run: |
+        pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
+        pio run -t buildfs -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
 
     - name: Copy binary files
       run: |
         rm -rf ./firmware/esp32doit-devkit-v1/*
         echo ${{ github.event.inputs.tag }} > ./firmware/esp32doit-devkit-v1/version.txt
-        cp .platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-bootloader.bin
+        cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-bootloader.bin
         cp .pio/build/esp32doit-devkit-v1/partitions.bin  ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-partitions.bin
         cp .pio/build/esp32doit-devkit-v1/firmware.bin    ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-firmware.bin
         cp .pio/build/esp32doit-devkit-v1/spiffs.bin      ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-spiffs.bin
         rm -rf ./firmware/ttgo-t-eight/*
         echo ${{ github.event.inputs.tag }} > ./firmware/ttgo-t-eight/version.txt
-        cp .pio/build/ttgo-t-eight/firmware.bin ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}.bin
+        cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-bootloader.bin
+        cp .pio/build/ttgo-t-eight/partitions.bin         ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-partitions.bin
+        cp .pio/build/ttgo-t-eight/firmware.bin           ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-firmware.bin
+        cp .pio/build/ttgo-t-eight/spiffs.bin             ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-spiffs.bin
         rm -rf ./firmware/ttgo-t-display/*
         echo ${{ github.event.inputs.tag }} > ./firmware/ttgo-t-display/version.txt
-        cp .platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-bootloader.bin
-        cp .pio/build/ttgo-t-display/partitions.bin   ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-partitions.bin
-        cp .pio/build/ttgo-t-display/firmware.bin     ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-firmware.bin
-        cp .pio/build/ttgo-t-display/spiffs.bin       ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-spiffs.bin
+        cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-bootloader.bin
+        cp .pio/build/ttgo-t-display/partitions.bin       ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-partitions.bin
+        cp .pio/build/ttgo-t-display/firmware.bin         ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-firmware.bin
+        cp .pio/build/ttgo-t-display/spiffs.bin           ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-spiffs.bin
         rm -rf ./firmware/heltec_wifi_kit_32/*
         echo ${{ github.event.inputs.tag }} > ./firmware/heltec_wifi_kit_32/version.txt
-        cp .pio/build/heltec_wifi_kit_32/firmware.bin ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.bin
+        cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-bootloader.bin
+        cp .pio/build/heltec_wifi_kit_32/partitions.bin   ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-partitions.bin
+        cp .pio/build/heltec_wifi_kit_32/firmware.bin     ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-firmware.bin
+        cp .pio/build/heltec_wifi_kit_32/spiffs.bin       ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-spiffs.bin
         rm -rf ./firmware/esp-wrover-kit/*
         echo ${{ github.event.inputs.tag }} > ./firmware/esp-wrover-kit/version.txt
-        cp .pio/build/esp-wrover-kit/firmware.bin ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.bin
+        cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-bootloader.bin
+        cp .pio/build/esp-wrover-kit/partitions.bin       ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-partitions.bin
+        cp .pio/build/esp-wrover-kit/firmware.bin         ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-firmware.bin
+        cp .pio/build/esp-wrover-kit/spiffs.bin           ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-spiffs.bin
 
     - name: Commit and push firmware ${{ github.event.inputs.tag }} files
       run: |
