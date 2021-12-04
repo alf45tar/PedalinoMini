@@ -32,13 +32,19 @@ jobs:
       run: |
         rm -rf ./firmware/esp32doit-devkit-v1/*
         echo ${{ github.event.inputs.tag }} > ./firmware/esp32doit-devkit-v1/version.txt
-        cp .pio/build/esp32doit-devkit-v1/firmware.bin ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}.bin
+        cp .platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-bootloader.bin
+        cp .pio/build/esp32doit-devkit-v1/partitions.bin  ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-partitions.bin
+        cp .pio/build/esp32doit-devkit-v1/firmware.bin    ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-firmware.bin
+        cp .pio/build/esp32doit-devkit-v1/spiffs.bin      ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-spiffs.bin
         rm -rf ./firmware/ttgo-t-eight/*
         echo ${{ github.event.inputs.tag }} > ./firmware/ttgo-t-eight/version.txt
         cp .pio/build/ttgo-t-eight/firmware.bin ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}.bin
         rm -rf ./firmware/ttgo-t-display/*
         echo ${{ github.event.inputs.tag }} > ./firmware/ttgo-t-display/version.txt
-        cp .pio/build/ttgo-t-display/firmware.bin ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}.bin
+        cp .platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-bootloader.bin
+        cp .pio/build/ttgo-t-display/partitions.bin   ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-partitions.bin
+        cp .pio/build/ttgo-t-display/firmware.bin     ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-firmware.bin
+        cp .pio/build/ttgo-t-display/spiffs.bin       ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-spiffs.bin
         rm -rf ./firmware/heltec_wifi_kit_32/*
         echo ${{ github.event.inputs.tag }} > ./firmware/heltec_wifi_kit_32/version.txt
         cp .pio/build/heltec_wifi_kit_32/firmware.bin ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.bin
