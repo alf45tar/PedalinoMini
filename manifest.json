@@ -5,10 +5,10 @@
     {
       "chipFamily": "ESP32",
       "parts": [
-        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.0-bootloader.bin?raw=true",  "offset": 4096 },
-        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.0-partitions.bin?raw=true",  "offset": 32768 },
-        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.0-firmware.bin?raw=true",    "offset": 65536 },
-        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.0-spiffs.bin?raw=true",      "offset": 3932160 }
+        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.1-bootloader.bin?raw=true",  "offset": 4096 },
+        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.1-partitions.bin?raw=true",  "offset": 32768 },
+        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.1-firmware.bin?raw=true",    "offset": 65536 },
+        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.1-spiffs.bin?raw=true",      "offset": 3932160 }
       ]
     }
   ]
