@@ -1,7 +1,56 @@
-<html>
-<head></head>
-</body>
-<script type="module" src="https://unpkg.com/esp-web-tools@6.0.0/dist/web/install-button.js?module"></script>
-<esp-web-install-button manifest="https://alf45tar.github.io/PedalinoMini/manifest.json"></esp-web-install-button>
-</body>
+<!DOCTYPE html>
+<html lang="en" class="">
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+    <title>Install PedalinoMini™</title>
+    <script
+      type="module"
+      src="https://unpkg.com/esp-web-tools@6.0.0/dist/web/install-button.js?module"
+    ></script>
+  </head>
+  <body>
+    <h1>Install PedalinoMini™</h1>
+
+    <div class="pick-variant">
+      <ol style='text-align:left'>
+        <li>Connect the ESP device to your computer</br>using USB or serial-to-USB adapter</li></br>
+        <li>Select the firmware variant suitable for</br>your device</li></br>
+        <li>Hit "Install" and select the correct port</br>or find help if <a href="https://alf45tar.github.io/docs/Getting-Started/" target='_blank' style='color:#aaa;'>no device found</a></li>
+      </ol>
+      </br>
+      <select>
+        <optgroup label="Release">
+          <option value="manifest/firmware223.json">2.3.0</option>
+          <option value="manifest/firmware222.json">2.2.2</option>
+        </optgroup>
+        <optgroup label="Development">
+          <option value="manifest/firmware231.json">2.3.1</option>
+          <option value="manifest/firmware240.json">2.4.0</option>
+        </optgroup>
+      </select>
+      </br></br>
+      <p>
+        <esp-web-install-button id="inst">
+          <i slot="unsupported">
+            Your browser does not support Web Serial.</br>Open this page in Google Chrome or</br>Microsoft Edge instead
+            <span class="not-supported-i hidden">(but not on your iOS device)</span>.
+          </i>
+        </esp-web-install-button>
+      </p>
+    </div>
+    <div style='text-align:right;font-size:11px;'>
+      <hr/>
+      <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
+    </div>
+    <script>
+      const selectEl = document.querySelector(".pick-variant select");
+      const installEl = document.querySelector("esp-web-install-button");
+      installEl.manifest = selectEl.value;
+      selectEl.addEventListener("change", () => {
+        installEl.manifest = selectEl.value;
+      });
+
+    </script>
+  </body>
 </html>
