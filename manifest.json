@@ -1,0 +1,33 @@
+{
+  "name": "PedalinoMini",
+  "version": "2021.12.4",
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "bootloader.bin", "offset": 4096 },
+        { "path": "partitions.bin", "offset": 32768 },
+        { "path": "ota.bin", "offset": 57344 },
+        { "path": "firmware.bin", "offset": 65536 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        { "path": "esp32-c3.bin", "offset": 0 },
+      ]
+    },
+    {
+      "chipFamily": "ESP32-S2",
+      "parts": [
+        { "path": "esp32-s2.bin", "offset": 0 },
+      ]
+    },
+    {
+      "chipFamily": "ESP8266",
+      "parts": [
+        { "path": "esp8266.bin", "offset": 0 },
+      ]
+    }
+  ]
+}
