@@ -5,7 +5,7 @@
     {
       "chipFamily": "ESP32",
       "parts": [
-        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.0.bin", "offset": 0 },
+        { "path": "https://github.com/alf45tar/PedalinoMini/blob/master/firmware/ttgo-t-display/ttgo-t-display-2.3.0.bin", "offset": 0 }
       ]
     }
   ]
