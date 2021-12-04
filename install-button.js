@@ -1,7 +1,7 @@
 class t extends HTMLElement {
     static preload()
     {
-        import("./start-flash-9b1cffdc.js")
+        import("./start-flash.js")
     }
     connectedCallback()
     {
@@ -16,7 +16,7 @@ class t extends HTMLElement {
         const e = document.createElement("slot");
         e.addEventListener("click", (async t => {
             t.preventDefault();
-            (await import("./start-flash-9b1cffdc.js")).startFlash(this)
+            (await import("./start-flash.js")).startFlash(this)
         })),
         e.name = "activate";
         const n = document.createElement("button");
