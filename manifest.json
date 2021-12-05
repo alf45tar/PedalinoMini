@@ -1,6 +1,7 @@
 {
   "name": "PedalinoMini™",
   "version": "2.3.1",
+  "new_install_prompt_erase": true,
   "builds": [
     {
       "chipFamily": "ESP32",
