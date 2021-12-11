@@ -69,6 +69,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "OTAHTTPS.h"
 #include "WebConfigAsync.h"
 #include "OTAUpdateArduino.h"
+#include "ImprovSerial.h"
 #include "WifiConnect.h"
 
 
@@ -462,8 +463,14 @@ void setup()
     }
     else
       wifi_connect();
+
+    improv_serial::global_improv_serial.setup(String("PedalinoMini (TM)"),
+                                              String(VERSION),
+                                              String(xstr(PLATFORMIO_ENV)),
+                                              String("Device name: ") + String(host));
   }
 #endif
+
 
 #ifdef LEFT_PIN
   pinMode(LEFT_PIN, INPUT_PULLUP);
@@ -580,6 +587,19 @@ void loop()
 
     // Run OTA update service
     ota_handle();
+
+    // WiFi Provisioning
+    if (improv_serial::global_improv_serial.loop()) {
+      wifiSSID     = improv_serial::global_improv_serial.get_ssid();
+      wifiPassword = improv_serial::global_improv_serial.get_password();
+
+      DPRINT("SSID        : %s\n", wifiSSID.c_str());
+      DPRINT("Password    : %s\n", wifiPassword.c_str());
+
+      eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
+      delay(1000);    // Restart only after all changes have been committed to EEPROM
+      ESP.restart();
+    }
   }
 #endif // WIFI
 

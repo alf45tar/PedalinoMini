@@ -22,8 +22,9 @@ __________           .___      .__  .__                 _____  .__       .__    
 #endif
 
 #define WIFI_CONNECT_TIMEOUT    15
-#define SMART_CONFIG_TIMEOUT    15
-#define WPS_TIMEOUT             30
+#define IMPROV_CONNECT_TIMEOUT  60
+#define SMART_CONFIG_TIMEOUT    60
+#define WPS_TIMEOUT             60
 
 #ifdef WIFI
 
@@ -353,6 +354,51 @@ void ap_mode_start()
     DPRINT("AP mode failed\n");
 }
 
+bool improv_config()
+{
+  // Return 'true' if SSID and password received within IMPROV_CONFIG_TIMEOUT seconds
+
+  WiFi.disconnect();
+  WiFi.mode(WIFI_STA);
+
+  DPRINT("WiFi provisioning started\n");
+  improv_serial::global_improv_serial.setup(String("PedalinoMini (TM)"), String(VERSION), String(xstr(PLATFORMIO_ENV)), String("Device name: ") + String(host));
+
+  display_progress_bar_title2("Provisioning", "WiFi");
+  unsigned long startCrono = millis();
+  unsigned long crono = millis() - startCrono;
+  while (!WiFi.isConnected() && crono / 1000 < IMPROV_CONNECT_TIMEOUT) {
+    improv_serial::global_improv_serial.loop();
+    if (crono % 200 < 5) display_progress_bar_update(crono / 200, IMPROV_CONNECT_TIMEOUT * 5 - 1);
+    fastleds[(crono / 500) % LEDS] = CRGB::SeaGreen;
+    fastleds[(crono / 500) % LEDS].nscale8(ledsOnBrightness);
+    fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
+    FastLED.show();
+    if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) { delay(200); break; }
+    crono = millis() - startCrono;
+  }
+  display_progress_bar_update(1, 1);
+
+  if (WiFi.isConnected()) {
+
+    improv_serial::global_improv_serial.loop();
+
+    wifiSSID      = WiFi.SSID();
+    wifiPassword  = WiFi.psk();
+
+    DPRINT("SSID        : %s\n", WiFi.SSID().c_str());
+    DPRINT("Password    : %s\n", WiFi.psk().c_str());
+
+    eeprom_update_sta_wifi_credentials(WiFi.SSID(), WiFi.psk());
+  }
+  else {
+    improv_serial::global_improv_serial.loop(true);
+    DPRINT("WiFi Provisioning timeout\n");
+  }
+
+  return WiFi.isConnected();
+}
+
 void ap_mode_stop()
 {
   stop_services();
@@ -383,7 +429,7 @@ bool smart_config()
   WiFi.beginSmartConfig();
 
   DPRINT("SmartConfig started\n");
-  display_progress_bar_title("SmartConfig");
+  display_progress_bar_title2("Use the mobile app for", "SmartConfig");
   unsigned long startCrono = millis();
   unsigned long crono = 0;
   CRGB          color = CRGB::Cyan;
@@ -393,6 +439,7 @@ bool smart_config()
     if (crono % 1500 < 5) fill_solid(fastleds, LEDS, color);
     fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
     FastLED.show();
+    if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) { delay(200); break; }
     crono = millis() - startCrono;
   }
   display_progress_bar_update(1, 1);
@@ -414,7 +461,6 @@ bool smart_config()
     DPRINT("SmartConfig timeout\n");
 
   WiFi.stopSmartConfig();
-  display_clear();
 
   return WiFi.smartConfigDone();
 }
@@ -447,6 +493,7 @@ bool wps_config()
     if (crono % 1500 < 5) fill_solid(fastleds, LEDS, color);
     fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
     FastLED.show();
+    if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) { delay(200); break; }
     crono = millis() - startCrono;
   }
   display_progress_bar_update(1, 1);
@@ -479,7 +526,7 @@ bool wps_config()
   else {
     DPRINT("WPS timeout\n");
   }
-  display_clear();
+
   return WiFi.isConnected();
 }
 
@@ -506,11 +553,10 @@ bool ap_connect(String ssid, String password)
     fastleds[(crono / 500) % LEDS].nscale8(ledsOnBrightness);
     fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
     FastLED.show();
+    if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) { delay(200); break; }
     crono = millis() - startCrono;
   }
   display_progress_bar_update(1, 1);
-
-  display_clear();
 
   return WiFi.isConnected();
 }
@@ -532,6 +578,9 @@ void wifi_connect()
 {
   if (auto_reconnect())       // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
     return;
+
+  if (!WiFi.isConnected())
+    improv_config();          // IMPROV_CONFIG_TIMEOUT seconds to receive WiFi credentials and connect
 
 #ifndef NOSMARTCONFIG
   if (!WiFi.isConnected())

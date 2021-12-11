@@ -45,6 +45,7 @@ You can change the presets of your guitar rig, turn old MIDI equipment into some
 - Resistors ladder calibrated is easy as pressing footswitches in sequence
 - RGB NeoPixel/WS2812B status leds
 - Responsive and mobile-first configuration web interface (<http://pedalino.local>)
+- Installing firmware and WiFi provisioning directly from your browser
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
 - OTA (Over the Air) firmware update or via HTTP (<http://pedalino.local/update>)
 
@@ -113,7 +114,7 @@ has been released to public on November 12th, 2021. Thanks to the new sponsors: 
 
 Sponsors version additions/fixes since November 12th, 2021:
 
-- None
+- Installing firmware and WiFi provisioning directly from browser
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -143,26 +144,27 @@ USB MIDI and DIN MIDI connection requires additional hardware.
 
 Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins will be floating. A floating pin can trigger unexpected MIDI events. As alternative you can disable the not used pedals via web interface.
 
-## How to build and upload
+## How to upload firmware, WiFi provisioning and access to web user interface
 
-[PlatformIO](https://platformio.org) is the recommended IDE for PedalinoMini™ build and upload.
+Visit http://alf45tar.github.io/PedalinoMini/flash to install new firmware, update firmware, connect device to a WiFi network and visit the device's hosted web interface.
 
-1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode)
-2. Install Git
-    - On Windows, install git from https://git-scm.com/download/win
-    - On macOS, install Command Line Tools for Xcode running `xcode-select --install` via Terminal. Remember to run the command every time you update your macOS.
-3. In VSCode run the following commands:
-    - from View->Command Palette (Ctrl+Shift+P)
-        - Git: Clone
-        - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
-    - under PlatformIO Project Tasks select your environment (i.e. env:esp32doit-devkit-v1)
-        - Click "Build" under General
-        - Click "Upload" under General
-        - Click “Upload File System Image” under Platform. Do not skip this step otherwise the WebUI will not works properly.
+The only requirement for now is to use a Google Chrome or Microsoft Edge browser (Safari and iOS devices are not supported yet).
 
-That's all folks.
+<details>
+<summary>Detailed instructions</summary>
 
-> Before any update save configuration, reset to factory default and reload configuration. EEPROM can change without any further advice.
+1. Connect PedalinoMini™ to a PC via USB
+2. Visit http://alf45tar.github.io/PedalinoMini/flash
+3. Select the latest firmware available
+4. Press "Connect"
+5. Select the USB/UART port where PedalinoMini™ is connected and press "Ok"
+6. Select "Install PedalinoMini™" and confirm to erase all data pressing "Install"
+7. Wait a couple of minutes to complete the installation and press "Next" at the end
+8. Reboot PedalinoMini™ and complete the WiFi provisioning
+9. Press "Connect to WiFi"
+10. Enter the Network Name and the Password of your WiFi and press "Connect"
+11. Press "Visit device" to access web user interface
+</details>
 
 ## USB MIDI
 
@@ -210,11 +212,36 @@ Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware 
   (-) Not supported
 - USB-MIDI and DIN-MIDI are always available if hardware implemented.
 
+## How to build and upload
+
+[PlatformIO](https://platformio.org) is the recommended IDE for PedalinoMini™ build and upload.
+
+1. Install [PlatformIO IDE for VSCode](https://platformio.org/install/ide?install=vscode)
+2. Install Git
+    - On Windows, install git from https://git-scm.com/download/win
+    - On macOS, install Command Line Tools for Xcode running `xcode-select --install` via Terminal. Remember to run the command every time you update your macOS.
+3. In VSCode run the following commands:
+    - from View->Command Palette (Ctrl+Shift+P)
+        - Git: Clone
+        - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
+    - under PlatformIO Project Tasks select your environment (i.e. env:esp32doit-devkit-v1)
+        - Click "Build" under General
+        - Click "Upload" under General
+        - Click “Upload File System Image” under Platform. Do not skip this step otherwise the WebUI will not works properly.
+
+That's all folks.
+
+> Before any update save configuration, reset to factory default and reload configuration. EEPROM can change without any further advice.
+
 ## How to connect PedalinoMini™ to a WiFi network
 
 PedalinoMini™ supports IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).
 
-PedalinoMini™ implements Wi-Fi Protected Setup (WPS) and Smart Config technology ([Espressif’s ESP-TOUCH protocol](https://www.espressif.com/en/products/software/esp-touch/overview)). WPS needs access to the WPS button on the WiFi router. Smart Config requires a smartphone with one the following apps:
+PedalinoMini™ support 4 WiFi provisioning methods: 1 via USB and 3 via WiFi.
+
+PedalinoMini™ is using [ESP Web Tools](https://esphome.github.io/esp-web-tools/) not only to install the firmware with a click of button right from you browser but also to connect it to WiFi with the same simplicity.
+
+PedalinoMini™ also implements Wi-Fi Protected Setup (WPS) and Smart Config technology ([Espressif’s ESP-TOUCH protocol](https://www.espressif.com/en/products/software/esp-touch/overview)). WPS needs access to the WPS button on the WiFi router. Smart Config requires a smartphone with one the following apps:
 
 - [ESP8266 SmartConfig](https://play.google.com/store/apps/details?id=com.cmmakerclub.iot.esptouch) for Android
 - [Espressif Esptouch](https://itunes.apple.com/us/app/espressif-esptouch/id1071176700?mt=8) for iOS
@@ -222,18 +249,24 @@ PedalinoMini™ implements Wi-Fi Protected Setup (WPS) and Smart Config technolo
 If the WiFi network is not available PedalinoMini™ will create an hotspot for you. Once connected to the PedalinoMini™ hotspot, you can use the web interface to set the SSID and password of an access point that you would like to connect to.
 
 - On power on PedalinoMini™ will try to connect to the last know access point
-- If it cannot connect to the last used access point within 15 seconds it enters into Smart Config mode
+- If it cannot connect to the last used access point within 15 seconds it enters into WiFi provisioning mode via USB
+- Visit http://alf45tar.github.io/PedalinoMini/flash and follow the instructions
+- If provisioning via USB is not finished within 60 seconds it enters into Smart Config mode
 - Start one of the suggested apps to configure SSID and password
-- If it doesn't receive any SSID and password during the next 15 seconds it enters into WPS mode
+- If it doesn't receive any SSID and password during the next 60 seconds it enters into WPS mode
 - Press or press and hold (it depends by your router) the WPS button on your WiFi router __after__ PedalinoMini™ entered in WPS mode
-- If it doesn't receive any SSID and password during the next 30 seconds it switch to AP mode
+- If it doesn't receive any SSID and password during the next 60 seconds it switch to AP mode
 - In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
 - Reboot PedalinoMini™ to restart the procedure.
+
+Any of the previous steps can be skipped pressing BOOT button.
 
 ```C++
 void wifi_connect()
 {
   auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
+  if (!WiFi.isConnected())
+    improv_config();          // IMPROV_CONFIG_TIMEOUT seconds to receive provisioning SSID and password via USB and connect to WiFi
   if (!WiFi.isConnected())
     smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
   if (!WiFi.isConnected())
