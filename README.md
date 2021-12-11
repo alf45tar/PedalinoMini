@@ -146,15 +146,16 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 
 ## How to upload firmware, WiFi provisioning and access to web user interface
 
-Visit http://alf45tar.github.io/PedalinoMini/flash to install new firmware, update firmware, connect device to a WiFi network and visit the device's hosted web interface.
+Visit http://alf45tar.github.io/PedalinoMini/installer to install new firmware, update firmware, connect device to a WiFi network and visit the device's hosted web interface.
 
 The only requirement for now is to use a Google Chrome or Microsoft Edge browser (Safari and iOS devices are not supported yet).
 
 <details>
 <summary>Detailed instructions</summary>
 
+<br>
 1. Connect PedalinoMini™ to a PC via USB
-2. Visit http://alf45tar.github.io/PedalinoMini/flash
+2. Visit http://alf45tar.github.io/PedalinoMini/installer
 3. Select the latest firmware available
 4. Press "Connect"
 5. Select the USB/UART port where PedalinoMini™ is connected and press "Ok"
@@ -250,7 +251,7 @@ If the WiFi network is not available PedalinoMini™ will create an hotspot for 
 
 - On power on PedalinoMini™ will try to connect to the last know access point
 - If it cannot connect to the last used access point within 15 seconds it enters into WiFi provisioning mode via USB
-- Visit http://alf45tar.github.io/PedalinoMini/flash and follow the instructions
+- Visit http://alf45tar.github.io/PedalinoMini/installer and follow the instructions
 - If provisioning via USB is not finished within 60 seconds it enters into Smart Config mode
 - Start one of the suggested apps to configure SSID and password
 - If it doesn't receive any SSID and password during the next 60 seconds it enters into WPS mode
