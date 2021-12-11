@@ -1,36 +1,50 @@
 <!DOCTYPE html>
- <html lang="en" class="">
-   <head>
-     <meta charset='utf-8'>
-     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
-     <title>PedalinoMini™ Installer</title>
-     <script
-       type="module"
-       src="https://unpkg.com/esp-web-tools@6.0.0/dist/web/install-button.js?module"
-     ></script>
-     <style>
-	body {
-	font-family: Verdana, Helvetica, sans-serif;
-	text-align: center;
-	background-color: #222;
-	margin: 0;
-	color: #fff;
-	}
-     	a {
-      	color: #fff;
-      	cursor: pointer;
-      	text-decoration: underline;
-     	}
+<html lang="en" class="">
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+    <title>Install Tasmota</title>
+    <style>
+      div,fieldset,input,select{padding:5px;font-size:1em;}
+      fieldset{background:#4f4f4f;}
+      p{margin:0.5em 0;}
+      input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;background:#dddddd;color:#000000;}
+      input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px;}
+      input[type=range]{width:99%;}
+      select{width:100%;background:#dddddd;color:#000000;}
+      textarea{resize:vertical;width:98%;height:318px;padding:5px;overflow:auto;background:#1f1f1f;color:#65c115;}
+      body{text-align:center;font-family:verdana,sans-serif;background:#252525;}
+      td{padding:0px;}
+      button{border:0;border-radius:0.3rem;background:#1fa3ec;color:#faffff;line-height:2.4rem;font-size:1.2rem;width:100%;-webkit-transition-duration:0.4s;transition-duration:0.4s;cursor:pointer;}
+      button:hover{background:#0e70a4;}
+      .bred{background:#d43535;}
+      .bred:hover{background:#931f1f;}
+      .bgrn{background:#47c266;}
+      .bgrn:hover{background:#5aaf6f;}
+      a{color:#1fa3ec;text-decoration:none;}
+      .p{float:left;text-align:left;}
+      .q{float:right;text-align:right;}
+      .r{border-radius:0.3em;padding:2px;margin:6px 2px;}
+      .pick-variant{margin-bottom:16px;}
     </style>
+    <script
+      type="module"
+      src="https://unpkg.com/esp-web-tools@6.0.0/dist/web/install-button.js?module"
+    ></script>
   </head>
-   <body>
-     <h1>Install PedalinoMini™</h1>
+  <body>
+    <div style='display:inline-block;color:#eaeaea;min-width:340px;'>
 
-     <div class="pick-variant">
-       <ol>
-         <li>Connect the ESP device to your computer<br>using USB or serial-to-USB adapter</li></br>
-         <li>Select the firmware variant suitable for<br>your device</li><br>
-         <select>
+    <h1>PedalinoMini™ Installer</h1>
+
+    <div class="pick-variant">
+      <ol style='text-align:left'>
+        <li>Connect the ESP device to your computer</br>using USB or serial-to-USB adapter</li></br>
+        <li>Select the firmware variant suitable for</br>your device</li></br>
+        <li>Hit "Install" and select the correct port</br>or find help if <a href="https://tasmota.github.io/docs/Getting-Started/" target='_blank' style='color:#aaa;'>no device found</a></li>
+      </ol>
+      </br>
+      <select>
          <optgroup label="TTGO T-Display">
            <option value="firmware/ttgo-t-display/ttgo-t-display-2.3.2.json">2.3.2</option>
            <option value="firmware/ttgo-t-display/ttgo-t-display-2.3.1.json">2.3.1</option>
@@ -40,36 +54,28 @@
            <option value="firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-2.3.1.json">2.3.1</option>
          </optgroup>
          </select>
-         <br><br>
-         <li id="coms">Hit "Connect" and select the correct port.<br><a onclick="showSerialHelp()">No device found?</a></li>
-       </ol>
-       </br>
-       <p>
-         <esp-web-install-button id="inst">
-         </esp-web-install-button>
-       </p>
-     </div>
-     <div style='text-align:right;font-size:11px;'>
-       <hr/>
-       <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
-     </div>
-     <script>
-       const selectEl = document.querySelector(".pick-variant select");
-       const installEl = document.querySelector("esp-web-install-button");
-       installEl.manifest = selectEl.value;
-       selectEl.addEventListener("change", () => {
-         installEl.manifest = selectEl.value;
-       });
-      
-       function showSerialHelp() {
-         document.getElementById('coms').innerHTML = `Hit "Connect" and select the correct port.<br><br>
-         You might be missing the drivers for your board.<br>
-         Here are drivers for chips commonly used in ESP boards:<br>
-         <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP2102 (square chip)</a><br>
-         <a href="https://github.com/nodemcu/nodemcu-devkit/tree/master/Drivers" target="_blank">CH34x (rectangular chip)</a><br><br>
-         Make sure your USB cable supports data transfer.<br><br>
-         `;
-       }
-     </script>
-   </body>
- </html>
+      </br></br>
+      <p>
+        <esp-web-install-button id="inst">
+          <i slot="unsupported">
+            Your browser does not support Web Serial.</br>Open this page in Google Chrome or</br>Microsoft Edge instead
+            <span class="not-supported-i hidden">(but not on your iOS device)</span>.
+          </i>
+        </esp-web-install-button>
+      </p>
+    </div>
+    <div style='text-align:right;font-size:11px;'>
+      <hr/>
+      <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>Tasmota Installer powered by ESP Web Tools</a>
+    </div>
+    <script>
+      const selectEl = document.querySelector(".pick-variant select");
+      const installEl = document.querySelector("esp-web-install-button");
+      installEl.manifest = selectEl.value;
+      selectEl.addEventListener("change", () => {
+        installEl.manifest = selectEl.value;
+      });
+
+    </script>
+  </body>
+</html>
