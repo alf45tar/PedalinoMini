@@ -27,7 +27,7 @@
          </optgroup>
          </select>
          <br><br>
-         <li>Hit "Connect" and select the correct port<br>or find help if <a href="https://alf45tar.github.io/docs/Getting-Started/" target='_blank' style='color:#aaa;'>no device found</a></li>
+         <li id="coms">Hit "Connect" and select the correct port. <a onclick="showSerialHelp()">No device found?</a></li>
        </ol>
        </br>
        <p>
@@ -46,7 +46,16 @@
        selectEl.addEventListener("change", () => {
          installEl.manifest = selectEl.value;
        });
-
+      
+       function showSerialHelp() {
+         document.getElementById('coms').innerHTML = `Hit "Connect" and select the correct port.<br><br>
+         You might be missing the drivers for your board.<br>
+         Here are drivers for chips commonly used in ESP boards:<br>
+         <a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank">CP2102 (square chip)</a><br>
+         <a href="https://github.com/nodemcu/nodemcu-devkit/tree/master/Drivers" target="_blank">CH34x (rectangular chip)</a><br><br>
+         Make sure your USB cable supports data transfer.<br><br>
+         `;
+       }
      </script>
    </body>
  </html>
