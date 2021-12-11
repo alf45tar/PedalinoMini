@@ -1,0 +1,16 @@
+{
+  "name": "PedalinoMini™",
+  "version": "x.y.z",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/x.y.z/firmware/xxx/xxx-x.y.z-bootloader.bin",  "offset": 4096 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/x.y.z/firmware/xxx/xxx-x.y.z-partitions.bin",  "offset": 32768 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/x.y.z/firmware/xxx/xxx-x.y.z-firmware.bin",    "offset": 65536 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/x.y.z/firmware/xxx/xxx-x.y.z-spiffs.bin",      "offset": 3932160 }
+      ]
+    }
+  ]
+}

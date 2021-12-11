@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+
+    - uses: actions/checkout@v2
 
     - name: Set up Python
       uses: actions/setup-python@v1
@@ -18,7 +19,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install platformio
 
-    - name: Run PlatformIO
-      run: platformio ci --project-conf=platformio.ini . src/partitions_ota.csv src/partitions_no_ota.csv
-      env:
-        PLATFORMIO_CI_SRC: .
+    - name: Run PlatformIO build on selected platforms
+      run: |
+        pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
+        pio run -t buildfs -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
