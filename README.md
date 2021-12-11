@@ -153,7 +153,6 @@ The only requirement for now is to use a Google Chrome or Microsoft Edge browser
 <details>
 <summary>Detailed instructions</summary>
 
-<br>
 1. Connect PedalinoMini™ to a PC via USB
 2. Visit http://alf45tar.github.io/PedalinoMini/installer
 3. Select the latest firmware available
