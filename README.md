@@ -118,6 +118,9 @@ Sponsors version additions/fixes since November 12th, 2021:
 - Support for ultrasonic ranging module HC-SR04
 - Adjusting easing and threshold for analog and ultrasonic sensor
 - Fixed a bug that avoid to reach max value when analog calibration is on
+- Improved Pedals web UI
+- Fixed Program Change leds brightness
+- Link each button to a led in Pedals setup in order to streamline Actions definition
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -310,6 +313,7 @@ Max|In ANALOG mode maximum digital value (after analog-to-digital conversion) th
 Easing|It controls the amount of easing. Possible values are: 1, 2 or 3. Bigger value makes the responsive values more responsive: output value follows immediately the input value. Recommended values: 1 for ultrasonic sensor, 2 or 3 for potentiometer.
 Activity Threshold|The amount of movement that must take place for it to register as activity and start moving the output value. Increase the value to suppress noisy potentiometer. Recommended values: 8 or 16 for potentiometer, 64 for ultrasonic sensor.
 Analog Calibration|Enable analog pedal continuous calibration. Min and Max values are managed by PedalinoMini™. After each power on cycle move the expression pedals to its full range and PedalinoMini™ will calibrate it. During the first full movement of the pedal MIDI events could be not precise because PedalinoMini™ is still learning the full range of the pedal.
+Button1 ... Button6|Define for each button of the pedal the default led number to be used in Actions
 
 ## Actions
 
@@ -330,7 +334,7 @@ Send|The action to be triggered on event.<br>It can be a MIDI message (PROGRAM C
 From Value/To Value|Define the range from a off value to a on value (see below).
 Tags When Off|Action name to display when off action is triggered.
 Tags When On|Action name to display when on action is triggered.
-Led|Select the led number and the off and on color.
+Led|Select the led number and the off and on color. Use Default for use the default led defined in Pedals.
 
 Action|MIDI Channel|MIDI Code|From|To
 :-----|:----------:|:-------:|:--:|:--:
@@ -407,7 +411,7 @@ A complete configuration file editor is provided for advanced operations.
 
 ![WEBUI CONFIGURATIONS](./images/webui-configurations.png "Configurations")
 
-Some example configurations are provides. More to come.
+Some example configurations are provides. The default configuration for [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available as 'case1'.
 
 ### iRig BlueBoard
 
