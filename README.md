@@ -59,7 +59,7 @@ New features and bug corrections will be released to this public repository when
 
   _Select the level of sponsorship which best fit to you. Sponsorship starts from $1 per month._
 
-  >Goal is 35 sponsors in total. Starting point is 25 sponsors as of November 12th, 2021.
+  >Goal is 44 sponsors in total. Starting point is 34 sponsors as of February 26th, 2022.
 
 - **Double the stars**
 
@@ -67,11 +67,11 @@ New features and bug corrections will be released to this public repository when
 
   >Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
 
-- **6 months from November 12th, 2021**
+- **6 months from February 26th, 2022**
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on May 13th, 2022.
+  >Goal is reached on August 25th, 2022.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
@@ -112,7 +112,7 @@ The following features:
 
 has been released to public on November 12th, 2021. Thanks to the new sponsors: RomanKlein777, michaelhauser, bobvc133, bmarshall91, p*************.
 
-Sponsors version additions/fixes since November 12th, 2021:
+The following features:
 
 - Installing firmware and WiFi provisioning directly from browser
 - Support for ultrasonic ranging module HC-SR04
@@ -121,6 +121,12 @@ Sponsors version additions/fixes since November 12th, 2021:
 - Improved Pedals web UI
 - Fixed Program Change leds brightness
 - Link each button to a led in Pedals setup in order to streamline Actions definition
+
+has been released to public on February 26th, 2022. Thanks to the new sponsors: ClintR1984, pstechsolutions, mknerr, radioactivetoy, y0m1g, joesuspense, andeee, jsleroy, Viser, anssir, mattzzw.
+
+Sponsors version additions/fixes since February 26th, 2022:
+
+- None
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 

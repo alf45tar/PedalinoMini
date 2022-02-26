@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2021 alf45star
+                                                                                   (c) 2018-2022 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -14,7 +14,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.3.2"
+#define VERSION         "2.4.0"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -24,7 +24,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of switches in a resistor ladder
-#define LEDS             10   // number of WS2812B leds
+#define LEDS             10   // number of WS2812B leds (254 max)
 #define SLOTS_ROWS        2
 #define SLOTS_COLS        4
 #define SLOTS             SLOTS_ROWS * SLOTS_COLS
@@ -128,6 +128,7 @@ MIDI_CREATE_CUSTOM_INSTANCE_ESP(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Seria
 
 typedef uint8_t   byte;
 
+#include <HCSR04.h>                     // https://github.com/d03n3rfr1tz3/HC-SR04
 #include <ResponsiveAnalogRead.h>       // https://github.com/dxinteractive/ResponsiveAnalogRead
 #include <MD_REncoder.h>                // https://github.com/MajicDesigns/MD_REncoder
 #include <AceButton.h>                  // https://github.com/bxparks/AceButton
@@ -196,8 +197,10 @@ using namespace ace_button;
 #define PED_MOMENTARY3          7
 #define PED_LATCH2              8
 #define PED_LADDER              9
+#define PED_ULTRASONIC          10    // HC-SR04
 
-const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder"};
+
+const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic"};
 
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
@@ -332,7 +335,8 @@ struct pedal {
                                              6 = momentary 2
                                              7 = momentary 3
                                              8 = latch 2
-                                             9 = ladder */
+                                             9 = ladder
+                                             10 = ultrasonic */
   byte                   pressMode;       /* 1 = single click
                                              2 = double click
                                              4 = long click
@@ -344,6 +348,14 @@ struct pedal {
   byte                   analogResponse;
   int                    expZero;           // [0, ADC_RESOLUTION-1]
   int                    expMax;            // [0, ADC_RESOLUTION-1]
+  float                  snapMultiplier;    // a value from 0 to 1 that controls the amount of easing
+                                            // increase this to lessen the amount of easing (such as 0.1)
+                                            // and make the responsive values more responsive,
+                                            // but doing so may cause more noise to seep through
+                                            // when sleep is not enabled.
+  float                  activityThreshold; // the amount of movement that must take place for it
+                                            // to register as activity and start moving the output value
+  byte                   ledbuttons[LADDER_STEPS];  // 0..LEDS-1 existing leds, LEDS = disabled, 255 = Use default led defined by pedal/button
   int                    pedalValue[2];     // [0, ADC_RESOLUTION-1]
   unsigned long          lastUpdate[2];     // last time the value is changed
   AceButton             *button[LADDER_STEPS];
@@ -400,6 +412,8 @@ CRGB      lastColor;
 byte      lastProgramChange[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint16_t  lastBankSelect[16]    = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 CRGB      lastLedColor[BANKS][LEDS];
+std::vector<byte> ultrasonicEcho(PEDALS);         // Echo pins
+byte      ultrasonicTrigger;                      // Trigger pin
 
 interface interfaces[] = {
                            "USB MIDI   ", 0,          PED_ENABLE + PED_SHOW, 0, 0,

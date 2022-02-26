@@ -348,7 +348,7 @@
                     },
                     "Mode": {
                         "type": "string",
-                        "enum": ["None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder"]
+                        "enum": ["None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic"]
                     },
                     "InvertPolarity": {
                         "type": "boolean"
@@ -371,8 +371,48 @@
                         "minimum": 0,
                         "maximum": 1023
                     },
+                    "Easing": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                    },
+                    "ActivityThreshold": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1023
+                    },
                     "AutoSensing": {
                         "type": "boolean"
+                    },
+                    "LedButton1": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "LedButton2": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "LedButton3": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "LedButton4": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "LedButton5": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "LedButton6": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
                     }
                 }
 

@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2019 alf45star
+                                                                                   (c) 2018-2022 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -358,6 +358,8 @@ bool improv_config()
 {
   // Return 'true' if SSID and password received within IMPROV_CONFIG_TIMEOUT seconds
 
+  bool connecting = false;
+
   WiFi.disconnect();
   WiFi.mode(WIFI_STA);
 
@@ -369,6 +371,10 @@ bool improv_config()
   unsigned long crono = millis() - startCrono;
   while (!WiFi.isConnected() && crono / 1000 < IMPROV_CONNECT_TIMEOUT) {
     improv_serial::global_improv_serial.loop();
+    if (!connecting && improv_serial::global_improv_serial.get_state() == improv::STATE_PROVISIONING) {
+      display_progress_bar_title2("Connecting to", improv_serial::global_improv_serial.get_ssid());
+      connecting = true;
+    }
     if (crono % 200 < 5) display_progress_bar_update(crono / 200, IMPROV_CONNECT_TIMEOUT * 5 - 1);
     fastleds[(crono / 500) % LEDS] = CRGB::SeaGreen;
     fastleds[(crono / 500) % LEDS].nscale8(ledsOnBrightness);

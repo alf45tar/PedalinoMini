@@ -1,8 +1,15 @@
 /*
-
-    Source code based on improv_serial_component.cpp from https://github.com/esphome/esphome
-
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
+                                                                                   (c) 2018-2022 alf45star
+                                                                       https://github.com/alf45tar/PedalinoMini
 */
+
+//    Source code based on improv_serial_component.cpp from https://github.com/esphome/esphome
 
 #include "ImprovSerial.h"
 

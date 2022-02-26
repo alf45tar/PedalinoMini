@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2021 alf45star
+                                                                                   (c) 2018-2022 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -76,14 +76,18 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
     JsonArray jpedals = jdoc.createNestedArray("Pedals");
     for (byte p = 0; p < PEDALS; p++) {
       JsonObject jo = jpedals.createNestedObject();
-      jo["Pedal"]           = p + 1;
-      jo["Mode"]            = pedalModeName[pedals[p].mode];
-      jo["InvertPolarity"]  = (pedals[p].invertPolarity == PED_ENABLE);
-      jo["PressMode"]       = pedalPressModeName[pedals[p].pressMode];
-      jo["AnalogResponse"]  = pedalAnalogResponse[pedals[p].analogResponse];
-      jo["Min"]             = pedals[p].expZero;
-      jo["Max"]             = pedals[p].expMax;
-      jo["AutoSensing"]     = (pedals[p].autoSensing == PED_ENABLE);
+      jo["Pedal"]             = p + 1;
+      jo["Mode"]              = pedalModeName[pedals[p].mode];
+      jo["InvertPolarity"]    = (pedals[p].invertPolarity == PED_ENABLE);
+      jo["PressMode"]         = pedalPressModeName[pedals[p].pressMode];
+      jo["AnalogResponse"]    = pedalAnalogResponse[pedals[p].analogResponse];
+      jo["Min"]               = pedals[p].expZero;
+      jo["Max"]               = pedals[p].expMax;
+      jo["Easing"]            = pedals[p].snapMultiplier;
+      jo["ActivityThreshold"] = lround(pedals[p].activityThreshold);
+      jo["AutoSensing"]       = (pedals[p].autoSensing == PED_ENABLE);
+      for (byte b = 0; b < LADDER_STEPS; b++)
+        jo[String("LedButton") + String(b)] = (pedals[p].ledbuttons[b] == LEDS ? 0 : pedals[p].ledbuttons[b] + 1);
     }
   }
 
@@ -105,7 +109,7 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
         jo["Bank"]            = b;
         jo["Pedal"]           = act->pedal + 1;
         jo["Button"]          = act->button + 1;
-        jo["Led"]             = act->led + 1;
+        jo["Led"]             = (act->led == LEDS ? 0 : (act->led == 255 ? 255 : act->led + 1));
         snprintf(color, 8, "#%06x", act->color0);
         jo["Color0"]          = color;
         snprintf(color, 8, "#%06x", act->color1);
@@ -449,7 +453,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           p = constrain(p, 0, PEDALS - 1);
 
           pedals[p].mode = PED_NONE;
-          for (byte m = 1; m <= PED_LADDER; m++)
+          for (byte m = 1; m <= PED_ULTRASONIC; m++)
             if (pedalModeName[m] == jo["Mode"]) {
               pedals[p].mode = m;
               break;
@@ -471,9 +475,15 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
               break;
             }
 
-          pedals[p].expZero         = jo["Min"];
-          pedals[p].expMax          = jo["Max"];
-          pedals[p].autoSensing     = (jo["AutoSensing"] ? PED_ENABLE : PED_DISABLE);
+          pedals[p].expZero           = jo["Min"];
+          pedals[p].expMax            = jo["Max"];
+          pedals[p].snapMultiplier    = jo["Easing"];
+          pedals[p].activityThreshold = jo["ActivityThreshold"];
+          pedals[p].autoSensing       = (jo["AutoSensing"] ? PED_ENABLE : PED_DISABLE);
+          for (byte b = 0; b < LADDER_STEPS; b++) {
+            pedals[p].ledbuttons[b]   = jo[String("LedButton") + String(b)];
+            pedals[p].ledbuttons[b]   = pedals[p].ledbuttons[b] == 0 ? LEDS : pedals[p].ledbuttons[b] - 1;
+          }
         }
       }
     }
@@ -506,7 +516,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
             actions[b]->button--;
             actions[b]->button         = constrain(actions[b]->button, 0, LADDER_STEPS - 1);
             actions[b]->led            = jo["Led"];
-            actions[b]->led--;
+            actions[b]->led            = (actions[b]->led == 0 ? LEDS : (actions[b]->led == 255 ? 255 : actions[b]->led - 1));
             sscanf(jo["Color0"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
             actions[b]->color0         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
             sscanf(jo["Color1"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
@@ -569,7 +579,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
                   act->button--;
                   act->button         = constrain(act->button, 0, LADDER_STEPS - 1);
                   act->led            = jo["Led"];
-                  act->led--;
+                  act->led            = (act->led == 0 ? LEDS : (act->led == 255 ? 255 : act->led - 1));
                   sscanf(jo["Color0"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
                   act->color0         = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
                   sscanf(jo["Color1"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
@@ -745,11 +755,17 @@ void load_factory_default()
                  0,              // map function
                  ADC_RESOLUTION * 10 / 100,  // expression pedal zero
                  ADC_RESOLUTION * 90 / 100,  // expression pedal max
+                 0.01,           // snap multiplier
+                 8.0,            // activity threshold
+                 LEDS, LEDS, LEDS, LEDS, LEDS, LEDS,
                  0,              // last state of switch 1
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                 nullptr,
+                 nullptr,
+                 nullptr
                 };
   }
 #else
@@ -761,11 +777,17 @@ void load_factory_default()
                  0,              // map function
                  ADC_RESOLUTION * 10 / 100,  // expression pedal zero
                  ADC_RESOLUTION * 90 / 100,  // expression pedal max
+                 0.01,           // snap multiplier
+                 8.0,            // activity threshold
+                 LEDS, LEDS, LEDS, LEDS, LEDS, LEDS,
                  0,              // last state of switch 1
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                 nullptr,
+                 nullptr,
+                 nullptr
                 };
 
   pedals[PEDALS-1].pressMode = PED_PRESS_1_2_L;
@@ -1100,9 +1122,9 @@ void eeprom_update_profile(byte profile = currentProfile)
     pedals_copy[i].buttonConfig  = nullptr;
     for (byte s = 0; s < LADDER_STEPS; s++)
       pedals_copy[i].button[s]   = nullptr;
-    if (pedals[i].autoSensing) {
-      pedals[i].expZero       = ADC_RESOLUTION - 1;
-      pedals[i].expMax        = 0;
+    if (pedals_copy[i].autoSensing) {
+      pedals_copy[i].expZero     = ADC_RESOLUTION - 1;
+      pedals_copy[i].expMax      = 0;
     }
   };
   preferences.putBytes("Pedals",      &pedals_copy, sizeof(pedals));
@@ -1233,6 +1255,21 @@ void eeprom_read_profile(byte profile = currentProfile)
   DPRINT(" ... ");
 
   preferences.getBytes("Pedals",      &pedals,      sizeof(pedals));
+  for (byte i = 0; i < PEDALS; i++) {
+    pedals[i].pedalValue[0] = 0;
+    pedals[i].pedalValue[1] = 0;
+    pedals[i].lastUpdate[0] = 0;
+    pedals[i].lastUpdate[1] = 0;
+    pedals[i].analogPedal   = nullptr;
+    pedals[i].jogwheel      = nullptr;
+    pedals[i].buttonConfig  = nullptr;
+    for (byte s = 0; s < LADDER_STEPS; s++)
+      pedals[i].button[s]   = nullptr;
+    if (pedals[i].autoSensing) {
+      pedals[i].expZero     = ADC_RESOLUTION - 1;
+      pedals[i].expMax      = 0;
+    }
+  }
   preferences.getBytes("BankNames",   &banknames,   sizeof(banknames));
   preferences.getBytes("Interfaces",  &interfaces,  sizeof(interfaces));
   preferences.getBytes("Sequences",   &sequences,   sizeof(sequences));

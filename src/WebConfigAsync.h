@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2021 alf45star
+                                                                                   (c) 2018-2022 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -1035,6 +1035,10 @@ void get_actions_page(unsigned int start, unsigned int len) {
       case PED_JOG_WHEEL:
         page +=F("jogwheel");
         break;
+
+      case PED_ULTRASONIC:
+        page +=F("ultrasonic");
+        break;
     }
     page +=F("'>");
 
@@ -1095,6 +1099,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
         break;
 
       case PED_ANALOG:
+      case PED_ULTRASONIC:
         page += F("<option value='");
         page += String(PED_EVENT_MOVE) + F("'");
         if (act->event == PED_EVENT_MOVE) page += F(" selected");
@@ -1422,12 +1427,18 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += String(i);
     page += F("' name='led");
     page += String(i) + F("'>");
-    for (unsigned int l = 0; l <= LEDS; l++) {
+    page += F("<option value='0'");
+    if (act->led == LEDS) page += F(" selected");
+    page += F("></option>");
+    page += F("<option value='255'");
+    if (act->led == 255) page += F(" selected");
+    page += F(">Default</option>");
+    for (unsigned int l = 1; l <= LEDS; l++) {
       page += F("<option value='");
-      page += String(l+1) + F("'");
-      if (act->led == l) page += F(" selected");
+      page += String(l) + F("'");
+      if (act->led == l-1) page += F(" selected");
       page += F(">");
-      if (l != LEDS) page += String(l+1);
+      page += String(l);
       page += F("</option>");
     }
     page += F("</select>");
@@ -1558,12 +1569,12 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       analog = false;"
             "       break;"
             "   };"
-            "   document.getElementById('channelLabel'  + i).innerHTML = 'Channel';"
-            "   document.getElementById('codeLabel'     + i).innerHTML = 'Code';"
-            "   document.getElementById('fromLabel'     + i).innerHTML = 'From Value';"
-            "   document.getElementById('toLabel'       + i).innerHTML = 'To Value';"
-            "   document.getElementById('tagOffLabel'   + i).innerHTML = 'Tag 1';"
-            "   document.getElementById('tagOnLabel'    + i).innerHTML = 'Tag 2';"
+            "   document.getElementById('channelLabel'  + i).textContent = 'Channel';"
+            "   document.getElementById('codeLabel'     + i).textContent = 'Code';"
+            "   document.getElementById('fromLabel'     + i).textContent = 'From Value';"
+            "   document.getElementById('toLabel'       + i).textContent = 'To Value';"
+            "   document.getElementById('tagOffLabel'   + i).textContent = 'Tag 1';"
+            "   document.getElementById('tagOnLabel'    + i).textContent = 'Tag 2';"
             "   document.getElementById('channelSelect' + i).disabled = false;"
             "   document.getElementById('codeInput'     + i).disabled = false;"
             "   document.getElementById('fromInput'     + i).disabled = false;"
@@ -1576,16 +1587,16 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "   document.getElementById('slotSelect'    + i).disabled = false;"
             "   switch (document.getElementById('sendSelect' + i).options[document.getElementById('sendSelect' + i).selectedIndex].text) {"
             "     case 'Program Change':"
-            "       document.getElementById('codeLabel'     + i).innerHTML = 'PC';"
+            "       document.getElementById('codeLabel'     + i).textContent = 'PC';"
             "       document.getElementById('fromInput'     + i).disabled = true;"
             "       document.getElementById('toInput'       + i).disabled = true;"
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
             "       break;"
             "     case 'Note On':"
             "     case 'Note Off':"
-            "       document.getElementById('codeLabel'     + i).innerHTML = 'Note';"
-            "       document.getElementById('fromLabel'     + i).innerHTML = 'From Velocity';"
-            "       document.getElementById('toLabel'       + i).innerHTML = 'To Velocity';"
+            "       document.getElementById('codeLabel'     + i).textContent = 'Note';"
+            "       document.getElementById('fromLabel'     + i).textContent = 'From Velocity';"
+            "       document.getElementById('toLabel'       + i).textContent = 'To Velocity';"
             "       document.getElementById('fromInput'     + i).disabled = true;"
             "       document.getElementById('toInput'       + i).disabled = true;"
             "       break;"
@@ -1593,21 +1604,21 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       switch (document.getElementById('pedalMode' + i).value) {"
             "         case 'momentary':"
             "         case 'ladder':"
-            "           document.getElementById('codeLabel'     + i).innerHTML = 'CC';"
-            "           document.getElementById('fromLabel'     + i).innerHTML = 'Value 1';"
-            "           document.getElementById('toLabel'       + i).innerHTML = 'Value 2';"
-            "           document.getElementById('tagOffLabel'   + i).innerHTML = 'Tag 1';"
-            "           document.getElementById('tagOnLabel'    + i).innerHTML = 'Tag 2';"
-            "           document.getElementById('color0Label'   + i).innerHTML = 'Color 1';"
-            "           document.getElementById('color1Label'   + i).innerHTML = 'Color 2';"
+            "           document.getElementById('codeLabel'     + i).textContent = 'CC';"
+            "           document.getElementById('fromLabel'     + i).textContent = 'Value 1';"
+            "           document.getElementById('toLabel'       + i).textContent = 'Value 2';"
+            "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag 1';"
+            "           document.getElementById('tagOnLabel'    + i).textContent = 'Tag 2';"
+            "           document.getElementById('color0Label'   + i).textContent = 'Color 1';"
+            "           document.getElementById('color1Label'   + i).textContent = 'Color 2';"
             "           break;"
             "         case 'latch':"
-            "           document.getElementById('fromLabel'     + i).innerHTML = 'Value';"
-            "           document.getElementById('toLabel'       + i).innerHTML = '';"
-            "           document.getElementById('tagOffLabel'   + i).innerHTML = 'Tag';"
-            "           document.getElementById('tagOnLabel'    + i).innerHTML = '';"
-            "           document.getElementById('color0Label'   + i).innerHTML = 'Color';"
-            "           document.getElementById('color1Label'   + i).innerHTML = '';"
+            "           document.getElementById('fromLabel'     + i).textContent = 'Value';"
+            "           document.getElementById('toLabel'       + i).textContent = '';"
+            "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag';"
+            "           document.getElementById('tagOnLabel'    + i).textContent = '';"
+            "           document.getElementById('color0Label'   + i).textContent = 'Color';"
+            "           document.getElementById('color1Label'   + i).textContent = '';"
             "           document.getElementById('toInput'       + i).disabled = true;"
             "           document.getElementById('tagOnInput'    + i).disabled = true;"
             "           document.getElementById('color1Input'   + i).disabled = true;"
@@ -1619,29 +1630,29 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       break;"
             "     case 'Program Change+':"
             "     case 'Program Change-':"
-            "       document.getElementById('codeLabel'     + i).innerHTML = 'PC';"
-            "       document.getElementById('fromLabel'     + i).innerHTML = 'From PC';"
-            "       document.getElementById('toLabel'       + i).innerHTML = 'To PC';"
+            "       document.getElementById('codeLabel'     + i).textContent = 'PC';"
+            "       document.getElementById('fromLabel'     + i).textContent = 'From PC';"
+            "       document.getElementById('toLabel'       + i).textContent = 'To PC';"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
             "       break;"
             "     case 'Bank Select+':"
             "     case 'Bank Select-':"
-            "       document.getElementById('fromLabel'     + i).innerHTML = 'MSB';"
-            "       document.getElementById('toLabel'       + i).innerHTML = 'LSB';"
+            "       document.getElementById('fromLabel'     + i).textContent = 'MSB';"
+            "       document.getElementById('toLabel'       + i).textContent = 'LSB';"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       break;"
             "     case 'Pitch Bend':"
             "     case 'Channel Pressure':"
-            "       document.getElementById('color0Label'   + i).innerHTML = 'Min';"
-            "       document.getElementById('color1Label'   + i).innerHTML = 'Max';"
+            "       document.getElementById('color0Label'   + i).textContent = 'Min';"
+            "       document.getElementById('color1Label'   + i).textContent = 'Max';"
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       break;"
             "     case 'Bank+':"
             "     case 'Bank-':"
-            "       document.getElementById('fromLabel'     + i).innerHTML = 'From Bank';"
-            "       document.getElementById('toLabel'       + i).innerHTML = 'To Bank';"
+            "       document.getElementById('fromLabel'     + i).textContent = 'From Bank';"
+            "       document.getElementById('toLabel'       + i).textContent = 'To Bank';"
             "       document.getElementById('channelSelect' + i).disabled = true;"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
@@ -1653,8 +1664,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       break;"
             "     case 'Profile+':"
             "     case 'Profile-':"
-            "       document.getElementById('fromLabel'     + i).innerHTML = 'From Profile';"
-            "       document.getElementById('toLabel'       + i).innerHTML = 'To Profile';"
+            "       document.getElementById('fromLabel'     + i).textContent = 'From Profile';"
+            "       document.getElementById('toLabel'       + i).textContent = 'To Profile';"
             "       document.getElementById('channelSelect' + i).disabled = true;"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
@@ -1665,7 +1676,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       document.getElementById('slotSelect'    + i).disabled = true;"
             "       break;"
             "     case 'Sequence':"
-            "       document.getElementById('channelLabel'  + i).innerHTML = 'Sequence';"
+            "       document.getElementById('channelLabel'  + i).textContent = 'Sequence';"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('fromInput'     + i).disabled = true;"
             "       document.getElementById('toInput'       + i).disabled = true;"
@@ -1751,9 +1762,10 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("<div class='card-body'>");
     page += F("<div class='d-grid gap-1'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='modeSelect' name='mode");
-    page += String(i);
-    page += F("'>");
+    page += F("<select class='form-select' id='modeSelect");
+    page += String(i) + F("' name='mode");
+    page += String(i) + F("' onchange='init_pedal(");
+    page += String(i) + F(")'>");
     page += F("<option value='");
     page += String(PED_NONE) + F("'");
     if (pedals[i-1].mode == PED_NONE) page += F(" selected");
@@ -1791,6 +1803,10 @@ void get_pedals_page(unsigned int start, unsigned int len) {
       page += String(PED_LADDER) + F("'");
       if (pedals[i-1].mode == PED_LADDER) page += F(" selected");
       page += F(">Ladder</option>");
+      page += F("<option value='");
+      page += String(PED_ULTRASONIC) + F("'");
+      if (pedals[i-1].mode == PED_ULTRASONIC) page += F(" selected");
+      page += F(">Ultrasonic</option>");
     }
     page += F("</select>");
     page += F("<label for='modeSelect'>Mode</label>");
@@ -1837,9 +1853,9 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     if (trim_page(start, len)) return;
 
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='mapFlotingSelect' name='map");
-    page += String(i);
-    page += F("'>");
+    page += F("<select class='form-select' id='mapSelect");
+    page += String(i) + F("' name='map");
+    page += String(i) + F("'>");
     page += F("<option value='");
     page += String(PED_LINEAR) + F("'");
     if (pedals[i-1].analogResponse == PED_LINEAR) page += F(" selected");
@@ -1856,11 +1872,11 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("<label for='mapSelect'>Analog Response</label>");
     page += F("</div>");
 
-    page += F("<div class='input-group mb-2'>");
+    page += F("<div class='row g-1'>");
     page += F("<div class='form-floating w-50'>");
-    page += F("<input type='number' class='form-control' id='minInput' name='min");
-    page += String(i);
-    page += F("' min='0' max='");
+    page += F("<input type='number' class='form-control' id='minInput");
+    page += String(i) + F("' name='min");
+    page += String(i) + F("' min='0' max='");
     page += String(ADC_RESOLUTION - 1) + F("' value='");
     page += String(pedals[i-1].expZero);
     page += F("'>");
@@ -1868,15 +1884,32 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("</div>");
 
     page += F("<div class='form-floating w-50'>");
-    page += F("<input type='number' class='form-control' id='maxInput' name='max");
-    page += String(i);
-    page += F("' min='0' max='");
+    page += F("<input type='number' class='form-control' id='maxInput");
+    page += String(i) + F("' name='max");
+    page += String(i) + F("' min='0' max='");
     page += String(ADC_RESOLUTION - 1) + F("' value='");
     page += String(pedals[i-1].expMax);
     page += F("'>");
     page += F("<label for='maxInput'>Max</label>");
     page += F("</div>");
     page += F("</div>");
+
+    page += F("<label for='easing");
+    page += String(i) + F("'>Easing: ");
+    page += String(4 + lround(log10(pedals[i-1].snapMultiplier))) + F("</label>");
+    page += F("<input type='range' class='form-range' min='1' max='3' id='easing");
+    page += String(i) + F("' name='analogeasing");
+    page += String(i) + F("' value='");
+    page += String(4 + lround(log10(pedals[i-1].snapMultiplier)));
+    page += F("' oninput='this.previousElementSibling.textContent = `Easing: ` + this.value'>");
+    page += F("<label for='threshold");
+    page += String(i) + F("'>Activity Threshold: ");
+    page += String((int)pedals[i-1].activityThreshold) + F("</label>");
+    page += F("<input type='range' class='form-range' min='1' max='8' id='threshold");
+    page += String(i) + F("' name='analogthreshold");
+    page += String(i) + F("' value='");
+    page += String(log10(pedals[i-1].activityThreshold) / log10(2));
+    page += F("' oninput='this.previousElementSibling.textContent = `Activity Threshold: ` + Math.pow(2, this.value)'>");
 
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='autoCheck");
@@ -1886,6 +1919,32 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("<label class='form-check-label' for='autoCheck");
     page += String(i) + F("'>Analog Calibration</label>");
     page += F("</div>");
+
+    for (unsigned int b = 0; b < LADDER_STEPS; b++) {
+      if (b % 2 == 0) page += F("<div class='row g-1'>");
+      page += F("<div class='form-floating w-50'>");
+      page += F("<select class='form-select' id='ledButton");
+      page += String(i*10+b+1);
+      page += F("' name='ledbutton");
+      page += String(i*10+b+1) + F("'>");
+      for (unsigned int l = 0; l <= LEDS; l++) {
+        page += F("<option value='");
+        page += String(l) + F("'");
+        if (l == 0 && pedals[i-1].ledbuttons[b] == LEDS || pedals[i-1].ledbuttons[b] == l-1) page += F(" selected");
+        page += F(">");
+        if (l > 0) page += String(l);
+        page += F("</option>");
+      }
+      page += F("</select>");
+      page += F("<label for='ledButtonSelect");
+      page += String(i*10+b+1);
+      page += F("' id='ledButtonLabel");
+      page += String(i*10+b+1);
+      page += F("'>Button ");
+      page += String(b+1) + F("</label>");
+      page += F("</div>");
+      if (b % 2 != 0) page += F("</div>");
+    }
 
     page += F("</div>");
     page += F("</div>");
@@ -1916,6 +1975,76 @@ void get_pedals_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
+
+  page += F("<script>");
+  page += F("document.addEventListener('DOMContentLoaded', init_pedals());");
+  page += F("function init_pedals() {");
+  for (byte s = 1; s <= PEDALS; s++) {
+    page += F("  init_pedal(");
+    page += String(s);
+    page += F(");");
+  }
+  page += F("};");
+  page += F("function init_pedal(i) {"
+            "   document.getElementById('polarityCheck'       + i).disabled = true;"
+            "   document.getElementById('function1Check'      + i).disabled = true;"
+            "   document.getElementById('function2Check'      + i).disabled = true;"
+            "   document.getElementById('function3Check'      + i).disabled = true;"
+            "   document.getElementById('mapSelect'           + i).disabled = true;"
+            "   document.getElementById('minInput'            + i).disabled = true;"
+            "   document.getElementById('maxInput'            + i).disabled = true;"
+            "   document.getElementById('easing'              + i).disabled = true;"
+            "   document.getElementById('threshold'           + i).disabled = true;"
+            "   document.getElementById('autoCheck'           + i).disabled = true;"
+            "   document.getElementById('ledButton'           + i + '1').disabled = true;"
+            "   document.getElementById('ledButton'           + i + '2').disabled = true;"
+            "   document.getElementById('ledButton'           + i + '3').disabled = true;"
+            "   document.getElementById('ledButton'           + i + '4').disabled = true;"
+            "   document.getElementById('ledButton'           + i + '5').disabled = true;"
+            "   document.getElementById('ledButton'           + i + '6').disabled = true;"
+            "   switch (document.getElementById('modeSelect' + i).options[document.getElementById('modeSelect' + i).selectedIndex].text) {"
+            "     case 'Ladder':"
+            "       document.getElementById('ledButton'       + i + '4').disabled = false;"
+            "       document.getElementById('ledButton'       + i + '5').disabled = false;"
+            "       document.getElementById('ledButton'       + i + '6').disabled = false;"
+            "     case 'Momentary 3':"
+            "       document.getElementById('ledButton'       + i + '3').disabled = false;"
+            "     case 'Momentary 2':"
+            "     case 'Latch 2':"
+            "       document.getElementById('ledButton'       + i + '2').disabled = false;"
+            "     case 'Momentary':"
+            "     case 'Latch':"
+            "     case 'Jog Wheel':"
+            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
+            "       document.getElementById('polarityCheck'   + i).disabled = false;"
+            "       document.getElementById('function1Check'  + i).disabled = false;"
+            "       document.getElementById('function2Check'  + i).disabled = false;"
+            "       document.getElementById('function3Check'  + i).disabled = false;"
+            "       break;"
+            "     case 'Ultrasonic':"
+            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
+            "       document.getElementById('polarityCheck'   + i).disabled = false;"
+            "       document.getElementById('mapSelect'       + i).disabled = false;"
+            "       document.getElementById('minInput'        + i).disabled = false;"
+            "       document.getElementById('maxInput'        + i).disabled = false;"
+            "       document.getElementById('easing'          + i).disabled = false;"
+            "       document.getElementById('threshold'       + i).disabled = false;"
+            "       break;"
+            "     case 'Analog':"
+            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
+            "       document.getElementById('polarityCheck'   + i).disabled = false;"
+            "       document.getElementById('mapSelect'       + i).disabled = false;"
+            "       document.getElementById('minInput'        + i).disabled = false;"
+            "       document.getElementById('maxInput'        + i).disabled = false;"
+            "       document.getElementById('easing'          + i).disabled = false;"
+            "       document.getElementById('threshold'       + i).disabled = false;"
+            "       document.getElementById('autoCheck'       + i).disabled = false;"
+            "       break;"
+            "     default:"
+            "       break;"
+            "   }"
+            "};");
+  page += F("</script>");
 
   get_footer_page();
 
@@ -2285,9 +2414,9 @@ void get_sequences_page(unsigned int start, unsigned int len) {
   }
   page += F("};");
   page += F("function init_line(i) {"
-            "   document.getElementById('channelLabel'  + i).innerHTML = 'Channel';"
-            "   document.getElementById('codeLabel'     + i).innerHTML = 'Code';"
-            "   document.getElementById('valueLabel'    + i).innerHTML = 'Value';"
+            "   document.getElementById('channelLabel'  + i).textContent = 'Channel';"
+            "   document.getElementById('codeLabel'     + i).textContent = 'Code';"
+            "   document.getElementById('valueLabel'    + i).textContent = 'Value';"
             "   document.getElementById('channelSelect' + i).disabled = false;"
             "   document.getElementById('codeInput'     + i).disabled = false;"
             "   document.getElementById('valueInput'    + i).disabled = false;"
@@ -2297,28 +2426,28 @@ void get_sequences_page(unsigned int start, unsigned int len) {
             "     case 'Program Change':"
             "     case 'Program Change+':"
             "     case 'Program Change-':"
-            "       document.getElementById('codeLabel'     + i).innerHTML = 'PC';"
+            "       document.getElementById('codeLabel'     + i).textContent = 'PC';"
             "       document.getElementById('valueInput'    + i).disabled = true;"
             "       document.getElementById('ledSelect'     + i).disabled = true;"
             "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;"
             "     case 'Control Change':"
-            "       document.getElementById('codeLabel'     + i).innerHTML = 'CC';"
+            "       document.getElementById('codeLabel'     + i).textContent = 'CC';"
             "       document.getElementById('ledSelect'     + i).disabled = true;"
             "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;"
             "     case 'Note On':"
             "     case 'Note Off':"
-            "       document.getElementById('codeLabel'     + i).innerHTML = 'Note';"
-            "       document.getElementById('valueLabel'    + i).innerHTML = 'Velocity';"
+            "       document.getElementById('codeLabel'     + i).textContent = 'Note';"
+            "       document.getElementById('valueLabel'    + i).textContent = 'Velocity';"
             "       document.getElementById('ledSelect'     + i).disabled = true;"
             "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;"
             "     case 'Bank Select+':"
             "     case 'Bank Select-':"
-            "       document.getElementById('channelLabel'  + i).innerHTML = 'Channel';"
-            "       document.getElementById('codeLabel'     + i).innerHTML = 'MSB';"
-            "       document.getElementById('valueLabel'    + i).innerHTML = 'LSB';"
+            "       document.getElementById('channelLabel'  + i).textContent = 'Channel';"
+            "       document.getElementById('codeLabel'     + i).textContent = 'MSB';"
+            "       document.getElementById('valueLabel'    + i).textContent = 'LSB';"
             "       document.getElementById('ledSelect'     + i).disabled = true;"
             "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;"
@@ -2329,7 +2458,7 @@ void get_sequences_page(unsigned int start, unsigned int len) {
             "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;"
             "     case 'Sequence':"
-            "       document.getElementById('channelLabel'  + i).innerHTML = 'Sequence';"
+            "       document.getElementById('channelLabel'  + i).textContent = 'Sequence';"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('valueInput'    + i).disabled = true;"
             "       document.getElementById('ledSelect'     + i).disabled = true;"
@@ -3137,7 +3266,7 @@ void get_update_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='card' id='uploadCard'>");
+  page += F("<div class='card mb-3' id='uploadCard'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
@@ -3163,6 +3292,29 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
   page += F("</svg>");
   page += F(" Upload</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='card' id='installCard'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-usb-symbol' viewBox='0 0 20 20'>");
+  page += F("<path d='m7.792.312-1.533 2.3A.25.25 0 0 0 6.467 3H7.5v7.319a2.5 2.5 0 0 0-.515-.298L5.909 9.56A1.5 1.5 0 0 1 5 8.18v-.266a1.5 1.5 0 1 0-1 0v.266a2.5 2.5 0 0 0 1.515 2.298l1.076.461a1.5 1.5 0 0 1 .888 1.129 2.001 2.001 0 1 0 1.021-.006v-.902a1.5 1.5 0 0 1 .756-1.303l1.484-.848A2.5 2.5 0 0 0 11.995 7h.755a.25.25 0 0 0 .25-.25v-2.5a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25v2.5c0 .138.112.25.25.25h.741a1.5 1.5 0 0 1-.747 1.142L8.76 8.99a2.584 2.584 0 0 0-.26.17V3h1.033a.25.25 0 0 0 .208-.389L8.208.312a.25.25 0 0 0-.416 0Z'/>");
+  page += F("</svg>");
+  page += F(" Installer</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-8'>");
+  page += F("<small id='installHelpBlock' class='form-text text-muted'>");
+  page += F("<a target='_blank' href='https://alf45tar.github.io/PedalinoMini/installer'>PedalinoMini™ Installer</a>");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("</div>");
+  page += F("<div class='col-3'>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -3261,6 +3413,7 @@ void get_update_page(unsigned int start, unsigned int len) {
 
                 "document.getElementById('downloadCard').style.display = 'none';\n"
                 "document.getElementById('uploadCard').style.display = 'none';\n"
+                "document.getElementById('installCard').style.display = 'none';\n"
                 "document.getElementById('progressBarDescription').innerHTML = 'Updating firmware...';\n"
 
                 "bars[0].style.width = '0%';\n"
@@ -3331,6 +3484,7 @@ void get_update_page(unsigned int start, unsigned int len) {
 
                 "document.getElementById('downloadCard').style.display = 'none';\n"
                 "document.getElementById('uploadCard').style.display = 'none';\n"
+                "document.getElementById('installCard').style.display = 'none';\n"
                 "document.getElementById('progressBarDescription').innerHTML = 'Updating firmware...';\n"
                 "bars[0].style.width = '0%';\n"
                 "bars[0].textContent = '0%';\n"
@@ -3695,7 +3849,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->tag1[0]      = 0;
     act->pedal        = p;
     act->button       = 0;
-    act->led          = LEDS;
+    act->led          = 255;
     act->color0       = CRGB::Black;;
     act->color1       = CRGB::Black;
     act->event        = PED_EVENT_NONE;
@@ -3724,7 +3878,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     act->tag1[0]      = 0;
     act->pedal        = constrain(request->arg("action").charAt(3) - '1', 0, PEDALS - 1);
     act->button       = 0;
-    act->led          = LEDS;
+    act->led          = 255;
     act->color0       = CRGB::Black;;
     act->color1       = CRGB::Black;
     act->event        = PED_EVENT_NONE;
@@ -3809,7 +3963,8 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
         strncpy(act->tag0,            request->arg(String("nameoff")  + String(i)).c_str(), MAXACTIONNAME + 1);
         strncpy(act->tag1,            request->arg(String("nameon")   + String(i)).c_str(), MAXACTIONNAME + 1);
         act->button       = constrain(request->arg(String("button")   + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
-        act->led          = constrain(request->arg(String("led")      + String(i)).toInt() - 1, 0, LEDS);
+        act->led          = constrain(request->arg(String("led")      + String(i)).toInt(), 0, 255);
+        if (act->led != 255) act->led = (act->led == 0 ? LEDS : constrain(request->arg(String("led") + String(i)).toInt() - 1, 0, LEDS - 1));
         unsigned int red, green, blue;
         sscanf(                       request->arg(String("color0-")  + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
         act->color0       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
@@ -3875,13 +4030,27 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     a = request->arg(String("max") + String(i+1));
     pedals[i].expMax = constrain(a.toInt(), 0, ADC_RESOLUTION - 1);
 
+    a = request->arg(String("analogeasing") + String(i+1));
+    pedals[i].snapMultiplier = pow(10, -constrain(4 - a.toInt(), 1, 3));
+
+    a = request->arg(String("analogthreshold") + String(i+1));
+    pedals[i].activityThreshold = pow(2, constrain(a.toInt(), 1, 8));
+
     if (pedals[i].expMax < pedals[i].expZero) {
       int t;
       t = pedals[i].expMax;
       pedals[i].expMax = pedals[i].expZero;
       pedals[i].expZero = t;
     }
+    if (pedals[i].autoSensing == PED_ENABLE) {
+      pedals[i].expZero = ADC_RESOLUTION - 1;
+      pedals[i].expMax = 0;
+    }
 
+    for (unsigned int b = 0; b < LADDER_STEPS; b++) {
+      a = request->arg(String("ledbutton") + String(i+1) + String(b+1));
+      pedals[i].ledbuttons[b] = (a.toInt() == 0 ? LEDS : constrain(a.toInt() - 1, 0, LEDS - 1));
+    }
   }
   if (request->arg("action").equals("apply")) {
     loadConfig = true;
