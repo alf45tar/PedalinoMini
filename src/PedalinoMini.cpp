@@ -292,7 +292,7 @@ void setup()
   eeprom_init_or_erase();
   eeprom_read_global();
 
-  FastLED.addLeds<NEOPIXEL, FASTLEDS_DATA_PIN>(fastleds, LEDS);
+  FastLED.addLeds<WS2812B, FASTLEDS_DATA_PIN, LED_RGB_ORDER>(fastleds, LEDS);
   fill_solid(fastleds, LEDS, CRGB::Black);
   FastLED.show();
   lastColor = CRGB::Black;

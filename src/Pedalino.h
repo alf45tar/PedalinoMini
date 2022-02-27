@@ -25,6 +25,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of switches in a resistor ladder
 #define LEDS             10   // number of WS2812B leds (254 max)
+#define LED_RGB_ORDER   RGB   // can be RGB or GRB
+#define FLIP_SCREEN       1   // 0: native, 1: flip vertically  
 #define SLOTS_ROWS        2
 #define SLOTS_COLS        4
 #define SLOTS             SLOTS_ROWS * SLOTS_COLS

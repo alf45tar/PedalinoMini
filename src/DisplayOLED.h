@@ -1092,7 +1092,6 @@ int overlaysCount = sizeof(overlays) / sizeof(OverlayCallback);
 void display_init()
 {
   display.init();
-  display.flipScreenVertically();
   display.setContrast(255);
 
 #ifdef WIFI
@@ -1144,7 +1143,9 @@ void display_init()
   // Initialising the UI will init the display too.
   ui.init();
 
-  display.flipScreenVertically();
+  #if FLIP_SCREEN == 1
+    display.flipScreenVertically();
+  #endif
 }
 
 void display_ui_update_disable()
