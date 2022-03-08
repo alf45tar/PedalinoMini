@@ -454,7 +454,7 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += freeMemory / 1024;
   page += F(" kB</dd>");
   page += F("<dt>Battery Voltage</dt><dd>");
-  page += String(batteryVoltage / 1000.0, 1);
+  page += String(batteryVoltage / 1000.0, 2);
   page += F(" V ");
   page += batteryVoltage > 4300 ? F("plugged") : F("on battery");
   page += F("</dd>");
