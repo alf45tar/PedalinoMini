@@ -500,6 +500,7 @@ String wifiPassword("");
 int    wifiLevel = 0;
 
 uint16_t  batteryVoltage = 4200;  // mV
+uint16_t  lastBatteryVoltage = 4200;  // mV
 
 #ifdef DIAGNOSTIC
 #define POINTS                        240             // Logged data points
