@@ -40,7 +40,16 @@ SH1106Wire                display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 #include <OLEDDisplayUi.h>
 #define OLED_I2C_ADDRESS  0x3c
 #define OLED_I2C_SDA      SDA
-#define OLED_I2C_SCL      SCL
+#define OLED_I2C_SCL      SDA
+SSD1306Wire               display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
+#endif
+#if defined(TTGO_ESP32_OLED)
+#include <SSD1306Wire.h>
+#include <OLEDDisplayUi.h>
+#define OLED_I2C_ADDRESS  0x3c
+#define OLED_I2C_SDA      4
+#define OLED_I2C_SCL      15
+#define OLED_I2C_RST      16
 SSD1306Wire               display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 #endif
 
@@ -1091,6 +1100,14 @@ int overlaysCount = sizeof(overlays) / sizeof(OverlayCallback);
 
 void display_init()
 {
+
+#if defined(TTGO_ESP32_OLED)
+  pinMode(OLED_I2C_RST,OUTPUT);
+  digitalWrite(OLED_I2C_RST, LOW);   // set OLED_I2C_RST low to reset OLED
+  delay(50);
+  digitalWrite(OLED_I2C_RST, HIGH);  // while OLED is running, must set OLED_I2C_RST in hi
+#endif
+
   display.init();
   display.setContrast(255);
 

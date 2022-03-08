@@ -78,6 +78,18 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #define FASTLEDS_DATA_PIN     GPIO_NUM_5
+#elif defined TTGO_ESP32_OLED
+#undef  PEDALS
+#define PEDALS                7
+const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_0};
+const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_0};
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_0
+#define USB_MIDI_IN_PIN       GPIO_NUM_18
+#define USB_MIDI_OUT_PIN      GPIO_NUM_19
+#define DIN_MIDI_IN_PIN       GPIO_NUM_34
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_35
+#define BATTERY_PIN           GPIO_NUM_32   // GPIO_NUM_32 to GPIO_NUM_39 only
+#define FASTLEDS_DATA_PIN     GPIO_NUM_5
 #else
 #undef  PEDALS
 #define PEDALS                7
