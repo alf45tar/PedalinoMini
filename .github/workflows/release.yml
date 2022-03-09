@@ -27,8 +27,8 @@ jobs:
 
     - name: Run PlatformIO build on selected platforms
       run: |
-        pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
-        pio run -t buildfs -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
+        pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit -e ttgo-esp32-oled
+        pio run -t buildfs -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit -e ttgo-esp32-oled
 
     - name: Copy binary files
       run: |
@@ -77,6 +77,15 @@ jobs:
         cp ./manifest/template.json ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/esp-wrover-kit/g'                   ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
+        rm -rf ./firmware/ttgo-esp32-oled/*
+        echo ${{ github.event.inputs.tag }} > ./firmware/ttgo-esp32-oled/version.txt
+        cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/ttgo-esp32-oled/ttgo-esp32-oled-${{ github.event.inputs.tag }}-bootloader.bin
+        cp .pio/build/ttgo-esp32-oled/partitions.bin  ./firmware/ttgo-esp32-oled/ttgo-esp32-oled-${{ github.event.inputs.tag }}-partitions.bin
+        cp .pio/build/ttgo-esp32-oled/firmware.bin    ./firmware/ttgo-esp32-oled/ttgo-esp32-oled-${{ github.event.inputs.tag }}-firmware.bin
+        cp .pio/build/ttgo-esp32-oled/spiffs.bin      ./firmware/ttgo-esp32-oled/ttgo-esp32-oled-${{ github.event.inputs.tag }}-spiffs.bin
+        cp ./manifest/template.json ./firmware/ttgo-esp32-oled/ttgo-esp32-oled-${{ github.event.inputs.tag }}.json
+        sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/ttgo-esp32-oled/ttgo-esp32-oled-${{ github.event.inputs.tag }}.json
+        sed -i 's/xxx/ttgo-esp32-oled/g'              ./firmware/ttgo-esp32-oled/ttgo-esp32-oled-${{ github.event.inputs.tag }}.json
 
     - name: Commit and push firmware ${{ github.event.inputs.tag }} files
       run: |
