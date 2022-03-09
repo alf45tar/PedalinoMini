@@ -168,6 +168,32 @@ void wifi_and_battery_level() {
       batteryVoltage = (uint16_t)voltage;
     else
       batteryVoltage = (7 * batteryVoltage + voltage) / 8;
+    // Update charging status and battery level
+    if (batteryVoltage > BATTERY_CHARGING_VOLTAGE) {
+      charging = true;
+      batteryLevel = 100;
+    } else if (batteryVoltage < BATTERY_EMPTY_VOLTAGE) {
+      charging = false;
+      batteryLevel = 10;
+    }
+    else {
+      if(batteryVoltage >= BATTERY_FULL_VOLTAGE) {
+        batteryLevel = 100;
+      } else {
+        // Convert the full / empty voltage range to a 100 % / 10 % battery level range
+        batteryLevel = ((batteryVoltage - BATTERY_EMPTY_VOLTAGE)*90)/(BATTERY_FULL_VOLTAGE-BATTERY_EMPTY_VOLTAGE)+10;
+      }
+      // Battery might be charging in the 2.2 V-> 4.3 V voltage range => let's try and see if voltage is increasing (charging) or decreasing (discharging)
+      int batteryDelta = batteryVoltage - lastBatteryVoltage;
+      // Only track changes > 50mV
+      if((batteryDelta > 50) || (batteryDelta < -50)){
+        // Charging status
+        charging = (batteryDelta > 0);
+        //DPRINT("Current / last  / delta / level / charging : %d / %d / %d / %d / %d\n", batteryVoltage, lastBatteryVoltage, batteryDelta, batteryLevel, charging);
+        lastBatteryVoltage = batteryVoltage;
+      }
+    }
+
 #endif
 
 #ifdef DIAGNOSTIC

@@ -104,6 +104,10 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define FASTLEDS_DATA_PIN     GPIO_NUM_5
 #endif
 
+#define BATTERY_CHARGING_VOLTAGE    4500
+#define BATTERY_FULL_VOLTAGE        4150
+#define BATTERY_EMPTY_VOLTAGE       3400
+
 #define PIN_D(x)          pinD[x]
 #define PIN_A(x)          pinA[x]
 
@@ -501,6 +505,9 @@ int    wifiLevel = 0;
 
 uint16_t  batteryVoltage = 4200;  // mV
 uint16_t  lastBatteryVoltage = 4200;  // mV
+int       batteryLevel = 100;
+bool      charging = false;
+
 
 #ifdef DIAGNOSTIC
 #define POINTS                        240             // Logged data points

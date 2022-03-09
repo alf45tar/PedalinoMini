@@ -61,8 +61,6 @@ SSD1306Wire               display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 OLEDDisplayUi ui(&display);
 bool          uiUpdate = true;
 
-bool          charging = false;
-
 
 #define WIFI_LOGO_WIDTH   78
 #define WIFI_LOGO_HEIGHT  64
@@ -454,32 +452,21 @@ void topOverlay(OLEDDisplay *display, OLEDDisplayUiState* state)
 #ifdef BATTERY
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->setFont(batteryIndicator);
-    if (batteryVoltage > 4300) {
-      charging = true;
-    } else if (batteryVoltage < 3800) {
-      charging = false;
-    }
-    else {
-      // Battery might be charging in the 3.8 V-> 4.3 V voltage range => let's try and see if voltage is increasing (charging) or decreasing (discharging)
-      int batteryDelta = (batteryVoltage - lastBatteryVoltage)/10;
-      lastBatteryVoltage = batteryVoltage;
-      if(batteryDelta > 0) {
-        // Charging
-        charging = true;
-      } else if (batteryDelta < 0) {
-        // Discharging
-        charging = false;
-      }
-    }
     if(charging){
-      display->drawString(128, 0, String((millis() >> 10) % 4));
+      display->drawString(128, 0, String(0));
+      int width = (millis() >> 8) % 14;
+      display->fillRect(126-width,2,width,6);
     }
     else {
-      if (batteryVoltage > 3800) display->drawString(128, 0, String(3));
-      else if (batteryVoltage > 3500) display->drawString(128, 0, String(2));
-      else if (batteryVoltage > 3200) display->drawString(128, 0, String(1));
-      else if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
-      else display->drawString(128, 0, String(4));
+      if(batteryLevel <= 10) {
+        // Blink battery indicator
+        if ((millis() >> 10) % 2) display->drawString(128, 0, String(0));
+        else display->drawString(128, 0, String(4));
+      } else {
+        display->drawString(128, 0, String(0));
+        int width = (batteryLevel * 14)/100;
+        display->fillRect(126-width,2,width,6);
+      }
     }
 #endif
   }
@@ -1096,7 +1083,7 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0 + x, 26 + y, "Battery:");
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  display->drawString(128 + x, 26 + y, batteryVoltage / 1000.0F + String(" V"));
+  display->drawString(128 + x, 26 + y, batteryVoltage / 1000.0F + String(" V (") + (charging ? String("charging") : (batteryLevel + String("%"))) + String(")"));
 #endif
 
   display->setTextAlignment(TEXT_ALIGN_LEFT);

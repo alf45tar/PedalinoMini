@@ -455,8 +455,10 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F(" kB</dd>");
   page += F("<dt>Battery Voltage</dt><dd>");
   page += String(batteryVoltage / 1000.0, 2);
-  page += F(" V ");
-  page += batteryVoltage > 4300 ? F("plugged") : F("on battery");
+  page += F(" V (");
+  page += String(batteryLevel);
+  page += F("%) ");
+  page += charging ? F("plugged") : F("on battery");
   page += F("</dd>");
   //page += F("<dt>Running On Core</dt><dd>");
   //page += xPortGetCoreID();
