@@ -40,7 +40,7 @@ SH1106Wire                display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 #include <OLEDDisplayUi.h>
 #define OLED_I2C_ADDRESS  0x3c
 #define OLED_I2C_SDA      SDA
-#define OLED_I2C_SCL      SDA
+#define OLED_I2C_SCL      SCL
 SSD1306Wire               display(OLED_I2C_ADDRESS, OLED_I2C_SDA, OLED_I2C_SCL);
 #endif
 #if defined(TTGO_ESP32_OLED)
