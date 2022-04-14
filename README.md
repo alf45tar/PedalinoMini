@@ -126,7 +126,8 @@ has been released to public on February 26th, 2022. Thanks to the new sponsors: 
 
 Sponsors version additions/fixes since February 26th, 2022:
 
-- None
+- Fixed reboot on Options page with a long list of visible WiFi network
+- Fixed Note velocity always zero
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
