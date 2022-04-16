@@ -128,6 +128,9 @@ Sponsors version additions/fixes since February 26th, 2022:
 
 - Fixed reboot on Options page with a long list of visible WiFi network
 - Fixed Note velocity always zero
+- Added display flip vertically on TTGO T-Display
+- Updated to latest JSON Editor 9.7.4
+
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
