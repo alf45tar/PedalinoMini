@@ -55,8 +55,8 @@ jobs:
         
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
+    # - name: Autobuild
+    #  uses: github/codeql-action/autobuild@v2
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
@@ -67,6 +67,19 @@ jobs:
     # - run: |
     #   echo "Run, Build Application using script"
     #   ./location_of_script_within_repo/buildscript.sh
+    
+    - name: Set up Python
+      uses: actions/setup-python@v1
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio
+        
+    - name: Run PlatformIO build on selected platforms
+      run: |
+        pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
+        pio run -t buildfs -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
