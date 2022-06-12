@@ -463,6 +463,7 @@ More configuration are available here.
 
 https://github.com/marosell
 ![marosell](https://user-images.githubusercontent.com/1125586/65741408-f1188b80-e0b9-11e9-868f-e65c7d6db10b.JPG)
+[More details](https://github.com/alf45tar/PedalinoMini/issues/22)
 
 https://github.com/mknerr
 ![mknerr](https://user-images.githubusercontent.com/25649210/83949366-60ba4b00-a7f1-11ea-8af6-402a4fcb3f37.jpeg)
@@ -482,6 +483,10 @@ https://github.com/bsos
 https://github.com/rigr
 ![rigr](https://user-images.githubusercontent.com/6568315/95367206-c2d8a900-08d4-11eb-9cc1-21adec9d219b.jpg)
 [More details](https://github.com/alf45tar/PedalinoMini/issues/138)
+
+https://github.com/Hans68
+![Hans68](https://user-images.githubusercontent.com/48477907/73469296-6fe24580-4386-11ea-9e55-7be09ae2b0d0.JPG)
+[More details](https://github.com/alf45tar/PedalinoMini/issues/63)
 
 https://github.com/teopost
 ![teopost](https://user-images.githubusercontent.com/2573389/109355786-0cc02c80-7880-11eb-9d7c-7eb23dfa2dee.png)
