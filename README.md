@@ -485,7 +485,7 @@ https://github.com/rigr
 https://github.com/teopost
 ![teopost](https://user-images.githubusercontent.com/2573389/109355786-0cc02c80-7880-11eb-9d7c-7eb23dfa2dee.png)
 
-https://github.com/gallochri
+https://github.com/gallochri [more details](https://github.com/alf45tar/PedalinoMini/issues/214)
 ![gallochri](https://user-images.githubusercontent.com/404229/116277564-e3d7ed00-a785-11eb-99e5-e77df0bbd130.jpg)
 
 https://github.com/juani13973/pedalinio-18-footswitches-prototype
@@ -494,20 +494,20 @@ https://github.com/juani13973/pedalinio-18-footswitches-prototype
 https://github.com/MaxZak2020
 ![MaxZak2020](https://user-images.githubusercontent.com/74506186/120315265-d366e500-c2e4-11eb-92f9-1ba9e9d01312.jpg)
 
-https://github.com/aFunkyBass
+https://github.com/aFunkyBass [more details](https://github.com/alf45tar/PedalinoMini/issues/234)
 ![aFunkyBass](https://user-images.githubusercontent.com/66510206/121218730-493df400-c883-11eb-9394-602709fa271e.jpg)
 
-https://github.com/akosbeke
+https://github.com/akosbeke [more details](https://github.com/alf45tar/PedalinoMini/issues/240)
 ![akosbeke](https://user-images.githubusercontent.com/7037649/124348379-e4f42300-dbe9-11eb-90aa-9a2cc2da19a1.jpg)
 
-https://github.com/borsei222
+https://github.com/borsei222 [more details](https://github.com/alf45tar/PedalinoMini/issues/241)
 ![borsei222](https://user-images.githubusercontent.com/86922846/124502833-81721d00-ddc4-11eb-82b1-7ade0704b464.jpg)
 
-https://github.com/TarFilarek
+https://github.com/TarFilarek [more details](https://github.com/alf45tar/PedalinoMini/issues/221)
 ![TarFilarek](https://user-images.githubusercontent.com/64553282/139289650-594a5aac-00a3-489f-adf7-b22673826392.mp4)
 
-https://github.com/bobvc133
+https://github.com/bobvc133 [more details](https://github.com/alf45tar/PedalinoMini/issues/330)
 ![bobvc133](https://user-images.githubusercontent.com/91867813/165307799-8213016f-47a2-4d13-857f-fd7b80032586.jpg)
 
-https://github.com/Samantha-uk
+https://github.com/Samantha-uk [more details](https://github.com/alf45tar/PedalinoMini/issues/342)
 ![Samantha-uk](https://user-images.githubusercontent.com/45871296/171361904-7694ab34-969d-43b8-b81d-fbdeb5835a03.jpg)
