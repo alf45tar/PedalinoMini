@@ -130,6 +130,8 @@ Sponsors version additions/fixes since February 26th, 2022:
 - Fixed Note velocity always zero
 - Added display flip vertically on TTGO T-Display
 - Updated to latest JSON Editor 9.7.4
+- Added flip display and leds RGB order in Options
+- Fixed memory fragmentation during webpage creation
 
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
