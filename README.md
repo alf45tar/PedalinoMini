@@ -132,6 +132,7 @@ Sponsors version additions/fixes since February 26th, 2022:
 - Updated to latest JSON Editor 9.7.4
 - Added flip display and leds RGB order in Options
 - Fixed memory fragmentation during webpage creation
+- A new pedal type to connect an expression pedal and a switch (momentary or ladder) to one port only
 
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
