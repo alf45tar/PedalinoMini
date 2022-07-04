@@ -139,7 +139,7 @@ Sponsors version additions/fixes since February 26th, 2022:
 
 ## Bill of materials
 
-The shortest bill of materials ever: an ESP32 board and a OgoLED display. That's it.
+The shortest bill of materials ever: an ESP32 board and a OLED display. That's it.
 
 - Any ESP32 board supported by [Arduino core for ESP32 WiFi chip](https://github.com/espressif/arduino-esp32)
   - Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
