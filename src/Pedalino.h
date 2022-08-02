@@ -9,12 +9,13 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+#include <vector>
 #include <Arduino.h>
 
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.4.0"
+#define VERSION         "2.5.1"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -25,8 +26,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of switches in a resistor ladder
 #define LEDS             10   // number of WS2812B leds (254 max)
-#define LED_RGB_ORDER   RGB   // can be RGB or GRB
-#define FLIP_SCREEN       1   // 0: native, 1: flip vertically  
+#define LED_RGB_ORDER   RGB   // do not change it, RGB order is managed by program because FastLED library does not support changing RGB order at runtime
 #define SLOTS_ROWS        2
 #define SLOTS_COLS        4
 #define SLOTS             SLOTS_ROWS * SLOTS_COLS
@@ -67,9 +67,9 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NU
 #define FASTLEDS_DATA_PIN     GPIO_NUM_15
 #elif defined TTGO_T_EIGHT
 #undef  PEDALS
-#define PEDALS                8
-const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_38, GPIO_NUM_37};
-const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_38, GPIO_NUM_37};
+#define PEDALS                9
+const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_14, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39};
+const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NUM_32, GPIO_NUM_33, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_38   // Right 37   Center 38   Left 39
 #define LATCH_PIN             GPIO_NUM_2
 #define USB_MIDI_IN_PIN       GPIO_NUM_18   // Used by SD
@@ -95,8 +95,15 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define PIN_D(x)          pinD[x]
 #define PIN_A(x)          pinA[x]
 
-#include <FastLED.h>
-CRGB fastleds[LEDS+1];                  // fastleds[LEDS] not used
+#if defined TTGO_T_EIGHT
+bool flipScreen = true;                // flip screen vertically
+#else
+bool flipScreen = false;
+#endif
+
+#include <FastLED.h>                    // https://github.com/FastLED/FastLED
+CRGB    fastleds[LEDS+1];               // fastleds[LEDS] not used
+EOrder  rgbOrder = RGB;
 
 // Serial MIDI interfaces
 
@@ -189,6 +196,7 @@ using namespace ace_button;
 #define PED_ACTION_REPEAT             34
 #define PED_ACTION_REPEAT_OVERWRITE   35
 #define PED_ACTION_POWER_ON_OFF       99
+#define PED_OSC_MESSAGE               50
 
 #define PED_NONE                1
 #define PED_MOMENTARY1          2
@@ -200,9 +208,11 @@ using namespace ace_button;
 #define PED_LATCH2              8
 #define PED_LADDER              9
 #define PED_ULTRASONIC          10    // HC-SR04
+#define PED_ANALOG_MOMENTARY    11
+#define PED_ANALOG_LATCH        12
 
 
-const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic"};
+const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic", "Analog+Momentary", "Analog+Latch"};
 
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
@@ -313,6 +323,7 @@ struct action {
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue1;
   byte                   midiValue2;
+  char                   oscAddress[51];
   byte                   slot;            // 0..SLOTS-1 real slots. If equal to SLOTS no slot selected
   action                *next;
 };
@@ -442,6 +453,7 @@ volatile bool reloadProfile   = true;
 volatile bool saveProfile     = false;
 volatile bool loadConfig      = false;
 volatile bool scrollingMode   = false;  // Display scrolling mode
+volatile bool displayInit     = false;
 byte  currentBank             = 1;
 byte  currentPedal            = 0;
 byte  currentInterface        = PED_USBMIDI;
@@ -482,24 +494,26 @@ bool  wifiConnected           = false;
 bool  bleConnected            = false;
 
 uint32_t freeMemory;
+uint32_t maxAllocation;
 
-String wifiSSID("");
-String wifiPassword("");
-int    wifiLevel = 0;
+String wifiSSID     = "";
+String wifiPassword = "";
+int    wifiLevel    = 0;
 
 uint16_t  batteryVoltage = 4200;  // mV
 
 #ifdef DIAGNOSTIC
 #define POINTS                        240             // Logged data points
-#define SECONDS_BETWEEN_SAMPLES       5
+#define SECONDS_BETWEEN_SAMPLES       1
 #define GRAPH_DURATION                POINTS * SECONDS_BETWEEN_SAMPLES
 #define GRAPH_DURATION_QUARTER_SEC    GRAPH_DURATION / 4
 #define GRAPH_DURATION_QUARTER_MIN    GRAPH_DURATION_QUARTER_SEC / 60
 #define GRAPH_DURATION_QUARTER_HOUR   GRAPH_DURATION_QUARTER_MIN / 60
 RTC_DATA_ATTR byte historyStart = 0;
-RTC_DATA_ATTR byte memoryHistory[POINTS];       // 0% =   0Kb    100% = 200Kb
-RTC_DATA_ATTR byte wifiHistory[POINTS];         // 0% = -90dB    100% = -10dB
-RTC_DATA_ATTR byte batteryHistory[POINTS];      // 0% =  3.0V    100% =  5.0V
+RTC_DATA_ATTR byte memoryHistory[POINTS];         // 0% =   0Kb    100% = 200Kb
+RTC_DATA_ATTR byte fragmentationHistory[POINTS];  // 0% =   0Kb    100% = 200Kb
+RTC_DATA_ATTR byte wifiHistory[POINTS];           // 0% = -90dB    100% = -10dB
+RTC_DATA_ATTR byte batteryHistory[POINTS];        // 0% =  3.0V    100% =  5.0V
 #endif
 
 bool powersaver = false;
@@ -547,9 +561,9 @@ String getChipId() {
   return String(chipId);
 }
 
-String host(getChipId());
-String ssidSoftAP("Pedalino-" + getChipId());
-String passwordSoftAP(getChipId());
+String host           = getChipId();
+String ssidSoftAP     = String("Pedalino-") + getChipId();
+String passwordSoftAP = getChipId();
 
 #include <AsyncTCP.h>
 #define WEBSERVER_H           // to not redefine WebRequestMethod (HTTP_GET, HTTP_POST, ...)
@@ -568,22 +582,23 @@ void   delete_actions();
 void   sort_actions();
 void   create_banks();
 void   wifi_connect();
+void   http_setup();
 
 void   screen_update(bool);
 void   screen_info(int, int, int, int, int = 0, int = MIDI_RESOLUTION - 1);
 void   leds_refresh();
 void   leds_update(byte, byte, byte, byte);
 void   eeprom_update_current_profile(byte);
-bool   auto_reconnect(String ssid = "", String password = "");
+bool   auto_reconnect(const String& ssid = "", const String& password = "");
 bool   smart_config();
-bool   ap_connect(String ssid = "", String password = "");
+bool   ap_connect(const String& ssid = "", const String& password = "");
 #ifdef WIFI
 String translateEncryptionType(wifi_auth_mode_t);
 #endif
 
 void display_clear();
-void display_progress_bar_title(String);
-void display_progress_bar_title2(String, String);
+void display_progress_bar_title(const String&);
+void display_progress_bar_title2(const String&, const String&);
 void display_progress_bar_update(unsigned int, unsigned int);
 void display_progress_bar_2_update(unsigned int, unsigned int);
 void display_progress_bar_2_label(unsigned int, unsigned int);

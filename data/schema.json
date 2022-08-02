@@ -77,6 +77,9 @@
                         "minimum": 1,
                         "maximum": 10
                     },
+                    "FlipScreen": {
+                        "type": "boolean"
+                    },
                     "TapDanceMode": {
                         "type": "boolean"
                     },
@@ -85,6 +88,15 @@
                     },
                     "TapDanceBank": {
                         "type": "boolean"
+                    },
+                    "Leds": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 254
+                    },
+                    "RGBOrder": {
+                        "type": "string",
+                        "enum": ["RGB", "RBG", "GRB", "GBR", "BRG", "BGR"]
                     },
                     "LedsOnBrightness": {
                         "type": "integer",
@@ -95,6 +107,21 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 255
+                    },
+                    "OSCLocalPort": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                    },
+                    "OSCRemoteHost": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 253
+                    },
+                    "OSCRemotePort": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
                     }
                 }
             }
@@ -214,6 +241,7 @@
                                 "Tap",
                                 "BPM+",
                                 "BPM-",
+                                "OSC Message",
                                 "Profile+",
                                 "Profile-",
                                 "Set Led Color",
@@ -238,6 +266,11 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 255
+                    },
+                    "OSC Address": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 50
                     }
                 }
             }
@@ -348,7 +381,7 @@
                     },
                     "Mode": {
                         "type": "string",
-                        "enum": ["None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic"]
+                        "enum": ["None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic", "Analog+Momentary", "Analog+Latch"]
                     },
                     "InvertPolarity": {
                         "type": "boolean"

@@ -31,7 +31,7 @@ namespace improv_serial {
 
   class ImprovSerial {
     public:
-      void setup(String firmware, String version, String variant, String name, HardwareSerial *serial = &Serial);
+      void setup(const String& firmware, const String& version, const String& variant, const String& name, HardwareSerial *serial = &Serial);
       bool loop(bool timeout = false);
       improv::State get_state();
       String get_ssid();
@@ -58,7 +58,7 @@ namespace improv_serial {
     std::vector<uint8_t> rx_buffer_;
     uint32_t last_read_byte_{0};
     improv::State state_{improv::STATE_AUTHORIZED};
-    improv::ImprovCommand command_{improv::Command::UNKNOWN, "", ""};;
+    improv::ImprovCommand command_{improv::Command::UNKNOWN, "", ""};
 
     String firmware_name_;
     String firmware_version_;

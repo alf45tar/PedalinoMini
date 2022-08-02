@@ -1,6 +1,6 @@
 /****************************************************************************
 * Bluetooth config wifi connection to ap. You can config ESP32 to connect a softap
-* or config ESP32 as a softap to be connected by other device. APP can be downloaded from github 
+* or config ESP32 as a softap to be connected by other device. APP can be downloaded from github
 * android source code: https://github.com/EspressifApp/EspBlufi
 * iOS source code: https://github.com/EspressifApp/EspBlufiForiOS
 ****************************************************************************/
@@ -18,8 +18,8 @@
 #include <esp_bt_device.h>
 
 #define BLUFI_TAG "BLUFI"
-#define BLUFI_INFO(fmt, ...)   ESP_LOGI(BLUFI_TAG, fmt, ##__VA_ARGS__) 
-#define BLUFI_ERROR(fmt, ...)  ESP_LOGE(BLUFI_TAG, fmt, ##__VA_ARGS__) 
+#define BLUFI_INFO(fmt, ...)   ESP_LOGI(BLUFI_TAG, fmt, ##__VA_ARGS__)
+#define BLUFI_ERROR(fmt, ...)  ESP_LOGE(BLUFI_TAG, fmt, ##__VA_ARGS__)
 
 #include "BluFiSecurity.h"
 
@@ -106,7 +106,7 @@ static void blufi_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_param_
 
         esp_wifi_get_mode(&mode);
 
-        if (WiFi.isConnected()) {  
+        if (WiFi.isConnected()) {
             memset(&info, 0, sizeof(esp_blufi_extra_info_t));
             memcpy(info.sta_bssid, WiFi.BSSID(), 6);
             info.sta_bssid_set = true;
@@ -211,7 +211,7 @@ static void blufi_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_param_
         break;
 	case ESP_BLUFI_EVENT_RECV_CLIENT_PRIV_KEY:
         /* Not handle currently */
-        break;;
+        break;
 	case ESP_BLUFI_EVENT_RECV_SERVER_PRIV_KEY:
         /* Not handle currently */
         break;

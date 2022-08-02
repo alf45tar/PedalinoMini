@@ -48,17 +48,18 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <esp32-hal-log.h>
 #include <esp_adc_cal.h>
 #include <esp_partition.h>
+#include <esp_wifi.h>
 #include <esp_bt_main.h>
 #include <string>
 #include "Pedalino.h"
 #include "TickerTimer.h"
-#include "Config.h"
 #include "UdpMidiOut.h"
 #include "BLEMidiOut.h"
 #include "SerialMidiIn.h"
 #include "UdpMidiIn.h"
 #include "BLEMidiIn.h"
 #include "LedsEffects.h"
+#include "Config.h"
 #include "DisplayLCD.h"
 #ifdef TTGO_T_DISPLAY
 #include "DisplayTFT.h"
@@ -67,10 +68,10 @@ __________           .___      .__  .__                 _____  .__       .__    
 #endif
 #include "Controller.h"
 #include "OTAHTTPS.h"
-#include "WebConfigAsync.h"
-#include "OTAUpdateArduino.h"
 #include "ImprovSerial.h"
+#include "OTAUpdateArduino.h"
 #include "WifiConnect.h"
+#include "WebConfigAsync.h"
 
 
 void IRAM_ATTR onButtonLeft()
@@ -141,6 +142,7 @@ void wifi_and_battery_level() {
     interruptCounter1 = 0;
 
     freeMemory = ESP.getFreeHeap();
+    maxAllocation = ESP.getMaxAllocHeap();
 
 #ifdef WIFI
     if (wifiEnabled) wifiLevel = (3 * wifiLevel + WiFi.RSSI()) / 4;
@@ -174,9 +176,10 @@ void wifi_and_battery_level() {
     static byte sec = 0;
 
     if (sec == 0) {
-      memoryHistory[historyStart]  = map2(freeMemory, 0, 200*1024, 0, 100);
-      wifiHistory[historyStart]    = map2(constrain(wifiLevel, -90, -10), -90, -10, 0, 100);
-      batteryHistory[historyStart] = map2(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100);
+      memoryHistory[historyStart]         = map2(freeMemory, 0, 200*1024, 0, 100);
+      fragmentationHistory[historyStart]  = map2(maxAllocation, 0, 200*1024, 0, 100);
+      wifiHistory[historyStart]           = map2(constrain(wifiLevel, -90, -10), -90, -10, 0, 100);
+      batteryHistory[historyStart]        = map2(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100);
       historyStart = (historyStart + 1) % POINTS;
     }
     sec = (sec + 1) % SECONDS_BETWEEN_SAMPLES;
@@ -188,8 +191,6 @@ void wifi_and_battery_level() {
 void setup()
 {
   //esp_spiram_add_to_heapalloc();
-
-  display_init();
 
 #ifdef DEBUG_ESP_PORT
   //esp_log_level_set("*",      ESP_LOG_ERROR);
@@ -233,6 +234,7 @@ void setup()
     DPRINT("%s Total %d\n", nvs->label, nvs->size);
     esp_partition_iterator_release(pi);
   }
+
   DPRINT("PlatformIO Built Environment: %s\n", xstr(PLATFORMIO_ENV));
 
   DPRINTLN("_________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___ ");
@@ -241,7 +243,7 @@ void setup()
   DPRINTLN("|    |   \\  ___// /_/ | / __ \\|  |_|  |   |  (  <_> )    Y    \\  |   |  \\  | (  (     |    |/    Y    \\   )  )");
   DPRINTLN("|____|    \\___  >____ |(____  /____/__|___|  /\\____/\\____|__  /__|___|  /__|  \\  \\    |____|\\____|__  /  /  / ");
   DPRINTLN("              \\/     \\/     \\/             \\/               \\/        \\/       \\__\\                 \\/  /__/ ");
-  DPRINTLN("                                                                                  (c) 2018-2020 alf45star      ");
+  DPRINTLN("                                                                                  (c) 2018-2022 alf45star      ");
   DPRINTLN("                                                                      https://github.com/alf45tar/PedalinoMini");
   DPRINT("\nHostname: %s\n", host.c_str());
   DPRINT("PSRAM%sfound\n", psramFound() ? " " : " not ");
@@ -299,6 +301,8 @@ void setup()
   for (byte b = 0; b < BANKS; b++)
     for (byte l = 0; l < LEDS; l++)
       lastLedColor[b][l] = CRGB::Black;
+
+  display_init();
 
   // Reset to factory default if BOOT key is pressed and hold for alt least 15 seconds at power on
 
@@ -359,20 +363,20 @@ void setup()
   }
 
   if (newBootMode != PED_BOOT_UNKNOWN && newBootMode != bootMode) {
-    bootMode = newBootMode;
-    switch (bootMode) {
+    switch (newBootMode) {
       case PED_BOOT_NORMAL:
       case PED_BOOT_BLE:
       case PED_BOOT_WIFI:
       case PED_BOOT_AP:
       case PED_BOOT_AP_NO_BLE:
+        bootMode = newBootMode;
         eeprom_update_boot_mode(bootMode);
         break;
       default:
         break;
     }
   }
-  switch (bootMode) {
+  switch (newBootMode) {
     case PED_BOOT_NORMAL:
       break;
 
@@ -427,7 +431,6 @@ void setup()
         lcdSetCursor(0, 1);
         lcdPrint("Factory default ");
         eeprom_initialize();
-        //eeprom_read_global();
         ESP.restart();
       }
       else
@@ -435,6 +438,9 @@ void setup()
       break;
 
   }
+
+  reloadProfile = true;
+  controller_run();
 
   // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
   serial_midi_connect();              // On receiving MIDI data callbacks setup
@@ -467,7 +473,9 @@ void setup()
     improv_serial::global_improv_serial.setup(String("PedalinoMini (TM)"),
                                               String(VERSION),
                                               String(xstr(PLATFORMIO_ENV)),
-                                              String("Device name: ") + String(host));
+                                              String("Device name: ") + host);
+
+    networks = WiFi.scanNetworks(true); // Async scan
   }
 #endif
 
@@ -585,8 +593,10 @@ void loop()
 
     http_run();
 
+#ifdef ARDUINOOTA
     // Run OTA update service
     ota_handle();
+#endif
 
     // WiFi Provisioning
     if (improv_serial::global_improv_serial.loop()) {
@@ -597,8 +607,8 @@ void loop()
       DPRINT("Password    : %s\n", wifiPassword.c_str());
 
       eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
-      delay(1000);    // Restart only after all changes have been committed to EEPROM
-      ESP.restart();
+      //delay(2000);    // Restart only after all changes have been committed to EEPROM
+      //ESP.restart();
     }
   }
 #endif // WIFI

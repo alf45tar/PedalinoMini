@@ -5,22 +5,62 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2021 alf45star
+                                                                                   (c) 2018-2022 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
 
+CRGB swap_rgb_order (CRGB color, EOrder order) {
+
+  CRGB swap = CRGB::Black;
+
+  switch (order) {
+    case RGB:
+        swap.red   = color.red;
+        swap.green = color.green;
+        swap.blue  = color.blue;
+      break;
+    case RBG:
+        swap.red   = color.red;
+        swap.green = color.blue;
+        swap.blue  = color.green;
+      break;
+    case GRB:
+        swap.red   = color.green;
+        swap.green = color.red;
+        swap.blue  = color.blue;
+      break;
+    case GBR:
+        swap.red   = color.green;
+        swap.green = color.blue;
+        swap.blue  = color.red;
+      break;
+    case BRG:
+        swap.red   = color.blue;
+        swap.green = color.red;
+        swap.blue  = color.green;
+      break;
+    case BGR:
+        swap.red   = color.blue;
+        swap.green = color.green;
+        swap.blue  = color.red;
+      break;
+  }
+
+  return swap;
+}
+
 void dot_beat() {
 
-  uint8_t bpm = 30;
-  uint8_t fadeval = 224;                              // Trail behind the LED's. Lower => faster fade.
-  uint8_t inner = beatsin8(bpm, LEDS/4, LEDS/4*3);    // Move 1/4 to 3/4
-  uint8_t outer = beatsin8(bpm, 0, LEDS-1);           // Move entire length
-  uint8_t middle = beatsin8(bpm, LEDS/3, LEDS/3*2);   // Move 1/3 to 2/3
+  uint8_t bpm      = 30;
+  uint8_t fadeval  = 224;                               // Trail behind the LED's. Lower => faster fade.
+  uint8_t inner    = beatsin8(bpm, LEDS/4, LEDS/4*3);   // Move 1/4 to 3/4
+  uint8_t outer    = beatsin8(bpm, 0, LEDS-1);          // Move entire length
+  uint8_t middle   = beatsin8(bpm, LEDS/3, LEDS/3*2);   // Move 1/3 to 2/3
 
-  fastleds[middle] = CRGB::Purple;
-  fastleds[inner] = CRGB::Blue;
-  fastleds[outer] = CRGB::Aqua;
+  fastleds[middle] = swap_rgb_order(CRGB::Purple, rgbOrder);
+  fastleds[inner]  = swap_rgb_order(CRGB::Blue, rgbOrder);
+  fastleds[outer]  = swap_rgb_order(CRGB::Aqua, rgbOrder);
 
   nscale8(fastleds, LEDS, fadeval);                   // Fade the entire array. Or for just a few LED's, use  nscale8(&leds[2], 5, fadeval);
 
@@ -32,7 +72,6 @@ void blendwave() {
   static CRGB clr2;
   static uint8_t speed;
   static uint8_t loc1;
-  static uint8_t loc2;
 
   speed = beatsin8(6,0,255);
 
@@ -41,8 +80,8 @@ void blendwave() {
 
   loc1 = beatsin8(10,0, LEDS-1);
 
-  fill_gradient_RGB(fastleds, 0, clr2, loc1, clr1);
-  fill_gradient_RGB(fastleds, loc1, clr2, LEDS-1, clr1);
+  fill_gradient_RGB(fastleds, 0, swap_rgb_order(clr2, rgbOrder), loc1, swap_rgb_order(clr1, rgbOrder));
+  fill_gradient_RGB(fastleds, loc1, swap_rgb_order(clr2, rgbOrder), LEDS-1, swap_rgb_order(clr1, rgbOrder));
 
 }
 
@@ -85,7 +124,7 @@ void pride()
     uint16_t pixelnumber = i;
     pixelnumber = (LEDS-1) - pixelnumber;
 
-    nblend(fastleds[pixelnumber], newcolor, 64);
+    nblend(fastleds[pixelnumber], swap_rgb_order(newcolor, rgbOrder), 64);
     //fastleds[pixelnumber].nscale8(ledsOnBrightness);
   }
 }
@@ -139,7 +178,7 @@ void pacifica_one_layer( CRGBPalette16& p, uint16_t cistart, uint16_t wavescale,
     uint16_t sindex16 = sin16( ci) + 32768;
     uint8_t sindex8 = scale16( sindex16, 240);
     CRGB c = ColorFromPalette( p, sindex8, bri, LINEARBLEND);
-    fastleds[i] += c;
+    fastleds[i] += swap_rgb_order(c, rgbOrder);
   }
 }
 
@@ -156,7 +195,7 @@ void pacifica_add_whitecaps()
     if( l > threshold) {
       uint8_t overage = l - threshold;
       uint8_t overage2 = qadd8( overage, overage);
-      fastleds[i] += CRGB( overage, overage2, qadd8( overage2, overage2));
+      fastleds[i] += swap_rgb_order(CRGB( overage, overage2, qadd8( overage2, overage2)), rgbOrder);
     }
   }
 }
@@ -167,7 +206,7 @@ void pacifica_deepen_colors()
   for( uint16_t i = 0; i <LEDS; i++) {
     fastleds[i].blue = scale8( fastleds[i].blue,  145);
     fastleds[i].green= scale8( fastleds[i].green, 200);
-    fastleds[i] |= CRGB( 2, 5, 7);
+    fastleds[i] |= swap_rgb_order(CRGB( 2, 5, 7), rgbOrder);
   }
 }
 
@@ -191,7 +230,7 @@ void pacifica_loop()
   sCIStart4 -= (deltams2 * beatsin88(257,4,6));
 
   // Clear out the LED array to a dim background blue-green
-  fill_solid( fastleds, LEDS, CRGB( 2, 6, 10));
+  fill_solid(fastleds, LEDS, swap_rgb_order(CRGB( 2, 6, 10), rgbOrder));
 
   // Render each of four layers, with different scales and speeds, that vary over time
   pacifica_one_layer( pacifica_palette_1, sCIStart1, beatsin16( 3, 11 * 256, 14 * 256), beatsin8( 10, 70, 130), 0-beat16( 301) );
@@ -232,18 +271,18 @@ void plasma() {                                                 // This is the h
     int colorIndex = cubicwave8((k*23)+thisPhase)/2 + cos8((k*15)+thatPhase)/2;           // Create a wave and add a phase change and add another wave with its own phase change.. Hey, you can even change the frequencies if you wish.
     int thisBright = qsub8(colorIndex, beatsin8(7,0,96));                                 // qsub gives it a bit of 'black' dead space by setting sets a minimum value. If colorIndex < current value of beatsin8(), then bright = 0. Otherwise, bright = colorIndex..
 
-    fastleds[k] = ColorFromPalette(currentPalette, colorIndex, thisBright, currentBlending);  // Let's now add the foreground colour.
+    fastleds[k] = swap_rgb_order(ColorFromPalette(currentPalette, colorIndex, thisBright, currentBlending), rgbOrder);  // Let's now add the foreground colour.
   }
 }
 
 void blur() {
 
-  uint8_t blurAmount = dim8_raw( beatsin8(3,64, 192) );       // A sinewave at 3 Hz with values ranging from 64 to 192.
-  blur1d( fastleds, LEDS, blurAmount);                        // Apply some blurring to whatever's already on the strip, which will eventually go black.
+  uint8_t blurAmount = dim8_raw(beatsin8(3,64, 192) );       // A sinewave at 3 Hz with values ranging from 64 to 192.
+  blur1d(fastleds, LEDS, blurAmount);                         // Apply some blurring to whatever's already on the strip, which will eventually go black.
 
-  uint8_t  i = beatsin8(  9, 0, LEDS);
-  uint8_t  j = beatsin8( 7, 0, LEDS);
-  uint8_t  k = beatsin8(  5, 0, LEDS);
+  uint8_t  i = beatsin8(9, 0, LEDS);
+  uint8_t  j = beatsin8(7, 0, LEDS);
+  uint8_t  k = beatsin8(5, 0, LEDS);
 
   // The color of each point shifts over time, each at a different speed.
   uint16_t ms = millis();
@@ -286,7 +325,7 @@ uint8_t secondHand = (millis() / 1000) % 15;                  // IMPORTANT!!! Ch
   if (millis() % 5 == 0) {
     fadeToBlackBy(fastleds, LEDS, thisfade);                    // Low values = slower fade.
     int pos = random16(LEDS);                                   // Pick an LED at random.
-    fastleds[pos] = ColorFromPalette(currentPalette, thishue + random16(huediff)/4 , thisbri, currentBlending);
+    fastleds[pos] = swap_rgb_order(ColorFromPalette(currentPalette, thishue + random16(huediff)/4 , thisbri, currentBlending), rgbOrder);
     thishue = thishue + thisinc;                                // It increments here.
   }
 }
@@ -304,13 +343,13 @@ void ease() {
 
     lerpVal = lerp8by8(0, LEDS-1, easeOutVal);                  // Map it to the number of LED's you have.
 
-    fastleds[lerpVal] = CRGB::Blue;
+    fastleds[lerpVal] = swap_rgb_order(CRGB::Blue, rgbOrder);
     fadeToBlackBy(fastleds, LEDS, 32);                          // 8 bit, 1 = slow fade, 255 = fast fade
   }
 }
 
 void ease2() {
   //fastleds[5 + (millis() / 1000) % 4)] = CRGB::Blue;
-  fastleds[(millis() / 1000) % LEDS] = CRGB::Blue;
+  fastleds[(millis() / 1000) % LEDS] = swap_rgb_order(CRGB::Blue, rgbOrder);
   fadeToBlackBy(fastleds, LEDS, 2);                           // 8 bit, 1 = slow fade, 255 = fast fade
 }

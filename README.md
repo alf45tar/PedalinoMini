@@ -55,11 +55,11 @@ New features, bug corrections, priority reply will be offered at zero-day to **s
 
 New features and bug corrections will be released to this public repository when one of the following goals is met (whichever come first):
 
-- **10 new sponsors**
+- **40 active sponsors**
 
   _Select the level of sponsorship which best fit to you. Sponsorship starts from $1 per month._
 
-  >Goal is 44 sponsors in total. Starting point is 34 sponsors as of February 26th, 2022.
+  >Goal is 40 active sponsors. Starting point is 30 active sponsors as of August 2nd, 2022.
 
 - **Double the stars**
 
@@ -67,21 +67,28 @@ New features and bug corrections will be released to this public repository when
 
   >Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
 
-- **6 months from February 26th, 2022**
+- **9 months from August 1st, 2022**
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on August 25th, 2022.
+  >Goal is reached on May 2nd, 2023.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
-The following features
+## Version history
+
+<details>
+<summary>May 12th, 2021</summary>
+The following features:
 
 - Detection and actions triggered on REPEAT PRESSED and LONG RELEASE event
 - Latest Bootstrap 5 release and WebUI themes
 
 has been released to public on May 12th, 2021 thanks to the following sponsors: @MaxZak2020, @Alt Shift Creative, @serhatsoyyigit, @Kubbik1, @rigr, @jwyse, @teopost, @davidin73, @juani13973, @ba********, @MiqViq, @jisv48.
+</details>
 
+<details>
+<summary>August 9th, 2021</summary>
 The following features/fixes:
 
 - Bootstrap 5.0.2
@@ -99,7 +106,10 @@ The following features/fixes:
 - Leds effects
 
 has been released to public on August 9th, 2021 thanks to the following sponsors: richardjs, P********, j*****, TarFilarek. wespac001 x 2, DR-Mello, DWSQUIRES, e36910, itsptadeu,
+</details>
 
+<details>
+<summary>2.3.2 - November 12th, 2021</summary>
 The following features:
 
 - Bootstrap 5.1.3
@@ -111,7 +121,10 @@ The following features:
 - Bank duplication
 
 has been released to public on November 12th, 2021. Thanks to the new sponsors: RomanKlein777, michaelhauser, bobvc133, bmarshall91, p*************.
+</details>
 
+<details>
+<summary>2.4.0 - February 26th, 2022</summary>
 The following features:
 
 - Installing firmware and WiFi provisioning directly from browser
@@ -123,8 +136,11 @@ The following features:
 - Link each button to a led in Pedals setup in order to streamline Actions definition
 
 has been released to public on February 26th, 2022. Thanks to the new sponsors: ClintR1984, pstechsolutions, mknerr, radioactivetoy, y0m1g, joesuspense, andeee, jsleroy, Viser, anssir, mattzzw.
+</details>
 
-Sponsors version additions/fixes since February 26th, 2022:
+<details>
+<summary>2.5.1 - August 2nd, 2022</summary>
+The following features:
 
 - Fixed reboot on Options page with a long list of visible WiFi network
 - Fixed Note velocity always zero
@@ -134,7 +150,15 @@ Sponsors version additions/fixes since February 26th, 2022:
 - Fixed memory fragmentation during webpage creation
 - A new pedal type to connect an expression pedal and a switch (momentary or ladder) to one port only
 - Disabled WiFi power saving to reduce latency
-- New "OSC Message" action
+- Added OSC local port, remote host and remote port in Options
+- New "OSC Message" action sending integer and float values
+- Experimental: replace NVS with JSON files
+
+has been released to public on August 2nd, 2022 thanks to the following sponsors: b*******, basst22778, dbosnyak, d***********, slapukas, Samantha-uk, Poznik, FelixMuellCode, yusufrahadika and s*****.
+</details>
+
+Sponsors version additions/fixes since August 2nd, 2022:
+- None
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -271,9 +295,9 @@ If the WiFi network is not available PedalinoMini™ will create an hotspot for 
 - On power on PedalinoMini™ will try to connect to the last know access point
 - If it cannot connect to the last used access point within 15 seconds it enters into WiFi provisioning mode via USB
 - Visit http://alf45tar.github.io/PedalinoMini/installer and follow the instructions
-- If provisioning via USB is not finished within 60 seconds it enters into Smart Config mode
+- If provisioning via USB is not finished within 60 seconds it enters into Smart Config mode (if compiled with -D SMARTCONFIG in platformio.ini)
 - Start one of the suggested apps to configure SSID and password
-- If it doesn't receive any SSID and password during the next 60 seconds it enters into WPS mode
+- If it doesn't receive any SSID and password during the next 60 seconds it enters into WPS mode (if compiled with -D WPS in platformio.ini)
 - Press or press and hold (it depends by your router) the WPS button on your WiFi router __after__ PedalinoMini™ entered in WPS mode
 - If it doesn't receive any SSID and password during the next 60 seconds it switch to AP mode
 - In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
@@ -300,6 +324,8 @@ void wifi_connect()
 
 The responsive and mobile-first configuration web user interface is available on `http://device-name.local` address (the address is case insensitive). The device identification name is unique per device. Every device/board has a different device name. For example I am using `http://2ab267ac.local` to connect to my PedalinoMini™.
 
+![WEBUI HOME](./images/webui-home.png "Home")
+
 In order to know your device name and/or the IP address press for at least half a second the BOOT button and check the display.
 
 As alternative method you can use the IP address. If you are using the AP mode the IP address is always `192.168.4.1` and the connection address is `http://192.168.4.1` for everyone.
@@ -312,21 +338,23 @@ Device name, username and password can be changed via web user interface in the 
 
 Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal/controller is connected to each of the 6 available ports. Pedal 7 and 8 (if present) are the on board buttons and they are fully configurable.
 
-![WEBUI PEDALS](./images/webui-pedals.png "Pedals")
+![WEBUI PEDALS](./images/webui-pedals1.png "Pedals 1-4")
+
+![WEBUI PEDALS](./images/webui-pedals2.png "Pedals 5-8")
 
 ____________|Description
 :-----------|:----------
-Mode|Select one of the following: NONE, MOMENTARY, LATCH, ANALOG, JOG WHEEL, MOMENTARY 2, MOMENTARY 3, LATCH 2, LADDER, ULTRASONIC.
+Mode|Select one of the following: NONE, MOMENTARY, LATCH, ANALOG, JOG WHEEL, MOMENTARY 2, MOMENTARY 3, LATCH 2, LADDER, ULTRASONIC, ANALOG+MOMENTARY, ANALOG+LATCH.
 Invert Polarity|Normally open (NO) and normally closed (NC) momentary switches are supported and configurable by software if the foot switch do not have a polarity switch. On analog pedal or ultrasonic ranging sensor it invert the range.
 Singles Press|Select Enable/Disable here to enable/disable PRESS, RELEASE and CLICK events.<br>CLICK event is detected after a PRESS and RELEASE event.
 Double Press|Select Enable/Disable here to enable/disable DOUBLE CLICK events.<br>If double press is enabled CLICK event is postponed until double press timeout (by default 400ms).
 Long Press|Select Enable/Disable here to enable/disable LONG PRESS, REPEAT PRESSED and LONG RELEASE events.<br>LONG PRESS event is detected after a PRESS event with no RELEASE event within the long press timeout (by default 500ms).<br>After a LONG PRESS event a REPEAT PRESSED event is triggered every repeat press timeout (by default 500ms) until the button is keep pressed.<br>After a LONG PRESS event the RELEASE event is replaced by a LONG RELEASE event.<br>Two sequences of events are possible: PRESS and RELEASE or PRESS, LONG PRESS, REPEAT PRESS (optional) and LONG RELEASE.
+Analog Calibration|Enable analog pedal continuous calibration. Min and Max values are managed by PedalinoMini™. After each power on cycle move the expression pedals to its full range and PedalinoMini™ will calibrate it. During the first full movement of the pedal MIDI events could be not precise because PedalinoMini™ is still learning the full range of the pedal.
 Analog Response|Mapping between analog pedal movement and response. Accepted values: LINEAR (as is response), LOG (great acceleration but than flat), ANTILOG (start slow with a rapid increase).
 Min|In ANALOG mode minumum digital value (after analog-to-digital conversion) that can reach the connected expression pedal.<br>In ULTRASONIC mode the minimum distance (250 is around 2cm and it is not recommended to go below). Acceptable values are from 0 to 1023
 Max|In ANALOG mode maximum digital value (after analog-to-digital conversion) that can reach the connected expression pedal.<br>In ULTRASONIC mode the maximum distance (1023 is around 18cm and it is far enough for the application). Acceptable values are from 0 to 1023.
 Easing|It controls the amount of easing. Possible values are: 1, 2 or 3. Bigger value makes the responsive values more responsive: output value follows immediately the input value. Recommended values: 1 for ultrasonic sensor, 2 or 3 for potentiometer.
 Activity Threshold|The amount of movement that must take place for it to register as activity and start moving the output value. Increase the value to suppress noisy potentiometer. Recommended values: 8 or 16 for potentiometer, 64 for ultrasonic sensor.
-Analog Calibration|Enable analog pedal continuous calibration. Min and Max values are managed by PedalinoMini™. After each power on cycle move the expression pedals to its full range and PedalinoMini™ will calibrate it. During the first full movement of the pedal MIDI events could be not precise because PedalinoMini™ is still learning the full range of the pedal.
 Button1 ... Button6|Define for each button of the pedal the default led number to be used in Actions
 
 ## Actions
@@ -457,11 +485,6 @@ During normal operation
 - Long press of BOOT buttom to switch between live performance display and scrolling pages where configuration parameters (the device name, the IP address etc.) are displayed.
 
 On TTGO T-Eight replace BOOT button with CENTER button.
-
-## Factory default configuration
-
-The factory default configuration is quite simple: 6 momentary pedals, one actions on press, all MIDI interfaces interface enabled.
-More configuration are available here.
 
 # End User Built (oldest first)
 

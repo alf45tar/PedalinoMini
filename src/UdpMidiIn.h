@@ -914,8 +914,8 @@ void OnOscLed3(OSCMessage &msg)
 void OnOscSave(OSCMessage &msg)
 {
   DPRINT("OSC message /save received from %s\n", oscControllerIP.toString().c_str());
-  eeprom_update_current_profile(currentProfile);
-  eeprom_update_profile();
+  //eeprom_update_current_profile(currentProfile);
+  //eeprom_update_profile();
 }
 
 void OnOscProfile(OSCMessage &msg)
@@ -1214,7 +1214,6 @@ void oscOnPacket(AsyncUDPPacket packet) {
     oscMsg.fill(packet.read());
   }
   oscControllerIP = packet.remoteIP();
-  //oscControllerIP = IPAddress(192,168,2,120);
 
   if (!oscMsg.hasError()) {
     oscMsg.dispatch("/profile",                     OnOscProfile);

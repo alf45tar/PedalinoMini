@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2022 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -33,13 +33,15 @@ IPMIDI_CREATE_INSTANCE(WiFiUDP, IP_MIDI, 21928);
 
 // WiFi OSC comunication
 
-AsyncUDP                oscUDPout;               // A UDP instance to let us send packets over UDP
-IPAddress               oscRemoteIp;             // remote IP of an external OSC device or broadcast address
-const unsigned int      oscRemotePort = 9000;    // remote port of an external OSC device
+AsyncUDP                oscUDPout;                          // A UDP instance to let us send packets over UDP
+AsyncUDP                oscUDPin;                           // A UDP instance to let us receive packets over UDP
 
-AsyncUDP                oscUDPin;                // A UDP instance to let us receive packets over UDP
-const unsigned int      oscLocalPort  = 8000;    // local port to listen for OSC packets
+IPAddress               oscRemoteIp   = IPADDR_BROADCAST;   // remote IP of an external OSC device (default to subnet broadcast address)
 #endif  // WIFI
+
+String                  oscRemoteHost = "255.255.255.255";  // remote host name of an external OSC device (default to subnet broadcast address)
+unsigned int            oscRemotePort = 9000;               // remote port of an external OSC device
+unsigned int            oscLocalPort  = 8000;               // local port to listen for OSC packets
 
 bool                    appleMidiConnected = false;
 String                  appleMidiSessionName;
@@ -106,6 +108,7 @@ unsigned long           wifiLastOn         = 0;
 #define OSCSendStop(...)
 #define OSCSendActiveSensing(...)
 #define OSCSendSystemReset(...)
+#define OSCSendMessage(...)
 #else
 
 void AppleMidiSendNoteOn(byte note, byte velocity, byte channel)
@@ -539,6 +542,26 @@ void OSCSendSystemReset(void)
   AsyncUDPMessage udpMsg;
   OSCMessage oscMsg("/pedalino/midi/reset/");
   oscMsg.send(udpMsg).empty();
+  oscUDPout.send(udpMsg);
+}
+
+void OSCSendMessage(const char *address, int32_t value)
+{
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
+
+  AsyncUDPMessage udpMsg;
+  OSCMessage oscMsg(address);
+  oscMsg.add(value).send(udpMsg).empty();
+  oscUDPout.send(udpMsg);
+}
+
+void OSCSendMessage(const char *address, float value)
+{
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
+
+  AsyncUDPMessage udpMsg;
+  OSCMessage oscMsg(address);
+  oscMsg.add(value).send(udpMsg).empty();
   oscUDPout.send(udpMsg);
 }
 #endif  //  NOWIFI

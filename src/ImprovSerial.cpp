@@ -17,7 +17,7 @@ namespace improv_serial {
 
   static const char *const TAG = "improv_serial";
 
-  void ImprovSerial::setup(String firmware, String version, String variant, String name, HardwareSerial *serial) {
+  void ImprovSerial::setup(const String& firmware, const String& version, const String& variant, const String& name, HardwareSerial *serial) {
     this->hw_serial_        = serial;
     this->firmware_name_    = firmware;
     this->firmware_version_ = version;

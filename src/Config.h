@@ -9,12 +9,14 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-#include <Preferences.h>
-#include <nvs_flash.h>
 #include <ArduinoJson.h>
 #include <SPIFFS.h>
 
+#ifdef NVS
+#include <Preferences.h>
+#include <nvs_flash.h>
 Preferences preferences;
+#endif
 
 extern String httpUsername;
 extern String httpPassword;
@@ -33,19 +35,60 @@ using SpiRamJsonDocument = BasicJsonDocument<SpiRamAllocator>;
 #endif
 
 //
+//  Delete a file from SPIFFS
+//
+
+void spiffs_remove_file (const String& filename) {
+
+  if (SPIFFS.exists(filename) && !SPIFFS.remove(filename)) {
+    DPRINTLN("SPIFFS: can't remove file %s\n", filename.c_str());
+    return;
+  }
+}
+
+
+//
+//  Remove /globals.json configuration files from SPIFFS
+//
+
+void spiffs_remove_globals() {
+
+  spiffs_remove_file("/globals.json");
+
+}
+
+//
+//  Remove profile configuration files from SPIFFS
+//
+
+void spiffs_remove_profile(byte profile) {
+
+  profile = constrain(profile, 0, PROFILES - 1);
+
+  spiffs_remove_file("/" + String(profile) + "/pedals.json");
+  spiffs_remove_file("/" + String(profile) + "/interfaces.json");
+  spiffs_remove_file("/" + String(profile) + "/actions.json");
+  spiffs_remove_file("/" + String(profile) + "/sequences.json");
+
+}
+
+
+//
 //  Save configuration to SPIFFS file
 //
 
-void spiffs_save_config(String filename, bool saveActions = true, bool savePedals = true, bool saveInterfaces = true, bool saveSequences = true, bool saveOptions  = true) {
+void spiffs_save_config(const String& filename, bool saveActions = true, bool savePedals = true, bool saveInterfaces = true, bool saveSequences = true, bool saveOptions  = true) {
 
+  uint32_t allocated = ESP.getMaxAllocHeap();
   DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
-  DPRINT("Memory allocated for JSON document: %d bytes\n", ESP.getMaxAllocHeap());
+  DPRINT("Memory allocated for JSON document: %d bytes\n", allocated);
 
   if (saveOptions) {
     JsonArray jglobals = jdoc.createNestedArray("Globals");
     JsonObject jo = jglobals.createNestedObject();
     jo["Hostname"]            = host;
     jo["BootMode"]            = bootMode;
+    jo["Profile"]             = currentProfile;
     jo["SSID"]                = wifiSSID;
     jo["WiFiPassword"]        = wifiPassword;
     jo["SSIDsoftAP"]          = ssidSoftAP;
@@ -58,12 +101,36 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
     jo["LongPressTime"]       = longPressTime;
     jo["RepeatPressTime"]     = repeatPressTime;
     jo["EncoderSesitivity"]   = encoderSensitivity;
+    jo["FlipScreen"]          = flipScreen;
     jo["TapDanceMode"]        = tapDanceMode;
     jo["RepeatOnBankSwitch"]  = repeatOnBankSwitch;
     jo["TapDanceBank"]        = tapDanceBank;
+    jo["Leds"]                = LEDS;
+    switch (rgbOrder) {
+      case RGB:
+        jo["RGBOrder"]        = "RGB";
+        break;
+      case RBG:
+        jo["RGBOrder"]        = "RBG";
+       break;
+      case GRB:
+        jo["RGBOrder"]        = "GRB";
+        break;
+      case GBR:
+        jo["RGBOrder"]        = "GBR";
+        break;
+      case BRG:
+        jo["RGBOrder"]        = "BRG";
+        break;
+      case BGR:
+        jo["RGBOrder"]        = "BGR";
+        break;
+    }
     jo["LedsOnBrightness"]    = ledsOnBrightness;
     jo["LedsOffBrightness"]   = ledsOffBrightness;
-
+    jo["OSCLocalPort"]        = oscLocalPort;
+    jo["OSCRemoteHost"]       = oscRemoteHost;
+    jo["OSCRemotePort"]       = oscRemotePort;
     JsonArray jladder = jdoc.createNestedArray("Ladder");
     for (byte s = 0; s < LADDER_STEPS + 1; s++) {
       JsonObject jo = jladder.createNestedObject();
@@ -188,6 +255,9 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
           case PED_ACTION_BPM_MINUS:
             jo["Message"] = "BPM-";
             break;
+          case PED_OSC_MESSAGE:
+            jo["Message"] = "OSC Message";
+            break;
           case PED_ACTION_PROFILE_PLUS:
             jo["Message"] = "Profile+";
             break;
@@ -211,6 +281,7 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
         jo["Code"]            = act->midiCode;
         jo["Value1"]          = act->midiValue1;
         jo["Value2"]          = act->midiValue2;
+        jo["OSCAddress"]      = act->oscAddress;
         act = act->next;
       }
     }
@@ -375,14 +446,42 @@ void spiffs_save_config(String filename, bool saveActions = true, bool savePedal
   DPRINT("done (%d bytes written)\n", measureJson(jdoc));
 }
 
+
+//
+//  Save /globals.json configuration files to SPIFFS
+//
+
+void spiffs_save_globals() {
+
+  spiffs_save_config("/globals.json", false, false, false, false, true);
+
+}
+
+//
+//  Save profile configuration files to SPIFFS
+//
+
+void spiffs_save_profile(byte profile) {
+
+  profile = constrain(profile, 0, PROFILES - 1);
+
+  spiffs_save_config("/" + String(profile) + "/pedals.json",     false, true,  false, false, false);
+  spiffs_save_config("/" + String(profile) + "/interfaces.json", false, false, true,  false, false);
+  spiffs_save_config("/" + String(profile) + "/actions.json",    true,  false, false, false, false);
+  spiffs_save_config("/" + String(profile) + "/sequences.json",  false, false, false, true,  false);
+
+}
+
+
 //
 //  Load configuration from SPIFFS file
 //
 
-void spiffs_load_config(String filename, bool loadActions = true, bool loadPedals = true, bool loadInterfaces = true, bool loadSequences = true, bool loadOptions  = true) {
+void spiffs_load_config(const String& filename, bool loadActions = true, bool loadPedals = true, bool loadInterfaces = true, bool loadSequences = true, bool loadOptions  = true) {
 
+  uint32_t allocated = ESP.getMaxAllocHeap();
   DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
-  DPRINT("Memory allocated for JSON document: %d bytes\n", ESP.getMaxAllocHeap());
+  DPRINT("Memory allocated for JSON document: %d bytes\n", allocated);
 
   DPRINT("Reading %s from SPIFFS ... ", filename.c_str());
   File file = SPIFFS.open(filename, FILE_READ);
@@ -402,6 +501,10 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
 
   jdoc.shrinkToFit();
   DPRINT("Memory used by JSON document: %d bytes\n", jdoc.memoryUsage());
+#ifdef DEBUG_ESP_PORT
+  serializeJson(jdoc, SERIALDEBUG);
+#endif
+  DPRINT("\n");
 
   // Get a reference to the root object
   JsonObject jro = jdoc.as<JsonObject>();
@@ -413,6 +516,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
         for (JsonObject jo : ja) {
           host                = String((const char *)(jo["Hostname"]       | host.c_str()));
           bootMode            = jo["BootMode"]                             | bootMode;
+          currentProfile      = jo["Profile"]                              | currentProfile;
           wifiSSID            = String((const char *)(jo["SSID"]           | wifiSSID.c_str()));
           wifiPassword        = String((const char *)(jo["WiFiPassword"]   | wifiPassword.c_str()));
           ssidSoftAP          = String((const char *)(jo["SSIDsoftAP"]     | ssidSoftAP.c_str()));
@@ -425,11 +529,23 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           longPressTime       = jo["LongPressTime"]                        | longPressTime;
           repeatPressTime     = jo["RepeatPressTime"]                      | repeatPressTime;
           encoderSensitivity  = jo["EncoderSesitivity"]                    | encoderSensitivity;
+          flipScreen          = jo["FlipScreen"]                           | flipScreen;
           tapDanceMode        = jo["TapDanceMode"]                         | tapDanceMode;
           repeatOnBankSwitch  = jo["RepeatOnBankSwitch"]                   | repeatOnBankSwitch;
           tapDanceBank        = jo["TapDanceBank"]                         | tapDanceBank;
+          String order = jo["RGBOrder"];
+          if      (order.equals("RGB")) rgbOrder = RGB;
+          else if (order.equals("RBG")) rgbOrder = RBG;
+          else if (order.equals("GRB")) rgbOrder = GRB;
+          else if (order.equals("GBR")) rgbOrder = GBR;
+          else if (order.equals("BRG")) rgbOrder = BRG;
+          else if (order.equals("BGR")) rgbOrder = BGR;
+          else                          rgbOrder = RBG;
           ledsOnBrightness    = jo["LedsOnBrightness"]                     | ledsOnBrightness;
           ledsOffBrightness   = jo["LedsOffBrightness"]                    | ledsOffBrightness;
+          oscLocalPort        = jo["OSCLocalPort"]                         | oscLocalPort;
+          oscRemoteHost       = jo["OSCRemoteHost"]                        | oscRemoteHost;
+          oscRemotePort       = jo["OSCRemotePort"]                        | oscRemotePort;
         }
       }
     }
@@ -453,7 +569,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           p = constrain(p, 0, PEDALS - 1);
 
           pedals[p].mode = PED_NONE;
-          for (byte m = 1; m <= PED_ULTRASONIC; m++)
+          for (byte m = 1; m <= PED_ANALOG_LATCH; m++)
             if (pedalModeName[m] == jo["Mode"]) {
               pedals[p].mode = m;
               break;
@@ -554,6 +670,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
             else if (msg.equals("Tap"))               actions[b]->midiMessage = PED_ACTION_TAP;
             else if (msg.equals("BPM+"))              actions[b]->midiMessage = PED_ACTION_BPM_PLUS;
             else if (msg.equals("BPM-"))              actions[b]->midiMessage = PED_ACTION_BPM_MINUS;
+            else if (msg.equals("OSC Message"))       actions[b]->midiMessage = PED_OSC_MESSAGE;
             else if (msg.equals("Profile+"))          actions[b]->midiMessage = PED_ACTION_PROFILE_PLUS;
             else if (msg.equals("Profile-"))          actions[b]->midiMessage = PED_ACTION_PROFILE_MINUS;
             else if (msg.equals("Set Led Color"))     actions[b]->midiMessage = PED_ACTION_LED_COLOR;
@@ -564,6 +681,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
             actions[b]->midiCode       = jo["Code"];
             actions[b]->midiValue1     = jo["Value1"];
             actions[b]->midiValue2     = jo["Value2"];
+            strlcpy(actions[b]->oscAddress, jo["OSCAddress"] | "", sizeof(actions[b]->oscAddress));
             actions[b]->next           = nullptr;
           }
           else while (act != nullptr) {
@@ -617,6 +735,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
                   else if (msg.equals("Tap"))               act->midiMessage = PED_ACTION_TAP;
                   else if (msg.equals("BPM+"))              act->midiMessage = PED_ACTION_BPM_PLUS;
                   else if (msg.equals("BPM-"))              act->midiMessage = PED_ACTION_BPM_MINUS;
+                  else if (msg.equals("OSC Message"))       act->midiMessage = PED_OSC_MESSAGE;
                   else if (msg.equals("Profile+"))          act->midiMessage = PED_ACTION_PROFILE_PLUS;
                   else if (msg.equals("Profile-"))          act->midiMessage = PED_ACTION_PROFILE_MINUS;
                   else if (msg.equals("Set Led Color"))     act->midiMessage = PED_ACTION_LED_COLOR;
@@ -627,6 +746,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
                   act->midiCode       = jo["Code"];
                   act->midiValue1     = jo["Value1"];
                   act->midiValue2     = jo["Value2"];
+                  strlcpy(act->oscAddress, jo["OSCAddress"] | "", sizeof(act->oscAddress));
                   act->next           = nullptr;
                 }
                 act = act->next;
@@ -695,6 +815,7 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
           switch (sequences[s][t].midiMessage) {
             case PED_ACTION_LED_COLOR:
               sequences[s][t].led         = jo["Led"];
+              sequences[s][t].led         = (sequences[s][t].led == 0 ? LEDS : (sequences[s][t].led == 255 ? 255 : sequences[s][t].led - 1));
               sequences[s][t].led         = constrain(sequences[s][t].led, 0, LEDS);
               sscanf(jo["Color"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
               sequences[s][t].color       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
@@ -712,6 +833,32 @@ void spiffs_load_config(String filename, bool loadActions = true, bool loadPedal
       }
     }
   }
+}
+
+
+//
+//  Load /globals.json configuration files from SPIFFS
+//
+
+void spiffs_load_globals() {
+
+  spiffs_load_config("/globals.json", false, false, false, false, true);
+
+}
+
+//
+//  Load profile configuration files from SPIFFS
+//
+
+void spiffs_load_profile(byte profile) {
+
+  profile = constrain(profile, 0, PROFILES - 1);
+
+  spiffs_load_config("/" + String(profile) + "/pedals.json",     false, true,  false, false, false);
+  spiffs_load_config("/" + String(profile) + "/interfaces.json", false, false, true,  false, false);
+  spiffs_load_config("/" + String(profile) + "/actions.json",    true,  false, false, false, false);
+  spiffs_load_config("/" + String(profile) + "/sequences.json",  false, false, false, true,  false);
+
 }
 
 
@@ -749,7 +896,7 @@ void load_factory_default()
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {
     pedals[p] = {PED_DISABLE,    // autosensing
-                 (p < PEDALS/2) ? PED_MOMENTARY1 : PED_JOG_WHEEL, // mode
+                 (p < 3 || p > 5) ? PED_MOMENTARY1 : PED_JOG_WHEEL, // mode
                  PED_PRESS_1,    // press mode
                  PED_DISABLE,    // invert polarity
                  0,              // map function
@@ -799,7 +946,7 @@ void load_factory_default()
   act->pedal        = PEDALS - 2;
   act->button       = 0;
   act->led          = LEDS;
-  act->color0       = CRGB::Black;;
+  act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_PRESS;
   act->midiMessage  = PED_ACTION_BANK_PLUS;
@@ -808,6 +955,7 @@ void load_factory_default()
   act->midiValue1   = 1;
   act->midiValue2   = BANKS - 1;
   act->slot         = SLOTS;
+  act->oscAddress[0] = 0;
   act->next         = (action*)malloc(sizeof(action));
   act = act->next;
   act->tag0[0]      = 0;
@@ -815,7 +963,7 @@ void load_factory_default()
   act->pedal        = PEDALS - 1;
   act->button       = 0;
   act->led          = LEDS;
-  act->color0       = CRGB::Black;;
+  act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_CLICK;
   act->midiMessage  = PED_ACTION_PROFILE_PLUS;
@@ -823,6 +971,7 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 1;
   act->midiValue2   = PROFILES;
+  act->oscAddress[0] = 0;
   act->slot         = SLOTS;
   act->next         = (action*)malloc(sizeof(action));
   act = act->next;
@@ -831,7 +980,7 @@ void load_factory_default()
   act->pedal        = PEDALS - 1;
   act->button       = 0;
   act->led          = LEDS;
-  act->color0       = CRGB::Black;;
+  act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_DOUBLE_CLICK;
   act->midiMessage  = PED_ACTION_POWER_ON_OFF;
@@ -839,6 +988,7 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 0;
   act->midiValue2   = 127;
+  act->oscAddress[0] = 0;
   act->slot         = SLOTS;
   act->next         = (action*)malloc(sizeof(action));
   act = act->next;
@@ -847,7 +997,7 @@ void load_factory_default()
   act->pedal        = PEDALS - 1;
   act->button       = 0;
   act->led          = LEDS;
-  act->color0       = CRGB::Black;;
+  act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_LONG_PRESS;
   act->midiMessage  = PED_ACTION_DEVICE_INFO;
@@ -855,6 +1005,7 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 0;
   act->midiValue2   = 127;
+  act->oscAddress[0] = 0;
   act->slot         = SLOTS;
   act->next         = nullptr;
   create_banks();
@@ -866,7 +1017,7 @@ void load_factory_default()
   act->pedal        = PEDALS - 1;
   act->button       = 0;
   act->led          = LEDS;
-  act->color0       = CRGB::Black;;
+  act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_CLICK;
   act->midiMessage  = PED_ACTION_PROFILE_PLUS;
@@ -874,6 +1025,7 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 1;
   act->midiValue2   = PROFILES;
+  act->oscAddress[0] = 0;
   act->slot         = SLOTS;
   act->next         = (action*)malloc(sizeof(action));
   act = act->next;
@@ -882,7 +1034,7 @@ void load_factory_default()
   act->pedal        = PEDALS - 1;
   act->button       = 0;
   act->led          = LEDS;
-  act->color0       = CRGB::Black;;
+  act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_DOUBLE_CLICK;
   act->midiMessage  = PED_ACTION_PROFILE_MINUS;
@@ -890,6 +1042,7 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 0;
   act->midiValue2   = 127;
+  act->oscAddress[0] = 0;
   act->slot         = SLOTS;
   act->next         = (action*)malloc(sizeof(action));
   act = act->next;
@@ -898,7 +1051,7 @@ void load_factory_default()
   act->pedal        = PEDALS - 1;
   act->button       = 0;
   act->led          = LEDS;
-  act->color0       = CRGB::Black;;
+  act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_LONG_PRESS;
   act->midiMessage  = PED_ACTION_DEVICE_INFO;
@@ -906,6 +1059,7 @@ void load_factory_default()
   act->midiCode     = 0;
   act->midiValue1   = 0;
   act->midiValue2   = 127;
+  act->oscAddress[0] = 0;
   act->slot         = SLOTS;
   act->next         = nullptr;
   create_banks();
@@ -941,28 +1095,38 @@ void load_factory_default()
   ladderLevels[6] = ADC_RESOLUTION - 1;
 }
 
-void eeprom_update_device_name(String name = getChipId())
+void eeprom_update_device_name(const String& name = getChipId())
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putString("Device Name", name);
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global][Device Name]: %s\n", name.c_str());
+#else
+  host = name;
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_boot_mode(byte mode = bootMode)
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putUChar("Boot Mode", mode);
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global][Boot Mode]: %d\n", mode);
+#else
+  spiffs_save_globals();
+#endif
 }
 
-void eeprom_update_sta_wifi_credentials(String ssid = wifiSSID, String pass = wifiPassword)
+void eeprom_update_sta_wifi_credentials(const String& ssid = wifiSSID, const String& pass = wifiPassword)
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putString("STA SSID", ssid);
@@ -971,10 +1135,16 @@ void eeprom_update_sta_wifi_credentials(String ssid = wifiSSID, String pass = wi
   DPRINT("done\n");
   DPRINT("[NVS][Global][STA SSID]:     %s\n", ssid.c_str());
   DPRINT("[NVS][Global][STA Password]: %s\n", pass.c_str());
+#else
+  wifiSSID     = ssid;
+  wifiPassword = pass;
+  spiffs_save_globals();
+#endif
 }
 
-void eeprom_update_ap_wifi_credentials(String ssid = String("Pedalino-") + getChipId(), String pass = getChipId())
+void eeprom_update_ap_wifi_credentials(const String& ssid = String("Pedalino-") + getChipId(), const String& pass = getChipId())
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putString("AP SSID", ssid);
@@ -983,10 +1153,16 @@ void eeprom_update_ap_wifi_credentials(String ssid = String("Pedalino-") + getCh
   DPRINT("done\n");
   DPRINT("[NVS][Global][AP SSID]:     %s\n", ssid.c_str());
   DPRINT("[NVS][Global][AP Password]: %s\n", pass.c_str());
+#else
+  ssidSoftAP     = ssid;
+  passwordSoftAP = pass;
+  spiffs_save_globals();
+#endif
 }
 
-void eeprom_update_login_credentials(String username = "admin", String password = getChipId())
+void eeprom_update_login_credentials(const String& username = "admin", const String& password = getChipId())
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putString("HTTP Username", username);
@@ -995,36 +1171,71 @@ void eeprom_update_login_credentials(String username = "admin", String password 
   DPRINT("done\n");
   DPRINT("[NVS][Global][HTTP Username]: %s\n", username.c_str());
   DPRINT("[NVS][Global][HTTP Password]: %s\n", password.c_str());
+#else
+  httpUsername = username;
+  httpPassword = password;
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_current_profile(byte profile = 0)
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putUChar("Current Profile", profile);
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global][Current Profile]: %d\n", profile);
+#else
+  currentProfile = profile;
+  spiffs_save_globals();
+#endif
+}
+
+void eeprom_update_flip_screen(bool enable = false)
+{
+#ifdef NVS
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putBool("Flip Screen", enable);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global[Flip Screen]: %d\n", enable);
+#else
+  flipScreen = enable;
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_tap_dance(bool enable = false)
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putBool("Tap Dance Mode", enable);
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global[Tap Dance Mode]: %d\n", enable);
+#else
+  tapDanceMode = enable;
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_repeat_on_bank_switch(bool enable = false)
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putBool("Bank Switch", enable);
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global[Bank Switch]: %d\n", enable);
+#else
+  repeatOnBankSwitch = enable;
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_press_time(long p1 = PED_PRESS_TIME,
@@ -1032,6 +1243,7 @@ void eeprom_update_press_time(long p1 = PED_PRESS_TIME,
                               long p3 = PED_LONG_PRESS_TIME,
                               long p4 = PED_REPEAT_PRESS_TIME)
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putLong("Single Time", p1);
@@ -1044,20 +1256,33 @@ void eeprom_update_press_time(long p1 = PED_PRESS_TIME,
   DPRINT("[NVS][Global[Double Time]: %ld\n", p2);
   DPRINT("[NVS][Global[Long   Time]: %ld\n", p3);
   DPRINT("[NVS][Global[Repeat Time]: %ld\n", p4);
+#else
+  pressTime       = p1;
+  doublePressTime = p2;
+  longPressTime   = p3;
+  repeatPressTime = p4;
+  spiffs_save_globals();
+#endif
 }
 
-void eeprom_update_theme(String theme = "bootstrap")
+void eeprom_update_theme(const String& t = "bootstrap")
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
-  preferences.putString("Bootstrap Theme", theme);
+  preferences.putString("Bootstrap Theme", t);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("[NVS][Global][Bootstrap Theme]: %s\n", theme.c_str());
+  DPRINT("[NVS][Global][Bootstrap Theme]: %s\n", t.c_str());
+#else
+  theme = t;
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_ladder()
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putBytes("Ladder", ladderLevels, sizeof(ladderLevels));
@@ -1067,32 +1292,68 @@ void eeprom_update_ladder()
   for (byte i = 0; i < LADDER_STEPS + 1; i++) {
     DPRINT("Level %d: %d\n", i + 1, ladderLevels[i]);
   }
+#else
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_encoder_sensitivity(byte sensitivity = 5)
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putUChar("Encoder Sensit", sensitivity);
   preferences.end();
   DPRINT("done\n");
   DPRINT("[NVS][Global[Encoder Sensit]: %d\n", sensitivity);
+#else
+  encoderSensitivity = sensitivity;
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_leds_brightness(byte on = 5, byte off = 1)
 {
+#ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
   preferences.putUChar("LedsOnBright", on);
   preferences.putUChar("LedsOffBright", off);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("[NVS][Global[LedsOnBright]: %d\n", on);
+  DPRINT("[NVS][Global[LedsOnBright]:  %d\n", on);
   DPRINT("[NVS][Global[LedsOffBright]: %d\n", off);
+#else
+  ledsOnBrightness  = on,
+  ledsOffBrightness = off;
+  spiffs_save_globals();
+#endif
+}
+
+void eeprom_update_osc_parameters(unsigned int localport = 8000, String remotehost = "255.255.255.255", unsigned int remoteport = 9000)
+{
+#ifdef NVS
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putUInt("OSCLocalPort", localport);
+  preferences.putString("OSCRemoteHost", remotehost);
+  preferences.putUInt("OSCRemotePort", remoteport);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global[OSCLocalPort]:  %d\n", localport);
+  DPRINT("[NVS][Global[OSCRemoteHost]: %s\n", remotehost.c_str());
+  DPRINT("[NVS][Global[OSCRemotePort]: %d\n", remoteport);
+#else
+  oscLocalPort = localport;
+  oscRemoteHost = remotehost;
+  oscRemotePort = remoteport;
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_profile(byte profile = currentProfile)
 {
+#ifdef NVS
   DPRINT("Updating NVS Profile ");
 
   switch (profile) {
@@ -1151,10 +1412,14 @@ void eeprom_update_profile(byte profile = currentProfile)
   }
   preferences.end();
   DPRINT(" ... done\n");
+#else
+  spiffs_save_profile(profile);
+#endif
 }
 
 void eeprom_update_current_bank(byte profile = currentProfile, byte bank = currentBank)
 {
+#ifdef NVS
   DPRINT("Updating NVS Profile ");
 
   switch (profile) {
@@ -1176,10 +1441,16 @@ void eeprom_update_current_bank(byte profile = currentProfile, byte bank = curre
   preferences.end();
   DPRINT("[NVS][Current Bank]:  %d\n", bank);
   DPRINT("done\n");
+#else
+  currentProfile = profile;
+  currentBank    = bank;
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_read_global()
 {
+#ifdef NVS
   DPRINT("Reading NVS Global ... ");
   if (preferences.begin("Global", true)) {
     host               = preferences.getString("Device Name");
@@ -1192,6 +1463,7 @@ void eeprom_read_global()
     httpPassword       = preferences.getString("HTTP Password");
     theme              = preferences.getString("Bootstrap Theme");
     currentProfile     = preferences.getUChar("Current Profile");
+    flipScreen         = preferences.getBool("Flip Screen");
     tapDanceMode       = preferences.getBool("Tap Dance Mode");
     repeatOnBankSwitch = preferences.getBool("Bank Switch");
     pressTime          = preferences.getLong("Single Time");
@@ -1201,6 +1473,9 @@ void eeprom_read_global()
     encoderSensitivity = preferences.getUChar("Encoder Sensit");
     ledsOnBrightness   = preferences.getUChar("LedsOnBright");
     ledsOffBrightness  = preferences.getUChar("LedsOffBright");
+    oscLocalPort       = preferences.getUInt("OSCLocalPort");
+    oscRemoteHost      = preferences.getString("OSCRemoteHost");
+    oscRemotePort      = preferences.getUInt("OSCRemotePort");
     preferences.getBytes("Ladder", ladderLevels, sizeof(ladderLevels));
     preferences.end();
     DPRINT("done\n");
@@ -1214,6 +1489,7 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][HTTP Password]:    %s\n", httpPassword.c_str());
     DPRINT("[NVS][Global][Bootstrap Theme]:  %s\n", theme.c_str());
     DPRINT("[NVS][Global][Current Profile]:  %d\n", currentProfile);
+    DPRINT("[NVS][Global][Flip Screen]:      %d\n", flipScreen);
     DPRINT("[NVS][Global][Tap Dance Mode]:   %d\n", tapDanceMode);
     DPRINT("[NVS][Global][Bank Switch]:      %d\n", repeatOnBankSwitch);
     DPRINT("[NVS][Global][Single Time]:      %ld\n", pressTime);
@@ -1223,6 +1499,9 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][Encoder Sensit]:   %d\n", encoderSensitivity);
     DPRINT("[NVS][Global][LedsOnBright]:     %d\n", ledsOnBrightness);
     DPRINT("[NVS][Global][LedsOffBright]:    %d\n", ledsOffBrightness);
+    DPRINT("[NVS][Global[OSCLocalPort]:      %d\n", oscLocalPort);
+    DPRINT("[NVS][Global[OSCRemoteHost]:     %s\n", oscRemoteHost.c_str());
+    DPRINT("[NVS][Global[OSCRemotePort]:     %d\n", oscRemotePort);
     for (byte i = 0; i < LADDER_STEPS; i++) {
       DPRINT("[NVS][Global][Ladder]:           Ladder %d Level %d\n", i + 1, ladderLevels[i]);
     }
@@ -1230,13 +1509,16 @@ void eeprom_read_global()
   else {
     DPRINT("NVS open error ... using default values\n");
   }
+#else
+  spiffs_load_globals();
+#endif
 }
 
 void eeprom_read_profile(byte profile = currentProfile)
 {
+#ifdef NVS
   controller_delete();
   delete_actions();
-
   DPRINT("Reading NVS Profile ");
   switch (profile) {
     case 0:
@@ -1301,10 +1583,17 @@ void eeprom_read_profile(byte profile = currentProfile)
   create_banks();
   preferences.end();
   DPRINT("done\n");
+#else
+  controller_delete();
+  delete_actions();
+  spiffs_load_profile(profile);
+  create_banks();
+#endif
 }
 
 void eeprom_update_globals()
 {
+#ifdef NVS
   eeprom_update_device_name(host);
   eeprom_update_boot_mode(bootMode);
   eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
@@ -1312,12 +1601,17 @@ void eeprom_update_globals()
   eeprom_update_login_credentials(httpUsername, httpPassword);
   eeprom_update_theme(theme);
   eeprom_update_current_profile(currentProfile);
+  eeprom_update_flip_screen(flipScreen);
   eeprom_update_tap_dance(tapDanceMode);
   eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
   eeprom_update_press_time(pressTime, doublePressTime, longPressTime, repeatPressTime);
   eeprom_update_ladder();
   eeprom_update_encoder_sensitivity(encoderSensitivity);
   eeprom_update_leds_brightness(ledsOnBrightness, ledsOffBrightness);
+  eeprom_update_osc_parameters(oscLocalPort, oscRemoteHost, oscRemotePort);
+#else
+  spiffs_save_globals();
+#endif
 }
 
 void eeprom_update_all()
@@ -1329,6 +1623,7 @@ void eeprom_update_all()
 
 void eeprom_initialize()
 {
+#ifdef NVS
   // Remove all preferences under the opened namespace
   preferences.begin("Global", false);
   preferences.clear();
@@ -1350,19 +1645,31 @@ void eeprom_initialize()
   eeprom_update_login_credentials();
   eeprom_update_theme();
   eeprom_update_current_profile();
+  eeprom_update_flip_screen();
   eeprom_update_tap_dance();
   eeprom_update_repeat_on_bank_switch();
   eeprom_update_press_time();
   eeprom_update_ladder();
   eeprom_update_encoder_sensitivity();
   eeprom_update_leds_brightness();
+  eeprom_update_osc_parameters();
   for (byte p = 0; p < PROFILES; p++)
     eeprom_update_profile(p);
+#else
+  load_factory_default();
+  spiffs_remove_globals();
+  for (byte p = 0; p < PROFILES; p++)
+    spiffs_remove_profile(p);
+  spiffs_save_globals();
+  for (byte p = 0; p < PROFILES; p++)
+    spiffs_save_profile(p);
+#endif
 }
 
 void eeprom_init_or_erase()
 {
   load_factory_default();
+#ifdef NVS
   esp_err_t err = nvs_flash_init_partition("nvs");
   switch (err) {
     case ESP_OK:
@@ -1384,4 +1691,5 @@ void eeprom_init_or_erase()
       DPRINT("'nvs' partition not found\n");
       break;
   }
+#endif
 }

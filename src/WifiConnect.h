@@ -60,6 +60,14 @@ String translateEncryptionType(wifi_auth_mode_t encryptionType) {
   return "";
 }
 
+void set_wifi_power_saving_off()
+{
+  // Disable Modem-sleep entirely has much higher power consumption (from 80mA/108mA to 145mA),
+  // but provides minimum latency for receiving Wi-Fi data in real time.
+  // Disabling Modem-sleep entirely is not possible for Wi-Fi and Bluetooth coexist mode.
+  if (!bleEnabled) WiFi.setSleep(false);
+}
+
 void stop_services()
 {
   MDNS.end();
@@ -82,9 +90,11 @@ void start_services()
     MDNS.addService("_http",       "_tcp", 80);
   }
 
+#ifdef ARDUINOOTA
   // OTA update init
   ota_begin(host.c_str());
   DPRINT("OTA update started\n");
+#endif
 
 #ifdef WEBCONFIG
   switch (bootMode) {
@@ -109,24 +119,29 @@ void start_services()
   DPRINT("RTP-MIDI started\n");
 
   // Set incoming OSC messages port
-  //oscUDPin.listen(WiFi.localIP(), oscLocalPort);
   oscUDPin.listen(oscLocalPort);
   oscUDPin.onPacket(oscOnPacket);
 
   DPRINT("OSC server started\n");
 
-  // Calculate the broadcast address of local WiFi to broadcast OSC messages
-  oscRemoteIp = WiFi.localIP();
-  IPAddress localMask = WiFi.subnetMask();
-  for (int i = 0; i < 4; i++)
-    oscRemoteIp[i] |= (localMask[i] ^ B11111111);
+  if (!oscRemoteIp.fromString(oscRemoteHost)) {
+    oscRemoteIp = MDNS.queryHost(oscRemoteHost);
+    if (oscRemoteIp.toString().equals("0.0.0.0")) {
+      oscRemoteIp = IPADDR_BROADCAST;
+      DPRINT("Host %s not found via mDNS. Using broadcast IP address 255.255.255.255.\n", oscRemoteHost.c_str());
+    }
+    else {
+      DPRINT("Resolved host %s to %s via mDNS.\n", oscRemoteHost.c_str(), oscRemoteIp.toString().c_str());
+    }
+  }
 
   // Set outcoming OSC broadcast ip/port
   oscUDPout.connect(oscRemoteIp, oscRemotePort);
 }
 
 
-void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
+void WiFiEvent(WiFiEvent_t event)
+//void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 {
   IPAddress localMask;
 
@@ -278,7 +293,7 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
 
     case SYSTEM_EVENT_STA_WPS_ER_PIN:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_PIN\n");
-      DPRINT("WPS_PIN = " PINSTR, PIN2STR(info.sta_er_pin.pin_code));
+      //DPRINT("WPS_PIN = " PINSTR, PIN2STR(info.sta_er_pin.pin_code));
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_PBC_OVERLAP:
@@ -318,6 +333,10 @@ void WiFiEvent(WiFiEvent_t event, system_event_info_t info)
       free(blufi_ap_list);
       break;
     }
+#else
+    case SYSTEM_EVENT_SCAN_DONE:
+      DPRINT("SYSTEM_EVENT_SCAN_DONE\n");
+      break;
 #endif
 
     default:
@@ -376,13 +395,15 @@ bool improv_config()
       connecting = true;
     }
     if (crono % 200 < 5) display_progress_bar_update(crono / 200, IMPROV_CONNECT_TIMEOUT * 5 - 1);
-    fastleds[(crono / 500) % LEDS] = CRGB::SeaGreen;
+    fastleds[(crono / 500) % LEDS] = swap_rgb_order(CRGB::SeaGreen, rgbOrder);
     fastleds[(crono / 500) % LEDS].nscale8(ledsOnBrightness);
     fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
     FastLED.show();
     if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) { delay(200); break; }
     crono = millis() - startCrono;
   }
+  set_wifi_power_saving_off();
+  leds_off();
   display_progress_bar_update(1, 1);
 
   if (WiFi.isConnected()) {
@@ -438,7 +459,7 @@ bool smart_config()
   display_progress_bar_title2("Use the mobile app for", "SmartConfig");
   unsigned long startCrono = millis();
   unsigned long crono = 0;
-  CRGB          color = CRGB::Cyan;
+  CRGB          color = swap_rgb_order(CRGB::Cyan, rgbOrder);
   color.nscale8(ledsOnBrightness);
   while (!WiFi.smartConfigDone() && crono / 1000 < SMART_CONFIG_TIMEOUT) {
     if (crono %  200 < 5) display_progress_bar_update(crono / 200, SMART_CONFIG_TIMEOUT*5-1);
@@ -448,6 +469,8 @@ bool smart_config()
     if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) { delay(200); break; }
     crono = millis() - startCrono;
   }
+  set_wifi_power_saving_off();
+  leds_off();
   display_progress_bar_update(1, 1);
 
   if (WiFi.smartConfigDone()) {
@@ -478,7 +501,7 @@ bool wps_config()
   WiFi.disconnect();
   WiFi.mode(WIFI_STA);
 
-  WPS.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
+  //WPS.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
   WPS.wps_type = WPS_TYPE_PBC;
   strcpy(WPS.factory_info.manufacturer, "ESPRESSIF");
   strcpy(WPS.factory_info.model_number, "ESP32");
@@ -492,7 +515,7 @@ bool wps_config()
   display_progress_bar_title2("Press WPS button on AP", "WPS Setup");
   unsigned long startCrono = millis();
   unsigned long crono = 0;
-  CRGB          color = CRGB::Magenta;
+  CRGB          color = swap_rgb_order(CRGB::Magenta, rgbOrder);
   color.nscale8(ledsOnBrightness);
   while (wpsStatus == 0 && crono / 1000 < WPS_TIMEOUT) {
     if (crono %  200 < 5) display_progress_bar_update(crono / 200, WPS_TIMEOUT*5-1);
@@ -502,6 +525,7 @@ bool wps_config()
     if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) { delay(200); break; }
     crono = millis() - startCrono;
   }
+  set_wifi_power_saving_off();
   display_progress_bar_update(1, 1);
 
   if (wpsStatus == 1) {
@@ -511,12 +535,13 @@ bool wps_config()
     unsigned long crono = millis() - startCrono;
     while (!WiFi.isConnected() && crono / 1000 < WIFI_CONNECT_TIMEOUT) {
       if (crono % 200 < 5) display_progress_bar_update(crono / 200, WIFI_CONNECT_TIMEOUT * 5 - 1);
-      fastleds[(crono / 500) % LEDS] = CRGB::Blue;
+      fastleds[(crono / 500) % LEDS] = swap_rgb_order(CRGB::Blue, rgbOrder);
       fastleds[(crono / 500) % LEDS].nscale8(ledsOnBrightness);
       fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
       FastLED.show();
       crono = millis() - startCrono;
     }
+    leds_off();
     display_progress_bar_update(1, 1);
 
     if (WiFi.isConnected()) {
@@ -536,8 +561,8 @@ bool wps_config()
   return WiFi.isConnected();
 }
 
-//bool ap_connect(String ssid = "", String password = "")
-bool ap_connect(String ssid, String password)
+//bool ap_connect(const String& ssid = "", const String& password = "")
+bool ap_connect(const String& ssid, const String& password)
 {
   // Return 'true' if connected to the access point within WIFI_CONNECT_TIMEOUT seconds
 
@@ -555,29 +580,29 @@ bool ap_connect(String ssid, String password)
   unsigned long crono = millis() - startCrono;
   while (!WiFi.isConnected() && crono / 1000 < WIFI_CONNECT_TIMEOUT) {
     if (crono % 200 < 5) display_progress_bar_update(crono / 200, WIFI_CONNECT_TIMEOUT * 5 - 1);
-    fastleds[(crono / 500) % LEDS] = CRGB::Blue;
+    fastleds[(crono / 500) % LEDS] = swap_rgb_order(CRGB::Blue, rgbOrder);
     fastleds[(crono / 500) % LEDS].nscale8(ledsOnBrightness);
     fadeToBlackBy(fastleds, LEDS, 1);                           // 8 bit, 1 = slow fade, 255 = fast fade
     FastLED.show();
     if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) { delay(200); break; }
     crono = millis() - startCrono;
   }
+  set_wifi_power_saving_off();
+  leds_off();
   display_progress_bar_update(1, 1);
 
   return WiFi.isConnected();
 }
 
-//bool auto_reconnect(String ssid = "", String password = "")
-bool auto_reconnect(String ssid, String password)
+//bool auto_reconnect(const String& ssid = "", const String& password = "")
+bool auto_reconnect(const String& ssid, const String& password)
 {
   // Return 'true' if connected to the (last used) access point within WIFI_CONNECT_TIMEOUT seconds
 
-  if (ssid.length() == 0) {
-    ssid = wifiSSID;
-    password = wifiPassword;
-  }
-
-  return (ssid.length() == 0) ? false : ap_connect(ssid, password);
+  if (ssid.length() == 0)
+    return (wifiSSID.length() == 0) ? false : ap_connect(wifiSSID, wifiPassword);
+  else
+    return ap_connect(ssid, password);
 }
 
 void wifi_connect()
@@ -588,12 +613,12 @@ void wifi_connect()
   if (!WiFi.isConnected())
     improv_config();          // IMPROV_CONFIG_TIMEOUT seconds to receive WiFi credentials and connect
 
-#ifndef NOSMARTCONFIG
+#ifdef SMARTCONFIG
   if (!WiFi.isConnected())
     smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
 #endif
 
-#ifndef NOWPS
+#ifdef WPS
   if (!WiFi.isConnected())
     wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
 #endif

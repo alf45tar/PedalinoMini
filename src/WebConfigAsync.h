@@ -39,6 +39,8 @@ AsyncWebSocketMessageBuffer *buffer = NULL;
 AsyncWebSocketClient        *wsClient = NULL;
 #endif
 
+#define WEBPAGE_MEMORY_ALLOCATION 8192    // To avoid memory fragmentation keep web page chunk smaller than allocated space
+
 String page         = "";
 String alert        = "";
 String alertError   = "";
@@ -47,32 +49,54 @@ String uibank       = "1";
 String uipedal      = "All";
 String uisequence   = "1";
 
-unsigned int fullPageLength = 0;
+bool fullPageCompleted = false;
 
 int networks = 0;
 
 
 bool trim_page(unsigned int start, unsigned int len, bool lastcall = false) {
 
-  unsigned int l = page.length();
+  static unsigned int skipped = 0;
+  unsigned int fullPageLength;
 
-  fullPageLength += l;
+  const unsigned int saved = page.length();
 
-  if (start > (fullPageLength - l)) page.remove(0, start - (fullPageLength - l));
-
-  if (fullPageLength >= (start + len) || lastcall) {
-    page.remove(len - 1);
-    fullPageLength = 0;
-    return true;
+  if (saved > WEBPAGE_MEMORY_ALLOCATION) {
+    DPRINT("Memory fragmentation warning: webpage memory allocation %d bytes greater then %d bytes reserved.\n%s\n", saved, WEBPAGE_MEMORY_ALLOCATION, page.c_str());
   }
 
-  if ((fullPageLength - 1) < start)  page = "";
+  if (fullPageCompleted) {
+    skipped = 0;
+    fullPageCompleted = false;
+  }
+
+  fullPageLength = skipped + saved;
+
+  // Start is after last addition
+  if (start > (fullPageLength - 1)) {
+    page = "";
+    skipped += saved;
+    return false;
+  }
+
+  // Start is in the last addition
+  if (start > (fullPageLength - saved)) {
+    page.remove(0, start - (fullPageLength - saved));
+    skipped += start - (fullPageLength - saved);
+  }
+
+  // Finish reached
+  if (fullPageLength >= (start + len) || lastcall) {
+    page.remove(len - 1);
+    skipped = 0;
+    return true;
+  }
 
   return false;
 }
 
 
-void get_top_page(int p = 0) {
+bool get_top_page(int p, unsigned int start, unsigned int len) {
 
   while (reloadProfile)
     delay(100);
@@ -102,6 +126,8 @@ void get_top_page(int p = 0) {
 
   page += F("<body>");
 
+  if (trim_page(start, len)) return true;
+
   if (p >= 0) {
   page += F("<div class='container-fluid mt-3 mb-3'>");
 
@@ -118,6 +144,9 @@ void get_top_page(int p = 0) {
   //page += (p == 1 ? F(" active'>") : F("'>"));
   //page += F("<a class='nav-link' href='/live'>Live</a>");
   //page += F("</li>");
+
+  if (trim_page(start, len)) return true;
+
   page += F("<li class='nav-item");
   page += (p == 2 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/actions'>");
@@ -128,6 +157,9 @@ void get_top_page(int p = 0) {
   page += F("</svg>");
   page += F(" Actions</a>");
   page += F("</li>");
+
+  if (trim_page(start, len)) return true;
+
   page += F("<li class='nav-item");
   page += (p == 4 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/pedals'>");
@@ -137,6 +169,9 @@ void get_top_page(int p = 0) {
   page += F("</svg>");
   page += F(" Pedals</a>");
   page += F("</li>");
+
+  if (trim_page(start, len)) return true;
+
   page += F("<li class='nav-item");
   page += (p == 5 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/interfaces'>");
@@ -146,6 +181,9 @@ void get_top_page(int p = 0) {
   page += F("</svg>");
   page += F(" Interfaces</a>");
   page += F("</li>");
+
+  if (trim_page(start, len)) return true;
+
   page += F("<li class='nav-item");
   page += (p == 6 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/sequences'>");
@@ -156,6 +194,9 @@ void get_top_page(int p = 0) {
   page += F("</svg>");
   page += F(" Sequences</a>");
   page += F("</li>");
+
+  if (trim_page(start, len)) return true;
+
   page += F("<li class='nav-item");
   page += (p == 7 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/options'>");
@@ -165,6 +206,9 @@ void get_top_page(int p = 0) {
   page += F("</svg>");
   page += F(" Options</a>");
   page += F("</li>");
+
+  if (trim_page(start, len)) return true;
+
   page += F("<li class='nav-item");
   page += (p == 8 ? F(" active'>") : F("'>"));
   page += F("<a class='nav-link' href='/configurations'>");
@@ -177,6 +221,9 @@ void get_top_page(int p = 0) {
   page += F("</ul>");
   }
   page += F("</div>");
+
+  if (trim_page(start, len)) return true;
+
   if (p != -1 && p != 0 && p != 7)
   {
     page += F("<form class='d-flex'>");
@@ -284,15 +331,17 @@ void get_top_page(int p = 0) {
     page += alert;
     page += F("<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>");
     page += F("</div>");
-    alert = "";
   }
   if (alertError != "") {
     page += F("<div class='alert alert-danger alert-dismissible fade show' role='alert'>");
     page += alertError;
     page += F("<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>");
     page += F("</div>");
-    alertError = "";
   }
+
+  if (trim_page(start, len)) return true;
+
+  return false;
 }
 
 void get_footer_page() {
@@ -309,7 +358,7 @@ void get_footer_page() {
 
 void get_login_page() {
 
-  get_top_page(-1);
+  get_top_page(-1, 0, 65535);
 
   page += F("<div class='col-4'>");
   page += F("</div>");
@@ -350,9 +399,7 @@ void get_login_page() {
 
 void get_root_page(unsigned int start, unsigned int len) {
 
-  get_top_page();
-
-  if (trim_page(start, len)) return;
+  if (get_top_page(0, start, len)) return;
 
   page += F("<h4 class='display-4'>Wireless MIDI foot controller</h4>");
 
@@ -361,22 +408,22 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F("<div class='col'>");
   page += F("<h3>Product</h3>");
   page += F("<dt>Model</dt><dd>");
-  page += String(MODEL);
+  page += MODEL;
   page += F("</dd>");
   page += F("<dt>Profiles</dt><dd>");
-  page += String(PROFILES);
+  page += PROFILES;
   page += F("</dd>");
   page += F("<dt>Banks</dt><dd>");
-  page += String(BANKS);
+  page += BANKS;
   page += F("</dd>");
   page += F("<dt>Pedals</dt><dd>");
-  page += String(PEDALS);
+  page += PEDALS;
   page += F("</dd>");
   page += F("<dt>Sequences</dt><dd>");
-  page += String(SEQUENCES);
+  page += SEQUENCES;
   page += F("</dd>");
   page += F("<dt>Leds</dt><dd>");
-  page += String(LEDS);
+  page += LEDS;
   page += F("</dd>");
   page += F("<dt>Boot Mode</dt><dd>");
   switch (bootMode) {
@@ -404,9 +451,11 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += xstr(PLATFORMIO_ENV);
   page += F("</dd>");
   page += F("<dt>Firmware</dt><dd>");
-  page += String(VERSION);
+  page += VERSION;
   page += F("</dd>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
 
   page += F("<div class='col'>");
   page += F("<h3>Hardware</h3>");
@@ -414,7 +463,7 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += ARDUINO_BOARD;
   page += F("</dd>");
   page += F("<dt>Chip</dt><dd>");
-  page += String("ESP32");
+  page += F("ESP32");
   page += F("</dd>");
   page += F("<dt>Chip Revision</dt><dd>");
   page += ESP.getChipRevision();
@@ -450,9 +499,11 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F("/");
   page += SPIFFS.totalBytes() / 1024;
   page += F(" kB</dd>");
-  page += F("<dt>Free Heap Size</dt><dd>");
+  page += F("<dt>Free Heap Size (Max Allocation)</dt><dd>");
   page += freeMemory / 1024;
-  page += F(" kB</dd>");
+  page += F(" kB (");
+  page += maxAllocation / 1024;
+  page += F(" kB)</dd>");
   page += F("<dt>Battery Voltage</dt><dd>");
   page += String(batteryVoltage / 1000.0, 1);
   page += F(" V ");
@@ -462,6 +513,8 @@ void get_root_page(unsigned int start, unsigned int len) {
   //page += xPortGetCoreID();
   //page += F("</dd>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
 
   page += F("<div class='col'>");
   if (WiFi.getMode() == WIFI_STA || WiFi.getMode() == WIFI_AP_STA) {
@@ -473,10 +526,10 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += WiFi.BSSIDstr();
   page += F("</dd>");
   page += F("<dt>RSSI</dt><dd>");
-  page += String(WiFi.RSSI());
+  page += WiFi.RSSI();
   page += F(" dBm</dd>");
   page += F("<dt>Channel</dt><dd>");
-  page += String(WiFi.channel());
+  page += WiFi.channel();
   page += F("</dd>");
   page += F("<dt>Station MAC</dt><dd>");
   page += WiFi.macAddress();
@@ -495,7 +548,7 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += WiFi.softAPIP().toString();
   page += F("</dd>");
   page += F("<dt>Channel</dt><dd>");
-  page += String(WiFi.channel());
+  page += WiFi.channel();
   page += F("</dd>");
   page += F("<dt>Hostname</dt><dd>");
   page += WiFi.softAPgetHostname();
@@ -509,7 +562,8 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F("<div class='col'>");
   page += F("<h3>Network</h3>");
   page += F("<dt>Hostname</dt><dd>");
-  page += WiFi.getHostname() + String(".local");
+  page += WiFi.getHostname();
+  page += F(".local");
   page += F("</dd>");
   page += F("<dt>IP address</dt><dd>");
   page += WiFi.localIP().toString();
@@ -527,13 +581,16 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += WiFi.dnsIP(1).toString();
   page += F("</dd>");
   page += F("<dt>MIDI Network</dt><dd>");
-  if (appleMidiConnected) page += String("Connected to<br>") + appleMidiSessionName;
-  else page += String("Disconnected");
+  if (appleMidiConnected) {
+    page += F("Connected to<br>");
+    page += appleMidiSessionName;
+  }
+  else page += F("Disconnected");
   page += F("</dd>");
 #ifdef BLE
   page += F("<dt>Bluetooth LE MIDI</dt><dd>");
-  if (bleMidiConnected) page += String("Connected");
-  else page += String("Disconnected");
+  if (bleMidiConnected) page += F("Connected");
+  else page += F("Disconnected");
   page += F("</dd>");
 #endif
   page += F("</div>");
@@ -547,17 +604,14 @@ void get_root_page(unsigned int start, unsigned int len) {
 
 void get_live_page(unsigned int start, unsigned int len) {
 
-  get_top_page(1);
-
-  if (trim_page(start, len)) return;
+  if (get_top_page(1, start, len)) return;
 
   page += F("<div aria-live='polite' aria-atomic='true' style='position: relative;'>"
             "<div id='remotedisplay' class='toast' style='position: absolute; top: 0; right: 0; max-width: 600px;' data-autohide='false'>"
             "<div class='toast-header'>"
-            "<strong class='mr-auto'>Remote Display</strong>"
-            "<button type='button' class='ml-2 mb-1 close' data-dismiss='toast' aria-label='Close'>"
-            "<span aria-hidden='true'>&times;</span>"
-            "</button>"
+            "<strong class='me-auto'>Remote Display</strong>"
+            "<small class='text-muted'>128x64</small>"
+            "<button type='button' class='btn-close' data-bs-dismiss='toast' aria-label='Close'></button>"
             "</div>"
             "<div class='toast-body'>"
             "<canvas id='screen' height='64' width='128'>"
@@ -576,13 +630,24 @@ void get_live_page(unsigned int start, unsigned int len) {
             "<p></p>"
             "<small>Bank</small><br>"
             "<div class='btn-group btn-group-toggle' data-toggle='buttons'>");
-  for (unsigned int i = 1; i <= BANKS; i++) {
-    page += F("<label class='btn btn-outline-primary'>"
-              "<input type='radio' name='options' autocomplete='off' id='bank");
-    page += String(i);
+
+  if (trim_page(start, len)) return;
+
+  for (unsigned int i = 1; i < BANKS; i++) {
+    page += F("<div class='col text-center g-0'>");
+    page += F("<div class='grid-square'>");
+    page += F("<button type='button' class='btn btn-outline-primary btn-sm' id='bank");
+    page += i;
     page += F("'>");
-    page += String(i);
-    page += F("</label>");
+    if (String(banknames[i]).isEmpty())
+      page += i;
+    else
+      page += banknames[i];
+    page += F("</button>");
+    page += F("</div>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</div>"
             "<p></p>"
@@ -608,9 +673,11 @@ void get_live_page(unsigned int start, unsigned int len) {
             "<li><a id='9_8' class='dropdown-item' href='#'>9/8</a></li>"
             "<li><a id='12_8' class='dropdown-item' href='#'>12/8</a></li>"
             "</ul>"
-            "</div>"
+            "</div>");
 
-            "<div class='btn-group'>"
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='btn-group'>"
             "<button type='button' class='btn btn-primary dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>"
             "MTC</button>"
             "<ul class='dropdown-menu'>"
@@ -632,9 +699,11 @@ void get_live_page(unsigned int start, unsigned int len) {
             "<button id='stop' type='button' class='btn btn-outline-primary'>Stop</button>"
             "<button id='continue' type='button' class='btn btn-outline-primary'>Continue</button>"
             "<button id='tap' type='button' class='btn btn-outline-primary'>Tap</button>"
-            "</div>"
+            "</div>");
 
-            "<script>"
+  if (trim_page(start, len)) return;
+
+  page += F("<script>"
             "var isplaying = 0;"
             "var invert = 0;"
             "var zoom = 1;"
@@ -646,8 +715,11 @@ void get_live_page(unsigned int start, unsigned int len) {
             "con.binaryType = 'arraybuffer';"
             "con.onopen = function () {"
             "console.log('WebSocket to Pedalino open');"
-            "$('#live').find('input, button, submit, textarea, select').removeAttr('disabled');"
-            "$('#live').find('a').removeClass('disablehyper').unbind('click');"
+            //"$('#live').find('input, button, submit, textarea, select').removeAttr('disabled');"
+            //"$('#live').find('a').removeClass('disablehyper').unbind('click');"
+            "var preview = document.querySelectorAll('input, button, submit, textarea, select');"
+            "for (var i = 0; i < preview.length;  i++) {preview[i].removeAttribute('disabled');};"
+            //"document.querySelectorAll('a').forEach(function(number, index, array){array[index].classList.remove('disablehyper').removeEventListener('click', click);});"
             "};"
             "con.onerror = function (error) {"
             "console.log('WebSocket to Pedalino error ', error);"
@@ -667,11 +739,18 @@ void get_live_page(unsigned int start, unsigned int len) {
             "};"
             "con.onclose = function () {"
             "console.log('WebSocket to Pedalino closed');"
-            "$('#live').find('input, button, submit, textarea, select').attr('disabled', 'disabled');"
-            "$('#live').find('a').addClass('disablehyper').click(function (e) { e.preventDefault(); });"
+            //"$('#live').find('input, button, submit, textarea, select').attr('disabled', 'disabled');"
+            //"$('#live').find('a').addClass('disablehyper').click(function (e) { e.preventDefault(); });"
+            "var preview = document.querySelectorAll('input, button, submit, textarea, select');"
+            "for (var i = 0; i < preview.length;  i++) {preview[i].setAttribute('disabled', 'disabled');};"
+            "document.querySelectorAll('a').forEach(function(number, index, array){array[index].classList.add('disablehyper').addEventListener(click, click);});"
             "};"
             "setInterval(keepAliveConnection, 1000);"
-            "};"
+            "};");
+
+  if (trim_page(start, len)) return;
+
+  page += F("function click(e) { e.preventDefault(); };"
 
             "function keepAliveConnection() {"
             "if (con.readyState == WebSocket.CLOSED) webSocketConnect();"
@@ -712,9 +791,11 @@ void get_live_page(unsigned int start, unsigned int len) {
             "}"
             "}"
 
-            "eventSourceConnect();"
+            "eventSourceConnect();");
 
-            "function sendBinary(str) {"
+  if (trim_page(start, len)) return;
+
+  page += F("function sendBinary(str) {"
             "if (con.readyState != WebSocket.OPEN || con.bufferedAmount > 0) return;"
             "var buffer = new ArrayBuffer(str.length+1);"
             "var view = new DataView(buffer);"
@@ -725,7 +806,8 @@ void get_live_page(unsigned int start, unsigned int len) {
             "}"
 
             "document.getElementById('showremotedisplay').onclick = function() {"
-            "$('#remotedisplay').toast('show');"
+            "const toast = new bootstrap.Toast(document.getElementById('remotedisplay'));"
+            "toast.show();"
             "setInterval(requestRemoteDisplay, 1000);"
             "return false; };"
 
@@ -741,14 +823,16 @@ void get_live_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  for (unsigned int i = 1; i <= BANKS; i++) {
+  for (unsigned int i = 1; i < BANKS; i++) {
     page += F("document.getElementById('bank");
-    page += String(i);
-    page += F("').onchange = function() {"
+    page += i;
+    page += F("').onclick = function() {"
               "sendBinary('bank");
-    page += String(i);
+    page += i;
     page += F("');"
               "return false; };");
+
+    if (trim_page(start, len)) return;
   }
 
   page += F("document.getElementById('invert').onclick = function() {"
@@ -821,9 +905,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   bool         same_pedal;
   byte         maxbutton;
 
-  get_top_page(2);
-
-  if (trim_page(start, len)) return;
+  if (get_top_page(2, start, len)) return;
 
   page += F("<div class='row mb-3'>");
   page += F("<div class='col-8 col-md-9 col-xl-10'>");
@@ -842,23 +924,29 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<input type='hidden' id='banksorder' name='banksorder' value=''/>");
   page += F("<div class='container g-0'>");
   page += F("<div id='banklist' class='row g-0'>");
+
+  if (trim_page(start, len)) return;
+
   for (i = 0; i < BANKS; i++) {
     page += F("<div class='col text-center g-0'>");
     page += F("<div class='grid-square'>");
     page += F("<button type='button submit' class='btn btn-sm btn-block");
-    page += (uibank == String(i) ? String(" btn-primary") : String(""));
+    page += (uibank == String(i) ? F(" btn-primary") : F(""));
     page += F("' id='");
-    page += String(i);
+    page += i;
     page += F("' name='bank' value='");
-    page += String(i) + F("'>");
+    page += i;
+    page += F("'>");
     if (String(banknames[i]).isEmpty())
-      page += String(i);
+      page += i;
     else
-      page += String(banknames[i]);
+      page += banknames[i];
     page += F("</button>");
     page += F("</div>");
     page += F("</div>");
     //if ((i + 1) % (BANKS / 3) == 0) page += F("<div class='w-100'></div>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</div>");
   page += F("</div>");
@@ -866,6 +954,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
 
   page += F("<script>");
   page += F("var el = document.getElementById('banklist');"
@@ -885,6 +975,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "});");
   page += F("</script>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='col-4 col-md-3 col-xl-2'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
@@ -893,7 +985,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
   page += F("</svg>");
   page += F(" Pedal ");
-  page += uipedal + F("</h5>");
+  page += uipedal;
+  page += F("</h5>");
   page += F("<div class='card-body'>");
   //page += F("<div class='input-group input-group-sm'>");
   //page += F("<div class='btn-group flex-wrap'>");
@@ -902,16 +995,24 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<div class='row row-cols-3'>");
   page += F("<div class='col text-center'>");
   page += F("<button type='button submit' class='btn btn-sm");
-  page += (uipedal.equals("All") ? String(" btn-primary") : String(""));
+  page += (uipedal.equals("All") ? F(" btn-primary") : F(""));
   page += F("' name='pedal' value='All'>All</button>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   for (i = 1; i <= PEDALS; i++) {
     page += F("<div class='col text-center'>");
     page += F("<button type='button submit' class='btn btn-sm");
-    page += (uipedal == String(i) ? String(" btn-primary") : String(""));
+    page += (uipedal == String(i) ? F(" btn-primary") : F(""));
     page += F("' name='pedal' value='");
-    page += String(i) + F("'>") + String(i) + F("</button>");
+    page += i;
+    page += F("'>");
+    page += i;
+    page += F("</button>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</div>");
   page += F("</div>");
@@ -935,12 +1036,16 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F(" Actions</h5>");
   page += F("<div class='card-body'>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='row'>");
   page += F("<div class='col-auto me-auto'>");
   page += F("<div class='form-floating'>");
   page += F("<input type='text' class='form-control' id='bankNameInput' name='bankname' maxlength='");
-  page += String(MAXBANKNAME) + F("' value='");
-  page += String(banknames[b]) + F("'>");
+  page += MAXBANKNAME;
+  page += F("' value='");
+  page += banknames[b];
+  page += F("'>");
   page += F("<label for='bankNameInput'>Bank Name</label>");
   page += F("</div>");
   page += F("</div>");
@@ -952,11 +1057,17 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</svg>");
   page += F(" Duplicate Bank To</button>");
   page += F("<div class='dropdown-menu' aria-labelledby='btnGroupCopyBank'>");
+
+  if (trim_page(start, len)) return;
+
   for (i = 0; i < BANKS; i++) {
     page += F("<button type='submit' class='dropdown-item' name='action' value='copy");
-    page += String(i) + F("'>");
-    (banknames[i][0] == 0) ? page += String(i) : page += String(banknames[i]);
+    page += i;
+    page += F("'>");
+    (banknames[i][0] == 0) ? page += i : page += banknames[i];
     page += F("</button>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</div>");
   page += F("</div>");
@@ -971,8 +1082,12 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<div class='dropdown-menu' aria-labelledby='btnGroupNewAction'>");
   for (i = 1; i <= PEDALS; i++) {
     page += F("<button type='submit' class='dropdown-item' name='action' value='new");
-    page += String(i) + F("'>Pedal ");
-    page += String(i) + F("</button>");
+    page += i;
+    page += F("'>Pedal ");
+    page += i;
+    page += F("</button>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</div>");
   page += F("</div>");
@@ -1000,17 +1115,20 @@ void get_actions_page(unsigned int start, unsigned int len) {
       page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
       page += F("</svg>");
       page += F(" Pedal ");
-      page += String(act->pedal + 1) + F("</h5>");
+      page += act->pedal + 1;
+      page += F("</h5>");
       page += F("<div class='container'>");
       page += F("<div class='row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-xl-3 g-2 g-md-3 g-xl-4'>");
     }
     page += F("<div class='col'>");
     page += F("<div class='d-grid gap-1'>");
 
+    if (trim_page(start, len)) return;
+
     page += "<input type='hidden' id='pedalMode";
-    page += String(i);
+    page += i;
     page += F("' name='pedalMode");
-    page += String(i);
+    page += i;
     page +=F("' value='");
     switch (pedals[act->pedal].mode) {
       case PED_MOMENTARY1:
@@ -1039,18 +1157,30 @@ void get_actions_page(unsigned int start, unsigned int len) {
       case PED_ULTRASONIC:
         page +=F("ultrasonic");
         break;
+
+      case PED_ANALOG_MOMENTARY:
+        page +=F("analogmomentary");
+        break;
+
+      case PED_ANALOG_LATCH:
+        page +=F("analoglatch");
+        break;
     }
     page +=F("'>");
+
+    if (trim_page(start, len)) return;
 
     page += F("<div class='row g-1'>");
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='onSelect");
-    page += String(i);
+    page += i;
     page += F("' name='event");
-    page += String(i) + F("'>");
+    page += i;
+    page += F("'>");
     page += F("<option value='");
-    page += String(PED_EVENT_NONE) + F("'");
+    page += PED_EVENT_NONE;
+    page += F("'");
     if (act->event == PED_EVENT_NONE) page += F(" selected");
     page += F(">");
     page += F("</option>");
@@ -1061,38 +1191,56 @@ void get_actions_page(unsigned int start, unsigned int len) {
       case PED_LATCH1:
       case PED_LATCH2:
       case PED_LADDER:
+      case PED_ANALOG_MOMENTARY:
+      case PED_ANALOG_LATCH:
+        if (pedals[act->pedal].mode == PED_ANALOG_MOMENTARY ||
+            pedals[act->pedal].mode == PED_ANALOG_LATCH) {
+          page += F("<option value='");
+          page += PED_EVENT_MOVE;
+          page += F("'");
+          if (act->event == PED_EVENT_MOVE) page += F(" selected");
+          page += F(">");
+          page += F("Move</option>");
+        }
         page += F("<option value='");
-        page += String(PED_EVENT_PRESS) + F("'");
+        page += PED_EVENT_PRESS;
+        page += F("'");
         if (act->event == PED_EVENT_PRESS) page += F(" selected");
         page += F(">");
         page += F("Press</option>");
         page += F("<option value='");
-        page += String(PED_EVENT_RELEASE) + F("'");
+        page += PED_EVENT_RELEASE;
+        page += F("'");
         if (act->event == PED_EVENT_RELEASE) page += F(" selected");
         page += F(">");
         page += F("Release</option>");
         page += F("<option value='");
-        page += String(PED_EVENT_CLICK) + F("'");
+        page += PED_EVENT_CLICK;
+        page += F("'");
         if (act->event == PED_EVENT_CLICK) page += F(" selected");
         page += F(">");
         page += F("Click</option>");
         page += F("<option value='");
-        page += String(PED_EVENT_DOUBLE_CLICK) + F("'");
+        page += PED_EVENT_DOUBLE_CLICK;
+        page += F("'");
         if (act->event == PED_EVENT_DOUBLE_CLICK) page += F(" selected");
         page += F(">");
         page += F("Double Click</option>");
         page += F("<option value='");
-        page += String(PED_EVENT_LONG_PRESS) + F("'");
+        page += PED_EVENT_LONG_PRESS;
+        page += F("'");
         if (act->event == PED_EVENT_LONG_PRESS) page += F(" selected");
         page += F(">");
         page += F("Long Press</option>");
         page += F("<option value='");
-        page += String(PED_EVENT_REPEAT) + F("'");
+        page += PED_EVENT_REPEAT;
+        page += F("'");
         if (act->event == PED_EVENT_REPEAT) page += F(" selected");
         page += F(">");
         page += F("Repeat Pressed</option>");
         page += F("<option value='");
-        page += String(PED_EVENT_LONG_RELEASED) + F("'");
+        page += PED_EVENT_LONG_RELEASED;
+        page += F("'");
         if (act->event == PED_EVENT_LONG_RELEASED) page += F(" selected");
         page += F(">");
         page += F("Long Released</option>");
@@ -1101,7 +1249,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
       case PED_ANALOG:
       case PED_ULTRASONIC:
         page += F("<option value='");
-        page += String(PED_EVENT_MOVE) + F("'");
+        page += PED_EVENT_MOVE;
+        page += F("'");
         if (act->event == PED_EVENT_MOVE) page += F(" selected");
         page += F(">");
         page += F("Move</option>");
@@ -1109,7 +1258,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
       case PED_JOG_WHEEL:
         page += F("<option value='");
-        page += String(PED_EVENT_JOG) + F("'");
+        page += PED_EVENT_JOG;
+        page += F("'");
         if (act->event == PED_EVENT_JOG) page += F(" selected");
         page += F(">");
         page += F("Jog</option>");
@@ -1117,15 +1267,18 @@ void get_actions_page(unsigned int start, unsigned int len) {
      }
     page += F("</select>");
     page += F("<label for='onSelect");
-    page += String(i);
+    page += i;
     page += F("'>On</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='buttonSelect' name='button");
-    page += String(i) + F("'");
+    page += i;
+    page += F("'");
     switch (pedals[act->pedal].mode) {
       case PED_MOMENTARY2:
       case PED_LATCH2:
@@ -1148,10 +1301,14 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F(">");
     for (unsigned int b = 1; b <= maxbutton; b++) {
       page += F("<option value='");
-      page += String(b) + F("'");
+      page += b;
+      page += F("'");
       if (act->button == b - 1) page += F(" selected");
       page += F(">");
-      page += String(b) + F("</option>");
+      page += b;
+      page += F("</option>");
+
+      if (trim_page(start, len)) return;
     }
     page += F("</select>");
     page += F("<label for='buttonSelect'>Button</label>");
@@ -1160,7 +1317,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
     page += F("<div class='w-25'>");
     page += F("<button type='submit' name='action' value='delete");
-    page += String(i) + F("' class='btn btn-sm'>");
+    page += i;
+    page += F("' class='btn btn-sm'>");
     page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-trash' viewBox='0 0 16 16'>");
     page += F("<path d='M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z'/>");
     page += F("<path fill-rule='evenodd' d='M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z'/>");
@@ -1169,178 +1327,236 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='row g-1'>");
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='sendSelect");
-    page += String(i);
+    page += i;
     page += F("' onchange='init_action(");
-    page += String(i);
+    page += i;
     page += F(")' name='message");
-    page += String(i);
+    page += i;
     page += F("'>");
     page += F("<option value='");
-    page += String(PED_EMPTY) + F("'");
+    page += PED_EMPTY;
+    page += F("'");
     if (act->midiMessage == PED_EMPTY) page += F(" selected");
     page += F("></option>");
     page += F("<option value='");
-    page += String(PED_PROGRAM_CHANGE) + F("'");
+    page += PED_PROGRAM_CHANGE;
+    page += F("'");
     if (act->midiMessage == PED_PROGRAM_CHANGE) page += F(" selected");
     page += F(">Program Change</option>");
     page += F("<option value='");
-    page += String(PED_CONTROL_CHANGE) + F("'");
+    page += PED_CONTROL_CHANGE;
+    page += F("'");
     if (act->midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
     page += F(">Control Change</option>");
     page += F("<option value='");
-    page += String(PED_NOTE_ON) + F("'");
+    page += PED_NOTE_ON;
+    page += F("'");
     if (act->midiMessage == PED_NOTE_ON) page += F(" selected");
     page += F(">Note On</option>");
     page += F("<option value='");
-    page += String(PED_NOTE_OFF) + F("'");
+    page += PED_NOTE_OFF;
+    page += F("'");
     if (act->midiMessage == PED_NOTE_OFF) page += F(" selected");
     page += F(">Note Off</option>");
+
+    if (trim_page(start, len)) return;
+
     page += F("<option value='");
-    page += String(PED_BANK_SELECT_INC) + F("'");
+    page += PED_BANK_SELECT_INC;
+    page += F("'");
     if (act->midiMessage == PED_BANK_SELECT_INC) page += F(" selected");
     page += F(">Bank Select+</option>");
     page += F("<option value='");
-    page += String(PED_BANK_SELECT_DEC) + F("'");
+    page += PED_BANK_SELECT_DEC;
+    page += F("'");
     if (act->midiMessage == PED_BANK_SELECT_DEC) page += F(" selected");
     page += F(">Bank Select-</option>");
     page += F("<option value='");
-    page += String(PED_PROGRAM_CHANGE_INC) + F("'");
+    page += PED_PROGRAM_CHANGE_INC;
+    page += F("'");
     if (act->midiMessage == PED_PROGRAM_CHANGE_INC) page += F(" selected");
     page += F(">Program Change+</option>");
     page += F("<option value='");
-    page += String(PED_PROGRAM_CHANGE_DEC) + F("'");
+    page += PED_PROGRAM_CHANGE_DEC;
+    page += F("'");
     if (act->midiMessage == PED_PROGRAM_CHANGE_DEC) page += F(" selected");
     page += F(">Program Change-</option>");
     page += F("<option value='");
-    page += String(PED_PITCH_BEND) + F("'");
+    page += PED_PITCH_BEND;
+    page += F("'");
     if (act->midiMessage == PED_PITCH_BEND) page += F(" selected");
     page += F(">Pitch Bend</option>");
     page += F("<option value='");
-    page += String(PED_CHANNEL_PRESSURE) + F("'");
+    page += PED_CHANNEL_PRESSURE;
+    page += F("'");
     if (act->midiMessage == PED_CHANNEL_PRESSURE) page += F(" selected");
     page += F(">Channel Pressure</option>");
     page += F("<option value='");
-    page += String(PED_MIDI_START) + F("'");
+    page += PED_MIDI_START;
+    page += F("'");
+
+    if (trim_page(start, len)) return;
+
     if (act->midiMessage == PED_MIDI_START) page += F(" selected");
     page += F(">Start</option>");
     page += F("<option value='");
-    page += String(PED_MIDI_STOP) + F("'");
+    page += PED_MIDI_STOP;
+    page += F("'");
     if (act->midiMessage == PED_MIDI_STOP) page += F(" selected");
     page += F(">Stop</option>");
     page += F("<option value='");
-    page += String(PED_MIDI_CONTINUE) + F("'");
+    page += PED_MIDI_CONTINUE;
+    page += F("'");
     if (act->midiMessage == PED_MIDI_CONTINUE) page += F(" selected");
     page += F(">Continue</option>");
     page += F("<option value='");
-    page += String(PED_SEQUENCE) + F("'");
+    page += PED_SEQUENCE;
+    page += F("'");
     if (act->midiMessage == PED_SEQUENCE) page += F(" selected");
     page += F(">Sequence</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_BANK_PLUS) + F("'");
+    page += PED_ACTION_BANK_PLUS;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_BANK_PLUS) page += F(" selected");
     page += F(">Bank+</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_BANK_MINUS) + F("'");
+    page += PED_ACTION_BANK_MINUS;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_BANK_MINUS) page += F(" selected");
     page += F(">Bank-</option>");
+
+    if (trim_page(start, len)) return;
+
     page += F("<option value='");
-    page += String(PED_ACTION_START) + F("'");
+    page += PED_ACTION_START;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_START) page += F(" selected");
     page += F(">MTC Start</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_STOP) + F("'");
+    page += PED_ACTION_STOP;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_STOP) page += F(" selected");
     page += F(">MTC Stop</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_CONTINUE) + F("'");
+    page += PED_ACTION_CONTINUE;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_CONTINUE) page += F(" selected");
     page += F(">MTC Continue</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_TAP) + F("'");
+    page += PED_ACTION_TAP;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_TAP) page += F(" selected");
     page += F(">Tap</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_BPM_PLUS) + F("'");
+    page += PED_ACTION_BPM_PLUS;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_BPM_PLUS) page += F(" selected");
     page += F(">BPM+</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_BPM_MINUS) + F("'");
+    page += PED_ACTION_BPM_MINUS;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_BPM_MINUS) page += F(" selected");
     page += F(">BPM-</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_PROFILE_PLUS) + F("'");
+    page += PED_OSC_MESSAGE;
+    page += F("'");
+    if (act->midiMessage == PED_OSC_MESSAGE) page += F(" selected");
+    page += F(">OSC Message</option>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<option value='");
+    page += PED_ACTION_PROFILE_PLUS;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_PROFILE_PLUS) page += F(" selected");
     page += F(">Profile+</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_PROFILE_MINUS) + F("'");
+    page += PED_ACTION_PROFILE_MINUS;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_PROFILE_MINUS) page += F(" selected");
     page += F(">Profile-</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_LED_COLOR) + F("'");
+    page += PED_ACTION_LED_COLOR;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_LED_COLOR) page += F(" selected");
     page += F(">Set Led Color</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_REPEAT) + F("'");
+    page += PED_ACTION_REPEAT;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_REPEAT) page += F(" selected");
     page += F(">Repeat</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_REPEAT_OVERWRITE) + F("'");
+    page += PED_ACTION_REPEAT_OVERWRITE;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_REPEAT_OVERWRITE) page += F(" selected");
     page += F(">Repeat Overwrite</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_DEVICE_INFO) + F("'");
+    page += PED_ACTION_DEVICE_INFO;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_DEVICE_INFO) page += F(" selected");
     page += F(">Device Info</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_POWER_ON_OFF) + F("'");
+    page += PED_ACTION_POWER_ON_OFF;
+    page += F("'");
     if (act->midiMessage == PED_ACTION_POWER_ON_OFF) page += F(" selected");
     page += F(">Power On/Off</option>");
     page += F("</select>");
     page += F("<label for='sendSelect");
-    page += String(i);
+    page += i;
     page += F("'>Send</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='channelSelect");
-    page += String(i);
+    page += i;
     page += F("' name='channel");
-    page += String(i) + F("'>");
+    page += i;
+    page += F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
       page += F("<option value='");
-      page += String(c) + F("'");
+      page += c;
+      page += F("'");
       if (act->midiChannel == c) page += F(" selected");
       page += F(">");
-      page += String(c) + F("</option>");
+      page += c;
+      page += F("</option>");
+
+      if (trim_page(start, len)) return;
     }
     page += F("</select>");
     page += F("<label for='channelSelect");
-    page += String(i);
+    page += i;
     page += F("' id='channelLabel");
-    page += String(i);
+    page += i;
     page += F("'>Channel</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='number' class='form-control' id='codeInput");
-    page += String(i);
+    page += i;
     page += F("' name='code");
-    page += String(i);
+    page += i;
     page += F("' min='0' max='127' value='");
-    page += String(act->midiCode);
+    page += act->midiCode;
     page += F("'>");
     page += F("<label for='codeInput");
-    page += String(i);
+    page += i;
     page += F("' id='codeLabel");
-    page += String(i);
+    page += i;
     page += F("'>Value</label>");
     page += F("</div>");
     page += F("</div>");
@@ -1350,16 +1566,16 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='number' class='form-control' id='fromInput");
-    page += String(i);
+    page += i;
     page += F("' name='from");
-    page += String(i);
+    page += i;
     page += F("' min='0' max='127' value='");
-    page += String(act->midiValue1);
+    page += act->midiValue1;
     page += F("'>");
     page += F("<label for='fromInput");
-    page += String(i);
+    page += i;
     page += F("' id='fromLabel");
-    page += String(i);
+    page += i;
     page += F("'>From Value</label>");
     page += F("</div>");
     page += F("</div>");
@@ -1367,36 +1583,60 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='number' class='form-control' id='toInput");
-    page += String(i);
+    page += i;
     page += F("' name='to");
-    page += String(i);
+    page += i;
     page += F("' min='0' max='127' value='");
-    page += String(act->midiValue2);
+    page += act->midiValue2;
     page += F("'>");
     page += F("<label for='toInput");
-    page += String(i);
+    page += i;
     page += F("' id='toLabel");
-    page += String(i);
+    page += i;
     page += F("'>To Value</label>");
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='row g-1'>");
+    page += F("<div class='w-100'>");
+    page += F("<div class='form-floating'>");
+    page += F("<input type='text' class='form-control' id ='oscAddress");
+    page += i;
+    page += F("' name='oscaddress");
+    page += i;
+    page += F("' maxlength='50' value='");
+    page += act->oscAddress;
+    page += F("'>");
+    page += F("<label for='oscAddress");
+    page += i;
+    page += F("' id='oscAddressLabel");
+    page += i;
+    page += F("'>OSC Address</label>");
+    page += F("</div>");
+    page += F("</div>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
     page += F("<div class='row g-1'>");
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='text' class='form-control' id ='tagOffInput");
-    page += String(i);
+    page += i;
     page += F("' name='nameoff");
-    page += String(i);
+    page += i;
     page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->tag0);
+    page += MAXACTIONNAME;
+    page += F("' value='");
+    page += act->tag0;
     page += F("'>");
     page += F("<label for='tagOffInput");
-    page += String(i);
+    page += i;
     page += F("' id='tagOffLabel");
-    page += String(i);
+    page += i;
     page += F("'>Tag When Off</label>");
     page += F("</div>");
     page += F("</div>");
@@ -1404,29 +1644,33 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='w-50'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='text' class='form-control' id='tagOnInput");
-    page += String(i);
+    page += i;
     page += F("' name='nameon");
-    page += String(i);
+    page += i;
     page += F("' maxlength='");
-    page += String(MAXACTIONNAME) + F("' value='");
-    page += String(act->tag1);
+    page += MAXACTIONNAME;
+    page += F("' value='");
+    page += act->tag1;
     page += F("'>");
     page += F("<label for='tagOnInput");
-    page += String(i);
+    page += i;
     page += F("' id='tagOnLabel");
-    page += String(i);
+    page += i;
     page += F("'>Tag When On</label>");
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='row g-1'>");
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='ledSelect");
-    page += String(i);
+    page += i;
     page += F("' name='led");
-    page += String(i) + F("'>");
+    page += i;
+    page += F("'>");
     page += F("<option value='0'");
     if (act->led == LEDS) page += F(" selected");
     page += F("></option>");
@@ -1435,36 +1679,41 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F(">Default</option>");
     for (unsigned int l = 1; l <= LEDS; l++) {
       page += F("<option value='");
-      page += String(l) + F("'");
+      page += l;
+      page += F("'");
       if (act->led == l-1) page += F(" selected");
       page += F(">");
-      page += String(l);
+      page += l;
       page += F("</option>");
+
+      if (trim_page(start, len)) return;
     }
     page += F("</select>");
     page += F("<label for='ledSelect");
-    page += String(i);
+    page += i;
     page += F("' id='ledLabel");
-    page += String(i);
+    page += i;
     page += F("'>Led</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='color' class='form-control' id='color0Input");
-    page += String(i);
+    page += i;
     page += F("' name='color0-");
-    page += String(i);
+    page += i;
     page += F("' value='");
     char color[8];
     sprintf(color, "#%06X", act->color0 & 0xFFFFFF);
-    page += String(color);
+    page += color;
     page += F("'>");
     page += F("<label for='color0Input");
-    page += String(i);
+    page += i;
     page += F("' id='color0Label");
-    page += String(i);
+    page += i;
     page += F("'>Off</label>");
     page += F("</div>");
     page += F("</div>");
@@ -1472,44 +1721,52 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='color' class='form-control' id='color1Input");
-    page += String(i);
+    page += i;
     page += F("' name='color1-");
-    page += String(i);
+    page += i;
     page += F("' value='");
     sprintf(color, "#%06X", act->color1 & 0xFFFFFF);
-    page += String(color);
+    page += color;
     page += F("'>");
     page += F("<label for='color1Input");
-    page += String(i);
+    page += i;
     page += F("' id='color1Label");
-    page += String(i);
+    page += i;
     page += F("'>On</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='slotSelect");
-    page += String(i);
+    page += i;
     page += F("' name='slot");
-    page += String(i) + F("'>");
+    page += i;
+    page += F("'>");
     for (unsigned int s = 0; s < SLOTS; s++) {
       page += F("<option value='");
-      page += String(s+1) + F("'");
+      page += (s+1);
+      page += F("'");
       if (act->slot == s) page += F(" selected");
       page += F(">");
-      page += String(s+1) + F("</option>");
+      page += (s+1);
+      page += F("</option>");
+
+      if (trim_page(start, len)) return;
     }
     page += F("<option value='");
-    page += String(SLOTS+1) + F("'");
+    page += (SLOTS+1);
+    page += F("'");
     if (act->slot == SLOTS) page += F(" selected");
     page += F(">");
     page += F("</option>");
     page += F("</select>");
     page += F("<label for='slotSelect");
-    page += String(i);
+    page += i;
     page += F("' id='slotLabel");
-    page += String(i);
+    page += i;
     page += F("'>Slot</label>");
     page += F("</div>");
     page += F("</div>");
@@ -1527,6 +1784,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
     }
     act = act->next;
     i++;
+
+    if (trim_page(start, len)) return;
   }
   page += F("</div>");
   page += F("</div>");
@@ -1549,14 +1808,19 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</form>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<script>");
   page += F("document.addEventListener('DOMContentLoaded', init_actions());");
   page += F("function init_actions() {");
   for (byte s = 1; s < i; s++) {
     page += F("  init_action(");
-    page += String(s);
+    page += s;
     page += F(");");
+
+    if (trim_page(start, len)) return;
   }
+
   page += F("};");
   page += F("function init_action(i) {"
             "   let analog;"
@@ -1568,8 +1832,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "     default:"
             "       analog = false;"
             "       break;"
-            "   };"
-            "   document.getElementById('channelLabel'  + i).textContent = 'Channel';"
+            "   };");
+
+  if (trim_page(start, len)) return;
+
+  page += F("   document.getElementById('channelLabel'  + i).textContent = 'Channel';"
             "   document.getElementById('codeLabel'     + i).textContent = 'Code';"
             "   document.getElementById('fromLabel'     + i).textContent = 'From Value';"
             "   document.getElementById('toLabel'       + i).textContent = 'To Value';"
@@ -1581,38 +1848,61 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "   document.getElementById('toInput'       + i).disabled = false;"
             "   document.getElementById('tagOffInput'   + i).disabled = false;"
             "   document.getElementById('tagOnInput'    + i).disabled = false;"
+            "   document.getElementById('oscAddress'    + i).disabled = true;"
             "   document.getElementById('ledSelect'     + i).disabled = false;"
             "   document.getElementById('color0Input'   + i).disabled = false;"
             "   document.getElementById('color1Input'   + i).disabled = false;"
-            "   document.getElementById('slotSelect'    + i).disabled = false;"
-            "   switch (document.getElementById('sendSelect' + i).options[document.getElementById('sendSelect' + i).selectedIndex].text) {"
+            "   document.getElementById('slotSelect'    + i).disabled = false;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("   switch (document.getElementById('sendSelect' + i).options[document.getElementById('sendSelect' + i).selectedIndex].text) {"
             "     case 'Program Change':"
             "       document.getElementById('codeLabel'     + i).textContent = 'PC';"
             "       document.getElementById('fromInput'     + i).disabled = true;"
             "       document.getElementById('toInput'       + i).disabled = true;"
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
-            "       break;"
-            "     case 'Note On':"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Note On':"
             "     case 'Note Off':"
             "       document.getElementById('codeLabel'     + i).textContent = 'Note';"
-            "       document.getElementById('fromLabel'     + i).textContent = 'From Velocity';"
-            "       document.getElementById('toLabel'       + i).textContent = 'To Velocity';"
-            "       document.getElementById('fromInput'     + i).disabled = true;"
-            "       document.getElementById('toInput'       + i).disabled = true;"
-            "       break;"
-            "     case 'Control Change':"
+            "       switch (document.getElementById('pedalMode' + i).value) {"
+            "         case 'momentary':"
+            "         case 'latch':"
+            "         case 'ladder':"
+            "           document.getElementById('fromLabel'     + i).textContent = 'Velocity';"
+            "           document.getElementById('toLabel'       + i).textContent = '';"
+            "           document.getElementById('toInput'       + i).disabled = true;"
+            "           break;"
+            "         case 'analog':"
+            "         case 'jogwheel':"
+            "           document.getElementById('fromLabel'     + i).textContent = 'From Velocity';"
+            "           document.getElementById('toLabel'       + i).textContent = 'To Velocity';"
+            "           break;"
+            "       }"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Control Change':"
+            "       document.getElementById('codeLabel'         + i).textContent = 'CC';"
             "       switch (document.getElementById('pedalMode' + i).value) {"
             "         case 'momentary':"
             "         case 'ladder':"
-            "           document.getElementById('codeLabel'     + i).textContent = 'CC';"
             "           document.getElementById('fromLabel'     + i).textContent = 'Value 1';"
             "           document.getElementById('toLabel'       + i).textContent = 'Value 2';"
             "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag 1';"
             "           document.getElementById('tagOnLabel'    + i).textContent = 'Tag 2';"
             "           document.getElementById('color0Label'   + i).textContent = 'Color 1';"
             "           document.getElementById('color1Label'   + i).textContent = 'Color 2';"
-            "           break;"
-            "         case 'latch':"
+            "           break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("         case 'latch':"
             "           document.getElementById('fromLabel'     + i).textContent = 'Value';"
             "           document.getElementById('toLabel'       + i).textContent = '';"
             "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag';"
@@ -1626,17 +1916,24 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "         case 'analog':"
             "         case 'jogwheel':"
             "           document.getElementById('tagOnInput'    + i).disabled = true;"
+            "           break;"
             "       }"
-            "       break;"
-            "     case 'Program Change+':"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Program Change+':"
             "     case 'Program Change-':"
             "       document.getElementById('codeLabel'     + i).textContent = 'PC';"
             "       document.getElementById('fromLabel'     + i).textContent = 'From PC';"
             "       document.getElementById('toLabel'       + i).textContent = 'To PC';"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
-            "       break;"
-            "     case 'Bank Select+':"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Bank Select+':"
             "     case 'Bank Select-':"
             "       document.getElementById('fromLabel'     + i).textContent = 'MSB';"
             "       document.getElementById('toLabel'       + i).textContent = 'LSB';"
@@ -1648,8 +1945,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       document.getElementById('color1Label'   + i).textContent = 'Max';"
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
             "       document.getElementById('codeInput'     + i).disabled = true;"
-            "       break;"
-            "     case 'Bank+':"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Bank+':"
             "     case 'Bank-':"
             "       document.getElementById('fromLabel'     + i).textContent = 'From Bank';"
             "       document.getElementById('toLabel'       + i).textContent = 'To Bank';"
@@ -1661,8 +1961,19 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       document.getElementById('color0Input'   + i).disabled = true;"
             "       document.getElementById('color1Input'   + i).disabled = true;"
             "       document.getElementById('slotSelect'    + i).disabled = true;"
-            "       break;"
-            "     case 'Profile+':"
+            "       break;");
+
+  page += F("     case 'OSC Message':"
+            "       document.getElementById('fromLabel'     + i).textContent = 'Min';"
+            "       document.getElementById('toLabel'       + i).textContent = 'Max';"
+            "       document.getElementById('channelSelect' + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('oscAddress'    + i).disabled = false;"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Profile+':"
             "     case 'Profile-':"
             "       document.getElementById('fromLabel'     + i).textContent = 'From Profile';"
             "       document.getElementById('toLabel'       + i).textContent = 'To Profile';"
@@ -1674,8 +1985,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       document.getElementById('color0Input'   + i).disabled = true;"
             "       document.getElementById('color1Input'   + i).disabled = true;"
             "       document.getElementById('slotSelect'    + i).disabled = true;"
-            "       break;"
-            "     case 'Sequence':"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Sequence':"
             "       document.getElementById('channelLabel'  + i).textContent = 'Sequence';"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('fromInput'     + i).disabled = true;"
@@ -1689,8 +2003,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
             "       document.getElementById('tagOnInput'    + i).disabled = true;"
             "       document.getElementById('slotSelect'    + i).disabled = true;"
-            "       break;"
-            "     case 'Repeat':"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Repeat':"
             "       document.getElementById('channelSelect' + i).disabled = true;"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('fromInput'     + i).disabled = true;"
@@ -1706,8 +2023,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
             "       document.getElementById('tagOnInput'    + i).disabled = true;"
             "       document.getElementById('slotSelect'    + i).disabled = true;"
-            "       break;"
-            "     case 'Start':"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Start':"
             "     case 'Stop':"
             "     case 'Continue':"
             "     case 'MTC Start':"
@@ -1741,13 +2061,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
 void get_pedals_page(unsigned int start, unsigned int len) {
 
-  get_top_page(4);
-
-  if (trim_page(start, len)) return;
+  if (get_top_page(4, start, len)) return;
 
   page += F("<form method='post'>");
   page += F("<div class='container'>");
-  page += F("<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-2 g-md-3 g-xl-4'>");
+  page += F("<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-4 row-cols-xxl-4 g-2 g-md-3 g-xl-4'>");
 
   for (unsigned int i = 1; i <= PEDALS; i++) {
     page += F("<div class='col'>");
@@ -1758,56 +2076,84 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
     page += F("</svg>");
     page += F(" Pedal ");
-    page += String(i) + F("</h5>");
+    page += i;
+    page += F("</h5>");
     page += F("<div class='card-body'>");
     page += F("<div class='d-grid gap-1'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='modeSelect");
-    page += String(i) + F("' name='mode");
-    page += String(i) + F("' onchange='init_pedal(");
-    page += String(i) + F(")'>");
+    page += i;
+    page += F("' name='mode");
+    page += i;
+    page += F("' onchange='init_pedal(");
+    page += i;
+    page += F(")'>");
+
+    if (trim_page(start, len)) return;
+
     page += F("<option value='");
-    page += String(PED_NONE) + F("'");
+    page += PED_NONE;
+    page += F("'");
     if (pedals[i-1].mode == PED_NONE) page += F(" selected");
     page += F(">None</option>");
     page += F("<option value='");
-    page += String(PED_MOMENTARY1) + F("'");
+    page += PED_MOMENTARY1;
+    page += F("'");
     if (pedals[i-1].mode == PED_MOMENTARY1) page += F(" selected");
     page += F(">Momentary</option>");
     if (PIN_D(i-1) != PIN_A(i-1)) {
       page += F("<option value='");
-      page += String(PED_LATCH1) + F("'");
+      page += PED_LATCH1;
+      page += F("'");
       if (pedals[i-1].mode == PED_LATCH1) page += F(" selected");
       page += F(">Latch</option>");
       page += F("<option value='");
-      page += String(PED_ANALOG) + F("'");
+      page += PED_ANALOG;
+      page += F("'");
       if (pedals[i-1].mode == PED_ANALOG) page += F(" selected");
       page += F(">Analog</option>");
       page += F("<option value='");
-      page += String(PED_JOG_WHEEL) + F("'");
+      page += PED_JOG_WHEEL;
+      page += F("'");
       if (pedals[i-1].mode == PED_JOG_WHEEL) page += F(" selected");
       page += F(">Jog Wheel</option>");
       page += F("<option value='");
-      page += String(PED_MOMENTARY2) + F("'");
+      page += PED_MOMENTARY2;
+      page += F("'");
       if (pedals[i-1].mode == PED_MOMENTARY2) page += F(" selected");
       page += F(">Momentary 2</option>");
       page += F("<option value='");
-      page += String(PED_MOMENTARY3) + F("'");
+      page += PED_MOMENTARY3;
+      page += F("'");
       if (pedals[i-1].mode == PED_MOMENTARY3) page += F(" selected");
       page += F(">Momentary 3</option>");
       page += F("<option value='");
-      page += String(PED_LATCH2) + F("'");
+      page += PED_LATCH2;
+      page += F("'");
       if (pedals[i-1].mode == PED_LATCH2) page += F(" selected");
       page += F(">Latch 2</option>");
       page += F("<option value='");
-      page += String(PED_LADDER) + F("'");
+      page += PED_LADDER;
+      page += F("'");
       if (pedals[i-1].mode == PED_LADDER) page += F(" selected");
       page += F(">Ladder</option>");
       page += F("<option value='");
-      page += String(PED_ULTRASONIC) + F("'");
+      page += PED_ULTRASONIC;
+      page += F("'");
       if (pedals[i-1].mode == PED_ULTRASONIC) page += F(" selected");
       page += F(">Ultrasonic</option>");
+      page += F("<option value='");
+      page += PED_ANALOG_MOMENTARY;
+      page += F("'");
+      if (pedals[i-1].mode == PED_ANALOG_MOMENTARY) page += F(" selected");
+      page += F(">Analog+Momentary</option>");
+      page += F("<option value='");
+      page += PED_ANALOG_LATCH;
+      page += F("'");
+      if (pedals[i-1].mode == PED_ANALOG_LATCH) page += F(" selected");
+      page += F(">Analog+Latch</option>");
     }
+
     page += F("</select>");
     page += F("<label for='modeSelect'>Mode</label>");
     page += F("</div>");
@@ -1816,134 +2162,196 @@ void get_pedals_page(unsigned int start, unsigned int len) {
 
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='polarityCheck");
-    page += String(i) + F("' name='polarity") + String(i) + F("'");
+    page += i;
+    page += F("' name='polarity");
+    page += i;
+    page += F("'");
     if (pedals[i-1].invertPolarity) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='polarityCheck");
-    page += String(i) + F("'>Invert Polarity</label>");
+    page += i;
+    page += F("'>Invert Polarity</label>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
 
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='function1Check");
-    page += String(i) + F("' name='function1") + String(i) + F("'");
+    page += i;
+    page += F("' name='function1");
+    page += i;
+    page += F("'");
     if (IS_SINGLE_PRESS_ENABLED(pedals[i-1].pressMode)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='function1Check");
-    page += String(i) + F("'>Single Press</label>");
+    page += i;
+    page += F("'>Single Press</label>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
 
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='function2Check");
-    page += String(i) + F("' name='function2") + String(i) + F("'");
+    page += i;
+    page += F("' name='function2");
+    page += i;
+    page += F("'");
     if (IS_DOUBLE_PRESS_ENABLED(pedals[i-1].pressMode)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='function2Check");
-    page += String(i) + F("'>Double Press</label>");
+    page += i;
+    page += F("'>Double Press</label>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
 
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='function3Check");
-    page += String(i) + F("' name='function3") + String(i) + F("'");
+    page += i;
+    page += F("' name='function3");
+    page += i;
+    page += F("'");
     if (IS_LONG_PRESS_ENABLED(pedals[i-1].pressMode)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='function3Check");
-    page += String(i) + F("'>Long Press</label>");
+    page += i;
+    page += F("'>Long Press</label>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='autoCheck");
+    page += i;
+    page += F("' name='autosensing");
+    page += i;
+    page += F("'");
+    if (pedals[i-1].autoSensing) page += F(" checked");
+    page += F(">");
+    page += F("<label class='form-check-label' for='autoCheck");
+    page += i;
+    page += F("'>Analog Calibration</label>");
     page += F("</div>");
 
     if (trim_page(start, len)) return;
 
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='mapSelect");
-    page += String(i) + F("' name='map");
-    page += String(i) + F("'>");
+    page += i;
+    page += F("' name='map");
+    page += i;
+    page += F("'>");
     page += F("<option value='");
-    page += String(PED_LINEAR) + F("'");
+    page += PED_LINEAR;
+    page += F("'");
     if (pedals[i-1].analogResponse == PED_LINEAR) page += F(" selected");
     page += F(">Linear</option>");
     page += F("<option value='");
-    page += String(PED_LOG) + F("'");
+    page += PED_LOG;
+    page += F("'");
     if (pedals[i-1].analogResponse == PED_LOG) page += F(" selected");
     page += F(">Log</option>");
     page += F("<option value='");
-    page += String(PED_ANTILOG) + F("'");
+    page += PED_ANTILOG;
+    page += F("'");
     if (pedals[i-1].analogResponse == PED_ANTILOG) page += F(" selected");
     page += F(">Antilog</option>");
     page += F("</select>");
     page += F("<label for='mapSelect'>Analog Response</label>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='row g-1'>");
     page += F("<div class='form-floating w-50'>");
     page += F("<input type='number' class='form-control' id='minInput");
-    page += String(i) + F("' name='min");
-    page += String(i) + F("' min='0' max='");
-    page += String(ADC_RESOLUTION - 1) + F("' value='");
-    page += String(pedals[i-1].expZero);
+    page += i;
+    page += F("' name='min");
+    page += i;
+    page += F("' min='0' max='");
+    page += (ADC_RESOLUTION - 1);
+    page += F("' value='");
+    page += pedals[i-1].expZero;
     page += F("'>");
     page += F("<label for='minInput'>Min</label>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='form-floating w-50'>");
     page += F("<input type='number' class='form-control' id='maxInput");
-    page += String(i) + F("' name='max");
-    page += String(i) + F("' min='0' max='");
-    page += String(ADC_RESOLUTION - 1) + F("' value='");
-    page += String(pedals[i-1].expMax);
+    page += i;
+    page += F("' name='max");
+    page += i;
+    page += F("' min='0' max='");
+    page += (ADC_RESOLUTION - 1);
+    page += F("' value='");
+    page += pedals[i-1].expMax;
     page += F("'>");
     page += F("<label for='maxInput'>Max</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<label for='easing");
-    page += String(i) + F("'>Easing: ");
-    page += String(4 + lround(log10(pedals[i-1].snapMultiplier))) + F("</label>");
+    page += i;
+    page += F("'>Easing: ");
+    page += (4 + lround(log10(pedals[i-1].snapMultiplier)));
+    page += F("</label>");
     page += F("<input type='range' class='form-range' min='1' max='3' id='easing");
-    page += String(i) + F("' name='analogeasing");
-    page += String(i) + F("' value='");
-    page += String(4 + lround(log10(pedals[i-1].snapMultiplier)));
+    page += i;
+    page += F("' name='analogeasing");
+    page += i;
+    page += F("' value='");
+    page += (4 + lround(log10(pedals[i-1].snapMultiplier)));
     page += F("' oninput='this.previousElementSibling.textContent = `Easing: ` + this.value'>");
     page += F("<label for='threshold");
-    page += String(i) + F("'>Activity Threshold: ");
-    page += String((int)pedals[i-1].activityThreshold) + F("</label>");
+    page += i;
+    page += F("'>Activity Threshold: ");
+    page += (int)pedals[i-1].activityThreshold;
+    page += F("</label>");
     page += F("<input type='range' class='form-range' min='1' max='8' id='threshold");
-    page += String(i) + F("' name='analogthreshold");
-    page += String(i) + F("' value='");
-    page += String(log10(pedals[i-1].activityThreshold) / log10(2));
+    page += i;
+    page += F("' name='analogthreshold");
+    page += i;
+    page += F("' value='");
+    page += (log10(pedals[i-1].activityThreshold) / log10(2));
     page += F("' oninput='this.previousElementSibling.textContent = `Activity Threshold: ` + Math.pow(2, this.value)'>");
 
-    page += F("<div class='form-check form-switch'>");
-    page += F("<input class='form-check-input' type='checkbox' id='autoCheck");
-    page += String(i) + F("' name='autosensing") + String(i) + F("'");
-    if (pedals[i-1].autoSensing) page += F(" checked");
-    page += F(">");
-    page += F("<label class='form-check-label' for='autoCheck");
-    page += String(i) + F("'>Analog Calibration</label>");
-    page += F("</div>");
+    if (trim_page(start, len)) return;
 
     for (unsigned int b = 0; b < LADDER_STEPS; b++) {
       if (b % 2 == 0) page += F("<div class='row g-1'>");
       page += F("<div class='form-floating w-50'>");
       page += F("<select class='form-select' id='ledButton");
-      page += String(i*10+b+1);
+      page += (i*10+b+1);
       page += F("' name='ledbutton");
-      page += String(i*10+b+1) + F("'>");
+      page += (i*10+b+1);
+      page += F("'>");
       for (unsigned int l = 0; l <= LEDS; l++) {
         page += F("<option value='");
-        page += String(l) + F("'");
-        if (l == 0 && pedals[i-1].ledbuttons[b] == LEDS || pedals[i-1].ledbuttons[b] == l-1) page += F(" selected");
+        page += l;
+        page += F("'");
+        if ((l == 0 && pedals[i-1].ledbuttons[b] == LEDS) || pedals[i-1].ledbuttons[b] == l-1) page += F(" selected");
         page += F(">");
-        if (l > 0) page += String(l);
+        if (l > 0) page += l;
         page += F("</option>");
+
+        if (trim_page(start, len)) return;
       }
       page += F("</select>");
       page += F("<label for='ledButtonSelect");
-      page += String(i*10+b+1);
+      page += (i*10+b+1);
       page += F("' id='ledButtonLabel");
-      page += String(i*10+b+1);
+      page += (i*10+b+1);
       page += F("'>Button ");
-      page += String(b+1) + F("</label>");
+      page += (b+1);
+      page += F("</label>");
       page += F("</div>");
       if (b % 2 != 0) page += F("</div>");
+
+      if (trim_page(start, len)) return;
     }
 
     page += F("</div>");
@@ -1976,12 +2384,14 @@ void get_pedals_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</form>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<script>");
   page += F("document.addEventListener('DOMContentLoaded', init_pedals());");
   page += F("function init_pedals() {");
   for (byte s = 1; s <= PEDALS; s++) {
     page += F("  init_pedal(");
-    page += String(s);
+    page += s;
     page += F(");");
   }
   page += F("};");
@@ -2001,8 +2411,11 @@ void get_pedals_page(unsigned int start, unsigned int len) {
             "   document.getElementById('ledButton'           + i + '3').disabled = true;"
             "   document.getElementById('ledButton'           + i + '4').disabled = true;"
             "   document.getElementById('ledButton'           + i + '5').disabled = true;"
-            "   document.getElementById('ledButton'           + i + '6').disabled = true;"
-            "   switch (document.getElementById('modeSelect' + i).options[document.getElementById('modeSelect' + i).selectedIndex].text) {"
+            "   document.getElementById('ledButton'           + i + '6').disabled = true;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("   switch (document.getElementById('modeSelect' + i).options[document.getElementById('modeSelect' + i).selectedIndex].text) {"
             "     case 'Ladder':"
             "       document.getElementById('ledButton'       + i + '4').disabled = false;"
             "       document.getElementById('ledButton'       + i + '5').disabled = false;"
@@ -2020,8 +2433,11 @@ void get_pedals_page(unsigned int start, unsigned int len) {
             "       document.getElementById('function1Check'  + i).disabled = false;"
             "       document.getElementById('function2Check'  + i).disabled = false;"
             "       document.getElementById('function3Check'  + i).disabled = false;"
-            "       break;"
-            "     case 'Ultrasonic':"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Ultrasonic':"
             "       document.getElementById('ledButton'       + i + '1').disabled = false;"
             "       document.getElementById('polarityCheck'   + i).disabled = false;"
             "       document.getElementById('mapSelect'       + i).disabled = false;"
@@ -2033,6 +2449,32 @@ void get_pedals_page(unsigned int start, unsigned int len) {
             "     case 'Analog':"
             "       document.getElementById('ledButton'       + i + '1').disabled = false;"
             "       document.getElementById('polarityCheck'   + i).disabled = false;"
+            "       document.getElementById('mapSelect'       + i).disabled = false;"
+            "       document.getElementById('minInput'        + i).disabled = false;"
+            "       document.getElementById('maxInput'        + i).disabled = false;"
+            "       document.getElementById('easing'          + i).disabled = false;"
+            "       document.getElementById('threshold'       + i).disabled = false;"
+            "       document.getElementById('autoCheck'       + i).disabled = false;"
+            "       break;"
+            "     case 'Analog+Momentary':"
+            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
+            "       document.getElementById('polarityCheck'   + i).disabled = false;"
+            "       document.getElementById('function1Check'  + i).disabled = false;"
+            "       document.getElementById('function2Check'  + i).disabled = false;"
+            "       document.getElementById('function3Check'  + i).disabled = false;"
+            "       document.getElementById('mapSelect'       + i).disabled = false;"
+            "       document.getElementById('minInput'        + i).disabled = false;"
+            "       document.getElementById('maxInput'        + i).disabled = false;"
+            "       document.getElementById('easing'          + i).disabled = false;"
+            "       document.getElementById('threshold'       + i).disabled = false;"
+            "       document.getElementById('autoCheck'       + i).disabled = false;"
+            "       break;"
+            "     case 'Analog+Latch':"
+            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
+            "       document.getElementById('polarityCheck'   + i).disabled = false;"
+            "       document.getElementById('function1Check'  + i).disabled = false;"
+            "       document.getElementById('function2Check'  + i).disabled = false;"
+            "       document.getElementById('function3Check'  + i).disabled = false;"
             "       document.getElementById('mapSelect'       + i).disabled = false;"
             "       document.getElementById('minInput'        + i).disabled = false;"
             "       document.getElementById('maxInput'        + i).disabled = false;"
@@ -2053,9 +2495,7 @@ void get_pedals_page(unsigned int start, unsigned int len) {
 
 void get_interfaces_page(unsigned int start, unsigned int len) {
 
-  get_top_page(5);
-
-  if (trim_page(start, len)) return;
+  if (get_top_page(5, start, len)) return;
 
   page += F("<form method='post'>");
 
@@ -2074,51 +2514,78 @@ void get_interfaces_page(unsigned int start, unsigned int len) {
     page += F("<div class='card-body'>");
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='inCheck");
-    page += String(i) + F("' name='in") + String(i) + F("'");
+    page += i;
+    page += F("' name='in");
+    page += i;
+    page += F("'");
     if (IS_INTERFACE_ENABLED(interfaces[i-1].midiIn)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='inCheck");
-    page += String(i) + F("'>In</label>");
+    page += i;
+    page += F("'>In</label>");
     page += F("</div>");
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='outCheck");
-    page += String(i) + F("' name='out") + String(i) + F("'");
+    page += i;
+    page += F("' name='out");
+    page += i;
+    page += F("'");
     if (IS_INTERFACE_ENABLED(interfaces[i-1].midiOut)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='outCheck");
-    page += String(i) + F("'>Out</label>");
+    page += i;
+    page += F("'>Out</label>");
     page += F("</div>");
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='thruCheck");
-    page += String(i) + F("' name='thru") + String(i) + F("'");
+    page += i;
+    page += F("' name='thru");
+    page += i;
+    page += F("'");
     if (interfaces[i-1].midiThru) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='thruCheck");
-    page += String(i) + F("'>Thru</label>");
+    page += i;
+    page += F("'>Thru</label>");
     page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='clockCheck");
-    page += String(i) + F("' name='clock") + String(i) + F("'");
+    page += i;
+    page += F("' name='clock");
+    page += i;
+    page += F("'");
     if (interfaces[i-1].midiClock) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='clockCheck");
-    page += String(i) + F("'>Clock</label>");
+    page += i;
+    page += F("'>Clock</label>");
     page += F("</div>");
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='showInCheck");
-    page += String(i) + F("' name='showin") + String(i) + F("'");
+    page += i;
+    page += F("' name='showin");
+    page += i;
+    page += F("'");
     if (IS_SHOW_ENABLED(interfaces[i-1].midiIn)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='showInCheck");
-    page += String(i) + F("'>Show Incoming</label>");
+    page += i;
+    page += F("'>Show Incoming</label>");
     page += F("</div>");
     page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='showOutCheck");
-    page += String(i) + F("' name='showout") + String(i) + F("'");
+    page += i;
+    page += F("' name='showout");
+    page += i;
+    page += F("'");
     if (IS_SHOW_ENABLED(interfaces[i-1].midiOut)) page += F(" checked");
     page += F(">");
     page += F("<label class='form-check-label' for='showOutCheck");
-    page += String(i) + F("'>Show Outcoming</label>");
+    page += i;
+    page += F("'>Show Outcoming</label>");
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
@@ -2159,18 +2626,21 @@ void get_sequences_page(unsigned int start, unsigned int len) {
 
   const byte s = constrain(uisequence.toInt(), 0, SEQUENCES);
 
-  get_top_page(6);
-
-  if (trim_page(start, len)) return;
+  if (get_top_page(6, start, len)) return;
 
   page += F("<div class='btn-group mb-3'>");
   for (unsigned int i = 1; i <= SEQUENCES; i++) {
     page += F("<form method='get'><button type='button submit' class='btn");
-    page += (uisequence == String(i) ? String(" btn-primary") : String(""));
+    page += (uisequence == String(i) ? F(" btn-primary") : F(""));
     page += F("' name='sequence' value='");
-    page += String(i) + F("'>") + String(i) + F("</button></form>");
+    page += i;
+    page += F("'>");
+    page += i;
+    page += F("</button></form>");
   }
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
 
   page += F("<form method='post'>");
 
@@ -2182,8 +2652,11 @@ void get_sequences_page(unsigned int start, unsigned int len) {
   page += F("<path d='M9 6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 3a2 2 0 1 1 4 0 2 2 0 0 1-4 0z'/>");
   page += F("</svg>");
   page += F(" Sequence ");
-  page += String(s) + F("</h5>");
+  page += s;
+  page += F("</h5>");
   page += F("<div class='card-body'>");
+
+  if (trim_page(start, len)) return;
 
   for (unsigned int i = 1; i <= STEPS; i++) {
     page += F("<div class='d-grid mb-1'>");
@@ -2191,189 +2664,228 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='messageSelect");
-    page += String(i);
+    page += i;
     page += F("' onchange='init_line(");
-    page += String(i);
+    page += i;
     page += F(")' name='message");
-    page += String(i);
+    page += i;
     page += F("'>");
     page += F("<option value='");
-    page += String(PED_EMPTY) + F("'");
+    page += PED_EMPTY;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_NONE) page += F(" selected");
     page += F("></option>");
     page += F("<option value='");
-    page += String(PED_PROGRAM_CHANGE) + F("'");
+    page += PED_PROGRAM_CHANGE;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_PROGRAM_CHANGE) page += F(" selected");
     page += F(">Program Change</option>");
     page += F("<option value='");
-    page += String(PED_CONTROL_CHANGE) + F("'");
+    page += PED_CONTROL_CHANGE;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
     page += F(">Control Change</option>");
     page += F("<option value='");
-    page += String(PED_NOTE_ON) + F("'");
+    page += PED_NOTE_ON;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_NOTE_ON) page += F(" selected");
     page += F(">Note On</option>");
     page += F("<option value='");
-    page += String(PED_NOTE_OFF) + F("'");
+    page += PED_NOTE_OFF;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_NOTE_OFF) page += F(" selected");
     page += F(">Note Off</option>");
+
+    if (trim_page(start, len)) return;
+
     page += F("<option value='");
-    page += String(PED_BANK_SELECT_INC) + F("'");
+    page += PED_BANK_SELECT_INC;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_BANK_SELECT_INC) page += F(" selected");
     page += F(">Bank Select+</option>");
     page += F("<option value='");
-    page += String(PED_BANK_SELECT_DEC) + F("'");
+    page += PED_BANK_SELECT_DEC;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_BANK_SELECT_DEC) page += F(" selected");
     page += F(">Bank Select-</option>");
     page += F("<option value='");
-    page += String(PED_PROGRAM_CHANGE_INC) + F("'");
+    page += PED_PROGRAM_CHANGE_INC;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_PROGRAM_CHANGE_INC) page += F(" selected");
     page += F(">Program Change+</option>");
     page += F("<option value='");
-    page += String(PED_PROGRAM_CHANGE_DEC) + F("'");
+    page += PED_PROGRAM_CHANGE_DEC;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_PROGRAM_CHANGE_DEC) page += F(" selected");
     page += F(">Program Change-</option>");
     page += F("<option value='");
-    page += String(PED_PITCH_BEND) + F("'");
+    page += PED_PITCH_BEND;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_PITCH_BEND) page += F(" selected");
     page += F(">Pitch Bend</option>");
     page += F("<option value='");
-    page += String(PED_CHANNEL_PRESSURE) + F("'");
+    page += PED_CHANNEL_PRESSURE;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_CHANNEL_PRESSURE) page += F(" selected");
     page += F(">Channel Pressure</option>");
+
+    if (trim_page(start, len)) return;
+
     page += F("<option value='");
-    page += String(PED_MIDI_START) + F("'");
+    page += PED_MIDI_START;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_MIDI_START) page += F(" selected");
     page += F(">Start</option>");
     page += F("<option value='");
-    page += String(PED_MIDI_STOP) + F("'");
+    page += PED_MIDI_STOP;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_MIDI_STOP) page += F(" selected");
     page += F(">Stop</option>");
     page += F("<option value='");
-    page += String(PED_MIDI_CONTINUE) + F("'");
+    page += PED_MIDI_CONTINUE;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_MIDI_CONTINUE) page += F(" selected");
     page += F(">Continue</option>");
     page += F("<option value='");
-    page += String(PED_SEQUENCE) + F("'");
+    page += PED_SEQUENCE;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_SEQUENCE) page += F(" selected");
     page += F(">Sequence</option>");
     page += F("<option value='");
-    page += String(PED_ACTION_LED_COLOR) + F("'");
+    page += PED_ACTION_LED_COLOR;
+    page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) page += F(" selected");
     page += F(">Set Led Color</option>");
     page += F("</select>");
     page += F("<label for='messageSelect");
-    page += String(i);
+    page += i;
     page += F("'>Send</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='channelSelect");
-    page += String(i);
+    page += i;
     page += F("' name='channel");
-    page += String(i) + F("'>");
+    page += i;
+    page += F("'>");
     for (unsigned int c = 1; c <= 16; c++) {
       page += F("<option value='");
-      page += String(c) + F("'");
+      page += c;
+      page += F("'");
       if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) {
         if (c == 1) page += F(" selected");
       }
       else if (sequences[s-1][i-1].midiChannel == c) page += F(" selected");
       page += F(">");
-      page += String(c) + F("</option>");
+      page += c;
+      page += F("</option>");
+
+      if (trim_page(start, len)) return;
     }
     page += F("</select>");
     page += F("<label for='channelSelect");
-    page += String(i);
+    page += i;
     page += F("' id='channelLabel");
-    page += String(i);
+    page += i;
     page += F("'>Channel</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='number' class='form-control' id='codeInput");
-    page += String(i);
+    page += i;
     page += F("' name='code");
-    page += String(i);
+    page += i;
     page += F("' min='0' max='127' value='");
     if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR)
-      page += String(0);
+      page += 0;
     else
-      page += String(sequences[s-1][i-1].midiCode);
+      page += sequences[s-1][i-1].midiCode;
     page += F("'>");
     page += F("<label for='codeInput");
-    page += String(i);
+    page += i;
     page += F("' id='codeLabel");
-    page += String(i);
+    page += i;
     page += F("'>Code</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='number' class='form-control' id='valueInput");
-    page += String(i);
+    page += i;
     page += F("' name='value");
-    page += String(i);
+    page += i;
     page += F("' min='0' max='127' value='");
     if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR)
-      page += String(0);
+      page += 0;
     else
-      page += String(sequences[s-1][i-1].midiValue);
+      page += sequences[s-1][i-1].midiValue;
     page += F("'>");
     page += F("<label for='valueInput");
-    page += String(i);
+    page += i;
     page += F("' id='valueLabel");
-    page += String(i);
+    page += i;
     page += F("'>Value</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='ledSelect");
-    page += String(i);
+    page += i;
     page += F("' name='led");
-    page += String(i) + F("'>");
+    page += i;
+    page += F("'>");
     for (unsigned int l = 0; l <= LEDS; l++) {
       page += F("<option value='");
-      page += String(l+1) + F("'");
+      page += (l+1);
+      page += F("'");
       if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) {
         if (sequences[s-1][i-1].led == l) page += F(" selected");
       }
       else if (l == LEDS) page += F(" selected");
       page += F(">");
-      if (l != LEDS) page += String(l+1);
+      if (l != LEDS) page += (l+1);
       page += F("</option>");
     }
     page += F("</select>");
     page += F("<label for='ledSelect");
-    page += String(i);
+    page += i;
     page += F("'>Led</label>");
     page += F("</div>");
     page += F("</div>");
 
+    if (trim_page(start, len)) return;
+
     page += F("<div class='col'>");
     page += F("<div class='form-floating'>");
     page += F("<input type='color' class='form-control' id='colorInput");
-    page += String(i);
+    page += i;
     page += F("' name='color");
-    page += String(i);
+    page += i;
     page += F("' value='");
     if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) {
       char color[8];
       sprintf(color, "#%06X", sequences[s-1][i-1].color & 0xFFFFFF);
-      page += String(color);
+      page += color;
     }
     else
-      page += String("0xFFFFFF");
+      page += F("0xFFFFFF");
     page += F("'>");
     page += F("<label for='colorInput");
-    page += String(i);
+    page += i;
     page += F("'>Color</label>");
     page += F("</div>");
     page += F("</div>");
@@ -2404,15 +2916,20 @@ void get_sequences_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</form>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<script>");
   page += F("document.addEventListener('DOMContentLoaded', init_lines());");
   page += F("function init_lines() {");
   for (byte s = 1; s <= STEPS; s++) {
     page += F("  init_line(");
-    page += String(s);
+    page += s;
     page += F(");");
   }
   page += F("};");
+
+  if (trim_page(start, len)) return;
+
   page += F("function init_line(i) {"
             "   document.getElementById('channelLabel'  + i).textContent = 'Channel';"
             "   document.getElementById('codeLabel'     + i).textContent = 'Code';"
@@ -2442,8 +2959,11 @@ void get_sequences_page(unsigned int start, unsigned int len) {
             "       document.getElementById('valueLabel'    + i).textContent = 'Velocity';"
             "       document.getElementById('ledSelect'     + i).disabled = true;"
             "       document.getElementById('colorInput'    + i).disabled = true;"
-            "       break;"
-            "     case 'Bank Select+':"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Bank Select+':"
             "     case 'Bank Select-':"
             "       document.getElementById('channelLabel'  + i).textContent = 'Channel';"
             "       document.getElementById('codeLabel'     + i).textContent = 'MSB';"
@@ -2514,9 +3034,7 @@ void get_options_page(unsigned int start, unsigned int len) {
                                  "united",
                                  "yeti"};
 
-  get_top_page(7);
-
-  if (trim_page(start, len)) return;
+  if (get_top_page(7, start, len)) return;
 
   page += F("<form method='post'>");
 
@@ -2530,9 +3048,12 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F(" Device</h5>");
   page += F("<div class='card-body'>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='form-floating'>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='devicename' name='mdnsdevicename' placeholder='' value='");
-  page += host + F("'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='devicename' name='mdnsdevicename' value='");
+  page += host;
+  page += F("'>");
   page += F("<label for='devicename'>Name</label>");
   page += F("</div>");
   page += F("<small id='devicenameHelpBlock' class='form-text text-muted'>");
@@ -2554,6 +3075,8 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
 
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
@@ -2618,12 +3141,21 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<select class='form-select' id='wifissid' name='wifiSSID'>");
-  for (int i = 0; i < networks; i++) {
-    page += F("<option value='");
-    page += WiFi.SSID(i) + F("'");
-    if (wifiSSID == WiFi.SSID(i)) page += F(" selected");
-    page += F(">");
-    page += WiFi.SSID(i) + F("</option>");
+  networks = WiFi.scanComplete();
+  if (networks > 0) {
+    for (int i = 0; i < networks; i++) {
+      if (!WiFi.SSID(i).isEmpty()) {
+        page += F("<option value='");
+        page += WiFi.SSID(i);
+        page += F("'");
+        if (wifiSSID == WiFi.SSID(i)) page += F(" selected");
+        page += F(">");
+        page += WiFi.SSID(i);
+        page += F("</option>");
+      }
+
+      if (trim_page(start, len)) return;
+    }
   }
   page += F("</select>");
   page += F("<label for='wifissid'>SSID</label>");
@@ -2631,19 +3163,23 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
-  page += F("<input class='form-control' type='password' maxlength='32' id='wifipassword' name='wifiPassword' placeholder='password' value='");
-  page += wifiPassword + F("'>");
+  page += F("<input class='form-control' type='password' maxlength='32' id='wifipassword' name='wifiPassword' value='");
+  page += wifiPassword;
+  page += F("'>");
   page += F("<label for='wifipassword'>Password</label>");
   page += F("</div>");
   page += F("</div>");
   page += F("<small class='form-text text-muted'>");
-  page += F("Connect to a wifi network using SSID and password.<br>");
+  page += F("Connect to a wifi network using SSID and password. WiFi networks list is updated only on boot.<br>");
   page += F("Pedalino will be restarted if it is connected to a WiFi network and you change them.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
@@ -2655,15 +3191,17 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<div class='row g-1'>");
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='ssidsoftap' name='ssidSoftAP' placeholder='SSID' value='");
-  page += ssidSoftAP + F("'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='ssidsoftap' name='ssidSoftAP' value='");
+  page += ssidSoftAP;
+  page += F("'>");
   page += F("<label for='wifissidap'>SSID</label>");
   page += F("</div>");
   page += F("</div>");
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
-  page += F("<input class='form-control' type='password' maxlength='32' id='passwordsoftap' name='passwordSoftAP' placeholder='password' value='");
-  page += passwordSoftAP + F("'>");
+  page += F("<input class='form-control' type='password' maxlength='32' id='passwordsoftap' name='passwordSoftAP' value='");
+  page += passwordSoftAP;
+  page += F("'>");
   page += F("<label for='passwordsoftap'>Password</label>");
   page += F("</div>");
   page += F("</div>");
@@ -2692,10 +3230,14 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<select class='form-select' id='bootstraptheme' name='theme'>");
   for (unsigned int i = 0; i < 22; i++) {
     page += F("<option value='");
-    page += bootswatch[i] + F("'");
+    page += bootswatch[i];
+    page += F("'");
     if (theme == bootswatch[i]) page += F(" selected");
     page += F(">");
-    page += bootswatch[i] + F("</option>");
+    page += bootswatch[i];
+    page += F("</option>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</select>");
   page += F("<label for='theme'>Theme</label>");
@@ -2706,6 +3248,9 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
@@ -2719,14 +3264,16 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control form-control-sm' type='text' maxlength='32' id='httpusername' name='httpUsername' value='");
-  page += httpUsername + F("'>");
+  page += httpUsername;
+  page += F("'>");
   page += F("<label for='httpusername'>Username</label>");
   page += F("</div>");
   page += F("</div>");
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
   page += F("<input class='form-control form-control-sm' type='password' maxlength='32' id='httppassword' name='httpPassword' value='");
-  page += httpPassword + F("'>");
+  page += httpPassword;
+  page += F("'>");
   page += F("<label for='httppassword'>Password</label>");
   page += F("</div>");
   page += F("</div>");
@@ -2753,8 +3300,9 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<div class='row g-1'>");
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='pressTime' name='presstime' placeholder='' value='");
-  page += String(pressTime) + F("'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='pressTime' name='presstime' value='");
+  page += pressTime;
+  page += F("'>");
   page += F("<label for='pressTime'>Press Time</label>");
   page += F("</div>");
   page += F("<small id='pressTimeModeHelpBlock' class='form-text text-muted'>");
@@ -2763,8 +3311,9 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='doublePressTime' name='doublepresstime' placeholder='' value='");
-  page += String(doublePressTime) + F("'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='doublePressTime' name='doublepresstime' value='");
+  page += doublePressTime;
+  page += F("'>");
   page += F("<label for='doublePressTime'>Double Press Time</label>");
   page += F("</div>");
   page += F("<small id='doublePressTimeModeHelpBlock' class='form-text text-muted'>");
@@ -2773,11 +3322,15 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<div class='row g-1'>");
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='longPressTime' name='longpresstime' placeholder='' value='");
-  page += String(longPressTime) + F("'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='longPressTime' name='longpresstime' value='");
+  page += longPressTime;
+  page += F("'>");
   page += F("<label for='longPressTime'>Long Press Time</label>");
   page += F("</div>");
   page += F("<small id='longPressTimeModeHelpBlock' class='form-text text-muted'>");
@@ -2786,8 +3339,9 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
-  page += F("<input class='form-control' type='text' maxlength='32' id='repeatPressTime' name='repeatpresstime' placeholder='' value='");
-  page += String(repeatPressTime) + F("'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='repeatPressTime' name='repeatpresstime' value='");
+  page += repeatPressTime;
+  page += F("'>");
   page += F("<label for='repeatPressTime'>Repeat Press Time</label>");
   page += F("</div>");
   page += F("<small id='repeatPressTimeModeHelpBlock' class='form-text text-muted'>");
@@ -2815,18 +3369,24 @@ void get_options_page(unsigned int start, unsigned int len) {
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
     page += F("<input class='form-control form-control-sm' type='number' id='threshold");
-    page += String(i) + F("' name='threshold");
-    page += String(i) + F("' min='0' max='");
-    page += String(ADC_RESOLUTION-1) + F("' value='");
-    page += String(ladderLevels[i-1]) + F("'>");
+    page += i;
+    page += F("' name='threshold");
+    page += i;
+    page += F("' min='0' max='");
+    page += (ADC_RESOLUTION - 1);
+    page += F("' value='");
+    page += ladderLevels[i-1];
+    page += F("'>");
     page += F("<label for='threshold");
-    page += String(i);
+    page += i;
     page += F("'>Level ");
-    page += String(i);
+    page += i;
     page += F("</label>");
     page += F("</div>");
     page += F("</div>");
     if (i % 4 == 0 || i == LADDER_STEPS + 1) page += F("</div>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</div>");
   page += F("</div>");
@@ -2846,10 +3406,14 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<select class='form-select form-select-sm' name='encodersensitivity'>");
   for (unsigned int s = 1; s <= 10; s++) {
     page += F("<option value='");
-    page += String(s) + F("'");
+    page += s;
+    page += F("'");
     if (encoderSensitivity == s) page += F(" selected");
     page += F(">");
-    page += String(s) + F("</option>");
+    page += s;
+    page += F("</option>");
+
+    if (trim_page(start, len)) return;
   }
   page += F("</select>");
   page += F("<label for='encodersensitivity'>Encoder Sensitivity</label>");
@@ -2862,6 +3426,8 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
@@ -2871,6 +3437,15 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</svg>");
   page += F(" Additional Features</h5>");
   page += F("<div class='card-body'>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='flipScreen' name='flipscreen'");
+  if (flipScreen) page += F(" checked");
+  page += F(">");
+  page += F("<label class='form-check-label' for='flipScreen'>Flip Screen</label>");
+  page += F("</div>");
+  page += F("<small id='flidScreenHelpBlock' class='form-text text-muted'>");
+  page += F("Vertical flip of screen.");
+  page += F("</small>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='tapDanceMode' name='tapdancemode'");
   if (tapDanceMode) page += F(" checked");
@@ -2893,6 +3468,8 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
 
+  if (trim_page(start, len)) return;
+
   page += F("<div class='col-md-6 col-12 mb-3'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
@@ -2901,14 +3478,156 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</svg>");
   page += F(" Leds</h5>");
   page += F("<div class='card-body'>");
-  page += F("<label for='brightnessOn'>Leds On Brightness</label>");
-  page += F("<input type='range' class='form-range' min='0' max='255' id='brightnessOn' name='ledsonbrightness' value='");
-  page += String(ledsOnBrightness);
+  page += F("<div class='row g-1'>");
+  page += F("<div class='w-50'>");
+  page += F("<div class='form-floating'>");
+  page += F("<input class='form-control form-control-sm' type='number' id='leds' name='leds' min='0' max='254' value='");
+  page += LEDS;
   page += F("'>");
-  page += F("<label for='brightnessOff'>Leds Off Brightness</label>");
-  page += F("<input type='range' class='form-range' min='0' max='255' id='brightnessOff' name='ledsoffbrightness' value='");
-  page += String(ledsOffBrightness);
+  page += F("<label for='leds'>Leds</label>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='w-50'>");
+  page += F("<div class='form-floating'>");
+  page += F("<select class='form-select form-select-sm' name='rgborder'>");
+  page += F("<option value='");
+  page += RGB;
+  page += F("'");
+  if (rgbOrder == RGB) page += F(" selected");
+  page += F(">RGB</option>");
+  page += F("<option value='");
+  page += RBG;
+  page += F("'");
+  if (rgbOrder == RBG) page += F(" selected");
+  page += F(">RBG</option>");
+  page += F("<option value='");
+  page += GRB;
+  page += F("'");
+  if (rgbOrder == GRB) page += F(" selected");
+  page += F(">GRB</option>");
+  page += F("<option value='");
+  page += GBR;
+  page += F("'");
+  if (rgbOrder == GBR) page += F(" selected");
+  page += F(">GBR</option>");
+  page += F("<option value='");
+  page += BRG;
+  page += F("'");
+  if (rgbOrder == BRG) page += F(" selected");
+  page += F(">BRG</option>");
+  page += F("<option value='");
+  page += BGR;
+  page += F("'");
+  if (rgbOrder == BGR) page += F(" selected");
+  page += F(">BGR</option>");
+  page += F("</select>");
+  page += F("<label for='rgborder'>RGB Order</label>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<label for='brightnessOn'>Leds On Brightness: ");
+  page += ledsOnBrightness;
+  page += F("</label>");
+  page += F("<input type='range' class='form-range' min='0' max='255' id='brightnessOn' name='ledsonbrightness'");
+  page += F(" value='");
+  page += ledsOnBrightness;
+  page += F("' oninput='this.previousElementSibling.textContent = `Leds On Brightness: ` + this.value'>");
+  page += F("<label for='brightnessOff'>Leds Off Brightness: ");
+  page += ledsOffBrightness;
+  page += F("</label>");
+  page += F("<input type='range' class='form-range' min='0' max='255' id='brightnessOff' name='ledsoffbrightness'");
+  page += F(" value='");
+  page += ledsOffBrightness;
+  page += F("' oninput='this.previousElementSibling.textContent = `Leds Off Brightness: ` + this.value'>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='row'>");
+  page += F("<div class='col-md-6 col-12 mb-3'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-ear' viewBox='0 0 20 20'>");
+  page += F("<path d='M8.5 1A4.5 4.5 0 0 0 4 5.5v7.047a2.453 2.453 0 0 0 4.75.861l.512-1.363a5.553 5.553 0 0 1 .816-1.46l2.008-2.581A4.34 4.34 0 0 0 8.66 1H8.5ZM3 5.5A5.5 5.5 0 0 1 8.5 0h.16a5.34 5.34 0 0 1 4.215 8.618l-2.008 2.581a4.555 4.555 0 0 0-.67 1.197l-.51 1.363A3.453 3.453 0 0 1 3 12.547V5.5ZM8.5 4A1.5 1.5 0 0 0 7 5.5v2.695c.112-.06.223-.123.332-.192.327-.208.577-.44.72-.727a.5.5 0 1 1 .895.448c-.256.513-.673.865-1.079 1.123A8.538 8.538 0 0 1 7 9.313V11.5a.5.5 0 0 1-1 0v-6a2.5 2.5 0 0 1 5 0V6a.5.5 0 0 1-1 0v-.5A1.5 1.5 0 0 0 8.5 4Z'/>");
+  page += F("</svg>");
+  page += F(" OSC Local</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='row g-1'>");
+  page += F("<div class='w-75'>");
+  page += F("<div class='form-floating'>");
+  page += F("<input class='form-control' type='text' readonly id='localip' name='localip' value='");
+  page += host;
+  page += F(".local - ");
+  page += WiFi.localIP().toString();
   page += F("'>");
+  page += F("<label for='wifissid'>Local Host - IP Address</label>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='w-25'>");
+  page += F("<div class='form-floating'>");
+  page += F("<input class='form-control' type='number' min='0' max='65535' id='oscLocalPort' name='osclocalport' value='");
+  page += oscLocalPort;
+  page += F("'>");
+  page += F("<label for='osclocalport'>Port</label>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<small class='form-text text-muted'>");
+  page += F("OSC local address and port to receive OSC messages.<br>");
+  page += F("Broadcast OSC messages on configured port are received too.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='col-md-6 col-12 mb-3'>");
+  page += F("<div class='card h-100'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-megaphone' viewBox='0 0 20 20'>");
+  page += F("<path d='M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0v-.214c-2.162-1.241-4.49-1.843-6.912-2.083l.405 2.712A1 1 0 0 1 5.51 15.1h-.548a1 1 0 0 1-.916-.599l-1.85-3.49a68.14 68.14 0 0 0-.202-.003A2.014 2.014 0 0 1 0 9V7a2.02 2.02 0 0 1 1.992-2.013 74.663 74.663 0 0 0 2.483-.075c3.043-.154 6.148-.849 8.525-2.199V2.5zm1 0v11a.5.5 0 0 0 1 0v-11a.5.5 0 0 0-1 0zm-1 1.35c-2.344 1.205-5.209 1.842-8 2.033v4.233c.18.01.359.022.537.036 2.568.189 5.093.744 7.463 1.993V3.85zm-9 6.215v-4.13a95.09 95.09 0 0 1-1.992.052A1.02 1.02 0 0 0 1 7v2c0 .55.448 1.002 1.006 1.009A60.49 60.49 0 0 1 4 10.065zm-.657.975 1.609 3.037.01.024h.548l-.002-.014-.443-2.966a68.019 68.019 0 0 0-1.722-.082z'/>");
+  page += F("</svg>");
+  page += F(" OSC Remote</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='row g-1'>");
+  page += F("<div class='w-75'>");
+  page += F("<div class='form-floating'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='oscRemoteHost' name='oscremotehost' value='");
+  page += oscRemoteHost;
+  page += F("'>");
+  page += F("<label for='oscremotehost'>Remote Host/IP</label>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<div class='w-25'>");
+  page += F("<div class='form-floating'>");
+  page += F("<input class='form-control' type='number' min='0' max='65535' id='oscRemotePort' name='oscremoteport' value='");
+  page += oscRemotePort;
+  page += F("'>");
+  page += F("<label for='oscremoteport'>Port</label>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("<small class='form-text text-muted'>");
+  page += F("OSC remote host name without .local, or IP address, and port to send OSC messages.<br>");
+  page += F("If you don't know them use the subnet broadcast address 255.255.255.255.<br>");
+  if (oscRemoteHost != oscRemoteIp.toString()) {
+    page += oscRemoteHost;
+    page += F(" resolved to ");
+    page += oscRemoteIp.toString();
+    page += F(".<br>");
+  }
+  page += F("If host name not found 255.255.255.255 is used.");
+  page += F("</small>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -2961,9 +3680,7 @@ void get_options_page(unsigned int start, unsigned int len) {
 
 void get_configurations_page(unsigned int start, unsigned int len) {
 
-  get_top_page(8);
-
-  if (trim_page(start, len)) return;
+  if (get_top_page(8, start, len)) return;
 
   page += F("<div class='row'>");
 
@@ -2979,11 +3696,14 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
   page += F("<div class='col-7'>");
-  page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' placeholder='' value=''>");
+  page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' value=''>");
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
   page += F("Type a name, select what to include and press 'New' to save current profile with a name. An existing configuration with the same name will be overridden without further notice.");
   page += F("</small><br>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<div class='col-3'>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='actionsCheck1' name='actions1' checked>");
@@ -3006,6 +3726,9 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<label class='form-check-label' for='optionsCheck1'>Options</label>");
   page += F("</div>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<div class='col-2'>");
   page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm' style='width: 100%;'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
@@ -3041,6 +3764,9 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("If you want good performance from SPIFFS keep the % utilisation low.");
   page += F("</small>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<div class='col-2'>");
   page += F("<button type='submit' name='action' value='upload' class='btn btn-primary btn-sm' style='width: 100%;'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
@@ -3055,7 +3781,6 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
 
-
   if (trim_page(start, len)) return;
 
   DPRINT("Looking for configuration files on SPIFFS root ...\n");
@@ -3064,14 +3789,15 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   File    root = SPIFFS.open("/");
   File    file = root.openNextFile();
   while (file) {
-    String c(file.name());
+    String c = file.name();
 
     if (c.length() > 4 && c.lastIndexOf(".cfg") == (c.length() - 4)) {
       availableconf++;
       DPRINT("%s\n", c.c_str());
       confoptions += F("<option value='");
       confoptions += c + F("'>");
-      confoptions += c.substring(1, c.length() - 4) + F("</option>");
+      confoptions += c.substring(1, c.length() - 4);
+      confoptions + F("</option>");
     }
     file = root.openNextFile();
   }
@@ -3101,6 +3827,9 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("'Delete' to remove configuration.");
   page += F("</small>");
   page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<div class='col-3'>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='actionsCheck2' name='actions2' checked>");
@@ -3138,6 +3867,9 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
   page += F("</svg>");
   page += F("<br>Apply & Save</button><p></p>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<button type='submit' name='action' value='download' class='btn btn-primary btn-sm' style='width: 100%;'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-download' viewBox='0 0 16 16'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
@@ -3182,8 +3914,10 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
 
-  page += F("<link href='https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.css' rel='stylesheet' type='text/css'>");
-  page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@9.5.6/dist/jsoneditor.min.js'></script>");
+  if (trim_page(start, len)) return;
+
+  page += F("<link href='https://cdn.jsdelivr.net/npm/jsoneditor@9.7.4/dist/jsoneditor.min.css' rel='stylesheet' type='text/css'>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@9.7.4/dist/jsoneditor.min.js'></script>");
   page += F("<script>");
   page += F("var container = document.getElementById('jsoneditor');\n"
             "var schema;\n"
@@ -3225,9 +3959,7 @@ void get_update_page(unsigned int start, unsigned int len) {
 
 #ifdef WEBCONFIG
 
-  get_top_page();
-
-  if (trim_page(start, len)) return;
+  if (get_top_page(0, start, len)) return;
 
   page += F("<div class='card mb-3' id='downloadCard'>");
   page += F("<h5 class='card-header'>");
@@ -3240,14 +3972,14 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F("<div class='row'>");
   page += F("<div class='col-4'>");
   page += F("Current version: <b><div>");
-  page += String(VERSION);
+  page += VERSION;
   page += F("</div></b></div>");
   page += F("<div class='col-4'>");
   page += F("Latest public version: <b>");
   page += F("<div id='latestFirmwareVersion' w3-include-html='https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/firmware/");
   page += xstr(PLATFORMIO_ENV);
   page += F("/version.txt?");
-  page += String(rand() % (999999 - 100000 + 1) + 100000);
+  page += (rand() % (999999 - 100000 + 1) + 100000);
   page += F("'></div>");
   page += F("</b></div>");
   page += F("<div class='col-1'>");
@@ -3374,6 +4106,8 @@ void get_update_page(unsigned int start, unsigned int len) {
               "};"
             "};");
 
+  if (trim_page(start, len)) return;
+
   page += F("const bars = document.getElementsByClassName('progress-bar');"
 
             "let progressRequested = false;\n"
@@ -3405,9 +4139,11 @@ void get_update_page(unsigned int start, unsigned int len) {
                 "}\n"
 
                 "progressRequested = false;\n"
-            "}\n"
+            "}\n");
 
-            "document.querySelector('#updateButton').addEventListener('click', function() {\n"
+  if (trim_page(start, len)) return;
+
+  page += F("document.querySelector('#updateButton').addEventListener('click', function() {\n"
 
 	              "if (!confirm('Do you want to update firmware from cloud?')) { return; };\n"
 
@@ -3430,6 +4166,8 @@ void get_update_page(unsigned int start, unsigned int len) {
                 "xhr.send(data);\n"
             "});\n");
 
+  if (trim_page(start, len)) return;
+
   page += F("async function onProgress() {\n"
                 "if (progressRequested) { return; }\n\n"
 
@@ -3447,9 +4185,11 @@ void get_update_page(unsigned int start, unsigned int len) {
                 "bars[0].textContent = percent.toFixed(0) + '%';\n"
 
                 "progressRequested = false;\n"
-            "}\n"
+            "}\n");
 
-            "function countDown() {\n"
+  if (trim_page(start, len)) return;
+
+  page += F("function countDown() {\n"
                 "let percent = parseInt(bars[0].style.width, 10);\n"
                 "percent--;"
                 "bars[0].style.width = percent.toFixed(0) + '%';\n"
@@ -3468,7 +4208,10 @@ void get_update_page(unsigned int start, unsigned int len) {
 	              "const allowed_mime_types = [ 'application/octet-stream', 'application/macbinary' ];\n"
 
 	              "const allowed_size = ");
-  page += String(OTA_PARTITION_SIZE) + F(";\n");
+  page += OTA_PARTITION_SIZE;
+  page += F(";\n");
+
+  if (trim_page(start, len)) return;
 
   page += F("if(allowed_mime_types.indexOf(file.type) == -1) {\n"
 		                "alert('Incorrect file type \"' + file.type + '\"');\n"
@@ -3488,9 +4231,11 @@ void get_update_page(unsigned int start, unsigned int len) {
                 "document.getElementById('progressBarDescription').innerHTML = 'Updating firmware...';\n"
                 "bars[0].style.width = '0%';\n"
                 "bars[0].textContent = '0%';\n"
-                "document.getElementById('progressCard').style.display = 'block';\n"
+                "document.getElementById('progressCard').style.display = 'block';\n");
 
-                "let timer = setInterval(onProgress, 2000);\n"
+  if (trim_page(start, len)) return;
+
+  page += F("   let timer = setInterval(onProgress, 2000);\n"
 
                 "const data = new FormData();\n"
                 "data.append('file', file);\n"
@@ -3541,7 +4286,9 @@ size_t get_root_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   size_t byteWritten = strlen((const char *)buffer);
   if (byteWritten == 0) {
     page = "";
-    fullPageLength = 0;
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
   }
   return byteWritten;
 }
@@ -3555,7 +4302,9 @@ size_t get_live_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   size_t byteWritten = strlen((const char *)buffer);
   if (byteWritten == 0) {
     page = "";
-    fullPageLength = 0;
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
   }
   return byteWritten;
 }
@@ -3569,7 +4318,9 @@ size_t get_actions_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   size_t byteWritten = strlen((const char *)buffer);
   if (byteWritten == 0) {
     page = "";
-    fullPageLength = 0;
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
   }
   return byteWritten;
 }
@@ -3583,7 +4334,9 @@ size_t get_pedals_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   size_t byteWritten = strlen((const char *)buffer);
   if (byteWritten == 0) {
     page = "";
-    fullPageLength = 0;
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
   }
   return byteWritten;
 }
@@ -3597,7 +4350,9 @@ size_t get_interfaces_page_chunked(uint8_t *buffer, size_t maxLen, size_t index)
   size_t byteWritten = strlen((const char *)buffer);
   if (byteWritten == 0) {
     page = "";
-    fullPageLength = 0;
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
   }
   return byteWritten;
 }
@@ -3611,7 +4366,9 @@ size_t get_sequences_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) 
   size_t byteWritten = strlen((const char *)buffer);
   if (byteWritten == 0) {
     page = "";
-    fullPageLength = 0;
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
   }
   return byteWritten;
 }
@@ -3625,7 +4382,9 @@ size_t get_options_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   size_t byteWritten = strlen((const char *)buffer);
   if (byteWritten == 0) {
     page = "";
-    fullPageLength = 0;
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
   }
   return byteWritten;
 }
@@ -3639,7 +4398,9 @@ size_t get_configurations_page_chunked(uint8_t *buffer, size_t maxLen, size_t in
   size_t byteWritten = strlen((const char *)buffer);
   if (byteWritten == 0) {
     page = "";
-    fullPageLength = 0;
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
   }
   return byteWritten;
 }
@@ -3654,7 +4415,9 @@ size_t get_update_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   size_t byteWritten = strlen((const char *)buffer);
   if (byteWritten == 0) {
     page = "";
-    fullPageLength = 0;
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
   }
   return byteWritten;
 }
@@ -3783,7 +4546,7 @@ void http_handle_sequences(AsyncWebServerRequest *request) {
 void http_handle_options(AsyncWebServerRequest *request) {
   if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
-  networks = WiFi.scanNetworks();
+  //networks = WiFi.scanNetworks(true); // Async scan
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_options_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
@@ -3845,21 +4608,22 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
       assert(act->next != nullptr);
       act = act->next;
     }
-    act->tag0[0]      = 0;
-    act->tag1[0]      = 0;
-    act->pedal        = p;
-    act->button       = 0;
-    act->led          = 255;
-    act->color0       = CRGB::Black;;
-    act->color1       = CRGB::Black;
-    act->event        = PED_EVENT_NONE;
-    act->midiMessage  = PED_EMPTY;
-    act->midiChannel  = 1;
-    act->midiCode     = 0;
-    act->midiValue1   = 0;
-    act->midiValue2   = 127;
-    act->slot         = SLOTS;
-    act->next         = nullptr;
+    act->tag0[0]       = 0;
+    act->tag1[0]       = 0;
+    act->pedal         = p;
+    act->button        = 0;
+    act->led           = 255;
+    act->color0        = CRGB::Black;
+    act->color1        = CRGB::Black;
+    act->event         = PED_EVENT_NONE;
+    act->midiMessage   = PED_EMPTY;
+    act->midiChannel   = 1;
+    act->midiCode      = 0;
+    act->midiValue1    = 0;
+    act->midiValue2    = 127;
+    act->oscAddress[0] = 0;
+    act->slot          = SLOTS;
+    act->next          = nullptr;
     sort_actions();
     create_banks();
     alert = "";
@@ -3874,21 +4638,22 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
       assert(act->next != nullptr);
       act = act->next;
     }
-    act->tag0[0]      = 0;
-    act->tag1[0]      = 0;
-    act->pedal        = constrain(request->arg("action").charAt(3) - '1', 0, PEDALS - 1);
-    act->button       = 0;
-    act->led          = 255;
-    act->color0       = CRGB::Black;;
-    act->color1       = CRGB::Black;
-    act->event        = PED_EVENT_NONE;
-    act->midiMessage  = PED_EMPTY;
-    act->midiChannel  = 1;
-    act->midiCode     = 0;
-    act->midiValue1   = 0;
-    act->midiValue2   = 127;
-    act->slot         = SLOTS;
-    act->next         = nullptr;
+    act->tag0[0]       = 0;
+    act->tag1[0]       = 0;
+    act->pedal         = constrain(request->arg("action").charAt(3) - '1', 0, PEDALS - 1);
+    act->button        = 0;
+    act->led           = 255;
+    act->color0        = CRGB::Black;
+    act->color1        = CRGB::Black;
+    act->event         = PED_EVENT_NONE;
+    act->midiMessage   = PED_EMPTY;
+    act->midiChannel   = 1;
+    act->midiCode      = 0;
+    act->midiValue1    = 0;
+    act->midiValue2    = 127;
+    act->oscAddress[0] = 0;
+    act->slot          = SLOTS;
+    act->next          = nullptr;
     sort_actions();
     create_banks();
     alert = "";
@@ -3960,23 +4725,24 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     while (act != nullptr) {
       if (act->pedal == p || uipedal.equals("All")) {
         i++;
-        strncpy(act->tag0,            request->arg(String("nameoff")  + String(i)).c_str(), MAXACTIONNAME + 1);
-        strncpy(act->tag1,            request->arg(String("nameon")   + String(i)).c_str(), MAXACTIONNAME + 1);
-        act->button       = constrain(request->arg(String("button")   + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
-        act->led          = constrain(request->arg(String("led")      + String(i)).toInt(), 0, 255);
+        strncpy(act->tag0,            request->arg(String("nameoff")    + String(i)).c_str(), MAXACTIONNAME + 1);
+        strncpy(act->tag1,            request->arg(String("nameon")     + String(i)).c_str(), MAXACTIONNAME + 1);
+        act->button       = constrain(request->arg(String("button")     + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
+        act->led          = constrain(request->arg(String("led")        + String(i)).toInt(), 0, 255);
         if (act->led != 255) act->led = (act->led == 0 ? LEDS : constrain(request->arg(String("led") + String(i)).toInt() - 1, 0, LEDS - 1));
         unsigned int red, green, blue;
-        sscanf(                       request->arg(String("color0-")  + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
+        sscanf(                       request->arg(String("color0-")    + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
         act->color0       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
-        sscanf(                       request->arg(String("color1-")  + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
+        sscanf(                       request->arg(String("color1-")    + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
         act->color1       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
-        act->event        = constrain(request->arg(String("event")    + String(i)).toInt(), 0, 255);
-        act->midiMessage  = constrain(request->arg(String("message")  + String(i)).toInt(), 0, 255);
-        act->midiCode     = constrain(request->arg(String("code")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
-        act->midiValue1   = constrain(request->arg(String("from")     + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
-        act->midiValue2   = constrain(request->arg(String("to")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
-        act->midiChannel  = constrain(request->arg(String("channel")  + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
-        act->slot         = constrain(request->arg(String("slot")     + String(i)).toInt() - 1, 0, SLOTS);;
+        act->event        = constrain(request->arg(String("event")      + String(i)).toInt(), 0, 255);
+        act->midiMessage  = constrain(request->arg(String("message")    + String(i)).toInt(), 0, 255);
+        act->midiCode     = constrain(request->arg(String("code")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+        act->midiValue1   = constrain(request->arg(String("from")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+        act->midiValue2   = constrain(request->arg(String("to")         + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
+        act->midiChannel  = constrain(request->arg(String("channel")    + String(i)).toInt(), 1, 16);
+        strncpy(act->oscAddress,      request->arg(String("oscaddress") + String(i)).c_str(), sizeof(act->oscAddress));
+        act->slot         = constrain(request->arg(String("slot")       + String(i)).toInt() - 1, 0, SLOTS);
       }
       act = act->next;
     }
@@ -3999,7 +4765,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
 void http_handle_post_pedals(AsyncWebServerRequest *request) {
 
   String       a;
-  const String checked("on");
+  const String checked = "on";
 
   //httpServer.sendHeader("Connection", "close");
   for (unsigned int i = 0; i < PEDALS; i++) {
@@ -4071,7 +4837,7 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
 void http_handle_post_interfaces(AsyncWebServerRequest *request) {
 
   String       a;
-  const String checked("on");
+  const String checked = "on";
 
   for (unsigned int i = 0; i < INTERFACES; i++) {
     a = request->arg(String("in") + String(i+1));
@@ -4156,7 +4922,7 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
 
 void http_handle_post_options(AsyncWebServerRequest *request) {
 
-  const String checked("on");
+  const String checked = "on";
   bool  restartRequired = false;
   bool  poweroffRequired = false;
 
@@ -4224,6 +4990,12 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   //if (pressTimeChanged) eeprom_update_press_time(pressTime, doublePressTime,longPressTime, repeatPressTime);
 
+  bool newFlipScreen = (request->arg("flipscreen") == checked);
+  if (newFlipScreen != flipScreen) {
+    flipScreen = newFlipScreen;
+    displayInit = true;
+  }
+
   bool newTapDanceMode = (request->arg("tapdancemode") == checked);
   if (newTapDanceMode != tapDanceMode) {
     tapDanceBank = newTapDanceMode;
@@ -4250,6 +5022,10 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     loadConfig = true;
   }
 
+  if (request->arg("rgborder").toInt() != rgbOrder) {
+    rgbOrder = (EOrder)request->arg("rgborder").toInt();
+  }
+
   if (request->arg("ledsonbrightness").toInt() != ledsOnBrightness) {
     ledsOnBrightness = request->arg("ledsonbrightness").toInt();
     //FastLED.setBrightness(map2(ledsOnBrightness, 0, 25, 0, 255));
@@ -4258,6 +5034,39 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
   if (request->arg("ledsoffbrightness").toInt() != ledsOffBrightness) {
     ledsOffBrightness = request->arg("ledsoffbrightness").toInt();
+  }
+
+  if (request->arg("osclocalport").toInt() != oscLocalPort) {
+    oscLocalPort = request->arg("osclocalport").toInt();
+    MDNS.addService("_osc", "_udp", oscLocalPort);
+    oscUDPin.listen(oscLocalPort);
+  }
+
+  bool oscReconnect = false;
+  if (request->arg("oscremotehost") != oscRemoteHost ||
+      !oscRemoteHost.equals(oscRemoteIp.toString()) && oscRemoteIp.toString().equals("255.255.255.255")) {
+    oscRemoteHost = request->arg("oscremotehost");
+    if (!oscRemoteIp.fromString(oscRemoteHost)) {
+      oscRemoteIp = MDNS.queryHost(oscRemoteHost);
+      if (oscRemoteIp.toString().equals("0.0.0.0")) {
+        oscRemoteIp = IPADDR_BROADCAST;
+        DPRINT("Host %s not found via mDNS. Using broadcast IP address 255.255.255.255.\n", oscRemoteHost.c_str());
+      }
+      else {
+        DPRINT("Resolved host %s to %s via mDNS.\n", oscRemoteHost.c_str(), oscRemoteIp.toString().c_str());
+      }
+    }
+    oscReconnect = true;
+  }
+
+  if (request->arg("oscremoteport").toInt() != oscRemotePort) {
+    oscRemotePort = request->arg("oscremoteport").toInt();
+    oscReconnect = true;
+  }
+
+  if (oscReconnect) {
+    oscUDPout.close();
+    oscUDPout.connect(oscRemoteIp, oscRemotePort);
   }
 
   if (request->arg("action").equals("apply")) {
@@ -4302,6 +5111,12 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
         act = act->next;
       }
     }
+#ifdef BLE
+    esp_bluedroid_disable();
+    esp_bt_controller_disable();
+#endif
+    esp_wifi_stop();
+    adc_power_off();
     delay(200);
     esp_deep_sleep_start();
   }
@@ -4309,7 +5124,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
 
 void http_handle_post_configurations(AsyncWebServerRequest *request) {
 
-  const String checked("on");
+  const String checked = "on";
 
   if (request->arg("action").equals("new")) {
     if (request->arg("newconfiguration").isEmpty())  {
@@ -4328,11 +5143,13 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
                            request->arg("sequences1")  == checked,
                            request->arg("options1")    == checked);
         alert = F("Current profile setup saved as '");
-        alert += request->arg("newconfiguration") + F("'.");
+        alert += request->arg("newconfiguration");
+        alert += F("'.");
       }
       else {
         alertError = F("Cannot create '");
-        alertError += request->arg("newconfiguration") + F("'.");
+        alertError += request->arg("newconfiguration");
+        alertError += F("'.");
       }
     }
   }
@@ -4732,7 +5549,6 @@ void http_setup() {
   httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/Sortable.min.js",         SPIFFS, "/js/Sortable.min.js").setDefaultFile("/js/Sortable.min.js").setCacheControl("max-age=600");
-  //httpServer.serveStatic("/css/sidebars.css",           SPIFFS, "/css/sidebars.css").setDefaultFile("/css/sidebars.css").setCacheControl("max-age=600");
   httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json").setDefaultFile("/schema.json").setCacheControl("max-age=600");
   httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
@@ -4764,6 +5580,9 @@ void http_setup() {
 
   // Setup a 10Hz timer
   Timer2Attach(100);
+
+  // Allocate memory for web page
+  page.reserve(WEBPAGE_MEMORY_ALLOCATION);
 #endif  // WEBCONFIG
 }
 

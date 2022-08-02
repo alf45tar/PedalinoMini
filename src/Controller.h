@@ -1,4 +1,4 @@
- /*
+/*
 __________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
 \______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
  |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
@@ -45,45 +45,48 @@ void sort_actions()
            ((act->pedal == idx->pedal) && (act->event != PED_EVENT_NONE) && (idx->event == PED_EVENT_NONE)) ||
            ((act->pedal == idx->pedal) && (act->event != PED_EVENT_NONE) && (act->button == idx->button) && (act->event > idx->event))) {
           action t;
-          strncpy(t.tag0,    idx->tag0, MAXACTIONNAME + 1);
-          strncpy(t.tag1,    idx->tag1, MAXACTIONNAME + 1);
-          t.pedal          = idx->pedal;
-          t.button         = idx->button;
-          t.event          = idx->event;
-          t.midiMessage    = idx->midiMessage;
-          t.midiChannel    = idx->midiChannel;
-          t.midiCode       = idx->midiCode;
-          t.midiValue1     = idx->midiValue1;
-          t.midiValue2     = idx->midiValue2;
-          t.led            = idx->led;
-          t.color0         = idx->color0;
-          t.color1         = idx->color1;
-          strncpy(idx->tag0, act->tag0, MAXACTIONNAME + 1);
-          strncpy(idx->tag1, act->tag1, MAXACTIONNAME + 1);
-          idx->pedal       = act->pedal;
-          idx->button      = act->button;
-          idx->event       = act->event;
-          idx->midiMessage = act->midiMessage;
-          idx->midiChannel = act->midiChannel;
-          idx->midiCode    = act->midiCode;
-          idx->midiValue1  = act->midiValue1;
-          idx->midiValue2  = act->midiValue2;
-          idx->led         = act->led;
-          idx->color0      = act->color0;
-          idx->color1      = act->color1;
-          strncpy(act->tag0, t.tag0, MAXACTIONNAME + 1);
-          strncpy(act->tag1, t.tag1, MAXACTIONNAME + 1);
-          act->pedal       = t.pedal;
-          act->button      = t.button;
-          act->event       = t.event;
-          act->midiMessage = t.midiMessage;
-          act->midiChannel = t.midiChannel;
-          act->midiCode    = t.midiCode;
-          act->midiValue1  = t.midiValue1;
-          act->midiValue2  = t.midiValue2;
-          act->led         = t.led;
-          act->color0      = t.color0;
-          act->color1      = t.color1;
+          strncpy(t.oscAddress,    idx->oscAddress, sizeof(t.oscAddress));
+          strncpy(t.tag0,          idx->tag0, MAXACTIONNAME + 1);
+          strncpy(t.tag1,          idx->tag1, MAXACTIONNAME + 1);
+          t.pedal                = idx->pedal;
+          t.button               = idx->button;
+          t.event                = idx->event;
+          t.midiMessage          = idx->midiMessage;
+          t.midiChannel          = idx->midiChannel;
+          t.midiCode             = idx->midiCode;
+          t.midiValue1           = idx->midiValue1;
+          t.midiValue2           = idx->midiValue2;
+          t.led                  = idx->led;
+          t.color0               = idx->color0;
+          t.color1               = idx->color1;
+          strncpy(idx->oscAddress, act->oscAddress, sizeof(idx->oscAddress));
+          strncpy(idx->tag0,       act->tag0, MAXACTIONNAME + 1);
+          strncpy(idx->tag1,       act->tag1, MAXACTIONNAME + 1);
+          idx->pedal             = act->pedal;
+          idx->button            = act->button;
+          idx->event             = act->event;
+          idx->midiMessage       = act->midiMessage;
+          idx->midiChannel       = act->midiChannel;
+          idx->midiCode          = act->midiCode;
+          idx->midiValue1        = act->midiValue1;
+          idx->midiValue2        = act->midiValue2;
+          idx->led               = act->led;
+          idx->color0            = act->color0;
+          idx->color1            = act->color1;
+          strncpy(act->oscAddress, t.oscAddress, sizeof(t.oscAddress));
+          strncpy(act->tag0,       t.tag0, MAXACTIONNAME + 1);
+          strncpy(act->tag1,       t.tag1, MAXACTIONNAME + 1);
+          act->pedal             = t.pedal;
+          act->button            = t.button;
+          act->event             = t.event;
+          act->midiMessage       = t.midiMessage;
+          act->midiChannel       = t.midiChannel;
+          act->midiCode          = t.midiCode;
+          act->midiValue1        = t.midiValue1;
+          act->midiValue2        = t.midiValue2;
+          act->led               = t.led;
+          act->color0            = t.color0;
+          act->color1            = t.color1;
         }
         idx = idx->next;
       }
@@ -101,7 +104,7 @@ void create_banks()
       if ((act == nullptr)) {
         memset(banks[b][p].pedalName, 0, MAXACTIONNAME + 1);
         banks[b][p].midiMessage = PED_EMPTY;
-        banks[b][p].midiChannel = 0;
+        banks[b][p].midiChannel = 1;
         banks[b][p].midiCode    = 0;
         banks[b][p].midiValue1  = 0;
         banks[b][p].midiValue2  = 127;
@@ -163,7 +166,7 @@ void leds_update(byte type, byte channel, byte data1, byte data2, byte bank)
           case PED_PROGRAM_CHANGE:
           case PED_PROGRAM_CHANGE_INC:
           case PED_PROGRAM_CHANGE_DEC:
-            if (type == midi::ProgramChange)
+            if (type == midi::ProgramChange) {
               if (act->midiCode == data1) {
                 lastLedColor[bank][led_button(act->pedal, act->button, act->led)] = act->color1;
                 lastLedColor[bank][led_button(act->pedal, act->button, act->led)].nscale8(ledsOnBrightness);
@@ -174,6 +177,7 @@ void leds_update(byte type, byte channel, byte data1, byte data2, byte bank)
                 lastLedColor[bank][led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness);
                 leds_refresh(led_button(act->pedal, act->button, act->led));
               }
+            }
             break;
 
           case PED_CONTROL_CHANGE:
@@ -243,11 +247,13 @@ void mtc_midi_real_time_message_send(byte b)
   if (click == 0) {
     fastleds[tapLed] = tapColor1;
     fastleds[tapLed].nscale8(ledsOnBrightness);
+    fastleds[tapLed] = swap_rgb_order(fastleds[tapLed], rgbOrder);
     FastLED.show();
   }
   else if (click == 8) {
     fastleds[tapLed] = tapColor0;
     fastleds[tapLed].nscale8(ledsOffBrightness);
+    fastleds[tapLed] = swap_rgb_order(fastleds[tapLed], rgbOrder);
     FastLED.show();
   }
   click = (click + 1) % 24;
@@ -684,6 +690,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
           sequences[channel-1][s].led = constrain(sequences[channel-1][s].led, 0, LEDS);
           fastleds[sequences[channel-1][s].led] = sequences[channel-1][s].color;
           fastleds[sequences[channel-1][s].led].nscale8(ledsOnBrightness);
+          fastleds[sequences[channel-1][s].led] = swap_rgb_order(fastleds[sequences[channel-1][s].led], rgbOrder);
           FastLED.show();
           lastLedColor[currentBank][sequences[channel-1][s].led] = fastleds[sequences[channel-1][s].led];
         }
@@ -713,7 +720,7 @@ void controller_event_handler_analog(byte pedal, int value)
                       pedals[pedal].invertPolarity ? 0 : MIDI_RESOLUTION - 1);
             value = constrain(value, 0, MIDI_RESOLUTION - 1);
           }
-          else {
+          else if (act->midiMessage != PED_OSC_MESSAGE) {
             value = map2(value,                                      // map from [0, ADC_RESOLUTION-1] to [min, max] MIDI value
                       0,
                       ADC_RESOLUTION - 1,
@@ -733,6 +740,7 @@ void controller_event_handler_analog(byte pedal, int value)
               midi_send(lastMIDIMessage[currentBank].midiMessage, lastMIDIMessage[currentBank].midiCode, value, lastMIDIMessage[currentBank].midiChannel, true, 0, MIDI_RESOLUTION - 1, currentBank, pedal);
               fastleds[led_button(act->pedal, act->button, act->led)] = lastColor;
               fastleds[led_button(act->pedal, act->button, act->led)].nscale8((255 * value) / (MIDI_RESOLUTION - 1));
+              fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
               FastLED.show();
               lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
               break;
@@ -742,6 +750,7 @@ void controller_event_handler_analog(byte pedal, int value)
               fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
               fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
               fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
+              fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
               FastLED.show();
               lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
               break;
@@ -755,6 +764,7 @@ void controller_event_handler_analog(byte pedal, int value)
               fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
               fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
               fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
+              fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
               FastLED.show();
               lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
               break;
@@ -764,6 +774,7 @@ void controller_event_handler_analog(byte pedal, int value)
               fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
               fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
               fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
+              fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
               FastLED.show();
               lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
               break;
@@ -807,10 +818,21 @@ void controller_event_handler_analog(byte pedal, int value)
               MTC.setBpm(bpm);
               break;
 
+            case PED_OSC_MESSAGE:
+              OSCSendMessage(act->oscAddress, map2(value, 0, ADC_RESOLUTION - 1, act->midiValue1*1000, act->midiValue2*1000) / (float)1000.0);
+              fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
+              fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
+              fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
+              fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
+              FastLED.show();
+              lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
+              break;
+
             case PED_ACTION_LED_COLOR:
               fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
               fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
               fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
+              fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
               FastLED.show();
               lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
               break;
@@ -860,7 +882,7 @@ void refresh_analog(byte i, bool send)
 
 void refresh_ultrasonic(bool send)
 {
-  const int SAFE_ZONE = ADC_RESOLUTION / 20;                // 5% of margin at both end of the scale
+  //const int SAFE_ZONE = ADC_RESOLUTION / 20;                // 5% of margin at both end of the scale
 
   long input;
   int value;
@@ -947,7 +969,7 @@ void controller_run(bool send = true)
 
   if (reloadProfile && send) {
     reloadProfile = false;
-    DPRINT("Loading profile ...\n");
+    DPRINT("Loading profile %d ...\n", currentProfile);
     eeprom_read_profile(currentProfile);
     lastColor = CRGB::Black;
     for (byte b = 0; b < BANKS; b++) {
@@ -974,8 +996,9 @@ void controller_run(bool send = true)
     controller_setup();
     mtc_setup();
 #ifdef WIFI
-    OscControllerUpdate();
+    //OscControllerUpdate();
 #endif
+    DPRINT("... profile %d loaded.\n", currentProfile);
     return;
   }
 
@@ -988,6 +1011,7 @@ void controller_run(bool send = true)
 #ifdef WIFI
     OscControllerUpdate();
 #endif
+    DPRINT("... configuration loaded.\n");
     return;
   }
 
@@ -1015,6 +1039,12 @@ void controller_run(bool send = true)
         refresh_analog(i, send);
         break;
 
+      case PED_ANALOG_MOMENTARY:
+      case PED_ANALOG_LATCH:
+        if (pedals[i].button[0] != nullptr) pedals[i].button[0]->check();
+        refresh_analog(i, send);
+        break;
+
       case PED_LADDER:
         for (byte s = 0; s < LADDER_STEPS; s++)
           if (pedals[i].button[s] != nullptr) pedals[i].button[s]->check();
@@ -1028,8 +1058,8 @@ void controller_run(bool send = true)
             break;
           case DIR_CW:
           case DIR_CCW:
-            bool    global = true;
-            action *act = actions[0];
+            bool    global = actions[0] != nullptr;
+            action *act    = actions[0] == nullptr ? actions[currentBank] : actions[0];
             while (act != nullptr) {
               if (act->pedal == i && act->event == PED_EVENT_JOG) {
                 switch (act->midiMessage) {
@@ -1099,6 +1129,7 @@ void controller_run(bool send = true)
                     fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
                     fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(act->color1, 255 * 0 / (MIDI_RESOLUTION - 1));
                     fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * 0 / (MIDI_RESOLUTION - 1));
+                    fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
                     FastLED.show();
                     lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
                     break;
@@ -1185,7 +1216,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               if ((pedals[p].mode == PED_MOMENTARY1 ||
                    pedals[p].mode == PED_MOMENTARY2 ||
                    pedals[p].mode == PED_MOMENTARY3 ||
-                   pedals[p].mode == PED_LADDER)    && (currentMIDIValue[currentBank][p][i] == act->midiValue1)) {
+                   pedals[p].mode == PED_LADDER     ||
+                   pedals[p].mode == PED_ANALOG_MOMENTARY) && (currentMIDIValue[currentBank][p][i] == act->midiValue1)) {
                 midi_send(act->midiMessage, act->midiCode, act->midiValue2, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
                 strncpy(lastPedalName, act->tag1, MAXACTIONNAME+1);
               }
@@ -1273,6 +1305,23 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               MTC.setBpm(bpm);
               break;
 
+            case PED_OSC_MESSAGE:
+              if ((pedals[p].mode == PED_MOMENTARY1 ||
+                   pedals[p].mode == PED_MOMENTARY2 ||
+                   pedals[p].mode == PED_MOMENTARY3 ||
+                   pedals[p].mode == PED_LADDER     ||
+                   pedals[p].mode == PED_ANALOG_MOMENTARY) && (currentMIDIValue[currentBank][p][i] == act->midiValue1)) {
+                OSCSendMessage(act->oscAddress, act->midiValue2);
+                currentMIDIValue[currentBank][p][i] = act->midiValue2;
+                strncpy(lastPedalName, act->tag1, MAXACTIONNAME+1);
+              }
+              else {
+                OSCSendMessage(act->oscAddress, act->midiValue1);
+                currentMIDIValue[currentBank][p][i] = act->midiValue1;
+                strncpy(lastPedalName, act->tag0, MAXACTIONNAME+1);
+              }
+              break;
+
             case PED_ACTION_PROFILE_PLUS:
               if (reloadProfile) return;
               eeprom_update_current_bank();
@@ -1289,6 +1338,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 
             case PED_ACTION_LED_COLOR:
               fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
+              fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
               FastLED.show();
               lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
             break;
@@ -1303,6 +1353,14 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               leds_off();
               //esp_sleep_enable_ext1_wakeup(GPIO_SEL_0, ESP_EXT1_WAKEUP_ALL_LOW);
               esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(p), 0);
+#ifdef BLE
+              esp_bluedroid_disable();
+              esp_bt_controller_disable();
+#endif
+#ifdef WIFI
+              esp_wifi_stop();
+#endif
+              adc_power_off();
               delay(200);
               esp_deep_sleep_start();
               break;
@@ -1310,6 +1368,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
           if (act->midiMessage == PED_PROGRAM_CHANGE) {
             fastleds[led_button(act->pedal, act->button, act->led)] = act->color1;
             fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOnBrightness);
+            fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
             FastLED.show();
             lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
             lastColor = fastleds[led_button(act->pedal, act->button, act->led)];
@@ -1325,6 +1384,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
             else {
               fastleds[led_button(act->pedal, act->button, act->led)] = (currentMIDIValue[currentBank][p][i] == act->midiValue1) ? off : on;
             }
+            fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
             FastLED.show();
             lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
             lastColor = fastleds[led_button(act->pedal, act->button, act->led)];
@@ -1359,23 +1419,26 @@ void controller_setup()
   controller_delete();
 
   analogReadResolution(ADC_RESOLUTION_BITS);
+  analogSetAttenuation(ADC_11db);
 
   DPRINT("Bank %2d\n", currentBank + 1);
 
   // Build new MIDI controllers setup
   for (byte i = 0; i < PEDALS; i++) {
-    DPRINT("Pedal %2d     %s   ", i + 1, pedalPressModeName[pedals[i].pressMode]);
+    DPRINT("Pedal %2d     %4s   ", i + 1, pedalPressModeName[pedals[i].pressMode]);
     switch (pedals[i].mode) {
-      case PED_MOMENTARY1:  DPRINT("MOMENTARY1"); break;
-      case PED_MOMENTARY2:  DPRINT("MOMENTARY2"); break;
-      case PED_MOMENTARY3:  DPRINT("MOMENTARY3"); break;
-      case PED_LATCH1:      DPRINT("LATCH1    "); break;
-      case PED_LATCH2:      DPRINT("LATCH2    "); break;
-      case PED_ANALOG:      DPRINT("ANALOG    "); break;
-      case PED_JOG_WHEEL:   DPRINT("JOG_WHEEL "); break;
-      case PED_LADDER:      DPRINT("LADDER    "); break;
-      case PED_ULTRASONIC:  DPRINT("ULTRASONIC"); break;
-      default:              DPRINT("          "); break;
+      case PED_MOMENTARY1:        DPRINT("MOMENTARY1      "); break;
+      case PED_MOMENTARY2:        DPRINT("MOMENTARY2      "); break;
+      case PED_MOMENTARY3:        DPRINT("MOMENTARY3      "); break;
+      case PED_LATCH1:            DPRINT("LATCH1          "); break;
+      case PED_LATCH2:            DPRINT("LATCH2          "); break;
+      case PED_ANALOG:            DPRINT("ANALOG          "); break;
+      case PED_JOG_WHEEL:         DPRINT("JOG_WHEEL       "); break;
+      case PED_LADDER:            DPRINT("LADDER          "); break;
+      case PED_ULTRASONIC:        DPRINT("ULTRASONIC      "); break;
+      case PED_ANALOG_MOMENTARY:  DPRINT("ANALOG+MOMENTARY"); break;
+      case PED_ANALOG_LATCH:      DPRINT("ANALOG+LATCH    "); break;
+      default:                    DPRINT("                "); break;
     }
     DPRINT("   ");
     switch (pedals[i].pressMode) {
@@ -1488,11 +1551,10 @@ void controller_setup()
         pedals[i].button[0] = new AceButton(pedals[i].buttonConfig, PIN_D(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 1);
         pinMode(PIN_D(i), INPUT_PULLUP);
         pedals[i].button[0]->setEventHandler(controller_event_handler_button);
-        DPRINT("   Pin D%d", PIN_D(i));
         pedals[i].button[1] = new AceButton(pedals[i].buttonConfig, PIN_A(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 2);
         pinMode(PIN_A(i), INPUT_PULLUP);
         pedals[i].button[1]->setEventHandler(controller_event_handler_button);
-        DPRINT("   Pin A%d", PIN_A(i));
+        DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
         break;
 
       case PED_MOMENTARY3:
@@ -1517,8 +1579,7 @@ void controller_setup()
         pedals[i].button[2] = new AceButton(pedals[i].buttonConfig, 3, pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 3);
         pinMode(PIN_D(i), INPUT_PULLUP);
         pinMode(PIN_A(i), INPUT_PULLUP);
-        DPRINT("   Pin D%d", PIN_D(i));
-        DPRINT("   Pin A%d", PIN_A(i));
+        DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
         pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);
         break;
 
@@ -1531,7 +1592,6 @@ void controller_setup()
         pedals[i].analogPedal->enableEdgeSnap();
         pedals[i].analogPedal->setSnapMultiplier(pedals[i].snapMultiplier);
         pedals[i].analogPedal->setActivityThreshold(pedals[i].activityThreshold);
-        //analogSetPinAttenuation(PIN_A(i), ADC_11db);
         if (lastUsedPedal == 0xFF) {
           lastUsedPedal = i;
           lastUsed = i;
@@ -1566,8 +1626,7 @@ void controller_setup()
         pinMode(PIN_D(i), OUTPUT);
         digitalWrite(PIN_D(i), HIGH);
         pinMode(PIN_A(i), INPUT_PULLUP);
-        DPRINT("   Pin D%d", PIN_D(i));
-        DPRINT("   Pin A%d", PIN_A(i));
+        DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
         pedals[i].buttonConfig->setEventHandler(controller_event_handler_button);
         break;
 
@@ -1588,6 +1647,40 @@ void controller_setup()
         pedals[i].analogPedal->setSnapMultiplier(pedals[i].snapMultiplier);
         pedals[i].analogPedal->setActivityThreshold(pedals[i].activityThreshold);
         DPRINT("   Pin A%d (ECHO) D%d (TRIG)", PIN_A(i), PIN_D(i));
+        break;
+
+      case PED_ANALOG_MOMENTARY:
+      case PED_ANALOG_LATCH:
+        pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
+        pedals[i].analogPedal->setAnalogResolution(ADC_RESOLUTION);
+        pedals[i].analogPedal->enableEdgeSnap();
+        pedals[i].analogPedal->setSnapMultiplier(pedals[i].snapMultiplier);
+        pedals[i].analogPedal->setActivityThreshold(pedals[i].activityThreshold);
+        if (lastUsedPedal == 0xFF) {
+          lastUsedPedal = i;
+          lastUsed = i;
+          lastSlot = SLOTS;
+          strncpy(lastPedalName, banks[currentBank][i].pedalName, MAXACTIONNAME+1);
+        }
+        pedals[i].buttonConfig = new ButtonConfig;
+        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureClick,       (pedals[i].pressMode & PED_PRESS_1) == PED_PRESS_1);
+        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureDoubleClick, (pedals[i].pressMode & PED_PRESS_2) == PED_PRESS_2);
+        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureLongPress,   (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
+        set_or_clear(pedals[i].buttonConfig, ButtonConfig::kFeatureRepeatPress, (pedals[i].pressMode & PED_PRESS_L) == PED_PRESS_L);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterClick);
+        //pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
+        pedals[i].buttonConfig->setFeature(ButtonConfig::kFeatureSuppressAfterLongPress);
+        pedals[i].buttonConfig->setDebounceDelay(DEBOUNCE_INTERVAL);
+        pedals[i].buttonConfig->setClickDelay(pressTime);
+        pedals[i].buttonConfig->setDoubleClickDelay(doublePressTime);
+        pedals[i].buttonConfig->setLongPressDelay(longPressTime);
+        pedals[i].buttonConfig->setRepeatPressDelay(repeatPressTime);
+        pedals[i].buttonConfig->setRepeatPressInterval(repeatPressTime);
+        pedals[i].button[0] = new AceButton(pedals[i].buttonConfig, PIN_D(i), pedals[i].invertPolarity ? LOW : HIGH, (i + 1) * 10 + 1);
+        pinMode(PIN_D(i), INPUT_PULLUP);
+        pedals[i].button[0]->setEventHandler(controller_event_handler_button);
+        DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
         break;
     }
     pedals[i].pedalValue[0] = pedals[i].invertPolarity ? LOW : HIGH;

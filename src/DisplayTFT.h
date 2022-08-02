@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2021 alf45star
+                                                                                   (c) 2018-2022 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -52,7 +52,7 @@ void display_clear()
   display.fillScreen(TFT_BLACK);
 }
 
-void display_progress_bar_title(String title)
+void display_progress_bar_title(const String& title)
 {
   display.fillScreen(TFT_BLACK);
   display.setTextSize(1);
@@ -60,9 +60,10 @@ void display_progress_bar_title(String title)
   display.setTextColor(TFT_WHITE, TFT_BLACK);
   display.setTextDatum(BC_DATUM);
   display.drawString(title, display.width() / 2, display.height() / 2);
+  DPRINT("%s\n", title);
 }
 
-void display_progress_bar_title2(String title1, String title2)
+void display_progress_bar_title2(const String& title1, const String& title2)
 {
   display.fillScreen(TFT_BLACK);
   display.setTextSize(1);
@@ -75,10 +76,10 @@ void display_progress_bar_title2(String title1, String title2)
   display.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
   display.setTextDatum(BC_DATUM);
   display.drawString(title1, display.width() / 2, display.height() / 2 - h);
-
+  DPRINT("%s %s\n", title1.c_str(), title2.c_str());
 }
 
-void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t progress, bool invert = false, String label = "")
+void display_progress_bar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t progress, bool invert = false, const String& label = "")
 {
   height += height % 2;
 
@@ -166,7 +167,7 @@ void display_progress_bar_2_update(unsigned int progress, unsigned int total)
 
 void display_progress_bar_2_label(unsigned int label, unsigned int x)
 {
-  const String l(label);
+  String l(label);
 
   TFT_eSprite sprite = TFT_eSprite(&display);
 
@@ -900,9 +901,10 @@ void drawFrame1(int16_t x, int16_t y)
 
       for (byte i = 0; i < POINTS - 1; i++) {
         byte h = (historyStart + i) % POINTS;
-        if (memoryHistory[h]  != 0 && memoryHistory[h+1]  != 0) sprite.drawLine(i, 104 - memoryHistory[h],  i + 1, 104 - memoryHistory[h+1],  TFT_INDEX_RED);
-        if (wifiHistory[h]    != 0 && wifiHistory[h+1]    != 0) sprite.drawLine(i, 104 - wifiHistory[h],    i + 1, 104 - wifiHistory[h+1],    TFT_INDEX_BLUE);
-        if (batteryHistory[h] != 0 && batteryHistory[h+1] != 0) sprite.drawLine(i, 104 - batteryHistory[h], i + 1, 104 - batteryHistory[h+1], TFT_INDEX_GREEN);
+        if (memoryHistory[h]        != 0 && memoryHistory[h+1]        != 0) sprite.drawLine(i, 104 - memoryHistory[h],        i + 1, 104 - memoryHistory[h+1],        TFT_INDEX_RED);
+        if (fragmentationHistory[h] != 0 && fragmentationHistory[h+1] != 0) sprite.drawLine(i, 104 - fragmentationHistory[h], i + 1, 104 - fragmentationHistory[h+1], TFT_INDEX_YELLOW);
+        if (wifiHistory[h]          != 0 && wifiHistory[h+1]          != 0) sprite.drawLine(i, 104 - wifiHistory[h],          i + 1, 104 - wifiHistory[h+1],          TFT_INDEX_BLUE);
+        if (batteryHistory[h]       != 0 && batteryHistory[h+1]       != 0) sprite.drawLine(i, 104 - batteryHistory[h],       i + 1, 104 - batteryHistory[h+1],       TFT_INDEX_GREEN);
       }
 
       sprite.setTextFont(1);
@@ -945,7 +947,7 @@ void drawFrame1(int16_t x, int16_t y)
         sprite.setFreeFont(&DSEG14_Classic_Bold_100);
         switch (currentProfile) {
           case 0:
-            p = "A." + ((currentBank > 9  ? "" : "0") + String(currentBank ));
+            p = "A." + ((currentBank > 9  ? "" : "0") + String(currentBank));
             sprite.setBitmapColor(TFT_RED, TFT_BLACK);
             break;
           case 1:
@@ -967,7 +969,7 @@ void drawFrame1(int16_t x, int16_t y)
         sprite.deleteSprite();
       }
       else {
-        const byte pedals2 = PEDALS / 2;
+        //const byte pedals2 = PEDALS / 2;
         String name;
         int offsetText       = 0;
         int offsetBackground = 0;
@@ -1242,7 +1244,7 @@ void drawFrame3(int16_t x, int16_t y)
 void display_init()
 {
     display.init();
-    display.setRotation(1);
+    flipScreen ? display.setRotation(3) : display.setRotation(1);
     display.fillScreen(TFT_BLACK);
     /*
     if (TFT_BL > 0) {                           // TFT_BL has been set in the TFT_eSPI library in the User Setup file TTGO_T_Display.h
@@ -1255,7 +1257,7 @@ void display_init()
     display.setSwapBytes(true);
     display.pushImage((display.width() - PEDALINO_LOGO_WIDTH) / 2, (display.height() - PEDALINO_LOGO_HEIGHT) / 2, PEDALINO_LOGO_WIDTH, PEDALINO_LOGO_HEIGHT, PedalinoLogo);
     delay(1000);
-/*
+
 #ifdef WIFI
   if (wifiEnabled) {
     display.fillScreen(TFT_WHITE);
@@ -1273,8 +1275,9 @@ void display_init()
     delay(1000);
   }
 #endif
-*/
+
     display.fillScreen(TFT_BLACK);
+    displayInit = false;
 }
 
 void display_ui_update_disable()
@@ -1292,6 +1295,8 @@ void display_update()
   if (interruptCounter3 > 0) {
 
     interruptCounter3 = 0;
+
+    if (displayInit) display_init();
 
     if (uiUpdate && !reloadProfile) {
       topOverlay();

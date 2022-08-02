@@ -349,7 +349,7 @@ void display_clear()
   display.display();
 }
 
-void display_progress_bar_title(String title)
+void display_progress_bar_title(const String& title)
 {
   display.clear();
   display.setFont(ArialMT_Plain_10);
@@ -358,7 +358,7 @@ void display_progress_bar_title(String title)
   display.display();
 }
 
-void display_progress_bar_title2(String title1, String title2)
+void display_progress_bar_title2(const String& title1, const String& title2)
 {
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -1143,9 +1143,9 @@ void display_init()
   // Initialising the UI will init the display too.
   ui.init();
 
-  #if FLIP_SCREEN == 1
-    display.flipScreenVertically();
-  #endif
+  if (flipScreen) display.flipScreenVertically();
+
+  displayInit = false;
 }
 
 void display_ui_update_disable()
@@ -1160,6 +1160,7 @@ void display_ui_update_enable()
 
 void display_update()
 {
+  if (displayInit)                display_init();
   if (uiUpdate && !reloadProfile) ui.update();
 }
 

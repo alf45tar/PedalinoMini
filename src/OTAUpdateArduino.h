@@ -51,7 +51,7 @@ void ota_begin(const char *hostname) {
     display.display();
 #endif
     byte ledProgress = (progress / (total / (LEDS * 100))) / 100;
-    fill_solid(fastleds, ledProgress + 1, CRGB::Red);
+    fill_solid(fastleds, ledProgress + 1, swap_rgb_order(CRGB::Red, rgbOrder));
     byte ledDim = (progress / (total / (LEDS * 100))) % 100;
     fastleds[ledProgress].nscale8(ledDim);
     FastLED.show();
@@ -68,7 +68,7 @@ void ota_begin(const char *hostname) {
     display.drawString(display.getWidth() / 2, display.getHeight() / 2, "Restart");
     display.display();
 #endif
-    fill_solid(fastleds, LEDS, CRGB::Green);
+    fill_solid(fastleds, LEDS, swap_rgb_order(CRGB::Green, rgbOrder));
     FastLED.show();
   });
 }
