@@ -1,0 +1,16 @@
+{
+  "name": "PedalinoMini™",
+  "version": "2.5.1",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/2.5.1/firmware/esp-wrover-kit/esp-wrover-kit-2.5.1-bootloader.bin",  "offset": 4096 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/2.5.1/firmware/esp-wrover-kit/esp-wrover-kit-2.5.1-partitions.bin",  "offset": 32768 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/2.5.1/firmware/esp-wrover-kit/esp-wrover-kit-2.5.1-firmware.bin",    "offset": 65536 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/2.5.1/firmware/esp-wrover-kit/esp-wrover-kit-2.5.1-spiffs.bin",      "offset": 3932160 }
+      ]
+    }
+  ]
+}
