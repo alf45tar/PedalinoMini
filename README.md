@@ -75,20 +75,68 @@ New features and bug corrections will be released to this public repository when
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
+Sponsors version additions/fixes since August 2nd, 2022:
+- None
+
+[PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
+
 ## Version history
 
 <details>
-<summary>May 12th, 2021</summary>
+<summary>2.5.1 - August 2nd, 2022</summary>
+
 The following features:
 
-- Detection and actions triggered on REPEAT PRESSED and LONG RELEASE event
-- Latest Bootstrap 5 release and WebUI themes
+- Fixed reboot on Options page with a long list of visible WiFi network
+- Fixed Note velocity always zero
+- Added display flip vertically on TTGO T-Display
+- Updated to latest JSON Editor 9.7.4
+- Added flip display and leds RGB order in Options
+- Fixed memory fragmentation during webpage creation
+- A new pedal type to connect an expression pedal and a switch (momentary or ladder) to one port only
+- Disabled WiFi power saving to reduce latency
+- Added OSC local port, remote host and remote port in Options
+- New "OSC Message" action sending integer and float values
+- Experimental: replace NVS with JSON files
 
-has been released to public on May 12th, 2021 thanks to the following sponsors: @MaxZak2020, @Alt Shift Creative, @serhatsoyyigit, @Kubbik1, @rigr, @jwyse, @teopost, @davidin73, @juani13973, @ba********, @MiqViq, @jisv48.
+has been released to public on August 2nd, 2022 thanks to the following sponsors: b*******, basst22778, dbosnyak, d***********, slapukas, Samantha-uk, Poznik, FelixMuellCode, yusufrahadika and s*****.
+</details>
+
+<details>
+<summary>2.4.0 - February 26th, 2022</summary>
+
+The following features:
+
+- Installing firmware and WiFi provisioning directly from browser
+- Support for ultrasonic ranging module HC-SR04
+- Adjusting easing and threshold for analog and ultrasonic sensor
+- Fixed a bug that avoid to reach max value when analog calibration is on
+- Improved Pedals web UI
+- Fixed Program Change leds brightness
+- Link each button to a led in Pedals setup in order to streamline Actions definition
+
+has been released to public on February 26th, 2022. Thanks to the new sponsors: ClintR1984, pstechsolutions, mknerr, radioactivetoy, y0m1g, joesuspense, andeee, jsleroy, Viser, anssir, mattzzw.
+</details>
+
+<details>
+<summary>2.3.2 - November 12th, 2021</summary>
+
+  The following features:
+
+- Bootstrap 5.1.3
+- JSON Editor 9.5.6
+- Reduced debounce interval from 20ms to 5ms
+- Added "Set Led Color" action
+- Redesigned Sequences (new web UI, new configuration file) - EEPROM breaking change
+- Improved Actions web UI
+- Bank duplication
+
+has been released to public on November 12th, 2021. Thanks to the new sponsors: RomanKlein777, michaelhauser, bobvc133, bmarshall91, p*************.
 </details>
 
 <details>
 <summary>August 9th, 2021</summary>
+
 The following features/fixes:
 
 - Bootstrap 5.0.2
@@ -109,58 +157,15 @@ has been released to public on August 9th, 2021 thanks to the following sponsors
 </details>
 
 <details>
-<summary>2.3.2 - November 12th, 2021</summary>
+<summary>May 12th, 2021</summary>
+
 The following features:
 
-- Bootstrap 5.1.3
-- JSON Editor 9.5.6
-- Reduced debounce interval from 20ms to 5ms
-- Added "Set Led Color" action
-- Redesigned Sequences (new web UI, new configuration file) - EEPROM breaking change
-- Improved Actions web UI
-- Bank duplication
+- Detection and actions triggered on REPEAT PRESSED and LONG RELEASE event
+- Latest Bootstrap 5 release and WebUI themes
 
-has been released to public on November 12th, 2021. Thanks to the new sponsors: RomanKlein777, michaelhauser, bobvc133, bmarshall91, p*************.
+has been released to public on May 12th, 2021 thanks to the following sponsors: @MaxZak2020, @Alt Shift Creative, @serhatsoyyigit, @Kubbik1, @rigr, @jwyse, @teopost, @davidin73, @juani13973, @ba********, @MiqViq, @jisv48.
 </details>
-
-<details>
-<summary>2.4.0 - February 26th, 2022</summary>
-The following features:
-
-- Installing firmware and WiFi provisioning directly from browser
-- Support for ultrasonic ranging module HC-SR04
-- Adjusting easing and threshold for analog and ultrasonic sensor
-- Fixed a bug that avoid to reach max value when analog calibration is on
-- Improved Pedals web UI
-- Fixed Program Change leds brightness
-- Link each button to a led in Pedals setup in order to streamline Actions definition
-
-has been released to public on February 26th, 2022. Thanks to the new sponsors: ClintR1984, pstechsolutions, mknerr, radioactivetoy, y0m1g, joesuspense, andeee, jsleroy, Viser, anssir, mattzzw.
-</details>
-
-<details>
-<summary>2.5.1 - August 2nd, 2022</summary>
-The following features:
-
-- Fixed reboot on Options page with a long list of visible WiFi network
-- Fixed Note velocity always zero
-- Added display flip vertically on TTGO T-Display
-- Updated to latest JSON Editor 9.7.4
-- Added flip display and leds RGB order in Options
-- Fixed memory fragmentation during webpage creation
-- A new pedal type to connect an expression pedal and a switch (momentary or ladder) to one port only
-- Disabled WiFi power saving to reduce latency
-- Added OSC local port, remote host and remote port in Options
-- New "OSC Message" action sending integer and float values
-- Experimental: replace NVS with JSON files
-
-has been released to public on August 2nd, 2022 thanks to the following sponsors: b*******, basst22778, dbosnyak, d***********, slapukas, Samantha-uk, Poznik, FelixMuellCode, yusufrahadika and s*****.
-</details>
-
-Sponsors version additions/fixes since August 2nd, 2022:
-- None
-
-[PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
 ## Bill of materials
 
