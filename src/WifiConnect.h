@@ -103,7 +103,7 @@ void start_services()
     case PED_BOOT_AP:
     case PED_BOOT_AP_NO_BLE:
       http_setup();
-      DPRINT("HTTP server started\n");
+      DPRINT("HTTP server started on port 80\n");
       DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
       DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
       break;
@@ -116,13 +116,13 @@ void start_services()
 
   // RTP-MIDI
   apple_midi_start();
-  DPRINT("RTP-MIDI started\n");
+  DPRINT("RTP-MIDI started on port 5004\n");
 
   // Set incoming OSC messages port
   oscUDPin.listen(oscLocalPort);
   oscUDPin.onPacket(oscOnPacket);
 
-  DPRINT("OSC server started\n");
+  DPRINT("OSC server started on port %d\n", oscLocalPort);
 
   if (!oscRemoteIp.fromString(oscRemoteHost)) {
     oscRemoteIp = MDNS.queryHost(oscRemoteHost);

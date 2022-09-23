@@ -53,12 +53,12 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <string>
 #include "Pedalino.h"
 #include "TickerTimer.h"
+#include "LedsEffects.h"
 #include "UdpMidiOut.h"
 #include "BLEMidiOut.h"
 #include "SerialMidiIn.h"
 #include "UdpMidiIn.h"
 #include "BLEMidiIn.h"
-#include "LedsEffects.h"
 #include "Config.h"
 #include "DisplayLCD.h"
 #ifdef TTGO_T_DISPLAY
@@ -297,7 +297,8 @@ void setup()
   FastLED.addLeds<WS2812B, FASTLEDS_DATA_PIN, LED_RGB_ORDER>(fastleds, LEDS);
   fill_solid(fastleds, LEDS, CRGB::Black);
   FastLED.show();
-  lastColor = CRGB::Black;
+  lastColor0 = CRGB::Black;
+  lastColor1 = CRGB::Black;
   for (byte b = 0; b < BANKS; b++)
     for (byte l = 0; l < LEDS; l++)
       lastLedColor[b][l] = CRGB::Black;

@@ -15,7 +15,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.5.1"
+#define VERSION         "2.5.2"
 
 #define MODEL           "PedalinoMini™"
 #define INTERFACES        6
@@ -249,6 +249,7 @@ const char *pedalPressModeName[] = {"None", "1", "2", "12", "L", "1L","2L", "12L
 #define PED_EVENT_MOVE          7
 #define PED_EVENT_JOG           8
 #define PED_EVENT_NONE          9
+#define PED_EVENT_OSC          10
 
 const char *eventName[] = {"Press", "Release", "Click", "Double Click", "Long Press", "Repeat Pressed", "Long Released", "Move", "Jog", "None"};
 
@@ -306,19 +307,7 @@ struct action {
   uint32_t               color0;
   uint32_t               color1;
   byte                   event;
-  byte                   midiMessage;     /*  1 = Program Change,
-                                              2 = Control Code
-                                              3 = Note On/Note Off
-                                              4 = Bank Select+
-                                              5 = Bank Select-
-                                              6 = Program Change+
-                                              7 = Program Change-
-                                              8 = Pitch Bend
-                                              9 = Channel Pressure
-                                             10 = Start
-                                             11 = Stop
-                                             12 = Continue
-                                             13 = Sequence */
+  byte                   midiMessage;
   byte                   midiChannel;     /* MIDI channel 1-16 */
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue1;
@@ -386,20 +375,7 @@ struct interface {
 };
 
 struct message {
-  byte                   midiMessage;     /*  1 = Program Change,
-                                              2 = Control Code
-                                              3 = Note On/Note Off
-                                              4 = Bank Select+
-                                              5 = Bank Select-
-                                              6 = Program Change+
-                                              7 = Program Change-
-                                              8 = Pitch Bend
-                                              9 = Channel Pressure
-                                             10 = Start
-                                             11 = Stop
-                                             12 = Continue
-                                             13 = Sequence
-                                             33 = Set Led Color */
+  byte                   midiMessage;
   union {
     struct  {
       byte              midiCode;         /* Program Change, Control Code, Note or Pitch Bend value to send */
@@ -421,7 +397,8 @@ pedal     pedals[PEDALS];                         // Pedals Setup
 message   sequences[SEQUENCES][STEPS];            // Sequences Setup
 byte      currentMIDIValue[BANKS][PEDALS][LADDER_STEPS];
 message   lastMIDIMessage[BANKS];
-CRGB      lastColor;
+CRGB      lastColor0;
+CRGB      lastColor1;
 byte      lastProgramChange[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 uint16_t  lastBankSelect[16]    = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 CRGB      lastLedColor[BANKS][LEDS];

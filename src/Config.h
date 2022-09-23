@@ -540,7 +540,7 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
           else if (order.equals("GBR")) rgbOrder = GBR;
           else if (order.equals("BRG")) rgbOrder = BRG;
           else if (order.equals("BGR")) rgbOrder = BGR;
-          else                          rgbOrder = RBG;
+          else                          rgbOrder = RGB;
           ledsOnBrightness    = jo["LedsOnBrightness"]                     | ledsOnBrightness;
           ledsOffBrightness   = jo["LedsOffBrightness"]                    | ledsOffBrightness;
           oscLocalPort        = jo["OSCLocalPort"]                         | oscLocalPort;
@@ -883,6 +883,9 @@ void load_factory_default()
   longPressTime      = PED_LONG_PRESS_TIME;
   repeatPressTime    = PED_REPEAT_PRESS_TIME;
   encoderSensitivity = 5;
+  rgbOrder           = RGB;
+  ledsOnBrightness   = 5;
+  ledsOffBrightness  = 1;
   tapDanceMode       = false;
   repeatOnBankSwitch = false;
   tapDanceBank       = true;
@@ -1312,6 +1315,21 @@ void eeprom_update_encoder_sensitivity(byte sensitivity = 5)
 #endif
 }
 
+void eeprom_update_rgb_order(EOrder order = RGB)
+{
+#ifdef NVS
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putUChar("RGB Order", order);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global[RGB Order]:  %d\n", order);
+#else
+  rgbOrder = order;
+  spiffs_save_globals();
+#endif
+}
+
 void eeprom_update_leds_brightness(byte on = 5, byte off = 1)
 {
 #ifdef NVS
@@ -1471,6 +1489,7 @@ void eeprom_read_global()
     longPressTime      = preferences.getLong("Long   Time");
     repeatPressTime    = preferences.getLong("Repeat Time");
     encoderSensitivity = preferences.getUChar("Encoder Sensit");
+    rgbOrder           = (EOrder)preferences.getUChar("RGB Order");
     ledsOnBrightness   = preferences.getUChar("LedsOnBright");
     ledsOffBrightness  = preferences.getUChar("LedsOffBright");
     oscLocalPort       = preferences.getUInt("OSCLocalPort");
@@ -1497,11 +1516,12 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][Long   Time]:      %ld\n", longPressTime);
     DPRINT("[NVS][Global][Repeat Time]:      %ld\n", repeatPressTime);
     DPRINT("[NVS][Global][Encoder Sensit]:   %d\n", encoderSensitivity);
+    DPRINT("[NVS][Global][RGB Order]:        %d\n", rgbOrder);
     DPRINT("[NVS][Global][LedsOnBright]:     %d\n", ledsOnBrightness);
     DPRINT("[NVS][Global][LedsOffBright]:    %d\n", ledsOffBrightness);
-    DPRINT("[NVS][Global[OSCLocalPort]:      %d\n", oscLocalPort);
-    DPRINT("[NVS][Global[OSCRemoteHost]:     %s\n", oscRemoteHost.c_str());
-    DPRINT("[NVS][Global[OSCRemotePort]:     %d\n", oscRemotePort);
+    DPRINT("[NVS][Global][OSCLocalPort]:     %d\n", oscLocalPort);
+    DPRINT("[NVS][Global][OSCRemoteHost]:    %s\n", oscRemoteHost.c_str());
+    DPRINT("[NVS][Global][OSCRemotePort]:    %d\n", oscRemotePort);
     for (byte i = 0; i < LADDER_STEPS; i++) {
       DPRINT("[NVS][Global][Ladder]:           Ladder %d Level %d\n", i + 1, ladderLevels[i]);
     }
@@ -1606,6 +1626,7 @@ void eeprom_update_globals()
   eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
   eeprom_update_press_time(pressTime, doublePressTime, longPressTime, repeatPressTime);
   eeprom_update_ladder();
+  eeprom_update_rgb_order(rgbOrder);
   eeprom_update_encoder_sensitivity(encoderSensitivity);
   eeprom_update_leds_brightness(ledsOnBrightness, ledsOffBrightness);
   eeprom_update_osc_parameters(oscLocalPort, oscRemoteHost, oscRemotePort);
@@ -1651,6 +1672,7 @@ void eeprom_initialize()
   eeprom_update_press_time();
   eeprom_update_ladder();
   eeprom_update_encoder_sensitivity();
+  eeprom_update_rgb_order();
   eeprom_update_leds_brightness();
   eeprom_update_osc_parameters();
   for (byte p = 0; p < PROFILES; p++)

@@ -545,6 +545,16 @@ void OSCSendSystemReset(void)
   oscUDPout.send(udpMsg);
 }
 
+void OSCSendMessage(const char *address)
+{
+  if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;
+
+  AsyncUDPMessage udpMsg;
+  OSCMessage oscMsg(address);
+  oscMsg.send(udpMsg).empty();
+  oscUDPout.send(udpMsg);
+}
+
 void OSCSendMessage(const char *address, int32_t value)
 {
   if (!wifiEnabled || !interfaces[PED_OSC].midiOut) return;

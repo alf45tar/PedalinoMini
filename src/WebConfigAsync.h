@@ -1264,7 +1264,13 @@ void get_actions_page(unsigned int start, unsigned int len) {
         page += F(">");
         page += F("Jog</option>");
         break;
-     }
+    }
+    page += F("<option value='");
+    page += PED_EVENT_OSC;
+    page += F("'");
+    if (act->event == PED_EVENT_OSC) page += F(" selected");
+    page += F(">");
+    page += F("OSC Message</option>");
     page += F("</select>");
     page += F("<label for='onSelect");
     page += i;
@@ -1842,6 +1848,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "   document.getElementById('toLabel'       + i).textContent = 'To Value';"
             "   document.getElementById('tagOffLabel'   + i).textContent = 'Tag 1';"
             "   document.getElementById('tagOnLabel'    + i).textContent = 'Tag 2';"
+            "   document.getElementById('color0Label'   + i).textContent = 'Off';"
+            "   document.getElementById('color1Label'   + i).textContent = 'On';"
             "   document.getElementById('channelSelect' + i).disabled = false;"
             "   document.getElementById('codeInput'     + i).disabled = false;"
             "   document.getElementById('fromInput'     + i).disabled = false;"
@@ -1896,8 +1904,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "           document.getElementById('toLabel'       + i).textContent = 'Value 2';"
             "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag 1';"
             "           document.getElementById('tagOnLabel'    + i).textContent = 'Tag 2';"
-            "           document.getElementById('color0Label'   + i).textContent = 'Color 1';"
-            "           document.getElementById('color1Label'   + i).textContent = 'Color 2';"
+            //"           document.getElementById('color0Label'   + i).textContent = 'Color 1';"
+            //"           document.getElementById('color1Label'   + i).textContent = 'Color 2';"
             "           break;");
 
   if (trim_page(start, len)) return;
@@ -1907,11 +1915,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "           document.getElementById('toLabel'       + i).textContent = '';"
             "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag';"
             "           document.getElementById('tagOnLabel'    + i).textContent = '';"
-            "           document.getElementById('color0Label'   + i).textContent = 'Color';"
-            "           document.getElementById('color1Label'   + i).textContent = '';"
+            //"           document.getElementById('color0Label'   + i).textContent = 'Color';"
+            //"           document.getElementById('color1Label'   + i).textContent = '';"
             "           document.getElementById('toInput'       + i).disabled = true;"
             "           document.getElementById('tagOnInput'    + i).disabled = true;"
-            "           document.getElementById('color1Input'   + i).disabled = true;"
+            //"           document.getElementById('color1Input'   + i).disabled = true;"
             "           break;"
             "         case 'analog':"
             "         case 'jogwheel':"
@@ -3757,7 +3765,7 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<div class='row'>");
   page += F("<div class='col-10'>");
   page += F("<div class='input-group'>");
-  page += F("<input type='file' class='form-control' id='customFile' name='upload'>");
+  page += F("<input type='file' class='form-control' id='customfile' name='upload'>");
   page += F("</div>");
   page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
   page += F("SPIFFS is not a high performance FS. It is designed to balance safety, wear levelling and performance for bare flash devices. ");
@@ -5154,7 +5162,9 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
     }
   }
   else if (request->arg("action").equals("upload")) {
-    alertError = F("No file selected. Choose file using Browse button.");
+    if (alert.isEmpty())  {
+      alertError = F("No file selected. Choose file using Browse button.");
+    }
   }
   else if (request->arg("action").equals("apply")) {
     String config = request->arg("filename");

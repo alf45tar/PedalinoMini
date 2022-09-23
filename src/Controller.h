@@ -11,14 +11,6 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #include <algorithm>
 
-byte led_button(byte p, byte b, byte l)
-{
-  p = constrain(p, 0, PEDALS-1);
-  b = constrain(b, 0, LADDER_STEPS-1);
-  l = (l == 255 ? 255 : constrain(l, 0, LEDS));
-  return (l == 255 ? pedals[p].ledbuttons[b] : l);
-}
-
 void delete_actions()
 {
   for (byte b = 0; b < BANKS; b++) {
@@ -690,12 +682,13 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
           sequences[channel-1][s].led = constrain(sequences[channel-1][s].led, 0, LEDS);
           fastleds[sequences[channel-1][s].led] = sequences[channel-1][s].color;
           fastleds[sequences[channel-1][s].led].nscale8(ledsOnBrightness);
+          DPRINT("LED COLOR.....Led %2d......RGB Color #%02x%02x%02x\n", sequences[channel-1][s].led + 1, fastleds[sequences[channel-1][s].led].red, fastleds[sequences[channel-1][s].led].green, fastleds[sequences[channel-1][s].led].blue);
           fastleds[sequences[channel-1][s].led] = swap_rgb_order(fastleds[sequences[channel-1][s].led], rgbOrder);
           FastLED.show();
           lastLedColor[currentBank][sequences[channel-1][s].led] = fastleds[sequences[channel-1][s].led];
         }
         else
-          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue, sequences[channel-1][s].midiChannel, on_off, range_min, range_max, bank, pedal);
+          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue, sequences[channel-1][s].midiChannel, on_off, 0, MIDI_RESOLUTION - 1, bank, pedal);
       DPRINT("=======================================================\n");
       currentMIDIValue[bank][pedal][button] = channel;
       lastMIDIMessage[currentBank] = {PED_SEQUENCE, code, value, channel};
@@ -738,8 +731,9 @@ void controller_event_handler_analog(byte pedal, int value)
           switch (act->midiMessage) {
             case PED_ACTION_REPEAT:
               midi_send(lastMIDIMessage[currentBank].midiMessage, lastMIDIMessage[currentBank].midiCode, value, lastMIDIMessage[currentBank].midiChannel, true, 0, MIDI_RESOLUTION - 1, currentBank, pedal);
-              fastleds[led_button(act->pedal, act->button, act->led)] = lastColor;
-              fastleds[led_button(act->pedal, act->button, act->led)].nscale8((255 * value) / (MIDI_RESOLUTION - 1));
+              fastleds[led_button(act->pedal, act->button, act->led)] = lastColor0;
+              fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(lastColor1, 255 * value / (MIDI_RESOLUTION - 1));
+              fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / (MIDI_RESOLUTION - 1));
               fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
               FastLED.show();
               lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
@@ -971,7 +965,8 @@ void controller_run(bool send = true)
     reloadProfile = false;
     DPRINT("Loading profile %d ...\n", currentProfile);
     eeprom_read_profile(currentProfile);
-    lastColor = CRGB::Black;
+    lastColor0 = CRGB::Black;
+    lastColor1 = CRGB::Black;
     for (byte b = 0; b < BANKS; b++) {
       lastMIDIMessage[b] = {PED_EMPTY, 0, 0, 1};
       for (byte p = 0; p < PEDALS; p++)
@@ -1311,12 +1306,20 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
                    pedals[p].mode == PED_MOMENTARY3 ||
                    pedals[p].mode == PED_LADDER     ||
                    pedals[p].mode == PED_ANALOG_MOMENTARY) && (currentMIDIValue[currentBank][p][i] == act->midiValue1)) {
-                OSCSendMessage(act->oscAddress, act->midiValue2);
+                if (act->midiValue1 == act->midiValue2)
+                  OSCSendMessage(act->oscAddress);
+                else
+                  OSCSendMessage(act->oscAddress, act->midiValue2);
+                DPRINT("OSC MESSAGE.....%s %d\n", act->oscAddress, act->midiValue2);
                 currentMIDIValue[currentBank][p][i] = act->midiValue2;
                 strncpy(lastPedalName, act->tag1, MAXACTIONNAME+1);
               }
               else {
-                OSCSendMessage(act->oscAddress, act->midiValue1);
+                 if (act->midiValue1 == act->midiValue2)
+                  OSCSendMessage(act->oscAddress);
+                else
+                  OSCSendMessage(act->oscAddress, act->midiValue1);
+                DPRINT("OSC MESSAGE.....%s %d\n", act->oscAddress, act->midiValue1);
                 currentMIDIValue[currentBank][p][i] = act->midiValue1;
                 strncpy(lastPedalName, act->tag0, MAXACTIONNAME+1);
               }
@@ -1371,7 +1374,8 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
             fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
             FastLED.show();
             lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
-            lastColor = fastleds[led_button(act->pedal, act->button, act->led)];
+            lastColor0 = act->color0;
+            lastColor1 = act->color1;
           }
           else if (act->midiMessage != PED_ACTION_LED_COLOR) {
             CRGB off = act->color0;
@@ -1384,10 +1388,15 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
             else {
               fastleds[led_button(act->pedal, act->button, act->led)] = (currentMIDIValue[currentBank][p][i] == act->midiValue1) ? off : on;
             }
+            DPRINT("LED COLOR.....Led %2d......RGB Color #%02x%02x%02x\n", led_button(act->pedal, act->button, act->led),
+                                                                           fastleds[led_button(act->pedal, act->button, act->led)].red,
+                                                                           fastleds[led_button(act->pedal, act->button, act->led)].green,
+                                                                           fastleds[led_button(act->pedal, act->button, act->led)].blue);
             fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
             FastLED.show();
             lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
-            lastColor = fastleds[led_button(act->pedal, act->button, act->led)];
+            lastColor0 = act->color0;
+            lastColor1 = act->color1;
           }
         }
         act = act->next;
@@ -1693,7 +1702,8 @@ void controller_setup()
   if (ultrasonicTrigger) HCSR04.begin(ultrasonicTrigger, ultrasonicEcho.data(), ultrasonicEcho.size());
 
   // Set initial led color for all banks
-  lastColor = CRGB::Black;
+  lastColor0 = CRGB::Black;
+  lastColor1 = CRGB::Black;
   for (byte b = 0; b < BANKS; b++)
     for (byte l = 0; l < LEDS; l++)
       lastLedColor[b][l] = CRGB::Black;

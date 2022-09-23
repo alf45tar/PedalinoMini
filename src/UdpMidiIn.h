@@ -1198,6 +1198,20 @@ void OnOscMidiClock(OSCMessage &msg)
   interfaces[currentInterface].midiClock = msg.getInt(0);
 }
 
+void OnOscAction(OSCMessage &msg)
+{
+  char address[51];
+
+  memset(address, 0, 51);
+  msg.getAddress(address, 0, 51);
+  if (msg.isInt(0))
+    DPRINT("OSC message %s %d received from %s\n", address, msg.getInt(0), oscControllerIP.toString().c_str());
+  else if (msg.isFloat(0))
+    DPRINT("OSC message %s %f received from %s\n", address, msg.getFloat(0), oscControllerIP.toString().c_str());
+  else
+    DPRINT("OSC message %s received from %s\n", address, oscControllerIP.toString().c_str());
+}
+
 
 // Listen to incoming OSC messages from WiFi
 
@@ -1250,6 +1264,26 @@ void oscOnPacket(AsyncUDPPacket packet) {
     oscMsg.dispatch("/pedalino/midi/noteOn",        OnOscNoteOn);
     oscMsg.dispatch("/pedalino/midi/noteOff",       OnOscNoteOff);
     oscMsg.dispatch("/pedalino/midi/controlChange", OnOscControlChange);
+
+    action *act = actions[currentBank];
+    while (act != nullptr) {
+      if (act->midiMessage == PED_OSC_MESSAGE) {
+        if (oscMsg.dispatch(act->oscAddress, OnOscAction)) {
+          int value = 255;
+          if (oscMsg.isInt(0))
+            value = map2(oscMsg.getInt(0), act->midiValue1, act->midiValue2, 0, 255);
+          else if (oscMsg.isFloat(0))
+            value = map2(oscMsg.getFloat(0)*1024, act->midiValue1*1024, act->midiValue2*1024, 0, 255);
+          fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
+          fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(act->color1, value);
+          fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / 255);
+          fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
+          FastLED.show();
+          lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
+        }
+      }
+      act = act->next;
+    }
   } else {
     DPRINTLN("OSC error: %d", oscMsg.getError());
   }
