@@ -61,11 +61,11 @@ New features and bug corrections will be released to this public repository when
 
   >Goal is 40 active sponsors. Starting point is 30 active sponsors as of August 2nd, 2022.
 
-- **Double the stars**
+- **Five hundread stars**
 
   _Add a star to the project if you don't want be a sponsor._
 
-  >Goal is 284 stars. Starting point is 142 stars as of April 5th, 2021.
+  >Goal is 500 stars.
 
 - **9 months from August 1st, 2022**
 
@@ -81,6 +81,15 @@ Sponsors version additions/fixes since August 2nd, 2022:
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
 ## Version history
+
+<details>
+<summary>2.5.2 - September 23rd, 2022</summary>
+
+Bonus version for doubling the stars on September 2nd, 2022.
+
+- RGB Order saved in NVS
+- Minor bug fixes
+</details>
 
 <details>
 <summary>2.5.1 - August 2nd, 2022</summary>
