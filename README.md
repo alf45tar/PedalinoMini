@@ -75,8 +75,12 @@ New features and bug corrections will be released to this public repository when
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
-Sponsors version additions/fixes since August 2nd, 2022:
-- None
+Sponsors version additions/fixes since September 23rd, 2022:
+- Bootstrap 5.2.2
+- SortableJS 1.15.0
+- JSON Editor 9.9.2
+- Better buttons placement in WebUI
+- Fixed RGB order in cross led refresh
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -475,7 +479,7 @@ PedalinoMini™ can emulate an [IK Multimedia iRig Blueboard](https://www.ikmult
 
 ### Fender Mustang Amplifier
 
-PedalinoMini™ can control a Fender Mustang I/II/III/IV Amplifier via MIDI. Additional [software](https://github.com/alf45tar/mustang-midi-bridge-win) is required to translate MIDI messages to the proprietary USB protocol used by Fender Mustang amplifiers. The bonus configuration is called 'mustang2' and works with 3 momentary switches and 3 jog wheels.
+PedalinoMini™ can control a Fender Mustang I/II/III/IV Amplifier via MIDI. Additional [software](https://github.com/alf45tar/mustang-midi-bridge-win) is required to translate MIDI messages to the proprietary USB protocol used by Fender Mustang amplifiers. The bonus configuration is called 'mustang' and works with 3 momentary switches and 3 jog wheels.
 
 ## Display mode
 
