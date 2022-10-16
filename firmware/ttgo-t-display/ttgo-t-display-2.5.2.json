@@ -1,0 +1,16 @@
+{
+  "name": "PedalinoMini™",
+  "version": "2.5.2",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/2.5.2/firmware/ttgo-t-display/ttgo-t-display-2.5.2-bootloader.bin",  "offset": 4096 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/2.5.2/firmware/ttgo-t-display/ttgo-t-display-2.5.2-partitions.bin",  "offset": 32768 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/2.5.2/firmware/ttgo-t-display/ttgo-t-display-2.5.2-firmware.bin",    "offset": 65536 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/2.5.2/firmware/ttgo-t-display/ttgo-t-display-2.5.2-spiffs.bin",      "offset": 3932160 }
+      ]
+    }
+  ]
+}
