@@ -175,6 +175,7 @@ using namespace ace_button;
 #define PED_BANK_SELECT_DEC           5
 #define PED_PROGRAM_CHANGE_INC        6
 #define PED_PROGRAM_CHANGE_DEC        7
+#define PED_CONTROL_CHANGE_SNAP       8
 #define PED_PITCH_BEND                midi::PitchBend
 #define PED_CHANNEL_PRESSURE          midi::AfterTouchChannel
 #define PED_MIDI_START                midi::Start

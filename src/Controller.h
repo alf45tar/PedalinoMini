@@ -158,6 +158,7 @@ void leds_update(byte type, byte channel, byte data1, byte data2, byte bank)
           case PED_PROGRAM_CHANGE:
           case PED_PROGRAM_CHANGE_INC:
           case PED_PROGRAM_CHANGE_DEC:
+          
             if (type == midi::ProgramChange) {
               if (act->midiCode == data1) {
                 lastLedColor[bank][led_button(act->pedal, act->button, act->led)] = act->color1;
@@ -172,7 +173,23 @@ void leds_update(byte type, byte channel, byte data1, byte data2, byte bank)
             }
             break;
 
+          case PED_CONTROL_CHANGE_SNAP:
+          if (type == PED_CONTROL_CHANGE_SNAP) {
+              if ((act->midiCode == data1) && (act->midiValue2 == data2)){
+                lastLedColor[bank][led_button(act->pedal, act->button, act->led)] = act->color1;
+                lastLedColor[bank][led_button(act->pedal, act->button, act->led)].nscale8(ledsOnBrightness);
+                leds_refresh(led_button(act->pedal, act->button, act->led));
+              }
+              else {
+                lastLedColor[bank][led_button(act->pedal, act->button, act->led)] = act->color0;
+                lastLedColor[bank][led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness);
+                leds_refresh(led_button(act->pedal, act->button, act->led));
+              }
+            }
+            break;
+
           case PED_CONTROL_CHANGE:
+
             if (type == midi::ControlChange && act->midiCode == data1) {
               switch (pedals[act->pedal].mode) {
                 case PED_ANALOG:
@@ -549,6 +566,23 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
       }
       break;
 
+    case PED_CONTROL_CHANGE_SNAP:
+
+      if (on_off) {
+        DPRINT("CONTROL CHANGE.....Code %3d......Value %3d.....Channel %2d\n", code, value, channel);
+        if (interfaces[PED_USBMIDI].midiOut)  USB_MIDI.sendControlChange(code, value, channel);
+        if (interfaces[PED_DINMIDI].midiOut)  DIN_MIDI.sendControlChange(code, value, channel);
+        AppleMidiSendControlChange(code, value, channel);
+        ipMIDISendControlChange(code, value, channel);
+        BLESendControlChange(code, value, channel);
+        OSCSendControlChange(code, value, channel);
+        screen_info(midi::ControlChange, code, value, channel, range_min, range_max);
+        currentMIDIValue[bank][pedal][button] = value;
+        lastMIDIMessage[currentBank] = {PED_CONTROL_CHANGE, code, value, channel};
+        leds_update(PED_CONTROL_CHANGE_SNAP, channel, code, 0);
+      }
+      break;
+
     case PED_PROGRAM_CHANGE:
     case PED_PROGRAM_CHANGE_INC:
     case PED_PROGRAM_CHANGE_DEC:
@@ -754,6 +788,7 @@ void controller_event_handler_analog(byte pedal, int value)
             case PED_NOTE_OFF:
             case PED_PITCH_BEND:
             case PED_CHANNEL_PRESSURE:
+            case PED_CONTROL_CHANGE_SNAP:
               midi_send(act->midiMessage, act->midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
               fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
               fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(act->color1, 255 * value / (MIDI_RESOLUTION - 1));
@@ -1064,6 +1099,7 @@ void controller_run(bool send = true)
 
                   case PED_PROGRAM_CHANGE:
                   case PED_CONTROL_CHANGE:
+                  case PED_CONTROL_CHANGE_SNAP:
                   case PED_NOTE_ON:
                   case PED_NOTE_OFF:
                   case PED_PITCH_BEND:
@@ -1207,7 +1243,15 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
-            case PED_CONTROL_CHANGE:
+            case PED_CONTROL_CHANGE_SNAP:
+              midi_send(act->midiMessage, act->midiCode, act->midiValue2, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
+              strncpy(lastPedalName, act->tag1, MAXACTIONNAME+1);
+              
+              break;              
+              
+              
+              case PED_CONTROL_CHANGE:
+
               if ((pedals[p].mode == PED_MOMENTARY1 ||
                    pedals[p].mode == PED_MOMENTARY2 ||
                    pedals[p].mode == PED_MOMENTARY3 ||
@@ -1472,6 +1516,9 @@ void controller_setup()
         break;
       case PED_CONTROL_CHANGE:
         DPRINT("CONTROL_CHANGE     %3d", banks[currentBank][i].midiCode);
+        break;
+      case PED_CONTROL_CHANGE_SNAP:
+        DPRINT("CONTROL_CHANGE_SNAP     %3d", banks[currentBank][i].midiCode);
         break;
       case PED_NOTE_ON:
         DPRINT("NOTE_ON            %3d", banks[currentBank][i].midiCode);

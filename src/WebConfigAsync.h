@@ -1394,6 +1394,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
     if (act->midiMessage == PED_PROGRAM_CHANGE_DEC) page += F(" selected");
     page += F(">Program Change-</option>");
     page += F("<option value='");
+    page += PED_CONTROL_CHANGE_SNAP;
+    page += F("'");
+    if (act->midiMessage == PED_CONTROL_CHANGE_SNAP) page += F(" selected");
+    page += F(">Control Change Snap</option>");
+    page += F("<option value='");
     page += PED_PITCH_BEND;
     page += F("'");
     if (act->midiMessage == PED_PITCH_BEND) page += F(" selected");
@@ -1907,6 +1912,44 @@ void get_actions_page(unsigned int start, unsigned int len) {
             //"           document.getElementById('color0Label'   + i).textContent = 'Color 1';"
             //"           document.getElementById('color1Label'   + i).textContent = 'Color 2';"
             "           break;");
+
+
+  if (trim_page(start, len)) return;
+
+  page += F("         case 'latch':"
+            "           document.getElementById('fromLabel'     + i).textContent = 'Value';"
+            "           document.getElementById('toLabel'       + i).textContent = '';"
+            "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag';"
+            "           document.getElementById('tagOnLabel'    + i).textContent = '';"
+            //"           document.getElementById('color0Label'   + i).textContent = 'Color';"
+            //"           document.getElementById('color1Label'   + i).textContent = '';"
+            "           document.getElementById('toInput'       + i).disabled = true;"
+            "           document.getElementById('tagOnInput'    + i).disabled = true;"
+            //"           document.getElementById('color1Input'   + i).disabled = true;"
+            "           break;"
+            "         case 'analog':"
+            "         case 'jogwheel':"
+            "           document.getElementById('tagOnInput'    + i).disabled = true;"
+            "           break;"
+            "       }"
+            "       break;");
+
+  page += F("     case 'Control Change Snap':"
+            "       document.getElementById('codeLabel'         + i).textContent = 'CC';"
+            "       switch (document.getElementById('pedalMode' + i).value) {"
+            "         case 'momentary':"
+            "         case 'ladder':"
+            "           document.getElementById('fromLabel'     + i).textContent = '';"
+            "           document.getElementById('toLabel'       + i).textContent = 'Value';"
+            "           document.getElementById('tagOffLabel'   + i).textContent = '';"
+            "           document.getElementById('tagOnLabel'    + i).textContent = 'Tag';"
+            //"           document.getElementById('color0Label'   + i).textContent = 'Color 1';"
+            //"           document.getElementById('color1Label'   + i).textContent = 'Color 2';"
+            //"           document.getElementById('codeInput'     + i).disabled = true;"
+            "           document.getElementById('fromInput'   + i).disabled = true;"
+            "           document.getElementById('tagOffInput'   + i).disabled = true;"
+            "           break;");
+
 
   if (trim_page(start, len)) return;
 
@@ -2726,6 +2769,11 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_PROGRAM_CHANGE_DEC) page += F(" selected");
     page += F(">Program Change-</option>");
+    page += F("<option value='");
+    page += PED_CONTROL_CHANGE_SNAP;
+    page += F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_CONTROL_CHANGE_SNAP) page += F(" selected");
+    page += F(">Control Change Snap</option>");
     page += F("<option value='");
     page += PED_PITCH_BEND;
     page += F("'");

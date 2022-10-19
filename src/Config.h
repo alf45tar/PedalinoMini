@@ -213,6 +213,9 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
           case PED_PROGRAM_CHANGE_DEC:
             jo["Message"] = "Program Change-";
             break;
+          case PED_CONTROL_CHANGE_SNAP:
+            jo["Message"] = "Control Change Snap";
+            break;
           case PED_PITCH_BEND:
             jo["Message"] = "Pitch Bend";
             break;
@@ -333,6 +336,9 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
             break;
           case PED_PROGRAM_CHANGE_INC:
             jo["Message"] = "Program Change+";
+            break;
+          case PED_CONTROL_CHANGE_SNAP:
+            jo["Message"] = "Control Change Snap";
             break;
           case PED_PROGRAM_CHANGE_DEC:
             jo["Message"] = "Program Change-";
@@ -656,6 +662,7 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
             else if (msg.equals("Bank Select-"))      actions[b]->midiMessage = PED_BANK_SELECT_DEC;
             else if (msg.equals("Program Change+"))   actions[b]->midiMessage = PED_PROGRAM_CHANGE_INC;
             else if (msg.equals("Program Change-"))   actions[b]->midiMessage = PED_PROGRAM_CHANGE_DEC;
+            else if (msg.equals("Control Change Snap"))   actions[b]->midiMessage = PED_CONTROL_CHANGE_SNAP;            
             else if (msg.equals("Pitch Bend"))        actions[b]->midiMessage = PED_PITCH_BEND;
             else if (msg.equals("Channel Pressure"))  actions[b]->midiMessage = PED_CHANNEL_PRESSURE;
             else if (msg.equals("Midi Start"))        actions[b]->midiMessage = PED_MIDI_START;
@@ -721,6 +728,7 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
                   else if (msg.equals("Bank Select-"))      act->midiMessage = PED_BANK_SELECT_DEC;
                   else if (msg.equals("Program Change+"))   act->midiMessage = PED_PROGRAM_CHANGE_INC;
                   else if (msg.equals("Program Change-"))   act->midiMessage = PED_PROGRAM_CHANGE_DEC;
+                  else if (msg.equals("Control Change Snap"))   act->midiMessage = PED_CONTROL_CHANGE_SNAP;  
                   else if (msg.equals("Pitch Bend"))        act->midiMessage = PED_PITCH_BEND;
                   else if (msg.equals("Channel Pressure"))  act->midiMessage = PED_CHANNEL_PRESSURE;
                   else if (msg.equals("Midi Start"))        act->midiMessage = PED_MIDI_START;
@@ -792,6 +800,7 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
             else if (msg.equals("Bank Select-"))      sequences[s][t].midiMessage = PED_BANK_SELECT_DEC;
             else if (msg.equals("Program Change+"))   sequences[s][t].midiMessage = PED_PROGRAM_CHANGE_INC;
             else if (msg.equals("Program Change-"))   sequences[s][t].midiMessage = PED_PROGRAM_CHANGE_DEC;
+            else if (msg.equals("Control Change Snap"))   sequences[s][t].midiMessage = PED_CONTROL_CHANGE_SNAP; 
             else if (msg.equals("Pitch Bend"))        sequences[s][t].midiMessage = PED_PITCH_BEND;
             else if (msg.equals("Channel Pressure"))  sequences[s][t].midiMessage = PED_CHANNEL_PRESSURE;
             //else if (msg.equals("Midi Start"))        sequences[s][t].midiMessage = PED_MIDI_START;
