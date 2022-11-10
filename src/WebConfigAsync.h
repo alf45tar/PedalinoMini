@@ -4787,6 +4787,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
         act->led          = constrain(request->arg(String("led")        + String(i)).toInt(), 0, 255);
         if (act->led != 255) act->led = (act->led == 0 ? LEDS : constrain(request->arg(String("led") + String(i)).toInt() - 1, 0, LEDS - 1));
         unsigned int red, green, blue;
+        red=0; green=0; blue=0;
         sscanf(                       request->arg(String("color0-")    + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
         act->color0       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
         sscanf(                       request->arg(String("color1-")    + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
