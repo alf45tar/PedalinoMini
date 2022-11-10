@@ -174,7 +174,7 @@ void leds_update(byte type, byte channel, byte data1, byte data2, byte bank)
             break;
 
           case PED_CONTROL_CHANGE_SNAP:
-          if (type == PED_CONTROL_CHANGE_SNAP) {
+            if (type == PED_CONTROL_CHANGE_SNAP) {
               if ((act->midiCode == data1) && (act->midiValue2 == data2)){
                 lastLedColor[bank][led_button(act->pedal, act->button, act->led)] = act->color1;
                 lastLedColor[bank][led_button(act->pedal, act->button, act->led)].nscale8(ledsOnBrightness);
@@ -579,7 +579,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
         screen_info(midi::ControlChange, code, value, channel, range_min, range_max);
         currentMIDIValue[bank][pedal][button] = value;
         lastMIDIMessage[currentBank] = {PED_CONTROL_CHANGE, code, value, channel};
-        leds_update(PED_CONTROL_CHANGE_SNAP, channel, code, 0);
+        leds_update(PED_CONTROL_CHANGE_SNAP, channel, code, value);
       }
       break;
 
@@ -1011,9 +1011,12 @@ void controller_run(bool send = true)
       while (act != nullptr) {
         if (act->midiMessage == midi::ControlChange) {
           if (act->tag1[0] != 0 && act->tag1[strlen(act->tag1) - 1] == '.')
-            currentMIDIValue[b][act->pedal][act->button] = act->midiValue2;
+            currentMIDIValue[b][act->pedal][act->button] = act->midiValue2;          
           else
             currentMIDIValue[b][act->pedal][act->button] = act->midiValue1;
+        }
+        if (act->midiMessage == PED_CONTROL_CHANGE_SNAP){      //Added to enable correct initial display of snapshots           
+          currentMIDIValue[b][act->pedal][act->button] = act->midiValue2;
         }
         act = act->next;
       }
@@ -1250,7 +1253,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               break;              
               
               
-              case PED_CONTROL_CHANGE:
+            case PED_CONTROL_CHANGE:
 
               if ((pedals[p].mode == PED_MOMENTARY1 ||
                    pedals[p].mode == PED_MOMENTARY2 ||
@@ -1412,7 +1415,7 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
               esp_deep_sleep_start();
               break;
           }
-          if (act->midiMessage == PED_PROGRAM_CHANGE) {
+          if (act->midiMessage == PED_PROGRAM_CHANGE||act->midiMessage == PED_CONTROL_CHANGE_SNAP) {
             fastleds[led_button(act->pedal, act->button, act->led)] = act->color1;
             fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOnBrightness);
             fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);

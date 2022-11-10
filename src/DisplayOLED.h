@@ -904,6 +904,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           else
             display->setColor(WHITE);
           display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 10 + y, name);
+          display->setColor(WHITE);
           // Bottom line
           name = String((banks[currentBank][p + PEDALS / 2].pedalName[0] == ':') ? &banks[currentBank][p + PEDALS / 2].pedalName[1] : banks[currentBank][p + PEDALS / 2].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p + PEDALS / 2][0]));
