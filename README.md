@@ -18,7 +18,7 @@ You can change the presets of your guitar rig, turn old MIDI equipment into some
 - ipMIDI
 - Open Sound Control (OSC)
 - IEEE 802.11 b/g/n Wi-Fi 2.4 GHZ with WPA/WPA2 authentication
-- Bluetooth Low Energy 4.0
+- Bluetooth Low Energy 4.0 server or client
 - DIN MIDI IN and MIDI OUT connectors
 - MIDI routing
 - MIDI clock master and slave
@@ -81,6 +81,14 @@ Sponsors version additions/fixes since September 23rd, 2022:
 - JSON Editor 9.9.2
 - Better buttons placement in WebUI
 - Fixed RGB order in cross led refresh
+- CLICK event on latch pedals is triggered on PRESS and on RELEASE event
+- Fixed BLE boot mode disabled when disabled in Options
+- BLE client mode (define BLECLIENT in platformio.ini)
+- Redesign of Pedals logic with Controls
+- Simultaneous buttons press
+- Control Change Snap (thanks to potul)
+- OLED display bottom line fix (thanks to potul)
+- Tag name truncated fix
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -354,7 +362,7 @@ Device name, username and password can be changed via web user interface in the 
 
 ## Pedals
 
-Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal/controller is connected to each of the 6 available ports. Pedal 7 and 8 (if present) are the on board buttons and they are fully configurable.
+Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal is connected to each of the 6 available ports. Pedal 7, 8 and 9 (if present) are the on board buttons and they are fully configurable.
 
 ![WEBUI PEDALS](./images/webui-pedals1.png "Pedals 1-4")
 
@@ -364,7 +372,7 @@ ____________|Description
 :-----------|:----------
 Mode|Select one of the following: NONE, MOMENTARY, LATCH, ANALOG, JOG WHEEL, MOMENTARY 2, MOMENTARY 3, LATCH 2, LADDER, ULTRASONIC, ANALOG+MOMENTARY, ANALOG+LATCH.
 Invert Polarity|Normally open (NO) and normally closed (NC) momentary switches are supported and configurable by software if the foot switch do not have a polarity switch. On analog pedal or ultrasonic ranging sensor it invert the range.
-Singles Press|Select Enable/Disable here to enable/disable PRESS, RELEASE and CLICK events.<br>CLICK event is detected after a PRESS and RELEASE event.
+Singles Press|Select Enable/Disable here to enable/disable PRESS, RELEASE and CLICK events.<br>CLICK event is detected after a PRESS followed by a RELEASE event on momentary switches and on PRESS and on RELEASE on latch switches.
 Double Press|Select Enable/Disable here to enable/disable DOUBLE CLICK events.<br>If double press is enabled CLICK event is postponed until double press timeout (by default 400ms).
 Long Press|Select Enable/Disable here to enable/disable LONG PRESS, REPEAT PRESSED and LONG RELEASE events.<br>LONG PRESS event is detected after a PRESS event with no RELEASE event within the long press timeout (by default 500ms).<br>After a LONG PRESS event a REPEAT PRESSED event is triggered every repeat press timeout (by default 500ms) until the button is keep pressed.<br>After a LONG PRESS event the RELEASE event is replaced by a LONG RELEASE event.<br>Two sequences of events are possible: PRESS and RELEASE or PRESS, LONG PRESS, REPEAT PRESS (optional) and LONG RELEASE.
 Analog Calibration|Enable analog pedal continuous calibration. Min and Max values are managed by PedalinoMini™. After each power on cycle move the expression pedals to its full range and PedalinoMini™ will calibrate it. During the first full movement of the pedal MIDI events could be not precise because PedalinoMini™ is still learning the full range of the pedal.
@@ -375,12 +383,26 @@ Easing|It controls the amount of easing. Possible values are: 1, 2 or 3. Bigger 
 Activity Threshold|The amount of movement that must take place for it to register as activity and start moving the output value. Increase the value to suppress noisy potentiometer. Recommended values: 8 or 16 for potentiometer, 64 for ultrasonic sensor.
 Button1 ... Button6|Define for each button of the pedal the default led number to be used in Actions
 
+## Controls
+
+A control is a single switch of pedal (i.e. button 2 of pedal 4) or a combination of 2 switched of any pedal to be pressed simultaneous. Controls are used to logical sort and hide the physical connection of switches or to define a new control as simultaneous press of 2 switches.
+
+Actions are triggered by controls. As a consequence a control is needed also for analog and ultrasonic pedals.
+
+Due to hardware limitation simultaneous press do not works with 2 switches of the same MOMENTARY 3, LATCH 3 and LADDER. Instead simultaneous press works well between one switch of a MOMENTARY 3/LATCH 3/LADDER pedal and any other switch of a different pedal of any type. Simultaneous press works well between the 2 switches of the same MOMENTARY 2 or LADDER 2 pedal.
+
+For each control it is possible to define the default led number to be used in Actions. It helps to simply the hardware leds connections but keeping each led logically linked to a switch.
+
+Of course the simultaneous release, double click and long press are supported too even if they are not so usefull.
+
+![WEBUI CONTROLS](./images/webui-controls.png "Controls")
+
 ## Actions
 
-Once Pedals setup is complete proceed with Actions setup to define which event (press, release, double press, long press, repeat pressed, long release, move or jog) trigger an action.
+Once Controls setup is complete proceed with Actions setup to define which event (press, release, double press, long press, repeat pressed, long release, move or jog) trigger an action.
 
 1. Select a bank on top left. Bank 0 is also called gloabl bank. Actions added to bank 0 are active in all the others banks.
-2. Select a pedal on top right or "All"
+2. Select a control on top right or "All"
 3. (Optional) Enter the Bank Name
 4. Click on New Action and select a pedal on the dropdown menu. The pedal number of an action cannot be changed anymore without delete and recreate the action.
 
@@ -389,7 +411,7 @@ Once Pedals setup is complete proceed with Actions setup to define which event (
 ________|Description
 :-------|:----------
 On|The event that trigger the action.<br>Momentary switches, latches and ladders have 7 different events: PRESS, RELEASE, CLICK, DOUBLE CLICK, LONG PRESS, REPEAT PRESSED and LONG RELEASE. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
-Button|Every pedal support at least one "button" except for MOMENTARY 2/LATCH 2 (2 buttons), MOMENTARY 3 (3 buttons) and LADDER (6 buttons). Each button is indipendent and every action can be linked to any button.
+Control|The control that trigger the event as defined in Controls page.
 Send|The action to be triggered on event.<br>It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK SELECT+, BANK SELECT-, PROGRAM CHANGE+, PROGRAM CHANGE-, BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.<br>For an analog pedal leave it blank to activate the universal mode. In universal mode an analog pedal can be used to repeat the last MIDI message. A typical usage is to modify the value of the last CONTROL CHANGE.
 From Value/To Value|Define the range from a off value to a on value (see below).
 Tags When Off|Action name to display when off action is triggered.
