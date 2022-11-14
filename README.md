@@ -593,3 +593,7 @@ https://github.com/bobvc133
 https://github.com/Samantha-uk
 ![Samantha-uk](https://user-images.githubusercontent.com/45871296/171361904-7694ab34-969d-43b8-b81d-fbdeb5835a03.jpg)
 [More details](https://github.com/alf45tar/PedalinoMini/issues/342)
+
+https://github.com/potul
+![potul](https://user-images.githubusercontent.com/40333657/201747449-be337a9b-9728-42e7-b6b0-1b2df7edcc7c.png)
+[More details](https://github.com/alf45tar/PedalinoMini/discussions/398)
