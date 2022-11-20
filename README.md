@@ -89,6 +89,8 @@ Sponsors version additions/fixes since September 23rd, 2022:
 - Control Change Snap (thanks to potul)
 - OLED display bottom line fix (thanks to potul)
 - Tag name truncated fix
+- Led color on boot fix
+- Add Debounce Interval and Simultanesou Gap Time in Options
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
