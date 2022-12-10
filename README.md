@@ -603,3 +603,7 @@ https://github.com/potul
 https://github.com/Celticpure
 ![Celticpure](https://user-images.githubusercontent.com/96823448/205149565-6311a23a-2be7-4579-8790-e0c4de3f14b9.jpg)
 [More details](https://github.com/alf45tar/PedalinoMini/discussions/404)
+
+https://github.com/jimhiggs
+![jimhiggs](https://user-images.githubusercontent.com/33665935/206598010-81ac7ab8-e267-41f5-8c59-5f51bd0de007.jpg)
+[More details](https://github.com/alf45tar/PedalinoMini/discussions/407)
