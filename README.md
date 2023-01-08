@@ -81,7 +81,6 @@ Sponsors version additions/fixes since September 23rd, 2022:
 - JSON Editor 9.9.2
 - Better buttons placement in WebUI
 - Fixed RGB order in cross led refresh
-- CLICK event on latch pedals is triggered on PRESS and on RELEASE event
 - Fixed BLE boot mode disabled when disabled in Options
 - BLE client mode (define BLECLIENT in platformio.ini)
 - Redesign of Pedals logic with Controls
@@ -91,6 +90,11 @@ Sponsors version additions/fixes since September 23rd, 2022:
 - Tag name truncated fix
 - Led color on boot fix
 - Add Debounce Interval and Simultanesou Gap Time in Options
+- Press & Release event for streamline actions
+- Inactivity timeout switch off display and leds
+- Added Default as led option in Sequences
+- Added "Set Bank" action in Sequences
+- Added "Step by Step+" and "Step by Step-" to run sequence step by step forward and backward
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
