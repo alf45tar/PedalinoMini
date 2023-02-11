@@ -611,3 +611,7 @@ https://github.com/Celticpure
 https://github.com/jimhiggs
 ![jimhiggs](https://user-images.githubusercontent.com/33665935/206598010-81ac7ab8-e267-41f5-8c59-5f51bd0de007.jpg)
 [More details](https://github.com/alf45tar/PedalinoMini/discussions/407)
+
+https://github.com/Keeze
+![Keeze](https://user-images.githubusercontent.com/6306958/218185050-52533cb4-c31e-48e1-9e49-27c15cf6d23b.jpg)
+[More details](https://github.com/alf45tar/PedalinoMini/discussions/430)
