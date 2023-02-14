@@ -95,6 +95,7 @@ Sponsors version additions/fixes since September 23rd, 2022:
 - Added Default as led option in Sequences
 - Added "Set Bank" action in Sequences
 - Added "Step by Step+" and "Step by Step-" to run sequence step by step forward and backward
+- Added latch emulation for momentary switches
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
