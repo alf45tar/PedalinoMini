@@ -30,8 +30,8 @@ You can change the presets of your guitar rig, turn old MIDI equipment into some
 ## Features
 
 - Support for digital foot switches (momentary or latch), analog expression pedals and jog wheels (rotary encoders)
-- 6 controllers ports. One controller port can support up to 6 indipendent switches for a total of 36 switches.
-- 20 banks
+- 6 controllers ports for ESP32 and 10 controllers ports for ESP32S3. One controller port can support up to 6 indipendent switches for a total of 36 (ESP32) or 60 (ESP32S3) switches.
+- 20 banks + 1 global bank
 - 3 user profiles
 - 16 sequences of 10 steps each
 - Each port can connect 1 expression pedal or 1 jog wheel or up to 6 foot switches via a resitors ladder (TC HELICON Switch-6).
@@ -96,6 +96,11 @@ Sponsors version additions/fixes since September 23rd, 2022:
 - Added "Set Bank" action in Sequences
 - Added "Step by Step+" and "Step by Step-" to run sequence step by step forward and backward
 - Added latch emulation for momentary switches
+- Initial suppport for BPI Leaf S3 (no USB MIDI device/host)
+- Increased Controls to 100
+- Configuration file up to 256Kb when PSRAM is available
+- Configuration file can be appended to current profile (only Actions)
+- Switch profile (CC 00 [01-03] on channel 16) and bank (CC 32 [00-20] on channel 1&) via MIDI
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
