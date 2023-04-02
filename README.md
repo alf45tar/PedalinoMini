@@ -228,17 +228,17 @@ Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins w
 
 To create your own ladder you can start simulating the below ones:
 
-Simulate voltage ladder 2 3 5.1 10 30K
+Simulate voltage ladder 2k 3k 5.1k 10k 30K
 - [Thinkercad](https://www.tinkercad.com/things/7m1vdQfmXFo)
-- [Circuit Simulation Applet](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWKIDMBOESGUwUwLRhgBQATuGAEzgAsNIlkAHLfTo3GQ866pPWDrIU8LiIFCacXjgRhO5KTkH0aaAGwzw8SFzWaVmNNUM4RogM4UTQotUoB2aspAAXUgFdcxK4xaG-BidkCHcvHz4JenEg53A3T28rJV4UxzjQxIj9VI1YkITwqwRjXhL7YJcw73I7VBMqLXlRAHlrXhQbAShiAHd29O4WQd1+wMGYkb7I-LTK6bnqHKn+5eDy-N0AcwHgupicXQAlds72sE1DkClUaBRkQ+gEYgAPBnBKFnUTFAh6SnoRwAkgA5ADir3ejgcIDQSE+OH+9AAygAZACi6IAaujIdR8JQkGA8gSlgx6AAVIEABQAOhYAHYAe1c9IAxkyGQzcGzXLgACbEIA)
+- [Circuit Simulation Applet](https://tinyurl.com/2mrlxab7)
 
-Simulate voltage ladder 10K (TC-Helicom Switch 6)
+Simulate voltage ladder 10k (TC-Helicom Switch 6)
 - [Thinkercad](https://www.tinkercad.com/things/jnovvmmsONp)
-- [Circuit Simulation Applet](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWKIDMBOESGUwUwLRhgBQATuGAEzgAsNIlkAHLfTmPJGQ866pPTB1kHeNxQC+NOH3adu09sJpoAbLPDzyK9UPoI01PSPkBnHizDrGl4exAAXUgFdcxcxMHrPGiE9fuIIrg6sHG9v5u5johQWq+ji5RmIaxBkZ24IkB5qpMlup5tmxZkdw2IIRUFrFyYgDmFNSU0k0MAOzUOFwAHpVg7ZVINCiV1PQtIABKAJIAcgDixH2Eoy3UTDgtwwz0AMoAMgCiRwBqR8sg8YSqRiijhAZBuyAAKjMACtzpfEW+WqgEM1WnQWC1upoxAB3II0MGtP7gqDEGEoIG7djVJFcGE-KwgP74nEpIyheJElFxXShGQU1GSfFhdTEir4nwUgDyNXxPN0yJhRAygmqVS6lIqorakuJhOEiNaXCmUsFysyOFaKGgowhMAQxCAA)
+- [Circuit Simulation Applet](https://tinyurl.com/2ptxv97t)
 
 Simulate "D1 Robot LCD Keypad Shield" voltage ladder
 - [Thinkercad](https://www.tinkercad.com/things/jQAR4Hrh3GH)
-- [Circuit Simulation Applet](https://www.falstad.com/circuit/circuitjs.html?ctz=CQAgjCAMB0l3BWKIDMBOESGUwUwLRhgBQATiAEyQAcIALLVbWHXclXGZTeK6pGxZscKFJC5jBfOnF7CQANipcZOIfTQK5yMPBWbtCNBW0ix4gM7dmfJpQDsJtSAAupAK65iVydt8VHHVcPLytVbXCAp3Bgz28NLXU6AyigtzirIxN1LIdoiHSvciITBnAwbL41eHEAeXLKthRGmPEAdwa86y727tT-QN6B0tlU3sjA5K0x4g6prtyZgHNO1JL+eXEAJU6y9bAtHBwZVGgUZCPoBGIAD3pwAMVBMXuKNi2ASQA5AHFbygc9hAaCQFGox0obAAygAZACicIAanD-mggUCwChBBC3iAACofAAKs066js6l66zKdjK4iAA)
+- [Circuit Simulation Applet](https://tinyurl.com/2zbrnsh6)
 
 ## How to upload firmware, WiFi provisioning and access to web user interface
 
