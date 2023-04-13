@@ -274,10 +274,12 @@ The only requirement for now is to use a Google Chrome or Microsoft Edge browser
 
 Raspberry Pi Pico is a generally available cost-effective board.
 
-### Method 1 - Thanks to [Sthopeless](https://github.com/Sthopeless)
+### Method 1
+Thanks to [Sthopeless](https://github.com/Sthopeless)
 
 - Simply flash Pico with the .uf2 binary file provided here https://github.com/rsta2/pico/releases/tag/v1.0
 - Connect ESP32 RX1 to Pico GP0 and ESP32 TX1 to Pico GP1 and GND to GND.
+
 ESP32 Pin|Pico Pin
 ---------|--------
 RX1|GP0
@@ -291,8 +293,9 @@ GND|GND
 
  [CircuitPhyton](https://circuitpython.org/board/raspberry_pi_pico/) is a derivative of MicroPython designed to simplify experimentation and education on low-cost microcontrollers. It makes it easier than ever to get prototyping by requiring no upfront desktop software downloads. Simply copy and edit files on the CIRCUITPY drive.
 
-1. Install CircuitPhyton on the Raspberry Pi Pico. Tutorial available [here](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython/circuitpython).
-2. Copy the CIRCUITPY folder files under the CIRCUITPY drive available when the Raspberry Pi Pico is connected to the PC/Mac and after installation of CircuitPhyton. The CIRCUITPY folder already contains the [Adafruit CircuitPhyton MIDI](https://github.com/adafruit/Adafruit_CircuitPython_MIDI) library for your convenience.
+- Install CircuitPhyton on the Raspberry Pi Pico. Tutorial available [here](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython/circuitpython).
+- Copy the CIRCUITPY folder files under the CIRCUITPY drive available when the Raspberry Pi Pico is connected to the PC/Mac and after installation of CircuitPhyton. The CIRCUITPY folder already contains the [Adafruit CircuitPhyton MIDI](https://github.com/adafruit/Adafruit_CircuitPython_MIDI) library for your convenience.
+- Connect ESP32 RX1 to Pico GP4 and ESP32 TX1 to Pico GP5 and GND to GND.
 
 ESP32 Pin|Pico Pin
 ---------|--------
