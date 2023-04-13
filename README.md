@@ -272,7 +272,7 @@ The only requirement for now is to use a Google Chrome or Microsoft Edge browser
 
 ## USB MIDI using Raspberry Pi Pico (RP2040)
 
-Raspberry Pi Pico is a generally available cost-effective board.
+Raspberry Pi Pico is a generally available cost-effective board that can be used to add an USB MIDI connection.
 
 ### Method 1
 Thanks to [Sthopeless](https://github.com/Sthopeless)
@@ -286,15 +286,12 @@ RX1|GP0
 TX1|GP1
 GND|GND
 
-- If the Raspberry Pi Pico is powered via USB, the VSYS must NOT be connected to other power source.
-- [Optional] Power ESP32 board just feeding the power from the VBUS port on the Pico to VIN (if available) of the ESP32.
-
 ### Method 2
 
  [CircuitPhyton](https://circuitpython.org/board/raspberry_pi_pico/) is a derivative of MicroPython designed to simplify experimentation and education on low-cost microcontrollers. It makes it easier than ever to get prototyping by requiring no upfront desktop software downloads. Simply copy and edit files on the CIRCUITPY drive.
 
-- Install CircuitPhyton on the Raspberry Pi Pico. Tutorial available [here](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython/circuitpython).
-- Copy the CIRCUITPY folder files under the CIRCUITPY drive available when the Raspberry Pi Pico is connected to the PC/Mac and after installation of CircuitPhyton. The CIRCUITPY folder already contains the [Adafruit CircuitPhyton MIDI](https://github.com/adafruit/Adafruit_CircuitPython_MIDI) library for your convenience.
+- Install CircuitPhyton on the Pico. Tutorial available [here](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython/circuitpython).
+- Copy the CIRCUITPY folder files under the CIRCUITPY drive available when the Pico is connected to the PC/Mac and after installation of CircuitPhyton. The CIRCUITPY folder already contains the [Adafruit CircuitPhyton MIDI](https://github.com/adafruit/Adafruit_CircuitPython_MIDI) library for your convenience.
 - Connect ESP32 RX1 to Pico GP4 and ESP32 TX1 to Pico GP5 and GND to GND.
 
 ESP32 Pin|Pico Pin
@@ -303,9 +300,12 @@ RX1|GP4
 TX1|GP5
 GND|GND
 
-Raspberry Pi Pico is powered by the USB MIDI connection.
+For both methods:
 
-IMPORTANT: ESP32 board and Raspberry Pi Pico must share GND.
+- If the Pico is powered via USB, the VSYS must NOT be connected to other power source.
+- [Optional] Power ESP32 board just feeding the power from the VBUS port on the Pico to VIN (if available) of the ESP32.
+
+IMPORTANT: ESP32 board and Pico must share GND.
 
 ## USB MIDI using Arduino Pro Micro
 
