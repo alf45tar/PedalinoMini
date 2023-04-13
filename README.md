@@ -104,7 +104,7 @@ Sponsors version additions/fixes since September 23rd, 2022:
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
-## Version history
+## Public versions history
 
 <details>
 <summary>2.5.2 - September 23rd, 2022</summary>
@@ -204,19 +204,24 @@ has been released to public on May 12th, 2021 thanks to the following sponsors: 
 
 The shortest bill of materials ever: an ESP32 board and a OLED display. That's it.
 
-- Any ESP32 board supported by [Arduino core for ESP32 WiFi chip](https://github.com/espressif/arduino-esp32)
+- Any ESP32 board supported by [Arduino core for ESP32](https://github.com/espressif/arduino-esp32)
   - Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
 - OLED I2C 0.96"/1.3" display 128x64 pixels SSD1306/SH1106 based
 
 Not enough short?
 
-- An all-in-one [TTGO T-Display](http://www.lilygo.cn/prod_view.aspx?TypeId=50033&Id=1126&FId=t3:50033:3) with an 1.14" IPS display and onboard lithium battery interface
+- An all-in-one [LILYGO® TTGO T-Display](http://www.lilygo.cn/prod_view.aspx?TypeId=50033&Id=1126&FId=t3:50033:3) with an 1.14" IPS display and onboard lithium battery interface
 
 - An all-in-one [Heltec WiFi Kit 32](https://heltec.org/project/wifi-kit-32/) with an integrated OLED display (0.96") and onboard lithium battery interface
 
 - An all-in-one [TTGO T-Eight ESP32](https://github.com/LilyGO/TTGO-T-Eight-ESP32) with a bigger OLED display (1.3"), 4MB PSRAM and onboard lithium battery interface
 
-USB MIDI and DIN MIDI connection requires additional hardware.
+Not enough powerful?
+
+- [BPI-Leaf-S3](https://wiki.banana-pi.org/BPI-Leaf-S3)
+- [LILYGO® T-Display-S3](https://www.lilygo.cc/products/t-display-s3?variant=42351558590645)
+
+USB MIDI (ESP32 only) and DIN MIDI connection requires additional hardware.
 
 ## Schematic
 
@@ -224,7 +229,10 @@ USB MIDI and DIN MIDI connection requires additional hardware.
 ![Schematic2](./images/Schematic_PedalinoMini_Sheet-2.svg "Schematic2")
 ![Schematic2](./images/Schematic_PedalinoMini_Sheet-3.svg "Schematic3")
 
-Do not forget the add the pull-up resistors on PIN_A1 to PIN_A6 otherwise pins will be floating. A floating pin can trigger unexpected MIDI events. As alternative you can disable the not used pedals via web interface.
+### Warnings
+
+- Do not forget the add the pullup resistors on PIN_A1 to PIN_A6 otherwise pins will be floating. A floating pin can trigger unexpected MIDI events. As alternative you can disable the not used pedals via web interface.
+- GPIO12 must be LOW during boot. MTDI (GPIO12) is used as a bootstrapping pin to select output voltage of an internal regulator which powers the flash chip (VDD_SDIO). This pin has an internal pulldown so if left unconnected it will read low at reset (selecting default 3.3V operation). Connect to the corresponding controller port only pedals that can guarantee a LOW value on boot. For more details check the official documentation [here](https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/sd_pullup_requirements.html#mtdi-strapping-pin).
 
 To create your own ladder you can start simulating the below ones:
 
@@ -232,7 +240,7 @@ Simulate voltage ladder 2k 3k 5.1k 10k 30K
 - [Thinkercad](https://www.tinkercad.com/things/7m1vdQfmXFo)
 - [Circuit Simulation Applet](https://tinyurl.com/2mrlxab7)
 
-Simulate voltage ladder 10k (TC-Helicom Switch 6)
+Simulate voltage ladder 10k (TC-Helicon Switch 6)
 - [Thinkercad](https://www.tinkercad.com/things/jnovvmmsONp)
 - [Circuit Simulation Applet](https://tinyurl.com/2ptxv97t)
 
@@ -262,7 +270,41 @@ The only requirement for now is to use a Google Chrome or Microsoft Edge browser
 11. Press "Visit device" to access web user interface
 </details>
 
-## USB MIDI
+## USB MIDI using Raspberry Pi Pico (RP2040)
+
+Raspberry Pi Pico is a generally available cost-effective board.
+
+### Method 1 - Thanks to [Sthopeless](https://github.com/Sthopeless)
+
+- Simply flash Pico with the .uf2 binary file provided here https://github.com/rsta2/pico/releases/tag/v1.0
+- Connect ESP32 RX1 to Pico GP0 and ESP32 TX1 to Pico GP1 and GND to GND.
+ESP32 Pin|Pico Pin
+---------|--------
+RX1|GP0
+TX1|GP1
+GND|GND
+
+- If the Raspberry Pi Pico is powered via USB, the VSYS must NOT be connected to other power source.
+- [Optional] Power ESP32 board just feeding the power from the VBUS port on the Pico to VIN (if available) of the ESP32.
+
+### Method 2
+
+ [CircuitPhyton](https://circuitpython.org/board/raspberry_pi_pico/) is a derivative of MicroPython designed to simplify experimentation and education on low-cost microcontrollers. It makes it easier than ever to get prototyping by requiring no upfront desktop software downloads. Simply copy and edit files on the CIRCUITPY drive.
+
+1. Install CircuitPhyton on the Raspberry Pi Pico. Tutorial available [here](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython/circuitpython).
+2. Copy the CIRCUITPY folder files under the CIRCUITPY drive available when the Raspberry Pi Pico is connected to the PC/Mac and after installation of CircuitPhyton. The CIRCUITPY folder already contains the [Adafruit CircuitPhyton MIDI](https://github.com/adafruit/Adafruit_CircuitPython_MIDI) library for your convenience.
+
+ESP32 Pin|Pico Pin
+---------|--------
+RX1|GP4
+TX1|GP5
+GND|GND
+
+Raspberry Pi Pico is powered by the USB MIDI connection.
+
+IMPORTANT: ESP32 board and Raspberry Pi Pico must share GND.
+
+## USB MIDI using Arduino Pro Micro
 
 The cheapest and compact way to implement an USB MIDI connection is using an Arduino Pro Micro and the [BlokasLabs/USBMIDI](https://github.com/BlokasLabs/USBMIDI) library. Upload the [UsbMidiConverter](https://github.com/BlokasLabs/USBMIDI/blob/master/examples/UsbMidiConverter/UsbMidiConverter.ino) example into the Arduino Pro Micro.
 
