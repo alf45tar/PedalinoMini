@@ -27,10 +27,8 @@
       .r{border-radius:0.3em;padding:2px;margin:6px 2px;}
       .pick-variant{margin-bottom:16px;}
     </style>
-    <script
-      type="module"
-      src="https://unpkg.com/esp-web-tools@9/dist/web/install-button.js?module"
-    ></script>
+    <script type="module" src="https://unpkg.com/esp-web-tools@9/dist/web/install-button.js?module"></script>
+    <script type="module" src="https://www.improv-wifi.com/sdk-js/launch-button.js"></script>
   </head>
   <body>
     <div style='display:inline-block;color:#eaeaea;min-width:340px;'>
@@ -84,6 +82,10 @@
             <span class="not-supported-i hidden">(but not on your iOS device)</span>.
           </i>
         </esp-web-install-button>
+        <improv-wifi-launch-button>
+          <button slot='activate'>Start provisioning!</button>
+          <span slot='unsupported'>Your browser does not support provisioning via Bluetooth.</span>
+        </improv-wifi-launch-button>
       </p>
     </div>
     <div style='text-align:right;font-size:11px;'>
