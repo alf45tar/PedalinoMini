@@ -77,13 +77,15 @@
       </br></br>
       <p>
         <esp-web-install-button id="inst">
+          <button slot='activate'>Connect via USB</button>
           <i slot="unsupported">
             Your browser does not support Web Serial.</br>Open this page in Google Chrome or</br>Microsoft Edge instead
             <span class="not-supported-i hidden">(but not on your iOS device)</span>.
           </i>
         </esp-web-install-button>
+        <span>or</span>
         <improv-wifi-launch-button>
-          <button slot='activate'>Connect device to WiFi via BLE</button>
+          <button slot='activate'>Connect via Bluetooth LE</button>
           <span slot="unsupported">
             Your browser is not supported. To try it out, visit this page with Google Chrome or<br>Microsoft Edge
             <span class="not-supported-i hidden">(but not on your iOS device)</span>.
