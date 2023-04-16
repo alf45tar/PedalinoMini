@@ -84,7 +84,7 @@
           </i>
         </esp-web-install-button>
        </p>
-       <span>or</span>
+       <p>or</p>
        <p>
         <improv-wifi-launch-button>
           <button slot='activate'>Connect via Bluetooth LE</button>
@@ -96,7 +96,6 @@
       </p>
       <p>Events:</p>
       <pre id="events"></pre>
-      <script src="./dist/web/launch-button.js" type="module"></script>
       <script>
         document.querySelectorAll("improv-wifi-launch-button").forEach((button) =>
           button.addEventListener("state-changed", (ev) => {
