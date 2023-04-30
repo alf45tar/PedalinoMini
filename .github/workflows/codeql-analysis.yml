@@ -69,7 +69,7 @@ jobs:
     #   ./location_of_script_within_repo/buildscript.sh
     
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
 
     - name: Install dependencies
       run: |

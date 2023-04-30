@@ -5,23 +5,32 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2022 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
+bool                  bleMidiConnected = false;
+unsigned long         bleLastOn        = 0;
+String                bleServer        = "";
+
 #ifdef BLE
 #include <BLEMIDI_Transport.h>
+#ifdef BLECLIENT
+#include <hardware/BLEMIDI_Client_ESP32.h>
+#else
 #include <hardware/BLEMIDI_ESP32_NimBLE.h>
+#endif
 #endif
 
 // Bluetooth LE MIDI interface
 
 #ifdef BLE
+#ifdef BLECLIENT
+BLEMIDI_CREATE_INSTANCE(bleServer.c_str(), BLE_MIDI);
+#else
 BLEMIDI_CREATE_INSTANCE(host.c_str(), BLE_MIDI);
 #endif
-
-bool                  bleMidiConnected = false;
-unsigned long         bleLastOn        = 0;
+#endif
 
 #ifdef NOBLE
 #define BLEMidiReceive(...)
@@ -133,6 +142,40 @@ void BLESendActiveSensing(void)
 void BLESendSystemReset(void)
 {
   if (bleEnabled && interfaces[PED_BLEMIDI].midiOut) BLE_MIDI.sendSystemReset();
+}
+
+void BLESendRealTimeMessage(byte type)
+{
+  switch (type) {
+
+      case midi::TuneRequest:
+        BLESendTuneRequest();
+        break;
+
+      case midi::Clock:
+        BLESendClock();
+        break;
+
+      case midi::Start:
+        BLESendStart();
+        break;
+
+      case midi::Continue:
+        BLESendContinue();
+        break;
+
+      case midi::Stop:
+        BLESendStop();
+        break;
+
+      case midi::ActiveSensing:
+        BLESendActiveSensing();
+        break;
+
+      case midi::SystemReset:
+        BLESendSystemReset();
+        break;
+    }
 }
 
 #endif  // NOBLE

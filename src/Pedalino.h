@@ -5,9 +5,11 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2022 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
+
+#define LOG_LOCAL_LEVEL   ESP_LOG_VERBOSE
 
 #include <vector>
 #include <Arduino.h>
@@ -15,20 +17,21 @@ __________           .___      .__  .__                 _____  .__       .__    
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
-#define VERSION         "2.5.2"
 
 #define MODEL           "PedalinoMini™"
-#define INTERFACES        6
+
+#define INTERFACES        7
 #define PROFILES          3
 #define BANKS            21   // 20 banks + 1 bank for global actions
 #define PEDALS            6   // real number of pedals is board specific (see below)
+#define CONTROLS        100
 #define SEQUENCES        16
 #define STEPS            10   // number of steps for each sequence
-#define LADDER_STEPS      6   // max number of switches in a resistor ladder
+#define LADDER_STEPS      6   // max number of controls in a resistor ladder
 #define LEDS             10   // number of WS2812B leds (254 max)
 #define LED_RGB_ORDER   RGB   // do not change it, RGB order is managed by program because FastLED library does not support changing RGB order at runtime
 #define SLOTS_ROWS        2
-#define SLOTS_COLS        4
+#define SLOTS_COLS        3
 #define SLOTS             SLOTS_ROWS * SLOTS_COLS
 
 
@@ -78,6 +81,24 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #define FASTLEDS_DATA_PIN     GPIO_NUM_5
+#elif defined ARDUINO_BPI_LEAF_S3
+#undef  LEDS
+#define LEDS                  1
+#undef  PEDALS
+#define PEDALS                11
+const byte pinD[] = {GPIO_NUM_1,  GPIO_NUM_2,  GPIO_NUM_3,  GPIO_NUM_4,  GPIO_NUM_5,  GPIO_NUM_6,  GPIO_NUM_7,  GPIO_NUM_8,  GPIO_NUM_9,  GPIO_NUM_10, GPIO_NUM_0};
+const byte pinA[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_14, GPIO_NUM_15, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_19, GPIO_NUM_20, GPIO_NUM_0};
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button BOOT
+#define USB_MIDI_IN_PIN       GPIO_NUM_44
+#define USB_MIDI_OUT_PIN      GPIO_NUM_43
+#define DIN_MIDI_IN_PIN       GPIO_NUM_44
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_43
+#define BATTERY_PIN           GPIO_NUM_14   // Pin connected to +BATT
+#define FASTLEDS_DATA_PIN     GPIO_NUM_48
+#undef  SDA
+#undef  SCL
+#define SDA                   GPIO_NUM_41
+#define SCL                   GPIO_NUM_42
 #else
 #undef  PEDALS
 #define PEDALS                7
@@ -94,12 +115,6 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 
 #define PIN_D(x)          pinD[x]
 #define PIN_A(x)          pinA[x]
-
-#if defined TTGO_T_EIGHT
-bool flipScreen = true;                // flip screen vertically
-#else
-bool flipScreen = false;
-#endif
 
 #include <FastLED.h>                    // https://github.com/FastLED/FastLED
 CRGB    fastleds[LEDS+1];               // fastleds[LEDS] not used
@@ -143,11 +158,12 @@ typedef uint8_t   byte;
 #include <AceButton.h>                  // https://github.com/bxparks/AceButton
 using namespace ace_button;
 
-#define DEBOUNCE_INTERVAL       5
-#define PED_PRESS_TIME        200
-#define PED_DOUBLE_PRESS_TIME 400
-#define PED_LONG_PRESS_TIME   500
-#define PED_REPEAT_PRESS_TIME 500
+#define DEBOUNCE_INTERVAL        5
+#define PED_PRESS_TIME         200
+#define PED_DOUBLE_PRESS_TIME  400
+#define PED_LONG_PRESS_TIME    500
+#define PED_REPEAT_PRESS_TIME 1000
+#define PED_SIMULTANEOUS_GAP    50
 
 #include "MidiTimeCode.h"
 
@@ -175,12 +191,14 @@ using namespace ace_button;
 #define PED_BANK_SELECT_DEC           5
 #define PED_PROGRAM_CHANGE_INC        6
 #define PED_PROGRAM_CHANGE_DEC        7
+#define PED_CONTROL_CHANGE_SNAP       8
 #define PED_PITCH_BEND                midi::PitchBend
 #define PED_CHANNEL_PRESSURE          midi::AfterTouchChannel
 #define PED_MIDI_START                midi::Start
 #define PED_MIDI_STOP                 midi::Stop
 #define PED_MIDI_CONTINUE             midi::Continue
 #define PED_SEQUENCE                  20
+#define PED_ACTION_BANK               21  // duplication is ok because used in Sequences only
 #define PED_ACTION_BANK_PLUS          21
 #define PED_ACTION_BANK_MINUS         22
 #define PED_ACTION_START              23
@@ -195,8 +213,17 @@ using namespace ace_button;
 #define PED_ACTION_LED_COLOR          33
 #define PED_ACTION_REPEAT             34
 #define PED_ACTION_REPEAT_OVERWRITE   35
-#define PED_ACTION_POWER_ON_OFF       99
+#define PED_SEQUENCE_STEP_BY_STEP_FWD 36
+#define PED_SEQUENCE_STEP_BY_STEP_REV 37
+#define PED_ACTION_MIDI_CLOCK_MASTER  40
+#define PED_ACTION_MIDI_CLOCK_SLAVE   41
+#define PED_ACTION_MIDI_CLOCK_OFF     42
+#define PED_ACTION_MTC_MASTER         43
+#define PED_ACTION_MTC_SLAVE          44
+#define PED_ACTION_MTC_OFF            45
+#define PED_ACTION_MTC_TIME_SIGNATURE 46
 #define PED_OSC_MESSAGE               50
+#define PED_ACTION_POWER_ON_OFF       99
 
 #define PED_NONE                1
 #define PED_MOMENTARY1          2
@@ -210,7 +237,6 @@ using namespace ace_button;
 #define PED_ULTRASONIC          10    // HC-SR04
 #define PED_ANALOG_MOMENTARY    11
 #define PED_ANALOG_LATCH        12
-
 
 const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic", "Analog+Momentary", "Analog+Latch"};
 
@@ -239,19 +265,21 @@ const char *pedalPressModeName[] = {"None", "1", "2", "12", "L", "1L","2L", "12L
 #define PED_BPM_PLUS            8
 #define PED_BPM_MINUS           9
 
-#define PED_EVENT_PRESS         AceButton::kEventPressed
-#define PED_EVENT_RELEASE       AceButton::kEventReleased
-#define PED_EVENT_CLICK         AceButton::kEventClicked
-#define PED_EVENT_DOUBLE_CLICK  AceButton::kEventDoubleClicked
-#define PED_EVENT_LONG_PRESS    AceButton::kEventLongPressed
-#define PED_EVENT_REPEAT        AceButton::kEventRepeatPressed
-#define PED_EVENT_LONG_RELEASED AceButton::kEventLongReleased
-#define PED_EVENT_MOVE          7
-#define PED_EVENT_JOG           8
-#define PED_EVENT_NONE          9
-#define PED_EVENT_OSC          10
+#define PED_EVENT_PRESS           AceButton::kEventPressed
+#define PED_EVENT_RELEASE         AceButton::kEventReleased
+#define PED_EVENT_CLICK           AceButton::kEventClicked
+#define PED_EVENT_DOUBLE_CLICK    AceButton::kEventDoubleClicked
+#define PED_EVENT_LONG_PRESS      AceButton::kEventLongPressed
+#define PED_EVENT_REPEAT          AceButton::kEventRepeatPressed
+#define PED_EVENT_LONG_RELEASED   AceButton::kEventLongReleased
+#define PED_EVENT_MOVE            7
+#define PED_EVENT_JOG             8
+#define PED_EVENT_NONE            9
+#define PED_EVENT_OSC             10
+#define PED_EVENT_PRESS_RELEASE   11
+#define PED_EVENT_LAST            12
 
-const char *eventName[] = {"Press", "Release", "Click", "Double Click", "Long Press", "Repeat Pressed", "Long Released", "Move", "Jog", "None"};
+const char *eventName[] = {"Press", "Release", "Click", "Double Click", "Long Press", "Repeat Pressed", "Long Released", "Move", "Jog", "None", "OSC", "Press & Release"};
 
 #define PED_LINEAR              0
 #define PED_LOG                 1
@@ -259,12 +287,13 @@ const char *eventName[] = {"Press", "Release", "Click", "Double Click", "Long Pr
 
 const char *pedalAnalogResponse[] = {"Linear", "Log", "Antilog"};
 
-#define PED_USBMIDI             0
-#define PED_DINMIDI             1
-#define PED_RTPMIDI             2
-#define PED_IPMIDI              3
-#define PED_BLEMIDI             4
-#define PED_OSC                 5
+#define PED_USBDEVICEMIDI       0
+#define PED_USBMIDI             1
+#define PED_DINMIDI             2
+#define PED_RTPMIDI             3
+#define PED_IPMIDI              4
+#define PED_BLEMIDI             5
+#define PED_OSC                 6
 
 #define PED_DISABLE             0
 #define PED_ENABLE              1
@@ -282,13 +311,14 @@ const char *pedalAnalogResponse[] = {"Linear", "Log", "Antilog"};
 #define PED_MIDI_CLOCK_SLAVE    6
 #define PED_MIDI_CLOCK_MASTER   7
 
-#define PED_TIMESIGNATURE_4_4   0
-#define PED_TIMESIGNATURE_3_4   1
-#define PED_TIMESIGNATURE_2_4   2
+#define PED_TIMESIGNATURE_2_4   0
+#define PED_TIMESIGNATURE_4_4   1
+#define PED_TIMESIGNATURE_3_4   2
 #define PED_TIMESIGNATURE_3_8   3
 #define PED_TIMESIGNATURE_6_8   4
 #define PED_TIMESIGNATURE_9_8   5
 #define PED_TIMESIGNATURE_12_8  6
+#define PED_TIMESIGNATURE_LAST  7
 
 #define MIDI_RESOLUTION         128       // MIDI 7-bit CC resolution
 #define ADC_RESOLUTION         1024
@@ -301,9 +331,8 @@ struct action {
     char                 tag1[MAXACTIONNAME+1];
     char                 name[MAXACTIONNAME+1];
   };
-  byte                   pedal;
-  byte                   button;
-  byte                   led;             // 0..LEDS-1 existing leds, if equal to LEDS no led assigned to action
+  byte                   control;
+  byte                   led;             // 0..LEDS-1 existing leds, if equal to LEDS no led assigned to action, 255 = Use default led defined by control
   uint32_t               color0;
   uint32_t               color1;
   byte                   event;
@@ -346,7 +375,10 @@ struct pedal {
                                              5 = single and long click
                                              6 = double and long click
                                              7 = single, double and long click */
-  byte                   invertPolarity;
+  byte                   invertPolarity;  /* 0 = disable
+                                             1 = enable   */
+  byte                   latchEmulation;  /* 0 = disable
+                                             1 = enable   */
   byte                   analogResponse;
   int                    expZero;           // [0, ADC_RESOLUTION-1]
   int                    expMax;            // [0, ADC_RESOLUTION-1]
@@ -357,43 +389,45 @@ struct pedal {
                                             // when sleep is not enabled.
   float                  activityThreshold; // the amount of movement that must take place for it
                                             // to register as activity and start moving the output value
-  byte                   ledbuttons[LADDER_STEPS];  // 0..LEDS-1 existing leds, LEDS = disabled, 255 = Use default led defined by pedal/button
   int                    pedalValue[2];     // [0, ADC_RESOLUTION-1]
   unsigned long          lastUpdate[2];     // last time the value is changed
+  byte                   latchStatus[LADDER_STEPS]; // latch emulation status: 0 = off, 1 = on
   AceButton             *button[LADDER_STEPS];
   ButtonConfig          *buttonConfig;
   MD_REncoder           *jogwheel;
   ResponsiveAnalogRead  *analogPedal;
 };
 
+struct control {
+  byte                   pedal1;
+  byte                   button1;
+  byte                   pedal2;
+  byte                   button2;
+  byte                   led;              // 0..LEDS-1 existing leds, LEDS = disabled
+};
+
 struct interface {
-  char                   name[12];
-  byte                   midiIn;          // 0 = disable, 1 = enable
-  byte                   midiOut;         // 0 = disable, 1 = enable
-  byte                   midiThru;        // 0 = disable, 1 = enable
-  byte                   midiClock;       // 0 = disable, 1 = enable
+  char                   name[13];
+  byte                   midiIn;           // 0 = disable, 1 = enable
+  byte                   midiOut;          // 0 = disable, 1 = enable
+  byte                   midiThru;         // 0 = disable, 1 = enable
+  byte                   midiClock;        // 0 = disable, 1 = enable
 };
 
 struct message {
   byte                   midiMessage;
-  union {
-    struct  {
-      byte              midiCode;         /* Program Change, Control Code, Note or Pitch Bend value to send */
-      byte              midiValue;        /* Control Code value, Note velocity */
-      byte              midiChannel;      /* MIDI channel 1-16 */
-    };
-    struct  {
-      byte              led;              // 0..LEDS-1 existing leds, if equal to LEDS ...
-      uint32_t          color;
-    };
-  };
-
+  byte                   midiCode;         /* Program Change, Control Code, Note or Pitch Bend value to send */
+  byte                   midiValue;        /* Control Code value, Note velocity */
+  byte                   midiChannel;      /* MIDI channel 1-16 */
+  byte                   led;              // 0..LEDS-1 existing leds, if equal to LEDS ...
+  uint32_t               color;
 };
 
 char      banknames[BANKS][MAXBANKNAME+1];        // Bank Names
 action   *actions[BANKS];                         // Actions
 bank      banks[BANKS][PEDALS];                   // The first action of every pedal
 pedal     pedals[PEDALS];                         // Pedals Setup
+control   controls[CONTROLS];                     // Controls Setup
 message   sequences[SEQUENCES][STEPS];            // Sequences Setup
 byte      currentMIDIValue[BANKS][PEDALS][LADDER_STEPS];
 message   lastMIDIMessage[BANKS];
@@ -405,26 +439,31 @@ CRGB      lastLedColor[BANKS][LEDS];
 std::vector<byte> ultrasonicEcho(PEDALS);         // Echo pins
 byte      ultrasonicTrigger;                      // Trigger pin
 
-interface interfaces[] = {
-                           "USB MIDI   ", 0,          PED_ENABLE + PED_SHOW, 0, 0,
-                           "Legacy MIDI", 0,          PED_ENABLE + PED_SHOW, 0, 0,
-                           "RTP-MIDI   ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
-                           "ipMIDI     ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
-                           "BLE MIDI   ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
-                           "OSC        ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0
-                          };                       // Interfaces Setup
+interface interfaces[] = { "USB MIDI(S3)", 0,          PED_ENABLE + PED_SHOW, 0, 0,
+                           "USB MIDI    ", 0,          PED_ENABLE + PED_SHOW, 0, 0,
+                           "Legacy MIDI ", 0,          PED_ENABLE + PED_SHOW, 0, 0,
+                           "RTP-MIDI    ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
+                           "ipMIDI      ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
+                           "BLE MIDI    ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
+                           "OSC         ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0
+                         };                       // Interfaces Setup
 
 AceButton       bootButton;
 ButtonConfig    bootButtonConfig;
 uint16_t        ladderLevels[LADDER_STEPS+1] = {497, 660, 752, 816, 876, 945, ADC_RESOLUTION - 1};  // TC-Helicon Switch 6
 
-char slots[SLOTS_ROWS][SLOTS_COLS][MAXBANKNAME+1];
+char  slots[SLOTS_ROWS][SLOTS_COLS][MAXBANKNAME+1];
 
 bool  tapDanceMode            = false;
 bool  repeatOnBankSwitch      = false;
 bool  tapDanceBank            = true;
 
 byte  bootMode                = PED_BOOT_NORMAL;
+bool  flipScreen              = false;
+bool  displayOff              = false;
+unsigned long displayOffCountdownStart = 0;
+unsigned long screenSaverTimeout = 1000*60*60;   // 1 hour
+
 volatile byte currentProfile  = 0;
 volatile bool reloadProfile   = true;
 volatile bool saveProfile     = false;
@@ -442,6 +481,8 @@ char  lastPedalName[MAXACTIONNAME+1] = "";
 bool  selectBank              = true;
 byte  currentMidiTimeCode     = PED_MTC_NONE;
 byte  timeSignature           = PED_TIMESIGNATURE_4_4;
+long  debounceInterval        = DEBOUNCE_INTERVAL;
+long  simultaneousGapTime     = PED_SIMULTANEOUS_GAP;
 long  pressTime               = PED_PRESS_TIME;
 long  doublePressTime         = PED_DOUBLE_PRESS_TIME;
 long  longPressTime           = PED_LONG_PRESS_TIME;
@@ -496,7 +537,6 @@ RTC_DATA_ATTR byte batteryHistory[POINTS];        // 0% =  3.0V    100% =  5.0V
 bool powersaver = false;
 byte firmwareUpdate = PED_UPDATE_NONE;
 
-
 uint32_t vref = 1100;
 
 #ifdef DEBUG_ESP_PORT
@@ -517,9 +557,6 @@ uint32_t vref = 1100;
 #define DPRINTLN(...)
 #define DPRINTMIDI(...)
 #endif
-
-#define xstr(s) sstr(s)  // stringize the result of expansion of a macro argument
-#define sstr(s) #s
 
 long map2(long x, long in_min, long in_max, long out_min, long out_max) {
     const long dividend = out_max - out_min;
@@ -561,8 +598,21 @@ void   create_banks();
 void   wifi_connect();
 void   http_setup();
 
-void   screen_update(bool);
-void   screen_info(int, int, int, int, int = 0, int = MIDI_RESOLUTION - 1);
+int m1, m2, m3, m4, rmin, rmax;
+unsigned long endMillis2 = 0;
+
+void screen_info(int b1, int b2, int b3, int b4, int mi = 0, int ma = MIDI_RESOLUTION - 1)
+{
+  m1 = b1;
+  m2 = b2;
+  m3 = b3;
+  m4 = b4;
+  rmin = min(mi, ma);
+  rmax = max(mi, ma);
+  endMillis2 = millis() + 1500;
+}
+
+void   leds_off();
 void   leds_refresh();
 void   leds_update(byte, byte, byte, byte);
 void   eeprom_update_current_profile(byte);
@@ -580,6 +630,8 @@ void display_progress_bar_update(unsigned int, unsigned int);
 void display_progress_bar_2_update(unsigned int, unsigned int);
 void display_progress_bar_2_label(unsigned int, unsigned int);
 void display_off();
+
+void switch_profile_or_bank(byte, byte, byte);
 
 void mtc_start();
 void mtc_stop();

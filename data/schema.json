@@ -17,6 +17,11 @@
                         "type": "integer",
                         "enum": [1, 2, 3, 4, 5]
                     },
+                    "BLEServer": {
+                        "type": "string",
+                        "minLength": 0,
+                        "maxLength": 20
+                    },
                     "SSID": {
                         "type": "string",
                         "minLength": 0,
@@ -52,6 +57,16 @@
                         "minLength": 0,
                         "maxLength": 32
                     },
+                    "DebounceInterval": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                    },
+                    "SimultaneousGapTime": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                    },
                     "PressTime": {
                         "type": "integer",
                         "minimum": 0,
@@ -72,7 +87,7 @@
                         "minimum": 0,
                         "maximum": 65535
                     },
-                    "EncoderSesitivity": {
+                    "EncoderSensitivity": {
                         "type": "integer",
                         "minimum": 1,
                         "maximum": 10
@@ -178,18 +193,15 @@
                         "type": "integer",
                         "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
                     },
-                    "Pedal": {
+                    "Control": {
                         "type": "integer",
-                        "enum": [1, 2, 3, 4, 5, 6, 7, 8]
-                    },
-                    "Button": {
-                        "type": "integer",
-                        "enum": [1, 2, 3, 4, 5, 6]
+                        "minimum": 0,
+                        "maximum": 64
                     },
                     "Led": {
                         "type": "integer",
-                        "minLength": 0,
-                        "maxLength": 255
+                        "minimum": 0,
+                        "maximum": 255
                     },
                     "Color0": {
                         "type": "string"
@@ -214,13 +226,14 @@
                     },
                     "Event": {
                         "type": "string",
-                        "enum": ["None", "Press", "Release", "Click", "Double Click", "Long Press", "Repeat Pressed", "Long Release", "Move", "Jog"]
+                        "enum": ["None", "Press", "Release", "Press & Release", "Click", "Double Click", "Long Press", "Repeat Pressed", "Long Release", "Move", "Jog"]
                     },
                     "Message": {
                         "type": "string",
                         "enum": ["None",
                                 "Program Change",
                                 "Control Change",
+                                "Control Change Snap",
                                 "Note On",
                                 "Note Off",
                                 "Bank Select+",
@@ -233,6 +246,8 @@
                                 "Midi Stop",
                                 "Midi Continue",
                                 "Sequence",
+                                "Step by Step+",
+                                "Step by Step-",
                                 "Bank+",
                                 "Bank-",
                                 "Start",
@@ -295,6 +310,7 @@
                         "enum": ["None",
                                 "Program Change",
                                 "Control Change",
+                                "Control Change Snap",
                                 "Note On",
                                 "Note Off",
                                 "Bank Select+",
@@ -307,6 +323,7 @@
                                 "Start",
                                 "Stop",
                                 "Continue",
+                                "Set Bank",
                                 "Set Led Color"]
                     },
                     "Channel": {
@@ -371,13 +388,13 @@
         "Pedals": {
             "type": "array",
             "minItems": 0,
-            "maxItems": 8,
+            "maxItems": 9,
             "items": {
                 "type": "object",
                 "properties": {
                     "Pedal": {
                         "type": "integer",
-                        "enum": [1, 2, 3, 4, 5, 6, 7, 8]
+                        "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                     },
                     "Mode": {
                         "type": "string",
@@ -389,6 +406,9 @@
                     "PressMode": {
                         "type": "string",
                         "enum": ["None", "1", "2", "12", "L", "1L","2L", "12L"]
+                    },
+                    "LatchEmulation": {
+                        "type": "boolean"
                     },
                     "AnalogResponse": {
                         "type": "string",
@@ -416,39 +436,40 @@
                     },
                     "AutoSensing": {
                         "type": "boolean"
-                    },
-                    "LedButton1": {
+                    }
+                }
+            }
+        },
+
+        "Controls": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 100,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "Pedal1": {
                         "type": "integer",
-                        "minimum": 0,
-                        "maximum": 255
+                        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                     },
-                    "LedButton2": {
+                    "Button1": {
                         "type": "integer",
-                        "minimum": 0,
-                        "maximum": 255
+                        "enum": [0, 1, 2, 3, 4, 5, 6]
                     },
-                    "LedButton3": {
+                    "Pedal2": {
                         "type": "integer",
-                        "minimum": 0,
-                        "maximum": 255
+                        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                     },
-                    "LedButton4": {
+                    "Button2": {
                         "type": "integer",
-                        "minimum": 0,
-                        "maximum": 255
+                        "enum": [0, 1, 2, 3, 4, 5, 6]
                     },
-                    "LedButton5": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 255
-                    },
-                    "LedButton6": {
+                    "Led": {
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 255
                     }
                 }
-
             }
         }
     }

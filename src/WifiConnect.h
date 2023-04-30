@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2022 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -21,6 +21,8 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "BluFi.h"
 #endif
 
+#include "Version.h"
+
 #define WIFI_CONNECT_TIMEOUT    15
 #define IMPROV_CONNECT_TIMEOUT  60
 #define SMART_CONFIG_TIMEOUT    60
@@ -30,7 +32,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 void wifi_connect();
 
-static esp_wps_config_t WPS;
+static esp_wps_config_t wpsConfig;
 int                     wpsStatus = 0;
 
 #ifndef PIN2STR
@@ -71,7 +73,7 @@ void set_wifi_power_saving_off()
 void stop_services()
 {
   MDNS.end();
-  ArduinoOTA.end();
+  ota_end();
   oscUDPin.close();
   oscUDPout.close();
 }
@@ -90,11 +92,8 @@ void start_services()
     MDNS.addService("_http",       "_tcp", 80);
   }
 
-#ifdef ARDUINOOTA
   // OTA update init
   ota_begin(host.c_str());
-  DPRINT("OTA update started\n");
-#endif
 
 #ifdef WEBCONFIG
   switch (bootMode) {
@@ -271,6 +270,7 @@ void WiFiEvent(WiFiEvent_t event)
       DPRINT("SYSTEM_EVENT_AP_PROBEREQRECVED\n");
       break;
 
+#ifdef WPS
     case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_SUCCESS\n");
       wpsStatus = 1;
@@ -299,6 +299,7 @@ void WiFiEvent(WiFiEvent_t event)
     case SYSTEM_EVENT_STA_WPS_ER_PBC_OVERLAP:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_PBC_OVERLAP\n");
       break;
+#endif
 
 #ifdef BLUFI
     case SYSTEM_EVENT_SCAN_DONE: {
@@ -315,7 +316,7 @@ void WiFiEvent(WiFiEvent_t event)
         break;
       }
       ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&apCount, ap_list));
-      esp_blufi_ap_record_t * blufi_ap_list = (esp_blufi_ap_record_t *)malloc(apCount * sizeof(esp_blufi_ap_record_t));
+      esp_blufi_ap_record_t *blufi_ap_list = (esp_blufi_ap_record_t *)malloc(apCount * sizeof(esp_blufi_ap_record_t));
       if (!blufi_ap_list) {
         if (ap_list) {
           free(ap_list);
@@ -384,15 +385,25 @@ bool improv_config()
 
   DPRINT("WiFi provisioning started\n");
   improv_serial::global_improv_serial.setup(String("PedalinoMini (TM)"), String(VERSION), String(xstr(PLATFORMIO_ENV)), String("Device name: ") + String(host));
+  improv_ble::global_improv_ble.setup(host);
+  improv_ble::global_improv_ble.set_authorized_duration(IMPROV_CONNECT_TIMEOUT*1000);
+  improv_ble::global_improv_ble.start();
 
   display_progress_bar_title2("Provisioning", "WiFi");
   unsigned long startCrono = millis();
   unsigned long crono = millis() - startCrono;
   while (!WiFi.isConnected() && crono / 1000 < IMPROV_CONNECT_TIMEOUT) {
     improv_serial::global_improv_serial.loop();
-    if (!connecting && improv_serial::global_improv_serial.get_state() == improv::STATE_PROVISIONING) {
-      display_progress_bar_title2("Connecting to", improv_serial::global_improv_serial.get_ssid());
-      connecting = true;
+    improv_ble::global_improv_ble.loop();
+    if (!connecting) {
+      if (improv_serial::global_improv_serial.get_state() == improv::STATE_PROVISIONING) {
+        display_progress_bar_title2("Connecting to", improv_serial::global_improv_serial.get_ssid());
+        connecting = true;
+      }
+      else if (improv_ble::global_improv_ble.get_state() == improv::STATE_PROVISIONING) {
+        display_progress_bar_title2("Connecting to", improv_ble::global_improv_ble.get_ssid());
+        connecting = true;
+      }
     }
     if (crono % 200 < 5) display_progress_bar_update(crono / 200, IMPROV_CONNECT_TIMEOUT * 5 - 1);
     fastleds[(crono / 500) % LEDS] = swap_rgb_order(CRGB::SeaGreen, rgbOrder);
@@ -409,6 +420,7 @@ bool improv_config()
   if (WiFi.isConnected()) {
 
     improv_serial::global_improv_serial.loop();
+    improv_ble::global_improv_ble.loop();
 
     wifiSSID      = WiFi.SSID();
     wifiPassword  = WiFi.psk();
@@ -420,8 +432,10 @@ bool improv_config()
   }
   else {
     improv_serial::global_improv_serial.loop(true);
+    improv_ble::global_improv_ble.loop(true);
     DPRINT("WiFi Provisioning timeout\n");
   }
+  improv_ble::global_improv_ble.release();
 
   return WiFi.isConnected();
 }
@@ -440,6 +454,7 @@ void ap_mode_stop()
   }
 }
 
+#ifdef SMARTCONFIG
 bool smart_config()
 {
   // Return 'true' if SSID and password received within SMART_CONFIG_TIMEOUT seconds
@@ -493,7 +508,9 @@ bool smart_config()
 
   return WiFi.smartConfigDone();
 }
+#endif
 
+#ifdef WPS
 bool wps_config()
 {
   wpsStatus = 0;
@@ -501,15 +518,21 @@ bool wps_config()
   WiFi.disconnect();
   WiFi.mode(WIFI_STA);
 
-  //WPS.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
-  WPS.wps_type = WPS_TYPE_PBC;
-  strcpy(WPS.factory_info.manufacturer, "ESPRESSIF");
-  strcpy(WPS.factory_info.model_number, "ESP32");
-  strcpy(WPS.factory_info.model_name,   "Pedalino(TM)");
-  strcpy(WPS.factory_info.device_name,  "PedalinoMini");
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 0, 0)
+  wpsConfig.crypto_funcs = &g_wifi_default_wps_crypto_funcs;
+#endif
+  wpsConfig.wps_type = WPS_TYPE_PBC;
+  strcpy(wpsConfig.factory_info.manufacturer, "ESPRESSIF");
+#ifdef ARDUINO_BPI_LEAF_S3
+  strcpy(wpsConfig.factory_info.model_number, "ESP32-S3");
+#else
+  strcpy(wpsConfig.factory_info.model_number, "ESP32");
+#endif
+  strcpy(wpsConfig.factory_info.model_name,   "Pedalino(TM)");
+  strcpy(wpsConfig.factory_info.device_name,  "PedalinoMini");
 
-  ESP_ERROR_CHECK(esp_wifi_wps_enable(&WPS));
-  ESP_ERROR_CHECK(esp_wifi_wps_start(0));
+  ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_wps_enable(&wpsConfig));
+  ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_wps_start(0));
 
   DPRINT("WPS started\n");
   display_progress_bar_title2("Press WPS button on AP", "WPS Setup");
@@ -560,6 +583,7 @@ bool wps_config()
 
   return WiFi.isConnected();
 }
+#endif
 
 //bool ap_connect(const String& ssid = "", const String& password = "")
 bool ap_connect(const String& ssid, const String& password)

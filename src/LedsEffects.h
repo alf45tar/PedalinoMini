@@ -9,12 +9,12 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-byte led_button(byte p, byte b, byte l)
+
+byte led_control(byte c, byte l)
 {
-  p = constrain(p, 0, PEDALS-1);
-  b = constrain(b, 0, LADDER_STEPS-1);
+  c = constrain(c, 0, CONTROLS - 1);
   l = (l == 255 ? 255 : constrain(l, 0, LEDS));
-  return (l == 255 ? pedals[p].ledbuttons[b] : l);
+  return (l == 255 ? controls[c].led : l);
 }
 
 CRGB swap_rgb_order (CRGB color, EOrder order) {

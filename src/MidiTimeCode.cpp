@@ -5,12 +5,12 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
 //                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    /*
-// Thanks to https://github.com/adanselm/padchokola
+//  Source code based on https://github.com/adanselm/padchokola
 //
 
 
@@ -33,24 +33,20 @@ void TapTempo::reset()
 {
   mLastTap = 0;
   mCurrentReadingPos = 0;
-  for ( int i = 0; i < TAP_NUM_READINGS; ++i )
-  {
-    mReadings[i] = 0.0f;
-  }
+  for (byte i = 0; i < TAP_NUM_READINGS; i++) mReadings[i] = 0;
 }
 
-float TapTempo::tap()
+unsigned int TapTempo::tap()
 {
   const unsigned long currentTime = millis();
-  if ( mLastTap > 0 )
+  if (mLastTap > 0)
   {
-    if ( timeout(currentTime) )
-      reset();
+    if (timeout(currentTime)) reset();
 
-    mReadings[ mCurrentReadingPos % TAP_NUM_READINGS ] = calcBpmFromTime(currentTime);
-    ++mCurrentReadingPos;
+    mReadings[mCurrentReadingPos % TAP_NUM_READINGS] = calcBpmFromTime(currentTime);
+    mCurrentReadingPos++;
 
-    if ( mCurrentReadingPos >= 2 )
+    if (mCurrentReadingPos >= 2)
     {
       mLastTap = currentTime;
       return computeAverage(); // Enough readings to compute average
@@ -58,35 +54,32 @@ float TapTempo::tap()
   }
 
   mLastTap = currentTime;
-  return 0.0f;
+  return 0;
 }
 
 bool TapTempo::timeout(const unsigned long currentTime) const
 {
-  if ( (currentTime - mLastTap) > TAP_TIMEOUT_MS)
-    return true;
-
-  return false;
+  return ((currentTime - mLastTap) > TAP_TIMEOUT_MS) ? true : false;
 }
 
-float TapTempo::calcBpmFromTime(unsigned long currentTime) const
+unsigned int TapTempo::calcBpmFromTime(unsigned long currentTime) const
 {
-  if ( mLastTap == 0 || currentTime <= mLastTap )
-    return 0.0f;
+  if (mLastTap == 0 || currentTime <= mLastTap)
+    return 0;
 
-  const float msInAMinute = 1000 * 60.0;
+  const unsigned long msInAMinute = 1000 * 60;
   return msInAMinute / (currentTime - mLastTap);
 }
 
-float TapTempo::computeAverage() const
+unsigned int TapTempo::computeAverage() const
 {
-  float sum = 0.0f;
-  const int count = min(mCurrentReadingPos, TAP_NUM_READINGS);
-  for ( int i = 0; i < count; ++i )
+  unsigned int sum = 0;
+  const byte count = min(mCurrentReadingPos, (byte)TAP_NUM_READINGS);
+  for (byte i = 0; i < count; i++ )
   {
     sum += mReadings[i];
   }
-  return sum / count;
+  return (sum + (count / 2 + 1))/ count;
 }
 
 ///////////////////////////////////// MidiTimeCode
@@ -103,7 +96,7 @@ void MidiTimeCode::setup(void (*midi_send_callback_1)(byte), void (*midi_send_ca
   mMidiSendCallback1 = midi_send_callback_1;
   mMidiSendCallback2 = midi_send_callback_2;
   // Timer needed in setup even if no synchro occurring
-  setTimer(1.0f);
+  setTimer(0.0f);
 }
 
 void MidiTimeCode::doSendMidiClock()
@@ -216,21 +209,26 @@ void MidiTimeCode::doSendMTC()
 
 void MidiTimeCode::setMode(MidiTimeCode::MidiSynchro newMode)
 {
-  if ( mMode != newMode )
-  {
-    mMode = newMode;
+  mInterruptCounter = 0;
+  mEventTime = 0;
+  mClick = 0;
+  mBeat = 0;
+  mCurrentQFrame = 0;
+  mNextEvent = InvalidType;
+  mPlaying = false;
+  resetPlayhead();
 
-    switch (mMode) {
+  mMode = newMode;
+    
+  switch (mMode) {
 
-      case MidiTimeCode::SynchroMTCMaster:
-        setTimer(24 * 4);
-        break;
+    case MidiTimeCode::SynchroMTCMaster:
+      setTimer(24 * 4);
+      break;
 
-      default:
-        setTimer(1.0f);
-        break;
-    }
-
+    default:
+      setTimer(0.0f);
+      break;
   }
 }
 
@@ -412,18 +410,18 @@ void MidiTimeCode::setPlayhead(byte hours, byte minutes, byte seconds, byte fram
   mPlayhead.hours   = hours;
 }
 
-void MidiTimeCode::setBpm(const float iBpm)
+void MidiTimeCode::setBpm(const unsigned int iBpm)
 {
   if ( mMode == SynchroClockMaster )
   {
-    const double midiClockPerSec = mMidiClockPpqn * constrain(iBpm, 40, 300) / 60;
+    const double midiClockPerSec = mMidiClockPpqn * constrain(iBpm, 40, 300) / 60.0;
     setTimer(midiClockPerSec);
   }
 }
 
-const float MidiTimeCode::tapTempo()
+const unsigned int MidiTimeCode::tapTempo()
 {
-  static float bpm = 0.0f;
+  static unsigned int bpm = 0;
 
   switch (mMode) {
 
@@ -465,7 +463,10 @@ void ISR()
 
 void MidiTimeCode::setTimer(const double frequency)
 {
-  mTimer.attach_ms(1000/frequency, ISR);
+  if (frequency == 0.0f)
+    mTimer.detach();
+  else
+    mTimer.attach_ms(1000/frequency, ISR);    
 }
 
 void MidiTimeCode::loop()
@@ -483,10 +484,9 @@ void MidiTimeCode::loop()
 
 Ticker                  MidiTimeCode::mTimer;
 
-unsigned char           MidiTimeCode::mSelectBits = 0;
 volatile int            MidiTimeCode::mInterruptCounter = 0;
 
-const int               MidiTimeCode::mMidiClockPpqn = 24;
+const    byte           MidiTimeCode::mMidiClockPpqn = 24;
 volatile unsigned long  MidiTimeCode::mEventTime = 0;
 volatile MidiTimeCode::MidiType MidiTimeCode::mNextEvent = InvalidType;
 volatile byte           MidiTimeCode::mClick = 0;
@@ -497,7 +497,7 @@ volatile bool           MidiTimeCode::mPlaying = false;
 
 const         MidiTimeCode::SmpteMask MidiTimeCode::mCurrentSmpteType = Frames24;
 volatile      MidiTimeCode::Playhead  MidiTimeCode::mPlayhead = MidiTimeCode::Playhead();
-volatile int  MidiTimeCode::mCurrentQFrame = 0;
+volatile byte MidiTimeCode::mCurrentQFrame = 0;
 const         MidiTimeCode::MTCQuarterFrameType MidiTimeCode::mMTCQuarterFrameTypes[8] = { FramesLow, FramesHigh,
                                                                                            SecondsLow, SecondsHigh,
                                                                                            MinutesLow, MinutesHigh,

@@ -3,6 +3,8 @@
 #include <HTTPClient.h>
 #include <HttpsOTAUpdate.h>
 
+#include "Version.h"
+
 #define OTA_PARTITION_SIZE    0x1D0000      // 1900544 bytes
 
 String            latestFirmwareVersion = VERSION;

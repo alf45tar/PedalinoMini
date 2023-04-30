@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2022 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -33,6 +33,12 @@ struct SpiRamAllocator {
 
 using SpiRamJsonDocument = BasicJsonDocument<SpiRamAllocator>;
 #endif
+
+bool control_not_defined (unsigned int c) {
+  return (controls[c].pedal1 == PEDALS && controls[c].button1 == LADDER_STEPS &&
+          controls[c].pedal2 == PEDALS && controls[c].button2 == LADDER_STEPS &&
+          controls[c].led    == LEDS);
+}
 
 //
 //  Delete a file from SPIFFS
@@ -77,10 +83,17 @@ void spiffs_remove_profile(byte profile) {
 //  Save configuration to SPIFFS file
 //
 
-void spiffs_save_config(const String& filename, bool saveActions = true, bool savePedals = true, bool saveInterfaces = true, bool saveSequences = true, bool saveOptions  = true) {
+void spiffs_save_config(const String& filename, bool saveActions = true, bool savePedals = true, bool saveControls = true, bool saveInterfaces = true, bool saveSequences = true, bool saveOptions  = true) {
 
-  uint32_t allocated = ESP.getMaxAllocHeap();
+  uint32_t allocated;
+
+#ifdef BOARD_HAS_PSRAM
+  allocated = 256*1024;
+  SpiRamJsonDocument jdoc(allocated);
+#else
+  allocated = ESP.getMaxAllocHeap();
   DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
+#endif
   DPRINT("Memory allocated for JSON document: %d bytes\n", allocated);
 
   if (saveOptions) {
@@ -88,6 +101,7 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
     JsonObject jo = jglobals.createNestedObject();
     jo["Hostname"]            = host;
     jo["BootMode"]            = bootMode;
+    jo["BLEServer"]           = bleServer;
     jo["Profile"]             = currentProfile;
     jo["SSID"]                = wifiSSID;
     jo["WiFiPassword"]        = wifiPassword;
@@ -96,12 +110,15 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
     jo["HTTPUsername"]        = httpUsername;
     jo["HTTPPassword"]        = httpPassword;
     jo["Theme"]               = theme;
+    jo["DebounceInterval"]    = debounceInterval;
+    jo["SimultaneousGapTime"] = simultaneousGapTime;
     jo["PressTime"]           = pressTime;
     jo["DoublePressTime"]     = doublePressTime;
     jo["LongPressTime"]       = longPressTime;
     jo["RepeatPressTime"]     = repeatPressTime;
-    jo["EncoderSesitivity"]   = encoderSensitivity;
+    jo["EncoderSensitivity"]  = encoderSensitivity;
     jo["FlipScreen"]          = flipScreen;
+    jo["ScreenSaverTimeout"]  = screenSaverTimeout / 60000;
     jo["TapDanceMode"]        = tapDanceMode;
     jo["RepeatOnBankSwitch"]  = repeatOnBankSwitch;
     jo["TapDanceBank"]        = tapDanceBank;
@@ -147,14 +164,27 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
       jo["Mode"]              = pedalModeName[pedals[p].mode];
       jo["InvertPolarity"]    = (pedals[p].invertPolarity == PED_ENABLE);
       jo["PressMode"]         = pedalPressModeName[pedals[p].pressMode];
+      jo["LatchEmulation"]    = (pedals[p].latchEmulation == PED_ENABLE);
       jo["AnalogResponse"]    = pedalAnalogResponse[pedals[p].analogResponse];
       jo["Min"]               = pedals[p].expZero;
       jo["Max"]               = pedals[p].expMax;
       jo["Easing"]            = pedals[p].snapMultiplier;
       jo["ActivityThreshold"] = lround(pedals[p].activityThreshold);
       jo["AutoSensing"]       = (pedals[p].autoSensing == PED_ENABLE);
-      for (byte b = 0; b < LADDER_STEPS; b++)
-        jo[String("LedButton") + String(b)] = (pedals[p].ledbuttons[b] == LEDS ? 0 : pedals[p].ledbuttons[b] + 1);
+    }
+  }
+
+  if (saveControls) {
+    JsonArray jpedals = jdoc.createNestedArray("Controls");
+    for (byte c = 0; c < CONTROLS; c++) {
+      if (control_not_defined(c)) continue;
+      JsonObject jo = jpedals.createNestedObject();
+      jo["Control"]            = c + 1;
+      jo["Pedal1"]             = (controls[c].pedal1  == PEDALS        ? 0 : controls[c].pedal1  + 1);
+      jo["Button1"]            = (controls[c].button1 == LADDER_STEPS  ? 0 : controls[c].button1 + 1);
+      jo["Pedal2"]             = (controls[c].pedal2  == PEDALS        ? 0 : controls[c].pedal2  + 1);
+      jo["Button2"]            = (controls[c].button2 == LADDER_STEPS  ? 0 : controls[c].button2 + 1);
+      jo["Led"]                = (controls[c].led     == LEDS          ? 0 : controls[c].led     + 1);
     }
   }
 
@@ -174,8 +204,7 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
         char color[8];
         JsonObject jo = jactions.createNestedObject();
         jo["Bank"]            = b;
-        jo["Pedal"]           = act->pedal + 1;
-        jo["Button"]          = act->button + 1;
+        jo["Control"]         = act->control + 1;
         jo["Led"]             = (act->led == LEDS ? 0 : (act->led == 255 ? 255 : act->led + 1));
         snprintf(color, 8, "#%06x", act->color0);
         jo["Color0"]          = color;
@@ -194,6 +223,9 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
             break;
           case PED_CONTROL_CHANGE:
             jo["Message"] = "Control Change";
+            break;
+          case PED_CONTROL_CHANGE_SNAP:
+            jo["Message"] = "Control Change Snap";
             break;
           case PED_NOTE_ON:
             jo["Message"] = "Note On";
@@ -230,6 +262,12 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
             break;
           case PED_SEQUENCE:
             jo["Message"] = "Sequence";
+            break;
+          case PED_SEQUENCE_STEP_BY_STEP_FWD:
+            jo["Message"] = "Step by Step+";
+            break;
+          case PED_SEQUENCE_STEP_BY_STEP_REV:
+            jo["Message"] = "Step by Step-";
             break;
           case PED_ACTION_BANK_PLUS:
             jo["Message"] = "Bank+";
@@ -319,6 +357,9 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
           case PED_CONTROL_CHANGE:
             jo["Message"] = "Control Change";
             break;
+          case PED_CONTROL_CHANGE_SNAP:
+             jo["Message"] = "Control Change Snap";
+             break;
           case PED_NOTE_ON:
             jo["Message"] = "Note On";
             break;
@@ -355,12 +396,6 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
           case PED_SEQUENCE:
             jo["Message"] = "Sequence";
             break;
-          case PED_ACTION_BANK_PLUS:
-            jo["Message"] = "Bank+";
-            break;
-          case PED_ACTION_BANK_MINUS:
-            jo["Message"] = "Bank-";
-            break;
           case PED_ACTION_START:
             jo["Message"] = "Start";
             break;
@@ -384,6 +419,9 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
             break;
           case PED_ACTION_PROFILE_MINUS:
             jo["Message"] = "Profile-";
+            break;
+          case PED_ACTION_BANK:
+            jo["Message"] = "Set Bank";
             break;
           case PED_ACTION_LED_COLOR:
             jo["Message"] = "Set Led Color";
@@ -415,8 +453,10 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
     }
   }
 
+#ifndef BOARD_HAS_PSRAM
   jdoc.shrinkToFit();
   DPRINT("Memory used by JSON document: %d bytes\n", jdoc.memoryUsage());
+#endif
 
   if (SPIFFS.exists(filename) && !SPIFFS.remove(filename)) {
     DPRINTLN("SPIFFS: can't remove file %s\n", filename.c_str());
@@ -477,10 +517,17 @@ void spiffs_save_profile(byte profile) {
 //  Load configuration from SPIFFS file
 //
 
-void spiffs_load_config(const String& filename, bool loadActions = true, bool loadPedals = true, bool loadInterfaces = true, bool loadSequences = true, bool loadOptions  = true) {
+void spiffs_load_config(const String& filename, bool loadActions = true, bool loadPedals = true, bool loadControls = true, bool loadInterfaces = true, bool loadSequences = true, bool loadOptions  = true, bool append = false) {
 
-  uint32_t allocated = ESP.getMaxAllocHeap();
+  uint32_t allocated;
+
+#ifdef BOARD_HAS_PSRAM
+  allocated = 256*1024;
+  SpiRamJsonDocument jdoc(allocated);
+#else
+  allocated = ESP.getMaxAllocHeap();
   DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
+#endif
   DPRINT("Memory allocated for JSON document: %d bytes\n", allocated);
 
   DPRINT("Reading %s from SPIFFS ... ", filename.c_str());
@@ -499,8 +546,11 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
   file.close();
   DPRINT("done\n");
 
+#ifndef BOARD_HAS_PSRAM
   jdoc.shrinkToFit();
   DPRINT("Memory used by JSON document: %d bytes\n", jdoc.memoryUsage());
+#endif
+
 #ifdef DEBUG_ESP_PORT
   serializeJson(jdoc, SERIALDEBUG);
 #endif
@@ -514,25 +564,29 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
       if (jp.value().is<JsonArray>()) {
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
-          host                = String((const char *)(jo["Hostname"]       | host.c_str()));
-          bootMode            = jo["BootMode"]                             | bootMode;
-          currentProfile      = jo["Profile"]                              | currentProfile;
-          wifiSSID            = String((const char *)(jo["SSID"]           | wifiSSID.c_str()));
-          wifiPassword        = String((const char *)(jo["WiFiPassword"]   | wifiPassword.c_str()));
-          ssidSoftAP          = String((const char *)(jo["SSIDsoftAP"]     | ssidSoftAP.c_str()));
-          passwordSoftAP      = String((const char *)(jo["PasswordSoftAP"] | passwordSoftAP.c_str()));
-          httpUsername        = String((const char *)(jo["HTTPUsername"]   | httpUsername.c_str()));
-          httpPassword        = String((const char *)(jo["HTTPPassword"]   | httpPassword.c_str()));
-          theme               = String((const char *)(jo["Theme"]          | theme.c_str()));
-          pressTime           = jo["PressTime"]                            | pressTime;
-          doublePressTime     = jo["DoublePressTime"]                      | doublePressTime;
-          longPressTime       = jo["LongPressTime"]                        | longPressTime;
-          repeatPressTime     = jo["RepeatPressTime"]                      | repeatPressTime;
-          encoderSensitivity  = jo["EncoderSesitivity"]                    | encoderSensitivity;
-          flipScreen          = jo["FlipScreen"]                           | flipScreen;
-          tapDanceMode        = jo["TapDanceMode"]                         | tapDanceMode;
-          repeatOnBankSwitch  = jo["RepeatOnBankSwitch"]                   | repeatOnBankSwitch;
-          tapDanceBank        = jo["TapDanceBank"]                         | tapDanceBank;
+          host                = String((const char *)(jo["Hostname"]              | host.c_str()));
+          bootMode            = jo["BootMode"]                                    | bootMode;
+          bleServer           = String((const char *)(jo["BLEServer"]             | bleServer.c_str()));
+          currentProfile      = jo["Profile"]                                     | currentProfile;
+          wifiSSID            = String((const char *)(jo["SSID"]                  | wifiSSID.c_str()));
+          wifiPassword        = String((const char *)(jo["WiFiPassword"]          | wifiPassword.c_str()));
+          ssidSoftAP          = String((const char *)(jo["SSIDsoftAP"]            | ssidSoftAP.c_str()));
+          passwordSoftAP      = String((const char *)(jo["PasswordSoftAP"]        | passwordSoftAP.c_str()));
+          httpUsername        = String((const char *)(jo["HTTPUsername"]          | httpUsername.c_str()));
+          httpPassword        = String((const char *)(jo["HTTPPassword"]          | httpPassword.c_str()));
+          theme               = String((const char *)(jo["Theme"]                 | theme.c_str()));
+          debounceInterval    = jo["DebounceInterval"]                            | debounceInterval;
+          simultaneousGapTime = jo["SimultaneousGapTime"]                         | simultaneousGapTime;
+          pressTime           = jo["PressTime"]                                   | pressTime;
+          doublePressTime     = jo["DoublePressTime"]                             | doublePressTime;
+          longPressTime       = jo["LongPressTime"]                               | longPressTime;
+          repeatPressTime     = jo["RepeatPressTime"]                             | repeatPressTime;
+          encoderSensitivity  = jo["EncoderSensitivity"]                          | encoderSensitivity;
+          screenSaverTimeout  = (unsigned long)jo["ScreenSaverTimeout"] * 60000   | screenSaverTimeout;
+          flipScreen          = jo["FlipScreen"]                                  | flipScreen;
+          tapDanceMode        = jo["TapDanceMode"]                                | tapDanceMode;
+          repeatOnBankSwitch  = jo["RepeatOnBankSwitch"]                          | repeatOnBankSwitch;
+          tapDanceBank        = jo["TapDanceBank"]                                | tapDanceBank;
           String order = jo["RGBOrder"];
           if      (order.equals("RGB")) rgbOrder = RGB;
           else if (order.equals("RBG")) rgbOrder = RBG;
@@ -541,11 +595,11 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
           else if (order.equals("BRG")) rgbOrder = BRG;
           else if (order.equals("BGR")) rgbOrder = BGR;
           else                          rgbOrder = RGB;
-          ledsOnBrightness    = jo["LedsOnBrightness"]                     | ledsOnBrightness;
-          ledsOffBrightness   = jo["LedsOffBrightness"]                    | ledsOffBrightness;
-          oscLocalPort        = jo["OSCLocalPort"]                         | oscLocalPort;
-          oscRemoteHost       = jo["OSCRemoteHost"]                        | oscRemoteHost;
-          oscRemotePort       = jo["OSCRemotePort"]                        | oscRemotePort;
+          ledsOnBrightness    = jo["LedsOnBrightness"]                            | ledsOnBrightness;
+          ledsOffBrightness   = jo["LedsOffBrightness"]                           | ledsOffBrightness;
+          oscLocalPort        = jo["OSCLocalPort"]                                | oscLocalPort;
+          oscRemoteHost       = jo["OSCRemoteHost"]                               | oscRemoteHost;
+          oscRemotePort       = jo["OSCRemotePort"]                               | oscRemotePort;
         }
       }
     }
@@ -584,6 +638,8 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
               break;
             }
 
+          pedals[p].latchEmulation  = (jo["LatchEmulation"] ? PED_ENABLE : PED_DISABLE);
+
           pedals[p].analogResponse = PED_LINEAR;
           for (byte m = 0; m <= PED_ANTILOG; m++)
             if (pedalAnalogResponse[m] == jo["AnalogResponse"]) {
@@ -596,10 +652,25 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
           pedals[p].snapMultiplier    = jo["Easing"];
           pedals[p].activityThreshold = jo["ActivityThreshold"];
           pedals[p].autoSensing       = (jo["AutoSensing"] ? PED_ENABLE : PED_DISABLE);
-          for (byte b = 0; b < LADDER_STEPS; b++) {
-            pedals[p].ledbuttons[b]   = jo[String("LedButton") + String(b)];
-            pedals[p].ledbuttons[b]   = pedals[p].ledbuttons[b] == 0 ? LEDS : pedals[p].ledbuttons[b] - 1;
-          }
+        }
+      }
+    }
+    else if (loadControls && String(jp.key().c_str()) == String("Controls")) {
+      if (jp.value().is<JsonArray>()) {
+        JsonArray ja = jp.value();
+        for (JsonObject jo : ja) {
+          int c = jo["Control"];
+          c = constrain(c - 1, 0, CONTROLS - 1);
+          controls[c].pedal1  = jo["Pedal1"];
+          controls[c].pedal1  = (controls[c].pedal1  == 0 ? PEDALS : constrain(controls[c].pedal1 - 1, 0, PEDALS - 1));
+          controls[c].button1 = jo["Button1"];
+          controls[c].button1 = (controls[c].button1 == 0 ? LADDER_STEPS : constrain(controls[c].button1 - 1, 0, LADDER_STEPS - 1));
+          controls[c].pedal2  = jo["Pedal2"];
+          controls[c].pedal2  = (controls[c].pedal2  == 0 ? PEDALS : constrain(controls[c].pedal2 - 1, 0, PEDALS - 1));
+          controls[c].button2 = jo["Button2"];
+          controls[c].button2 = (controls[c].button2 == 0 ? LADDER_STEPS : constrain(controls[c].button2 - 1, 0, LADDER_STEPS - 1));
+          controls[c].led     = jo["Led"];
+          controls[c].led     = (controls[c].led     == 0 ? LEDS : constrain(controls[c].led - 1, 0, LEDS - 1));
         }
       }
     }
@@ -615,7 +686,7 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
     }
     else if (loadActions && String(jp.key().c_str()) == String("Actions")) {
       if (jp.value().is<JsonArray>()) {
-        delete_actions();
+        if (!append) delete_actions();
         JsonArray ja = jp.value();
         for (JsonObject jo : ja) {
           unsigned int red, green, blue;
@@ -625,12 +696,9 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
           if (act == nullptr) {
             actions[b] = (action*)malloc(sizeof(action));
             assert(actions[b] != nullptr);
-            actions[b]->pedal          = jo["Pedal"];
-            actions[b]->pedal--;
-            actions[b]->pedal          = constrain(actions[b]->pedal, 0, PEDALS - 1);
-            actions[b]->button         = jo["Button"];
-            actions[b]->button--;
-            actions[b]->button         = constrain(actions[b]->button, 0, LADDER_STEPS - 1);
+            actions[b]->control        = jo["Control"];
+            actions[b]->control--;
+            actions[b]->control        = constrain(actions[b]->control, 0, CONTROLS - 1);
             actions[b]->led            = jo["Led"];
             actions[b]->led            = (actions[b]->led == 0 ? LEDS : (actions[b]->led == 255 ? 255 : actions[b]->led - 1));
             sscanf(jo["Color0"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
@@ -641,42 +709,45 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
             strlcpy(actions[b]->tag1,    jo["NameOn"]  | "", sizeof(actions[b]->tag1));
             actions[b]->slot           = jo["Slot"];
             actions[b]->event = PED_EVENT_NONE;
-            for (byte m = 0; m <= PED_EVENT_NONE; m++)
+            for (byte m = 0; m < PED_EVENT_LAST; m++)
               if (eventName[m] == jo["Event"]) {
                 actions[b]->event = m;
                 break;
               }
             String msg = jo["Message"];
-            if      (msg.equals("None"))              actions[b]->midiMessage = PED_EMPTY;
-            else if (msg.equals("Program Change"))    actions[b]->midiMessage = PED_PROGRAM_CHANGE;
-            else if (msg.equals("Control Change"))    actions[b]->midiMessage = PED_CONTROL_CHANGE;
-            else if (msg.equals("Note On"))           actions[b]->midiMessage = PED_NOTE_ON;
-            else if (msg.equals("Note Off"))          actions[b]->midiMessage = PED_NOTE_OFF;
-            else if (msg.equals("Bank Select+"))      actions[b]->midiMessage = PED_BANK_SELECT_INC;
-            else if (msg.equals("Bank Select-"))      actions[b]->midiMessage = PED_BANK_SELECT_DEC;
-            else if (msg.equals("Program Change+"))   actions[b]->midiMessage = PED_PROGRAM_CHANGE_INC;
-            else if (msg.equals("Program Change-"))   actions[b]->midiMessage = PED_PROGRAM_CHANGE_DEC;
-            else if (msg.equals("Pitch Bend"))        actions[b]->midiMessage = PED_PITCH_BEND;
-            else if (msg.equals("Channel Pressure"))  actions[b]->midiMessage = PED_CHANNEL_PRESSURE;
-            else if (msg.equals("Midi Start"))        actions[b]->midiMessage = PED_MIDI_START;
-            else if (msg.equals("Midi Stop"))         actions[b]->midiMessage = PED_MIDI_STOP;
-            else if (msg.equals("Midi Continue"))     actions[b]->midiMessage = PED_MIDI_CONTINUE;
-            else if (msg.equals("Sequence"))          actions[b]->midiMessage = PED_SEQUENCE;
-            else if (msg.equals("Bank+"))             actions[b]->midiMessage = PED_ACTION_BANK_PLUS;
-            else if (msg.equals("Bank-"))             actions[b]->midiMessage = PED_ACTION_BANK_MINUS;
-            else if (msg.equals("Start"))             actions[b]->midiMessage = PED_ACTION_START;
-            else if (msg.equals("Stop"))              actions[b]->midiMessage = PED_ACTION_STOP;
-            else if (msg.equals("Continue"))          actions[b]->midiMessage = PED_ACTION_CONTINUE;
-            else if (msg.equals("Tap"))               actions[b]->midiMessage = PED_ACTION_TAP;
-            else if (msg.equals("BPM+"))              actions[b]->midiMessage = PED_ACTION_BPM_PLUS;
-            else if (msg.equals("BPM-"))              actions[b]->midiMessage = PED_ACTION_BPM_MINUS;
-            else if (msg.equals("OSC Message"))       actions[b]->midiMessage = PED_OSC_MESSAGE;
-            else if (msg.equals("Profile+"))          actions[b]->midiMessage = PED_ACTION_PROFILE_PLUS;
-            else if (msg.equals("Profile-"))          actions[b]->midiMessage = PED_ACTION_PROFILE_MINUS;
-            else if (msg.equals("Set Led Color"))     actions[b]->midiMessage = PED_ACTION_LED_COLOR;
-            else if (msg.equals("Device Info"))       actions[b]->midiMessage = PED_ACTION_DEVICE_INFO;
-            else if (msg.equals("Power On/Off"))      actions[b]->midiMessage = PED_ACTION_POWER_ON_OFF;
-            else                                      actions[b]->midiMessage = PED_EMPTY;
+            if      (msg.equals("None"))                actions[b]->midiMessage = PED_EMPTY;
+            else if (msg.equals("Program Change"))      actions[b]->midiMessage = PED_PROGRAM_CHANGE;
+            else if (msg.equals("Control Change"))      actions[b]->midiMessage = PED_CONTROL_CHANGE;
+            else if (msg.equals("Control Change Snap")) actions[b]->midiMessage = PED_CONTROL_CHANGE_SNAP;
+            else if (msg.equals("Note On"))             actions[b]->midiMessage = PED_NOTE_ON;
+            else if (msg.equals("Note Off"))            actions[b]->midiMessage = PED_NOTE_OFF;
+            else if (msg.equals("Bank Select+"))        actions[b]->midiMessage = PED_BANK_SELECT_INC;
+            else if (msg.equals("Bank Select-"))        actions[b]->midiMessage = PED_BANK_SELECT_DEC;
+            else if (msg.equals("Program Change+"))     actions[b]->midiMessage = PED_PROGRAM_CHANGE_INC;
+            else if (msg.equals("Program Change-"))     actions[b]->midiMessage = PED_PROGRAM_CHANGE_DEC;
+            else if (msg.equals("Pitch Bend"))          actions[b]->midiMessage = PED_PITCH_BEND;
+            else if (msg.equals("Channel Pressure"))    actions[b]->midiMessage = PED_CHANNEL_PRESSURE;
+            else if (msg.equals("Midi Start"))          actions[b]->midiMessage = PED_MIDI_START;
+            else if (msg.equals("Midi Stop"))           actions[b]->midiMessage = PED_MIDI_STOP;
+            else if (msg.equals("Midi Continue"))       actions[b]->midiMessage = PED_MIDI_CONTINUE;
+            else if (msg.equals("Sequence"))            actions[b]->midiMessage = PED_SEQUENCE;
+            else if (msg.equals("Step by Step+"))       actions[b]->midiMessage = PED_SEQUENCE_STEP_BY_STEP_FWD;
+            else if (msg.equals("Step by Step-"))       actions[b]->midiMessage = PED_SEQUENCE_STEP_BY_STEP_REV;
+            else if (msg.equals("Bank+"))               actions[b]->midiMessage = PED_ACTION_BANK_PLUS;
+            else if (msg.equals("Bank-"))               actions[b]->midiMessage = PED_ACTION_BANK_MINUS;
+            else if (msg.equals("Start"))               actions[b]->midiMessage = PED_ACTION_START;
+            else if (msg.equals("Stop"))                actions[b]->midiMessage = PED_ACTION_STOP;
+            else if (msg.equals("Continue"))            actions[b]->midiMessage = PED_ACTION_CONTINUE;
+            else if (msg.equals("Tap"))                 actions[b]->midiMessage = PED_ACTION_TAP;
+            else if (msg.equals("BPM+"))                actions[b]->midiMessage = PED_ACTION_BPM_PLUS;
+            else if (msg.equals("BPM-"))                actions[b]->midiMessage = PED_ACTION_BPM_MINUS;
+            else if (msg.equals("OSC Message"))         actions[b]->midiMessage = PED_OSC_MESSAGE;
+            else if (msg.equals("Profile+"))            actions[b]->midiMessage = PED_ACTION_PROFILE_PLUS;
+            else if (msg.equals("Profile-"))            actions[b]->midiMessage = PED_ACTION_PROFILE_MINUS;
+            else if (msg.equals("Set Led Color"))       actions[b]->midiMessage = PED_ACTION_LED_COLOR;
+            else if (msg.equals("Device Info"))         actions[b]->midiMessage = PED_ACTION_DEVICE_INFO;
+            else if (msg.equals("Power On/Off"))        actions[b]->midiMessage = PED_ACTION_POWER_ON_OFF;
+            else                                        actions[b]->midiMessage = PED_EMPTY;
             actions[b]->midiChannel    = jo["Channel"];
             actions[b]->midiCode       = jo["Code"];
             actions[b]->midiValue1     = jo["Value1"];
@@ -690,12 +761,9 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
                   assert(act->next != nullptr);
                   //if (!act->next) return;
                   act = act->next;
-                  act->pedal          = jo["Pedal"];
-                  act->pedal--;
-                  act->pedal          = constrain(act->pedal, 0, PEDALS - 1);
-                  act->button         = jo["Button"];
-                  act->button--;
-                  act->button         = constrain(act->button, 0, LADDER_STEPS - 1);
+                  act->control        = jo["Control"];
+                  act->control--;
+                  act->control        = constrain(act->control, 0, CONTROLS - 1);
                   act->led            = jo["Led"];
                   act->led            = (act->led == 0 ? LEDS : (act->led == 255 ? 255 : act->led - 1));
                   sscanf(jo["Color0"] | "#000000", "#%02x%02x%02x", &red, &green, &blue);
@@ -706,42 +774,45 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
                   strlcpy(act->tag1,    jo["NameOn"]  | "", sizeof(act->tag1));
                   act->slot           = jo["Slot"];
                   act->event = PED_EVENT_NONE;
-                  for (byte m = 0; m <= PED_EVENT_NONE; m++)
+                  for (byte m = 0; m < PED_EVENT_LAST; m++)
                     if (eventName[m] == jo["Event"]) {
                       act->event = m;
                       break;
                     }
                   String msg = jo["Message"];
-                  if      (msg.equals("None"))              act->midiMessage = PED_EMPTY;
-                  else if (msg.equals("Program Change"))    act->midiMessage = PED_PROGRAM_CHANGE;
-                  else if (msg.equals("Control Change"))    act->midiMessage = PED_CONTROL_CHANGE;
-                  else if (msg.equals("Note On"))           act->midiMessage = PED_NOTE_ON;
-                  else if (msg.equals("Note Off"))          act->midiMessage = PED_NOTE_OFF;
-                  else if (msg.equals("Bank Select+"))      act->midiMessage = PED_BANK_SELECT_INC;
-                  else if (msg.equals("Bank Select-"))      act->midiMessage = PED_BANK_SELECT_DEC;
-                  else if (msg.equals("Program Change+"))   act->midiMessage = PED_PROGRAM_CHANGE_INC;
-                  else if (msg.equals("Program Change-"))   act->midiMessage = PED_PROGRAM_CHANGE_DEC;
-                  else if (msg.equals("Pitch Bend"))        act->midiMessage = PED_PITCH_BEND;
-                  else if (msg.equals("Channel Pressure"))  act->midiMessage = PED_CHANNEL_PRESSURE;
-                  else if (msg.equals("Midi Start"))        act->midiMessage = PED_MIDI_START;
-                  else if (msg.equals("Midi Stop"))         act->midiMessage = PED_MIDI_STOP;
-                  else if (msg.equals("Midi Continue"))     act->midiMessage = PED_MIDI_CONTINUE;
-                  else if (msg.equals("Sequence"))          act->midiMessage = PED_SEQUENCE;
-                  else if (msg.equals("Bank+"))             act->midiMessage = PED_ACTION_BANK_PLUS;
-                  else if (msg.equals("Bank-"))             act->midiMessage = PED_ACTION_BANK_MINUS;
-                  else if (msg.equals("Start"))             act->midiMessage = PED_ACTION_START;
-                  else if (msg.equals("Stop"))              act->midiMessage = PED_ACTION_STOP;
-                  else if (msg.equals("Continue"))          act->midiMessage = PED_ACTION_CONTINUE;
-                  else if (msg.equals("Tap"))               act->midiMessage = PED_ACTION_TAP;
-                  else if (msg.equals("BPM+"))              act->midiMessage = PED_ACTION_BPM_PLUS;
-                  else if (msg.equals("BPM-"))              act->midiMessage = PED_ACTION_BPM_MINUS;
-                  else if (msg.equals("OSC Message"))       act->midiMessage = PED_OSC_MESSAGE;
-                  else if (msg.equals("Profile+"))          act->midiMessage = PED_ACTION_PROFILE_PLUS;
-                  else if (msg.equals("Profile-"))          act->midiMessage = PED_ACTION_PROFILE_MINUS;
-                  else if (msg.equals("Set Led Color"))     act->midiMessage = PED_ACTION_LED_COLOR;
-                  else if (msg.equals("Device Info"))       act->midiMessage = PED_ACTION_DEVICE_INFO;
-                  else if (msg.equals("Power On/Off"))      act->midiMessage = PED_ACTION_POWER_ON_OFF;
-                  else                                      act->midiMessage = PED_EMPTY;
+                  if      (msg.equals("None"))                act->midiMessage = PED_EMPTY;
+                  else if (msg.equals("Program Change"))      act->midiMessage = PED_PROGRAM_CHANGE;
+                  else if (msg.equals("Control Change"))      act->midiMessage = PED_CONTROL_CHANGE;
+                  else if (msg.equals("Control Change Snap")) act->midiMessage = PED_CONTROL_CHANGE_SNAP;
+                  else if (msg.equals("Note On"))             act->midiMessage = PED_NOTE_ON;
+                  else if (msg.equals("Note Off"))            act->midiMessage = PED_NOTE_OFF;
+                  else if (msg.equals("Bank Select+"))        act->midiMessage = PED_BANK_SELECT_INC;
+                  else if (msg.equals("Bank Select-"))        act->midiMessage = PED_BANK_SELECT_DEC;
+                  else if (msg.equals("Program Change+"))     act->midiMessage = PED_PROGRAM_CHANGE_INC;
+                  else if (msg.equals("Program Change-"))     act->midiMessage = PED_PROGRAM_CHANGE_DEC;
+                  else if (msg.equals("Pitch Bend"))          act->midiMessage = PED_PITCH_BEND;
+                  else if (msg.equals("Channel Pressure"))    act->midiMessage = PED_CHANNEL_PRESSURE;
+                  else if (msg.equals("Midi Start"))          act->midiMessage = PED_MIDI_START;
+                  else if (msg.equals("Midi Stop"))           act->midiMessage = PED_MIDI_STOP;
+                  else if (msg.equals("Midi Continue"))       act->midiMessage = PED_MIDI_CONTINUE;
+                  else if (msg.equals("Sequence"))            act->midiMessage = PED_SEQUENCE;
+                  else if (msg.equals("Step by Step+"))       act->midiMessage = PED_SEQUENCE_STEP_BY_STEP_FWD;
+                  else if (msg.equals("Step by Step-"))       act->midiMessage = PED_SEQUENCE_STEP_BY_STEP_REV;
+                  else if (msg.equals("Bank+"))               act->midiMessage = PED_ACTION_BANK_PLUS;
+                  else if (msg.equals("Bank-"))               act->midiMessage = PED_ACTION_BANK_MINUS;
+                  else if (msg.equals("Start"))               act->midiMessage = PED_ACTION_START;
+                  else if (msg.equals("Stop"))                act->midiMessage = PED_ACTION_STOP;
+                  else if (msg.equals("Continue"))            act->midiMessage = PED_ACTION_CONTINUE;
+                  else if (msg.equals("Tap"))                 act->midiMessage = PED_ACTION_TAP;
+                  else if (msg.equals("BPM+"))                act->midiMessage = PED_ACTION_BPM_PLUS;
+                  else if (msg.equals("BPM-"))                act->midiMessage = PED_ACTION_BPM_MINUS;
+                  else if (msg.equals("OSC Message"))         act->midiMessage = PED_OSC_MESSAGE;
+                  else if (msg.equals("Profile+"))            act->midiMessage = PED_ACTION_PROFILE_PLUS;
+                  else if (msg.equals("Profile-"))            act->midiMessage = PED_ACTION_PROFILE_MINUS;
+                  else if (msg.equals("Set Led Color"))       act->midiMessage = PED_ACTION_LED_COLOR;
+                  else if (msg.equals("Device Info"))         act->midiMessage = PED_ACTION_DEVICE_INFO;
+                  else if (msg.equals("Power On/Off"))        act->midiMessage = PED_ACTION_POWER_ON_OFF;
+                  else                                        act->midiMessage = PED_EMPTY;
                   act->midiChannel    = jo["Channel"];
                   act->midiCode       = jo["Code"];
                   act->midiValue1     = jo["Value1"];
@@ -783,35 +854,37 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
           t--;
           t = constrain(t, 0, STEPS - 1);
           String msg = jo["Message"];
-            if      (msg.equals("None"))              sequences[s][t].midiMessage = PED_EMPTY;
-            else if (msg.equals("Program Change"))    sequences[s][t].midiMessage = PED_PROGRAM_CHANGE;
-            else if (msg.equals("Control Change"))    sequences[s][t].midiMessage = PED_CONTROL_CHANGE;
-            else if (msg.equals("Note On"))           sequences[s][t].midiMessage = PED_NOTE_ON;
-            else if (msg.equals("Note Off"))          sequences[s][t].midiMessage = PED_NOTE_OFF;
-            else if (msg.equals("Bank Select+"))      sequences[s][t].midiMessage = PED_BANK_SELECT_INC;
-            else if (msg.equals("Bank Select-"))      sequences[s][t].midiMessage = PED_BANK_SELECT_DEC;
-            else if (msg.equals("Program Change+"))   sequences[s][t].midiMessage = PED_PROGRAM_CHANGE_INC;
-            else if (msg.equals("Program Change-"))   sequences[s][t].midiMessage = PED_PROGRAM_CHANGE_DEC;
-            else if (msg.equals("Pitch Bend"))        sequences[s][t].midiMessage = PED_PITCH_BEND;
-            else if (msg.equals("Channel Pressure"))  sequences[s][t].midiMessage = PED_CHANNEL_PRESSURE;
+            if      (msg.equals("None"))                sequences[s][t].midiMessage = PED_EMPTY;
+            else if (msg.equals("Program Change"))      sequences[s][t].midiMessage = PED_PROGRAM_CHANGE;
+            else if (msg.equals("Control Change"))      sequences[s][t].midiMessage = PED_CONTROL_CHANGE;
+            else if (msg.equals("Control Change Snap")) sequences[s][t].midiMessage = PED_CONTROL_CHANGE_SNAP;
+            else if (msg.equals("Note On"))             sequences[s][t].midiMessage = PED_NOTE_ON;
+            else if (msg.equals("Note Off"))            sequences[s][t].midiMessage = PED_NOTE_OFF;
+            else if (msg.equals("Bank Select+"))        sequences[s][t].midiMessage = PED_BANK_SELECT_INC;
+            else if (msg.equals("Bank Select-"))        sequences[s][t].midiMessage = PED_BANK_SELECT_DEC;
+            else if (msg.equals("Program Change+"))     sequences[s][t].midiMessage = PED_PROGRAM_CHANGE_INC;
+            else if (msg.equals("Program Change-"))     sequences[s][t].midiMessage = PED_PROGRAM_CHANGE_DEC;
+            else if (msg.equals("Pitch Bend"))          sequences[s][t].midiMessage = PED_PITCH_BEND;
+            else if (msg.equals("Channel Pressure"))    sequences[s][t].midiMessage = PED_CHANNEL_PRESSURE;
             //else if (msg.equals("Midi Start"))        sequences[s][t].midiMessage = PED_MIDI_START;
             //else if (msg.equals("Midi Stop"))         sequences[s][t].midiMessage = PED_MIDI_STOP;
             //else if (msg.equals("Midi Continue"))     sequences[s][t].midiMessage = PED_MIDI_CONTINUE;
-            else if (msg.equals("Sequence"))          sequences[s][t].midiMessage = PED_SEQUENCE;
+            else if (msg.equals("Sequence"))            sequences[s][t].midiMessage = PED_SEQUENCE;
             //else if (msg.equals("Bank+"))             sequences[s][t].midiMessage = PED_ACTION_BANK_PLUS;
             //else if (msg.equals("Bank-"))             sequences[s][t].midiMessage = PED_ACTION_BANK_MINUS;
-            else if (msg.equals("Start"))             sequences[s][t].midiMessage = PED_ACTION_START;
-            else if (msg.equals("Stop"))              sequences[s][t].midiMessage = PED_ACTION_STOP;
-            else if (msg.equals("Continue"))          sequences[s][t].midiMessage = PED_ACTION_CONTINUE;
+            else if (msg.equals("Start"))               sequences[s][t].midiMessage = PED_ACTION_START;
+            else if (msg.equals("Stop"))                sequences[s][t].midiMessage = PED_ACTION_STOP;
+            else if (msg.equals("Continue"))            sequences[s][t].midiMessage = PED_ACTION_CONTINUE;
             //else if (msg.equals("Tap"))               sequences[s][t].midiMessage = PED_ACTION_TAP;
             //else if (msg.equals("BPM+"))              sequences[s][t].midiMessage = PED_ACTION_BPM_PLUS;
             //else if (msg.equals("BPM-"))              sequences[s][t].midiMessage = PED_ACTION_BPM_MINUS;
             //else if (msg.equals("Profile+"))          sequences[s][t].midiMessage = PED_ACTION_PROFILE_PLUS;
             //else if (msg.equals("Profile-"))          sequences[s][t].midiMessage = PED_ACTION_PROFILE_MINUS;
-            else if (msg.equals("Set Led Color"))     sequences[s][t].midiMessage = PED_ACTION_LED_COLOR;
+            else if (msg.equals("Set Bank"))            sequences[s][t].midiMessage = PED_ACTION_BANK;
+            else if (msg.equals("Set Led Color"))       sequences[s][t].midiMessage = PED_ACTION_LED_COLOR;
             //else if (msg.equals("Device Info"))       sequences[s][t].midiMessage = PED_ACTION_DEVICE_INFO;
             //else if (msg.equals("Power On/Off"))      sequences[s][t].midiMessage = PED_ACTION_POWER_ON_OFF;
-            else                                      sequences[s][t].midiMessage = PED_EMPTY;
+            else                                        sequences[s][t].midiMessage = PED_EMPTY;
           switch (sequences[s][t].midiMessage) {
             case PED_ACTION_LED_COLOR:
               sequences[s][t].led         = jo["Led"];
@@ -869,6 +942,7 @@ void load_factory_default()
 {
   host               = getChipId();
   bootMode           = PED_BOOT_NORMAL;
+  bleServer          = "";
   wifiSSID           = "";
   wifiPassword       = "";
   ssidSoftAP         = String("Pedalino-") + getChipId();
@@ -894,7 +968,7 @@ void load_factory_default()
     memset(banknames[b], 0, MAXBANKNAME+1);
     actions[b] = nullptr;
   }
-  strncpy(banknames[0], "Global", MAXBANKNAME+1);
+  strlcpy(banknames[0], "Global", MAXBANKNAME+1);
 
 #ifdef TTGO_T_EIGHT
   for (byte p = 0; p < PEDALS; p++) {
@@ -902,52 +976,29 @@ void load_factory_default()
                  (p < 3 || p > 5) ? PED_MOMENTARY1 : PED_JOG_WHEEL, // mode
                  PED_PRESS_1,    // press mode
                  PED_DISABLE,    // invert polarity
+                 PED_DISABLE,    // latch emulation
                  0,              // map function
                  ADC_RESOLUTION * 10 / 100,  // expression pedal zero
                  ADC_RESOLUTION * 90 / 100,  // expression pedal max
                  0.01,           // snap multiplier
                  8.0,            // activity threshold
-                 LEDS, LEDS, LEDS, LEDS, LEDS, LEDS,
                  0,              // last state of switch 1
                  0,              // last state of switch 2
                  millis(),       // last time switch 1 status changed
                  millis(),       // last time switch 2 status changed
+                 0, 0, 0, 0, 0, 0,   // latch emulation status
                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                  nullptr,
                  nullptr,
                  nullptr
                 };
   }
-#else
-  for (byte p = 0; p < PEDALS; p++)
-    pedals[p] = {PED_DISABLE,    // autosensing
-                 PED_MOMENTARY1, // mode
-                 PED_PRESS_1,    // press mode
-                 PED_DISABLE,    // invert polarity
-                 0,              // map function
-                 ADC_RESOLUTION * 10 / 100,  // expression pedal zero
-                 ADC_RESOLUTION * 90 / 100,  // expression pedal max
-                 0.01,           // snap multiplier
-                 8.0,            // activity threshold
-                 LEDS, LEDS, LEDS, LEDS, LEDS, LEDS,
-                 0,              // last state of switch 1
-                 0,              // last state of switch 2
-                 millis(),       // last time switch 1 status changed
-                 millis(),       // last time switch 2 status changed
-                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                 nullptr,
-                 nullptr,
-                 nullptr
-                };
-
-  pedals[PEDALS-1].pressMode = PED_PRESS_1_2_L;
-#ifdef TTGO_T_DISPLAY
+  pedals[PEDALS-2].pressMode = PED_PRESS_1_2_L;
   action *act;
   act = actions[0] = (action*)malloc(sizeof(action));
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
-  act->pedal        = PEDALS - 2;
-  act->button       = 0;
+  act->control      = 36;
   act->led          = LEDS;
   act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
@@ -963,26 +1014,23 @@ void load_factory_default()
   act = act->next;
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
-  act->pedal        = PEDALS - 1;
-  act->button       = 0;
+  act->control      = 38;
   act->led          = LEDS;
   act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
-  act->event        = PED_EVENT_CLICK;
-  act->midiMessage  = PED_ACTION_PROFILE_PLUS;
+  act->event        = PED_EVENT_PRESS;
+  act->midiMessage  = PED_ACTION_BANK_MINUS;
   act->midiChannel  = 1;
   act->midiCode     = 0;
   act->midiValue1   = 1;
-  act->midiValue2   = PROFILES;
+  act->midiValue2   = BANKS - 1;
   act->oscAddress[0] = 0;
   act->slot         = SLOTS;
   act->next         = (action*)malloc(sizeof(action));
   act = act->next;
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
-  act->pedal        = PEDALS - 1;
-  act->button       = 0;
-  act->led          = LEDS;
+  act->control      = 37;
   act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
   act->event        = PED_EVENT_DOUBLE_CLICK;
@@ -997,8 +1045,7 @@ void load_factory_default()
   act = act->next;
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
-  act->pedal        = PEDALS - 1;
-  act->button       = 0;
+  act->control      = 37;
   act->led          = LEDS;
   act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
@@ -1013,12 +1060,50 @@ void load_factory_default()
   act->next         = nullptr;
   create_banks();
 #else
+#ifdef TTGO_T_DISPLAY
+  for (byte p = 0; p < PEDALS; p++)
+    pedals[p] = {PED_DISABLE,    // autosensing
+                 PED_MOMENTARY1, // mode
+                 PED_PRESS_1,    // press mode
+                 PED_DISABLE,    // invert polarity
+                 PED_DISABLE,    // latch emulation
+                 0,              // map function
+                 ADC_RESOLUTION * 10 / 100,  // expression pedal zero
+                 ADC_RESOLUTION * 90 / 100,  // expression pedal max
+                 0.01,           // snap multiplier
+                 8.0,            // activity threshold
+                 0,              // last state of switch 1
+                 0,              // last state of switch 2
+                 millis(),       // last time switch 1 status changed
+                 millis(),       // last time switch 2 status changed
+                 0, 0, 0, 0, 0, 0,   // latch emulation status
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                 nullptr,
+                 nullptr,
+                 nullptr
+                };
+  pedals[PEDALS-1].pressMode = PED_PRESS_1_2_L;
   action *act;
   act = actions[0] = (action*)malloc(sizeof(action));
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
-  act->pedal        = PEDALS - 1;
-  act->button       = 0;
+  act->control      = 36;
+  act->led          = LEDS;
+  act->color0       = CRGB::Black;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_PRESS;
+  act->midiMessage  = PED_ACTION_BANK_PLUS;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 1;
+  act->midiValue2   = BANKS - 1;
+  act->slot         = SLOTS;
+  act->oscAddress[0] = 0;
+  act->next         = (action*)malloc(sizeof(action));
+  act = act->next;
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->control      = 37;
   act->led          = LEDS;
   act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
@@ -1034,8 +1119,78 @@ void load_factory_default()
   act = act->next;
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
-  act->pedal        = PEDALS - 1;
-  act->button       = 0;
+  act->control      = 37;
+  act->color0       = CRGB::Black;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_DOUBLE_CLICK;
+  act->midiMessage  = PED_ACTION_POWER_ON_OFF;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 0;
+  act->midiValue2   = 127;
+  act->oscAddress[0] = 0;
+  act->slot         = SLOTS;
+  act->next         = (action*)malloc(sizeof(action));
+  act = act->next;
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->control      = 37;
+  act->led          = LEDS;
+  act->color0       = CRGB::Black;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_LONG_PRESS;
+  act->midiMessage  = PED_ACTION_DEVICE_INFO;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 0;
+  act->midiValue2   = 127;
+  act->oscAddress[0] = 0;
+  act->slot         = SLOTS;
+  act->next         = nullptr;
+  create_banks();
+#else
+  for (byte p = 0; p < PEDALS; p++)
+    pedals[p] = {PED_DISABLE,    // autosensing
+                 PED_MOMENTARY1, // mode
+                 PED_PRESS_1,    // press mode
+                 PED_DISABLE,    // invert polarity
+                 PED_DISABLE,    // latch emulation
+                 0,              // map function
+                 ADC_RESOLUTION * 10 / 100,  // expression pedal zero
+                 ADC_RESOLUTION * 90 / 100,  // expression pedal max
+                 0.01,           // snap multiplier
+                 8.0,            // activity threshold
+                 0,              // last state of switch 1
+                 0,              // last state of switch 2
+                 millis(),       // last time switch 1 status changed
+                 millis(),       // last time switch 2 status changed
+                 0, 0, 0, 0, 0, 0,   // latch emulation status
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                 nullptr,
+                 nullptr,
+                 nullptr
+                };
+  action *act;
+  act = actions[0] = (action*)malloc(sizeof(action));
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->control      = 37;
+  act->led          = LEDS;
+  act->color0       = CRGB::Black;
+  act->color1       = CRGB::Black;
+  act->event        = PED_EVENT_CLICK;
+  act->midiMessage  = PED_ACTION_PROFILE_PLUS;
+  act->midiChannel  = 1;
+  act->midiCode     = 0;
+  act->midiValue1   = 1;
+  act->midiValue2   = PROFILES;
+  act->oscAddress[0] = 0;
+  act->slot         = SLOTS;
+  act->next         = (action*)malloc(sizeof(action));
+  act = act->next;
+  act->tag0[0]      = 0;
+  act->tag1[0]      = 0;
+  act->control      = 37;
   act->led          = LEDS;
   act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
@@ -1051,8 +1206,7 @@ void load_factory_default()
   act = act->next;
   act->tag0[0]      = 0;
   act->tag1[0]      = 0;
-  act->pedal        = PEDALS - 1;
-  act->button       = 0;
+  act->control      = 37;
   act->led          = LEDS;
   act->color0       = CRGB::Black;
   act->color1       = CRGB::Black;
@@ -1069,13 +1223,53 @@ void load_factory_default()
 #endif
 #endif
 
-  for (byte i = 0; i < INTERFACES; i++)
-    {
-      interfaces[i].midiIn      = PED_ENABLE;
-      interfaces[i].midiOut     = PED_ENABLE;
-      interfaces[i].midiThru    = PED_DISABLE;
-      interfaces[i].midiClock   = PED_DISABLE;
-    };
+  for (byte i = 0; i < CONTROLS; i++) {
+    controls[i].pedal1  = PEDALS;
+    controls[i].button1 = LADDER_STEPS;
+    controls[i].pedal2  = PEDALS;
+    controls[i].button2 = LADDER_STEPS;
+    controls[i].led     = LEDS;
+  }
+
+  byte c = 0;
+  for (byte p = 0; p < 6; p++) {
+    byte b = 0;
+    switch (pedals[p].mode) {
+      case PED_NONE:                b = 0; break;
+      case PED_MOMENTARY1:
+      case PED_LATCH1:              b = 1; break;
+      case PED_MOMENTARY2:
+      case PED_LATCH2:
+      case PED_ANALOG_MOMENTARY:
+      case PED_ANALOG_LATCH:        b = 2; break;
+      case PED_MOMENTARY3:          b = 3; break;
+      case PED_LADDER:              b = 6; break;
+      default:                      b = 1; break;
+    }
+    for (byte i = 0; i < b; i++) {
+      controls[c].pedal1  = p;
+      controls[c].button1 = i;
+      controls[c].pedal2  = PEDALS;
+      controls[c].button2 = LADDER_STEPS;
+      controls[c].led     = LEDS;
+      c++;
+    }
+  }
+  c = 6 * LADDER_STEPS;
+  for (byte p = 6; p < PEDALS; p++) {
+    controls[c].pedal1  = p;
+    controls[c].button1 = 0;
+    controls[c].pedal2  = PEDALS;
+    controls[c].button2 = LADDER_STEPS;
+    controls[c].led     = LEDS;
+    c++;
+  }
+  for (byte i = 0; i < INTERFACES; i++) {
+    interfaces[i].midiIn      = PED_ENABLE;
+    interfaces[i].midiOut     = PED_ENABLE;
+    interfaces[i].midiThru    = PED_DISABLE;
+    interfaces[i].midiClock   = PED_DISABLE;
+  }
   interfaces[PED_USBMIDI].midiIn = PED_DISABLE;
   interfaces[PED_DINMIDI].midiIn = PED_DISABLE;
 
@@ -1123,6 +1317,21 @@ void eeprom_update_boot_mode(byte mode = bootMode)
   DPRINT("done\n");
   DPRINT("[NVS][Global][Boot Mode]: %d\n", mode);
 #else
+  spiffs_save_globals();
+#endif
+}
+
+void eeprom_update_ble_server(const String& server = bleServer)
+{
+#ifdef NVS
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putString("BLE Server", server);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global][BLE Server]:   %s\n", server.c_str());
+#else
+  bleServer = server;
   spiffs_save_globals();
 #endif
 }
@@ -1211,6 +1420,21 @@ void eeprom_update_flip_screen(bool enable = false)
 #endif
 }
 
+void eeprom_update_screen_saver(unsigned long timeout = screenSaverTimeout)
+{
+#ifdef NVS
+  DPRINT("Updating NVS ... ");
+  preferences.begin("Global", false);
+  preferences.putULong("Screen Timeout", timeout);
+  preferences.end();
+  DPRINT("done\n");
+  DPRINT("[NVS][Global[Screen Timeout]: %d\n", timeout);
+#else
+  screenSaverTimeout = timeout;
+  spiffs_save_globals();
+#endif
+}
+
 void eeprom_update_tap_dance(bool enable = false)
 {
 #ifdef NVS
@@ -1241,24 +1465,30 @@ void eeprom_update_repeat_on_bank_switch(bool enable = false)
 #endif
 }
 
-void eeprom_update_press_time(long p1 = PED_PRESS_TIME,
-                              long p2 = PED_DOUBLE_PRESS_TIME,
-                              long p3 = PED_LONG_PRESS_TIME,
-                              long p4 = PED_REPEAT_PRESS_TIME)
+void eeprom_update_press_time(long p1 = DEBOUNCE_INTERVAL,
+                              long p2 = PED_SIMULTANEOUS_GAP,
+                              long p3 = PED_PRESS_TIME,
+                              long p4 = PED_DOUBLE_PRESS_TIME,
+                              long p5 = PED_LONG_PRESS_TIME,
+                              long p6 = PED_REPEAT_PRESS_TIME)
 {
 #ifdef NVS
   DPRINT("Updating NVS ... ");
   preferences.begin("Global", false);
-  preferences.putLong("Single Time", p1);
-  preferences.putLong("Double Time", p2);
-  preferences.putLong("Long   Time", p3);
-  preferences.putLong("Repeat Time", p4);
+  preferences.putLong("Debounce Time",   p1);
+  preferences.putLong("SimultaneousGap", p2);
+  preferences.putLong("Single Time",     p3);
+  preferences.putLong("Double Time",     p4);
+  preferences.putLong("Long   Time",     p5);
+  preferences.putLong("Repeat Time",     p6);
   preferences.end();
   DPRINT("done\n");
-  DPRINT("[NVS][Global[Single Time]: %ld\n", p1);
-  DPRINT("[NVS][Global[Double Time]: %ld\n", p2);
-  DPRINT("[NVS][Global[Long   Time]: %ld\n", p3);
-  DPRINT("[NVS][Global[Repeat Time]: %ld\n", p4);
+  DPRINT("[NVS][Global][Debounce Time]   : %ld\n", p1);
+  DPRINT("[NVS][Global][SimultaneousGap] : %ld\n", p2);
+  DPRINT("[NVS][Global][Single Time]     : %ld\n", p3);
+  DPRINT("[NVS][Global][Double Time]     : %ld\n", p4);
+  DPRINT("[NVS][Global][Long   Time]     : %ld\n", p5);
+  DPRINT("[NVS][Global][Repeat Time]     : %ld\n", p6);
 #else
   pressTime       = p1;
   doublePressTime = p2;
@@ -1399,14 +1629,17 @@ void eeprom_update_profile(byte profile = currentProfile)
     pedals_copy[i].analogPedal   = nullptr;
     pedals_copy[i].jogwheel      = nullptr;
     pedals_copy[i].buttonConfig  = nullptr;
-    for (byte s = 0; s < LADDER_STEPS; s++)
-      pedals_copy[i].button[s]   = nullptr;
+    for (byte s = 0; s < LADDER_STEPS; s++) {
+      pedals_copy[i].latchStatus[s] = 0;
+      pedals_copy[i].button[s]      = nullptr;
+    }  
     if (pedals_copy[i].autoSensing) {
       pedals_copy[i].expZero     = ADC_RESOLUTION - 1;
       pedals_copy[i].expMax      = 0;
     }
   };
   preferences.putBytes("Pedals",      &pedals_copy, sizeof(pedals));
+  preferences.putBytes("Controls",    &controls,    sizeof(controls));
   preferences.putBytes("BankNames",   &banknames,   sizeof(banknames));
   preferences.putBytes("Interfaces",  &interfaces,  sizeof(interfaces));
   preferences.putBytes("Sequences",   &sequences,   sizeof(sequences));
@@ -1471,35 +1704,40 @@ void eeprom_read_global()
 #ifdef NVS
   DPRINT("Reading NVS Global ... ");
   if (preferences.begin("Global", true)) {
-    host               = preferences.getString("Device Name");
-    bootMode           = preferences.getUChar("Boot Mode");
-    wifiSSID           = preferences.getString("STA SSID");
-    wifiPassword       = preferences.getString("STA Password");
-    ssidSoftAP         = preferences.getString("AP SSID");
-    passwordSoftAP     = preferences.getString("AP Password");
-    httpUsername       = preferences.getString("HTTP Username");
-    httpPassword       = preferences.getString("HTTP Password");
-    theme              = preferences.getString("Bootstrap Theme");
-    currentProfile     = preferences.getUChar("Current Profile");
-    flipScreen         = preferences.getBool("Flip Screen");
-    tapDanceMode       = preferences.getBool("Tap Dance Mode");
-    repeatOnBankSwitch = preferences.getBool("Bank Switch");
-    pressTime          = preferences.getLong("Single Time");
-    doublePressTime    = preferences.getLong("Double Time");
-    longPressTime      = preferences.getLong("Long   Time");
-    repeatPressTime    = preferences.getLong("Repeat Time");
-    encoderSensitivity = preferences.getUChar("Encoder Sensit");
-    rgbOrder           = (EOrder)preferences.getUChar("RGB Order");
-    ledsOnBrightness   = preferences.getUChar("LedsOnBright");
-    ledsOffBrightness  = preferences.getUChar("LedsOffBright");
-    oscLocalPort       = preferences.getUInt("OSCLocalPort");
-    oscRemoteHost      = preferences.getString("OSCRemoteHost");
-    oscRemotePort      = preferences.getUInt("OSCRemotePort");
+    host                = preferences.getString("Device Name");
+    bootMode            = preferences.getUChar("Boot Mode");
+    bleServer           = preferences.getString("BLE Server");
+    wifiSSID            = preferences.getString("STA SSID");
+    wifiPassword        = preferences.getString("STA Password");
+    ssidSoftAP          = preferences.getString("AP SSID");
+    passwordSoftAP      = preferences.getString("AP Password");
+    httpUsername        = preferences.getString("HTTP Username");
+    httpPassword        = preferences.getString("HTTP Password");
+    theme               = preferences.getString("Bootstrap Theme");
+    currentProfile      = preferences.getUChar("Current Profile");
+    flipScreen          = preferences.getBool("Flip Screen");
+    screenSaverTimeout  = preferences.getULong("Screen Timeout");
+    tapDanceMode        = preferences.getBool("Tap Dance Mode");
+    repeatOnBankSwitch  = preferences.getBool("Bank Switch");
+    debounceInterval    = preferences.getLong("Debounce Time");
+    simultaneousGapTime = preferences.getLong("SimultaneousGap");
+    pressTime           = preferences.getLong("Single Time");
+    doublePressTime     = preferences.getLong("Double Time");
+    longPressTime       = preferences.getLong("Long   Time");
+    repeatPressTime     = preferences.getLong("Repeat Time");
+    encoderSensitivity  = preferences.getUChar("Encoder Sensit");
+    rgbOrder            = (EOrder)preferences.getUChar("RGB Order");
+    ledsOnBrightness    = preferences.getUChar("LedsOnBright");
+    ledsOffBrightness   = preferences.getUChar("LedsOffBright");
+    oscLocalPort        = preferences.getUInt("OSCLocalPort");
+    oscRemoteHost       = preferences.getString("OSCRemoteHost");
+    oscRemotePort       = preferences.getUInt("OSCRemotePort");
     preferences.getBytes("Ladder", ladderLevels, sizeof(ladderLevels));
     preferences.end();
     DPRINT("done\n");
     DPRINT("[NVS][Global][Device Name]:      %s\n", host.c_str());
     DPRINT("[NVS][Global][Boot Mode]:        %d\n", bootMode);
+    DPRINT("[NVS][Global][BLE Server]:       %s\n", bleServer.c_str());
     DPRINT("[NVS][Global][STA SSID]:         %s\n", wifiSSID.c_str());
     DPRINT("[NVS][Global][STA Password]:     %s\n", wifiPassword.c_str());
     DPRINT("[NVS][Global][AP SSID]:          %s\n", ssidSoftAP.c_str());
@@ -1509,8 +1747,11 @@ void eeprom_read_global()
     DPRINT("[NVS][Global][Bootstrap Theme]:  %s\n", theme.c_str());
     DPRINT("[NVS][Global][Current Profile]:  %d\n", currentProfile);
     DPRINT("[NVS][Global][Flip Screen]:      %d\n", flipScreen);
+    DPRINT("[NVS][Global][Screen Timeout]:   %d\n", screenSaverTimeout);
     DPRINT("[NVS][Global][Tap Dance Mode]:   %d\n", tapDanceMode);
     DPRINT("[NVS][Global][Bank Switch]:      %d\n", repeatOnBankSwitch);
+    DPRINT("[NVS][Global][Debounce Time]:    %ld\n", debounceInterval);
+    DPRINT("[NVS][Global][SimultaneousGap]:  %ld\n", simultaneousGapTime);
     DPRINT("[NVS][Global][Single Time]:      %ld\n", pressTime);
     DPRINT("[NVS][Global][Double Time]:      %ld\n", doublePressTime);
     DPRINT("[NVS][Global][Long   Time]:      %ld\n", longPressTime);
@@ -1565,13 +1806,16 @@ void eeprom_read_profile(byte profile = currentProfile)
     pedals[i].analogPedal   = nullptr;
     pedals[i].jogwheel      = nullptr;
     pedals[i].buttonConfig  = nullptr;
-    for (byte s = 0; s < LADDER_STEPS; s++)
-      pedals[i].button[s]   = nullptr;
+    for (byte s = 0; s < LADDER_STEPS; s++) {
+      pedals[i].latchStatus[s] = 0;
+      pedals[i].button[s]      = nullptr;
+    }
     if (pedals[i].autoSensing) {
       pedals[i].expZero     = ADC_RESOLUTION - 1;
       pedals[i].expMax      = 0;
     }
   }
+  preferences.getBytes("Controls",    &controls,    sizeof(controls));
   preferences.getBytes("BankNames",   &banknames,   sizeof(banknames));
   preferences.getBytes("Interfaces",  &interfaces,  sizeof(interfaces));
   preferences.getBytes("Sequences",   &sequences,   sizeof(sequences));
@@ -1616,15 +1860,17 @@ void eeprom_update_globals()
 #ifdef NVS
   eeprom_update_device_name(host);
   eeprom_update_boot_mode(bootMode);
+  eeprom_update_ble_server(bleServer);
   eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
   eeprom_update_ap_wifi_credentials(ssidSoftAP, passwordSoftAP);
   eeprom_update_login_credentials(httpUsername, httpPassword);
   eeprom_update_theme(theme);
   eeprom_update_current_profile(currentProfile);
+  eeprom_update_screen_saver(screenSaverTimeout);
   eeprom_update_flip_screen(flipScreen);
   eeprom_update_tap_dance(tapDanceMode);
   eeprom_update_repeat_on_bank_switch(repeatOnBankSwitch);
-  eeprom_update_press_time(pressTime, doublePressTime, longPressTime, repeatPressTime);
+  eeprom_update_press_time(debounceInterval, simultaneousGapTime, pressTime, doublePressTime, longPressTime, repeatPressTime);
   eeprom_update_ladder();
   eeprom_update_rgb_order(rgbOrder);
   eeprom_update_encoder_sensitivity(encoderSensitivity);
@@ -1661,11 +1907,13 @@ void eeprom_initialize()
   load_factory_default();
   eeprom_update_device_name();
   eeprom_update_boot_mode();
+  eeprom_update_ble_server();
   eeprom_update_sta_wifi_credentials();
   eeprom_update_ap_wifi_credentials();
   eeprom_update_login_credentials();
   eeprom_update_theme();
   eeprom_update_current_profile();
+  eeprom_update_screen_saver();
   eeprom_update_flip_screen();
   eeprom_update_tap_dance();
   eeprom_update_repeat_on_bank_switch();
@@ -1713,5 +1961,48 @@ void eeprom_init_or_erase()
       DPRINT("'nvs' partition not found\n");
       break;
   }
+#endif
+}
+
+
+void send_configuration_sysex()
+{
+#ifdef NVS
+  esp_partition_iterator_t pi = esp_partition_find(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, "nvs");
+  if (pi != NULL) {
+    const esp_partition_t* nvs = esp_partition_get(pi);
+
+    DPRINT("Sending configuration via MIDI SysEx (payload %d bytes) ... ", nvs->size);
+
+    const byte payload = 62;
+    byte buf[payload];
+
+    for (unsigned i = 0; i < nvs->size / (payload - 4) + 1; i++) {
+      memset(buf, 0, payload);
+      buf[0] = 0x7D;              // Manufacturer ID for educational use only
+      buf[1] = i / (128*128);     // MSB of packet number
+      buf[2] = (i / 128) % 128;   //     of packet number
+      buf[3] = i % 128;           // LSB of packet number
+      if (esp_partition_read(nvs, (payload-4)*i, &buf[4], payload-4) == ESP_OK) {        
+        for (unsigned j = 0; j < payload; j++) {   
+          buf[j] &= 0x7F;
+        }
+        DPRINT("%d %d %d\n", buf[1], buf[2], buf[3]);
+        BLESendSystemExclusive(buf, payload);
+        ipMIDISendSystemExclusive(buf, payload);
+        AppleMidiSendSystemExclusive(buf, payload);
+        delay(100);
+      } else {
+        DPRINT("Cannot read 'nvs' partition\n");
+      }
+    }
+    DPRINT("done\n");
+
+    esp_partition_iterator_release(pi);
+  } else {
+    DPRINT("'nvs' partition not found\n");
+  }
+#else
+
 #endif
 }

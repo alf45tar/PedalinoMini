@@ -5,17 +5,15 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2022 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
 */
 
-//    Source code based on improv_serial_component.h from https://github.com/esphome/esphome
+//    Source code based on https://github.com/esphome/esphome/tree/dev/esphome/components/esp32_improv
 
 #pragma once
 
 #include <improv.h>
-
-#include <HardwareSerial.h>
 #include <WiFi.h>
 
 namespace improv_serial {
@@ -31,7 +29,7 @@ namespace improv_serial {
 
   class ImprovSerial {
     public:
-      void setup(const String& firmware, const String& version, const String& variant, const String& name, HardwareSerial *serial = &Serial);
+      void setup(const String& firmware, const String& version, const String& variant, const String& name, Stream *serial = &Serial);
       bool loop(bool timeout = false);
       improv::State get_state();
       String get_ssid();
@@ -53,7 +51,7 @@ namespace improv_serial {
     uint8_t read_byte_();
     void write_data_(std::vector<uint8_t> &data);
 
-    HardwareSerial *hw_serial_{nullptr};
+    Stream *hw_serial_{nullptr};
 
     std::vector<uint8_t> rx_buffer_;
     uint32_t last_read_byte_{0};

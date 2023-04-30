@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2021 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -200,6 +200,7 @@ void OnAppleMidiNoteOff(byte channel, byte note, byte velocity)
   BLESendNoteOff(note, velocity, channel);
   ipMIDISendNoteOff(note, velocity, channel);
   OSCSendNoteOff(note, velocity, channel);
+  leds_update(midi::NoteOff, channel, note, velocity);
   if (IS_SHOW_ENABLED(interfaces[PED_RTPMIDI].midiIn)) screen_info(midi::NoteOff, note, velocity, channel);
 }
 
@@ -226,6 +227,7 @@ void OnAppleMidiReceiveControlChange(byte channel, byte number, byte value)
   OSCSendControlChange(number, value, channel);
   leds_update(midi::ControlChange, channel, number, value);
   if (IS_SHOW_ENABLED(interfaces[PED_RTPMIDI].midiIn)) screen_info(midi::ControlChange, number, value, channel);
+  switch_profile_or_bank(channel, number, value);
 }
 
 void OnAppleMidiReceiveProgramChange(byte channel, byte number)
@@ -447,6 +449,7 @@ void OnIpMidiNoteOff(byte channel, byte note, byte velocity)
   BLESendNoteOff(note, velocity, channel);
   AppleMidiSendNoteOff(note, velocity, channel);
   OSCSendNoteOff(note, velocity, channel);
+  leds_update(midi::NoteOff, channel, note, velocity);
   if (IS_SHOW_ENABLED(interfaces[PED_IPMIDI].midiIn)) screen_info(midi::NoteOff, note, velocity, channel);
 }
 
@@ -473,6 +476,7 @@ void OnIpMidiReceiveControlChange(byte channel, byte number, byte value)
   OSCSendControlChange(number, value, channel);
   leds_update(midi::ControlChange, channel, number, value);
   if (IS_SHOW_ENABLED(interfaces[PED_IPMIDI].midiIn)) screen_info(midi::ControlChange, number, value, channel);
+  switch_profile_or_bank(channel, number, value);
 }
 
 void OnIpMidiReceiveProgramChange(byte channel, byte number)
@@ -1274,12 +1278,12 @@ void oscOnPacket(AsyncUDPPacket packet) {
             value = map2(oscMsg.getInt(0), act->midiValue1, act->midiValue2, 0, 255);
           else if (oscMsg.isFloat(0))
             value = map2(oscMsg.getFloat(0)*1024, act->midiValue1*1024, act->midiValue2*1024, 0, 255);
-          fastleds[led_button(act->pedal, act->button, act->led)] = act->color0;
-          fastleds[led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)].lerp8(act->color1, value);
-          fastleds[led_button(act->pedal, act->button, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / 255);
-          fastleds[led_button(act->pedal, act->button, act->led)] = swap_rgb_order(fastleds[led_button(act->pedal, act->button, act->led)], rgbOrder);
+          fastleds[led_control(act->control, act->led)] = act->color0;
+          fastleds[led_control(act->control, act->led)] = fastleds[led_control(act->control, act->led)].lerp8(act->color1, value);
+          fastleds[led_control(act->control, act->led)].nscale8(ledsOffBrightness + (ledsOnBrightness - ledsOffBrightness) * value / 255);
+          fastleds[led_control(act->control, act->led)] = swap_rgb_order(fastleds[led_control(act->control, act->led)], rgbOrder);
           FastLED.show();
-          lastLedColor[currentBank][led_button(act->pedal, act->button, act->led)] = fastleds[led_button(act->pedal, act->button, act->led)];
+          lastLedColor[currentBank][led_control(act->control, act->led)] = fastleds[led_control(act->control, act->led)];
         }
       }
       act = act->next;

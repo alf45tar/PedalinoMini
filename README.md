@@ -67,18 +67,29 @@ New features and bug corrections will be released to this public repository when
 
   >Goal is 500 stars.
 
-- **9 months from August 1st, 2022**
+- **9 months from May 1st, 2023**
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on May 2nd, 2023.
+  >Goal is reached on February 1st, 2024.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
-Sponsors version additions/fixes since September 23rd, 2022:
-- Bootstrap 5.2.2
+Sponsors version additions/fixes since April 30th, 2023:
+- None
+
+[PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
+
+## Public versions history
+
+<details>
+<summary>3.1.5 - April 30th, 2023</summary>
+
+The following features:
+
+- Bootstrap 5.2.2 onboard and latest via internet
 - SortableJS 1.15.0
-- JSON Editor 9.9.2
+- Latest JSON Editor
 - Better buttons placement in WebUI
 - Fixed RGB order in cross led refresh
 - Fixed BLE boot mode disabled when disabled in Options
@@ -89,7 +100,7 @@ Sponsors version additions/fixes since September 23rd, 2022:
 - OLED display bottom line fix (thanks to potul)
 - Tag name truncated fix
 - Led color on boot fix
-- Add Debounce Interval and Simultanesou Gap Time in Options
+- Add Debounce Interval and Simultaneous Gap Time in Options
 - Press & Release event for streamline actions
 - Inactivity timeout switch off display and leds
 - Added Default as led option in Sequences
@@ -101,10 +112,10 @@ Sponsors version additions/fixes since September 23rd, 2022:
 - Configuration file up to 256Kb when PSRAM is available
 - Configuration file can be appended to current profile (only Actions)
 - Switch profile (CC 00 [01-03] on channel 16) and bank (CC 32 [00-20] on channel 1&) via MIDI
+- MIDI Clock and MIDI Time Code (MTC) fixes and improvements
 
-[PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
-
-## Public versions history
+has been released to public on April 30th, 2023. Thanks to the new sponsors: SrMorris, FelixMuellCode, MiqViq, serhatsoyyigit, potul, AndreySom, C*********, jimhiggs, A***********, Ratterbass, TarFilarek, S*********, bobvc133, itsptadeu, mosswind,,b*******, m*****, m*******, m********, TheNothingMan.
+</details>
 
 <details>
 <summary>2.5.2 - September 23rd, 2022</summary>
@@ -186,7 +197,7 @@ The following features/fixes:
 - Fixed Network MIDI/AppleMIDI/RTP-MIDI not working in AP mode
 - Leds effects
 
-has been released to public on August 9th, 2021 thanks to the following sponsors: richardjs, P********, j*****, TarFilarek. wespac001 x 2, DR-Mello, DWSQUIRES, e36910, itsptadeu,
+has been released to public on August 9th, 2021 thanks to the following sponsors: richardjs, P********, j*****, TarFilarek. wespac001 x 2, DR-Mello, DWSQUIRES, e36910, itsptadeu.
 </details>
 
 <details>
@@ -252,7 +263,7 @@ Simulate "D1 Robot LCD Keypad Shield" voltage ladder
 
 Visit http://alf45tar.github.io/PedalinoMini/installer to install new firmware, update firmware, connect device to a WiFi network and visit the device's hosted web interface.
 
-The only requirement for now is to use a Google Chrome or Microsoft Edge browser (Safari and iOS devices are not supported yet).
+The only requirement for now is to use a Google Chrome or Microsoft Edge browser (Safari and iOS devices are not supported yet). WiFi provisioing via Bluetooth is only supported in Google Chrome on Windows.
 
 <details>
 <summary>Detailed instructions</summary>
@@ -277,30 +288,22 @@ Raspberry Pi Pico is a generally available cost-effective board that can be used
 ### Method 1
 Thanks to [Sthopeless](https://github.com/Sthopeless)
 
-- Simply flash Pico with the .uf2 binary file provided here https://github.com/rsta2/pico/releases/tag/v1.0
+- Flash Pico with the .UF2 binary file provided here https://github.com/rsta2/pico/releases/tag/v1.0
 - Connect ESP32 RX1 to Pico GP0 and ESP32 TX1 to Pico GP1 and GND to GND.
+
+### Method 2
+
+- Flash Pico with CircuitPhyton .UF2 binary file provided here https://circuitpython.org/board/raspberry_pi_pico. Tutorial available [here](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython/circuitpython).
+- Copy the CIRCUITPY folder files under the CIRCUITPY Pico drive. The CIRCUITPY folder contains the boot.py file and the [Adafruit CircuitPhyton MIDI](https://github.com/adafruit/Adafruit_CircuitPython_MIDI) library.
+- Connect ESP32 RX1 to Pico GP0 and ESP32 TX1 to Pico GP1 and GND to GND.
+
+For both methods:
 
 ESP32 Pin|Pico Pin
 ---------|--------
 RX1|GP0
 TX1|GP1
 GND|GND
-
-### Method 2
-
- [CircuitPhyton](https://circuitpython.org/board/raspberry_pi_pico/) is a derivative of MicroPython designed to simplify experimentation and education on low-cost microcontrollers. It makes it easier than ever to get prototyping by requiring no upfront desktop software downloads. Simply copy and edit files on the CIRCUITPY drive.
-
-- Install CircuitPhyton on the Pico. Tutorial available [here](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython/circuitpython).
-- Copy the CIRCUITPY folder files under the CIRCUITPY drive available when the Pico is connected to the PC/Mac and after installation of CircuitPhyton. The CIRCUITPY folder already contains the [Adafruit CircuitPhyton MIDI](https://github.com/adafruit/Adafruit_CircuitPython_MIDI) library for your convenience.
-- Connect ESP32 RX1 to Pico GP4 and ESP32 TX1 to Pico GP5 and GND to GND.
-
-ESP32 Pin|Pico Pin
----------|--------
-RX1|GP4
-TX1|GP5
-GND|GND
-
-For both methods:
 
 - If the Pico is powered via USB, the VSYS must NOT be connected to other power source.
 - [Optional] Power ESP32 board just feeding the power from the VBUS port on the Pico to VIN (if available) of the ESP32.
@@ -378,9 +381,9 @@ That's all folks.
 
 PedalinoMini™ supports IEEE 802.11 b/g/n WiFi with WPA/WPA2 authentication (only 2.4 GHz).
 
-PedalinoMini™ support 4 WiFi provisioning methods: 1 via USB and 3 via WiFi.
+PedalinoMini™ support 5 WiFi provisioning methods: 1 via USB, 1 via Bluetooth and 3 via WiFi.
 
-PedalinoMini™ is using [ESP Web Tools](https://esphome.github.io/esp-web-tools/) not only to install the firmware with a click of button right from you browser but also to connect it to WiFi with the same simplicity.
+PedalinoMini™ is using [ESP Web Tools](https://esphome.github.io/esp-web-tools/) not only to install the firmware, via USB with a click of button right from you browser, but also to connect it to WiFi with the same simplicity via USB or Bluetooth.
 
 PedalinoMini™ also implements Wi-Fi Protected Setup (WPS) and Smart Config technology ([Espressif’s ESP-TOUCH protocol](https://www.espressif.com/en/products/software/esp-touch/overview)). WPS needs access to the WPS button on the WiFi router. Smart Config requires a smartphone with one the following apps:
 
@@ -390,9 +393,9 @@ PedalinoMini™ also implements Wi-Fi Protected Setup (WPS) and Smart Config tec
 If the WiFi network is not available PedalinoMini™ will create an hotspot for you. Once connected to the PedalinoMini™ hotspot, you can use the web interface to set the SSID and password of an access point that you would like to connect to.
 
 - On power on PedalinoMini™ will try to connect to the last know access point
-- If it cannot connect to the last used access point within 15 seconds it enters into WiFi provisioning mode via USB
+- If it cannot connect to the last used access point within 15 seconds it enters into WiFi provisioning mode via USB or Bluetooth
 - Visit http://alf45tar.github.io/PedalinoMini/installer and follow the instructions
-- If provisioning via USB is not finished within 60 seconds it enters into Smart Config mode (if compiled with -D SMARTCONFIG in platformio.ini)
+- If provisioning is not finished within 60 seconds it enters into Smart Config mode (if compiled with -D SMARTCONFIG in platformio.ini)
 - Start one of the suggested apps to configure SSID and password
 - If it doesn't receive any SSID and password during the next 60 seconds it enters into WPS mode (if compiled with -D WPS in platformio.ini)
 - Press or press and hold (it depends by your router) the WPS button on your WiFi router __after__ PedalinoMini™ entered in WPS mode
@@ -407,7 +410,7 @@ void wifi_connect()
 {
   auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
   if (!WiFi.isConnected())
-    improv_config();          // IMPROV_CONFIG_TIMEOUT seconds to receive provisioning SSID and password via USB and connect to WiFi
+    improv_config();          // IMPROV_CONFIG_TIMEOUT seconds to receive provisioning SSID and password via USB or Bluetooth and connect to WiFi
   if (!WiFi.isConnected())
     smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
   if (!WiFi.isConnected())
@@ -435,9 +438,7 @@ Device name, username and password can be changed via web user interface in the 
 
 Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal is connected to each of the 6 available ports. Pedal 7, 8 and 9 (if present) are the on board buttons and they are fully configurable.
 
-![WEBUI PEDALS](./images/webui-pedals1.png "Pedals 1-4")
-
-![WEBUI PEDALS](./images/webui-pedals2.png "Pedals 5-8")
+![WEBUI PEDALS](./images/webui-pedals.png "Pedals")
 
 ____________|Description
 :-----------|:----------
@@ -452,7 +453,6 @@ Min|In ANALOG mode minumum digital value (after analog-to-digital conversion) th
 Max|In ANALOG mode maximum digital value (after analog-to-digital conversion) that can reach the connected expression pedal.<br>In ULTRASONIC mode the maximum distance (1023 is around 18cm and it is far enough for the application). Acceptable values are from 0 to 1023.
 Easing|It controls the amount of easing. Possible values are: 1, 2 or 3. Bigger value makes the responsive values more responsive: output value follows immediately the input value. Recommended values: 1 for ultrasonic sensor, 2 or 3 for potentiometer.
 Activity Threshold|The amount of movement that must take place for it to register as activity and start moving the output value. Increase the value to suppress noisy potentiometer. Recommended values: 8 or 16 for potentiometer, 64 for ultrasonic sensor.
-Button1 ... Button6|Define for each button of the pedal the default led number to be used in Actions
 
 ## Controls
 
@@ -481,7 +481,7 @@ Once Controls setup is complete proceed with Actions setup to define which event
 
 ________|Description
 :-------|:----------
-On|The event that trigger the action.<br>Momentary switches, latches and ladders have 7 different events: PRESS, RELEASE, CLICK, DOUBLE CLICK, LONG PRESS, REPEAT PRESSED and LONG RELEASE. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
+On|The event that trigger the action.<br>Momentary switches, latches and ladders have 7 different events: PRESS, RELEASE, PRESS&RELEASE, CLICK, DOUBLE CLICK, LONG PRESS, REPEAT PRESSED and LONG RELEASE. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
 Control|The control that trigger the event as defined in Controls page.
 Send|The action to be triggered on event.<br>It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK SELECT+, BANK SELECT-, PROGRAM CHANGE+, PROGRAM CHANGE-, BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.<br>For an analog pedal leave it blank to activate the universal mode. In universal mode an analog pedal can be used to repeat the last MIDI message. A typical usage is to modify the value of the last CONTROL CHANGE.
 From Value/To Value|Define the range from a off value to a on value (see below).
@@ -491,28 +491,45 @@ Led|Select the led number and the off and on color. Use Default for use the defa
 
 Action|MIDI Channel|MIDI Code|From|To
 :-----|:----------:|:-------:|:--:|:--:
-PROGRAM CHANGE|Channel|PC#|-|-
-CONTROL CHANGE|Channel|CC#|From Value|To Value
-NOTE ON|Channel|Note|Velocity|-
-NOTE OFF|Channel|Note|Velocity (+)|-
-BANK SELECT+|Channel|MSB|From LSB|To LSB
-BANK SELECT-|Channel|MSB|From LSB|To LSB
-PROGRAM CHANGE+|Channel|-|From PC#|To PC#
-PROGRAM CHANGE-|Channel|-|From PC#|To PC#
-PITCH BEND|Channel|-|-|-
-CHANNEL PRESSURE|Channel|-|-|-
-START|-|-|-|-
-STOP|-|-|-|-
-CONTINUE|-|-|-|-
-BANK+|-|-|From Bank|To Bank
-BANK-|-|-|From Bank|To Bank
-MTC START|-|-|-|-
-MTC STOP|-|-|-|-
-MTC CONTINUE|-|-|-|-
-TAP|-|-|-|-
+Program Change|Channel|PC#|-|-
+Control Change|Channel|CC#|From Value|To Value
+Control Change Snap|Channel|CC#|From Value|To Value
+Note On|Channel|Note|Velocity|-
+Note Off|Channel|Note|Velocity (+)|-
+Bank Select+|Channel|MSB|From LSB|To LSB
+Bank Select-|Channel|MSB|From LSB|To LSB
+Program Change+|Channel|-|From PC#|To PC#
+Program Change-|Channel|-|From PC#|To PC#
+Pitch Bend|Channel|-|-|-
+Channel Pressure|Channel|-|-|-
+MIDI Clock Master|-|-|-|-
+MIDI Clock Slave|-|-|-|-
+MIDI Clock Off|-|-|-|-
+Start|-|-|-|-
+Stop|-|-|-|-
+Ccontinue|-|-|-|-
+Sequence|-|Sequence #|-|-
+Step By Step+|-|-|-|-
+Step By Step-|-|-|-|-
+Bank+|-|-|From Bank|To Bank
+Bank-|-|-|From Bank|To Bank
+MTC Master|-|-|-|-
+MTC Slave|-|-|-|-
+MTC Off|-|-|-|-
+MTC Start|-|-|-|-
+MTC Stop|-|-|-|-
+MTC Continue|-|-|-|-
+Tap|-|-|-|-
 BPM+|-|-|-|-
 BPM-|-|-|-|-
-SEQUENCE|-|Sequence #|-|-
+OSC Message|-|-|-|-
+Profile+|-|-|From Profile#|To Profile#
+Profile-|-|-|From Profile#|To Profile#
+Set Led Color|-|-|-|-
+Repeat|-|-|-|-
+Repeat Overwrite|Channel|-|From Value|To Value
+Device Info|-|-|-|-
+Power On/Off|-|-|-|-
 
 - (-) Not used
 - (+) if velocity is not zero it is equivalent to NOTE ON

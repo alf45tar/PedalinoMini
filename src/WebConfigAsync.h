@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2022 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -18,6 +18,7 @@ bool   authenticated = false;
 inline void http_run() {};
 #else
 
+#include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <AsyncTCP.h>
@@ -27,6 +28,8 @@ inline void http_run() {};
 #include <FS.h>
 #include <SPIFFS.h>
 #include <nvs.h>
+
+#include "Version.h"
 
 AsyncWebServer          httpServer(80);
 
@@ -41,13 +44,16 @@ AsyncWebSocketClient        *wsClient = NULL;
 
 #define WEBPAGE_MEMORY_ALLOCATION 8192    // To avoid memory fragmentation keep web page chunk smaller than allocated space
 
-String page         = "";
-String alert        = "";
-String alertError   = "";
-String uiprofile    = "1";
-String uibank       = "1";
-String uipedal      = "All";
-String uisequence   = "1";
+String page          = "";
+String alert         = "";
+String alertError    = "";
+String uiprofile     = "1";
+String uibank        = "1";
+String uicontrol     = "All";
+String uicontrolpage = "1";
+String uisequence    = "1";
+
+#define CONTROLS_PER_PAGE   10
 
 bool fullPageCompleted = false;
 
@@ -111,12 +117,12 @@ bool get_top_page(int p, unsigned int start, unsigned int len) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi' crossorigin='anonymous'>");
   #else
-    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3' crossorigin='anonymous'>");
+    page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/css/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   #endif
   } else {
-    page += F("<link href='https://cdn.jsdelivr.net/npm/bootswatch@5.1.3/dist/");
+    page += F("<link href='https://cdn.jsdelivr.net/npm/bootswatch@latest/dist/");
     page += theme;
     page += F("/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   }
@@ -168,6 +174,17 @@ bool get_top_page(int p, unsigned int start, unsigned int len) {
   page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
   page += F("</svg>");
   page += F(" Pedals</a>");
+  page += F("</li>");
+
+  if (trim_page(start, len)) return true;
+
+  page += F("<li class='nav-item");
+  page += (p == 4 ? F(" active'>") : F("'>"));
+  page += F("<a class='nav-link' href='/virtualpedals'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-toggles' viewBox='0 0 16 16'>");
+  page += F("<path d='M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7h-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm2.45 0A3.49 3.49 0 0 1 8 3.5 3.49 3.49 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5H6.95zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7z'/>");
+  page += F("</svg>");
+  page += F(" Controls</a>");
   page += F("</li>");
 
   if (trim_page(start, len)) return true;
@@ -348,9 +365,9 @@ void get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p' crossorigin='anonymous'></script>");
+  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3' crossorigin='anonymous'></script>");
 #else
-  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js' integrity='sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p' crossorigin='anonymousì></script>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/js/bootstrap.bundle.min.js' crossorigin='anonymous'></script>");
 #endif
   page += F("</body>");
   page += F("</html>");
@@ -419,6 +436,9 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F("<dt>Pedals</dt><dd>");
   page += PEDALS;
   page += F("</dd>");
+  page += F("<dt>Controls</dt><dd>");
+  page += CONTROLS;
+  page += F("</dd>");
   page += F("<dt>Sequences</dt><dd>");
   page += SEQUENCES;
   page += F("</dd>");
@@ -444,14 +464,40 @@ void get_root_page(unsigned int start, unsigned int len) {
       break;
   }
   page += F("</dd>");
+  page += F("<dt>IDF Version</dt><dd>");
+  page += ESP_IDF_VERSION_MAJOR;
+  page += F(".");
+  page += ESP_IDF_VERSION_MINOR;
+  page += F(".");
+  page += ESP_IDF_VERSION_PATCH;
+  page += F("</dd>");
   page += F("<dt>SDK Version</dt><dd>");
   page += ESP.getSdkVersion();
   page += F("</dd>");
+  /*
+  page += F("<dt>ESP Arduino Version</dt><dd>");
+  page += ESP_ARDUINO_VERSION_MAJOR;
+  page += F(".");
+  page += ESP_ARDUINO_VERSION_MINOR;
+  page += F(".");
+  page += ESP_ARDUINO_VERSION_PATCH;
+  page += F("</dd>");
+  */
   page += F("<dt>PlatformIO Build Env</dt><dd>");
   page += xstr(PLATFORMIO_ENV);
   page += F("</dd>");
   page += F("<dt>Firmware</dt><dd>");
-  page += VERSION;
+  page += PEDALINO_VERSION_MAJOR;
+  page += F(".");
+  page += PEDALINO_VERSION_MINOR;
+  page += F(".");
+  page += PEDALINO_VERSION_PATCH;
+  page += F("</dd>");
+  page += F("<dt>Firmware Size</dt><dd>");
+  page += ESP.getSketchSize();
+  page += F(" bytes</dd>");
+  page += F("<dt>Firmware Hash</dt><dd>");
+  page += ESP.getSketchMD5();
   page += F("</dd>");
   page += F("</div>");
 
@@ -463,7 +509,7 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += ARDUINO_BOARD;
   page += F("</dd>");
   page += F("<dt>Chip</dt><dd>");
-  page += F("ESP32");
+  page += ESP.getChipModel();
   page += F("</dd>");
   page += F("<dt>Chip Revision</dt><dd>");
   page += ESP.getChipRevision();
@@ -504,10 +550,23 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F(" kB (");
   page += maxAllocation / 1024;
   page += F(" kB)</dd>");
+#ifdef BATTERY
   page += F("<dt>Battery Voltage</dt><dd>");
   page += String(batteryVoltage / 1000.0, 1);
   page += F(" V ");
   page += batteryVoltage > 4300 ? F("plugged") : F("on battery");
+  page += F("</dd>");
+#endif
+  page += F("<dt>Uptime</dt><dd>");
+  unsigned long sec = (millis() / 1000) % 60;
+  unsigned long min = (millis() / 1000 / 60) % 60;
+  unsigned long h   = (millis() / 1000 / 60 / 60) % 24;
+  unsigned long day = (millis() / 1000 / 60 / 60 / 24);
+  if (day > 0) { page += day; page += F("d "); }
+  if (h   > 0) { page += h;   page += F("h "); }
+  if (min > 0) { page += min; page += F("m "); }
+  page += sec;
+  page += F("s");
   page += F("</dd>");
   //page += F("<dt>Running On Core</dt><dd>");
   //page += xPortGetCoreID();
@@ -899,11 +958,9 @@ void get_live_page(unsigned int start, unsigned int len) {
 void get_actions_page(unsigned int start, unsigned int len) {
 
   const byte   b = constrain(uibank.toInt(), 0, BANKS - 1);
-  //const byte   p = constrain(uipedal.toInt(), 1, PEDALS);
   action      *act;
   unsigned int i;
-  bool         same_pedal;
-  byte         maxbutton;
+  bool         same_control;
 
   if (get_top_page(2, start, len)) return;
 
@@ -918,18 +975,15 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += uibank;
   page += F("</h5>");
   page += F("<div class='card-body'>");
-  //page += F("<div class='input-group input-group-sm'>");
-  //page += F("<div class='btn-group flex-wrap'>");
   page += F("<form method='get' id='banks-form'>");
   page += F("<input type='hidden' id='banksorder' name='banksorder' value=''/>");
   page += F("<div class='container g-0'>");
-  page += F("<div id='banklist' class='row g-0'>");
+  page += F("<div id='banklist' class='row row-cols-6 g-0'>");
 
   if (trim_page(start, len)) return;
 
   for (i = 0; i < BANKS; i++) {
     page += F("<div class='col text-center g-0'>");
-    page += F("<div class='grid-square'>");
     page += F("<button type='button submit' class='btn btn-sm btn-block");
     page += (uibank == String(i) ? F(" btn-primary") : F(""));
     page += F("' id='");
@@ -942,7 +996,6 @@ void get_actions_page(unsigned int start, unsigned int len) {
     else
       page += banknames[i];
     page += F("</button>");
-    page += F("</div>");
     page += F("</div>");
     //if ((i + 1) % (BANKS / 3) == 0) page += F("<div class='w-100'></div>");
 
@@ -980,12 +1033,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<div class='col-4 col-md-3 col-xl-2'>");
   page += F("<div class='card h-100'>");
   page += F("<h5 class='card-header'>");
-  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-controller' viewBox='0 0 20 20'>");
-  page += F("<path d='M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1v-1z'/>");
-  page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-toggles' viewBox='0 0 20 20'>");
+  page += F("<path d='M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7h-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm2.45 0A3.49 3.49 0 0 1 8 3.5 3.49 3.49 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5H6.95zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7z'/>");
   page += F("</svg>");
-  page += F(" Pedal ");
-  page += uipedal;
+  page += F(" Control ");
+  page += uicontrol;
   page += F("</h5>");
   page += F("<div class='card-body'>");
   //page += F("<div class='input-group input-group-sm'>");
@@ -995,20 +1047,21 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<div class='row row-cols-3'>");
   page += F("<div class='col text-center'>");
   page += F("<button type='button submit' class='btn btn-sm");
-  page += (uipedal.equals("All") ? F(" btn-primary") : F(""));
-  page += F("' name='pedal' value='All'>All</button>");
+  page += (uicontrol.equals("All") ? F(" btn-primary") : F(""));
+  page += F("' name='control' value='All'>All</button>");
   page += F("</div>");
 
   if (trim_page(start, len)) return;
 
-  for (i = 1; i <= PEDALS; i++) {
+  for (unsigned int c = 1; c <= CONTROLS; c++) {
+    if (control_not_defined(c-1)) continue;
     page += F("<div class='col text-center'>");
     page += F("<button type='button submit' class='btn btn-sm");
-    page += (uipedal == String(i) ? F(" btn-primary") : F(""));
-    page += F("' name='pedal' value='");
-    page += i;
+    page += (uicontrol == String(c) ? F(" btn-primary") : F(""));
+    page += F("' name='control' value='");
+    page += c;
     page += F("'>");
-    page += i;
+    page += c;
     page += F("</button>");
     page += F("</div>");
 
@@ -1027,17 +1080,61 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<form method='post'>");
 
   page += F("<div class='card mb-3'>");
-  page += F("<h5 class='card-header'>");
+  page += F("<div class='card-header'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-auto me-auto'>");
+  page += F("<h5 class='mb-0'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-clipboard-check' viewBox='0 0 20 20'>");
   page += F("<path fill-rule='evenodd' d='M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z'/>");
   page += F("<path d='M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z'/>");
   page += F("<path d='M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z'/>");
   page += F("</svg>");
-  page += F(" Actions</h5>");
-  page += F("<div class='card-body'>");
+  page += F(" Actions");
+  page += F("</h5>");
+  page += F("</div>");
 
   if (trim_page(start, len)) return;
 
+  page += F("<div class='col-auto'>");
+  page += F("<div class='btn-group' role='group'>");
+  page += F("<button id='btnGroupNewAction' type='button' class='btn btn-primary btn-sm dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-plus-circle-dotted' viewBox='0 0 16 16'>");
+  page += F("<path d='M8 0c-.176 0-.35.006-.523.017l.064.998a7.117 7.117 0 0 1 .918 0l.064-.998A8.113 8.113 0 0 0 8 0zM6.44.152c-.346.069-.684.16-1.012.27l.321.948c.287-.098.582-.177.884-.237L6.44.153zm4.132.271a7.946 7.946 0 0 0-1.011-.27l-.194.98c.302.06.597.14.884.237l.321-.947zm1.873.925a8 8 0 0 0-.906-.524l-.443.896c.275.136.54.29.793.459l.556-.831zM4.46.824c-.314.155-.616.33-.905.524l.556.83a7.07 7.07 0 0 1 .793-.458L4.46.824zM2.725 1.985c-.262.23-.51.478-.74.74l.752.66c.202-.23.418-.446.648-.648l-.66-.752zm11.29.74a8.058 8.058 0 0 0-.74-.74l-.66.752c.23.202.447.418.648.648l.752-.66zm1.161 1.735a7.98 7.98 0 0 0-.524-.905l-.83.556c.169.253.322.518.458.793l.896-.443zM1.348 3.555c-.194.289-.37.591-.524.906l.896.443c.136-.275.29-.54.459-.793l-.831-.556zM.423 5.428a7.945 7.945 0 0 0-.27 1.011l.98.194c.06-.302.14-.597.237-.884l-.947-.321zM15.848 6.44a7.943 7.943 0 0 0-.27-1.012l-.948.321c.098.287.177.582.237.884l.98-.194zM.017 7.477a8.113 8.113 0 0 0 0 1.046l.998-.064a7.117 7.117 0 0 1 0-.918l-.998-.064zM16 8a8.1 8.1 0 0 0-.017-.523l-.998.064a7.11 7.11 0 0 1 0 .918l.998.064A8.1 8.1 0 0 0 16 8zM.152 9.56c.069.346.16.684.27 1.012l.948-.321a6.944 6.944 0 0 1-.237-.884l-.98.194zm15.425 1.012c.112-.328.202-.666.27-1.011l-.98-.194c-.06.302-.14.597-.237.884l.947.321zM.824 11.54a8 8 0 0 0 .524.905l.83-.556a6.999 6.999 0 0 1-.458-.793l-.896.443zm13.828.905c.194-.289.37-.591.524-.906l-.896-.443c-.136.275-.29.54-.459.793l.831.556zm-12.667.83c.23.262.478.51.74.74l.66-.752a7.047 7.047 0 0 1-.648-.648l-.752.66zm11.29.74c.262-.23.51-.478.74-.74l-.752-.66c-.201.23-.418.447-.648.648l.66.752zm-1.735 1.161c.314-.155.616-.33.905-.524l-.556-.83a7.07 7.07 0 0 1-.793.458l.443.896zm-7.985-.524c.289.194.591.37.906.524l.443-.896a6.998 6.998 0 0 1-.793-.459l-.556.831zm1.873.925c.328.112.666.202 1.011.27l.194-.98a6.953 6.953 0 0 1-.884-.237l-.321.947zm4.132.271a7.944 7.944 0 0 0 1.012-.27l-.321-.948a6.954 6.954 0 0 1-.884.237l.194.98zm-2.083.135a8.1 8.1 0 0 0 1.046 0l-.064-.998a7.11 7.11 0 0 1-.918 0l-.064.998zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z'/>");
+  page += F("</svg>");
+  page += F(" New Action</button>");
+  page += F("<div class='dropdown-menu' aria-labelledby='btnGroupNewAction'>");
+  for (unsigned int c = 1; c <= CONTROLS; c++) {
+    if (control_not_defined(c-1)) continue;
+    page += F("<button type='submit' class='dropdown-item' name='action' value='new");
+    page += c;
+    page += F("'>Control ");
+    page += c;
+    page += F("</button>");
+
+    if (trim_page(start, len)) return;
+  }
+  page += F("</div>");
+  page += F("</div>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='card-body'>");
   page += F("<div class='row'>");
   page += F("<div class='col-auto me-auto'>");
   page += F("<div class='form-floating'>");
@@ -1049,7 +1146,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<label for='bankNameInput'>Bank Name</label>");
   page += F("</div>");
   page += F("</div>");
-  page += F("<div class='col-auto me-auto'>");
+  page += F("<div class='col-auto'>");
   page += F("<div class='btn-group' role='group'>");
   page += F("<button id='btnGroupCopyBank' type='button' class='btn btn-primary btn-sm dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-layers' viewBox='0 0 16 16'>");
@@ -1072,6 +1169,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+  /*
   page += F("<div class='col-auto'>");
   page += F("<div class='btn-group' role='group'>");
   page += F("<button id='btnGroupNewAction' type='button' class='btn btn-primary btn-sm dropdown-toggle' data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>");
@@ -1092,30 +1190,30 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
+  */
   page += F("</div>");
 
   i = 1;
   act = actions[b];
-  same_pedal = false;
+  same_control = false;
   while (act != nullptr) {
 
     if (trim_page(start, len)) return;
 
-    if (uipedal != String(act->pedal + 1) && !(uipedal.equals("All"))) {
+    if (uicontrol != String(act->control + 1) && !(uicontrol.equals("All"))) {
       act = act->next;
       continue;
     }
 
-    if (!same_pedal) {
+    if (!same_control) {
       page += F("<div class='card mt-3'>");
       page += F("<div class='card-body'>");
       page += F("<h5 class='card-title'>");
-      page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-controller' viewBox='0 0 20 20'>");
-      page += F("<path d='M11.5 6.027a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm2.5-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-1.5 1.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1zm-6.5-3h1v1h1v1h-1v1h-1v-1h-1v-1h1v-1z'/>");
-      page += F("<path d='M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729c.14.09.266.19.373.297.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466.206.875.34 1.78.364 2.606.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527-1.627 0-2.496.723-3.224 1.527-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.34 2.34 0 0 1 .433-.335.504.504 0 0 1-.028-.079zm2.036.412c-.877.185-1.469.443-1.733.708-.276.276-.587.783-.885 1.465a13.748 13.748 0 0 0-.748 2.295 12.351 12.351 0 0 0-.339 2.406c-.022.755.062 1.368.243 1.776a.42.42 0 0 0 .426.24c.327-.034.61-.199.929-.502.212-.202.4-.423.615-.674.133-.156.276-.323.44-.504C4.861 9.969 5.978 9.027 8 9.027s3.139.942 3.965 1.855c.164.181.307.348.44.504.214.251.403.472.615.674.318.303.601.468.929.503a.42.42 0 0 0 .426-.241c.18-.408.265-1.02.243-1.776a12.354 12.354 0 0 0-.339-2.406 13.753 13.753 0 0 0-.748-2.295c-.298-.682-.61-1.19-.885-1.465-.264-.265-.856-.523-1.733-.708-.85-.179-1.877-.27-2.913-.27-1.036 0-2.063.091-2.913.27z'/>");
+      page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-toggles' viewBox='0 0 20 20'>");
+      page += F("<path d='M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7h-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm2.45 0A3.49 3.49 0 0 1 8 3.5 3.49 3.49 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5H6.95zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7z'/>");
       page += F("</svg>");
-      page += F(" Pedal ");
-      page += act->pedal + 1;
+      page += F(" Control ");
+      page += act->control + 1;
       page += F("</h5>");
       page += F("<div class='container'>");
       page += F("<div class='row row-cols-1 row-cols-sm-1 row-cols-md-2 row-cols-xl-3 g-2 g-md-3 g-xl-4'>");
@@ -1130,7 +1228,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("' name='pedalMode");
     page += i;
     page +=F("' value='");
-    switch (pedals[act->pedal].mode) {
+    switch (pedals[controls[act->control].pedal1].mode) {
       case PED_MOMENTARY1:
       case PED_MOMENTARY2:
       case PED_MOMENTARY3:
@@ -1175,7 +1273,9 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("<div class='form-floating'>");
     page += F("<select class='form-select' id='onSelect");
     page += i;
-    page += F("' name='event");
+    page += F("' onchange='init_action(");
+    page += i;
+    page += F(")' name='event");
     page += i;
     page += F("'>");
     page += F("<option value='");
@@ -1184,7 +1284,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
     if (act->event == PED_EVENT_NONE) page += F(" selected");
     page += F(">");
     page += F("</option>");
-    switch (pedals[act->pedal].mode) {
+    switch (pedals[controls[act->control].pedal1].mode) {
       case PED_MOMENTARY1:
       case PED_MOMENTARY2:
       case PED_MOMENTARY3:
@@ -1193,8 +1293,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
       case PED_LADDER:
       case PED_ANALOG_MOMENTARY:
       case PED_ANALOG_LATCH:
-        if (pedals[act->pedal].mode == PED_ANALOG_MOMENTARY ||
-            pedals[act->pedal].mode == PED_ANALOG_LATCH) {
+        if (pedals[controls[act->control].pedal1].mode == PED_ANALOG_MOMENTARY ||
+            pedals[controls[act->control].pedal1].mode == PED_ANALOG_LATCH) {
           page += F("<option value='");
           page += PED_EVENT_MOVE;
           page += F("'");
@@ -1214,6 +1314,12 @@ void get_actions_page(unsigned int start, unsigned int len) {
         if (act->event == PED_EVENT_RELEASE) page += F(" selected");
         page += F(">");
         page += F("Release</option>");
+        page += F("<option value='");
+        page += PED_EVENT_PRESS_RELEASE;
+        page += F("'");
+        if (act->event == PED_EVENT_PRESS_RELEASE) page += F(" selected");
+        page += F(">");
+        page += F("Press & Release</option>");
         page += F("<option value='");
         page += PED_EVENT_CLICK;
         page += F("'");
@@ -1282,42 +1388,24 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
     page += F("<div class='w-25'>");
     page += F("<div class='form-floating'>");
-    page += F("<select class='form-select' id='buttonSelect' name='button");
+    page += F("<select class='form-select' id='controlSelect' name='control");
     page += i;
     page += F("'");
-    switch (pedals[act->pedal].mode) {
-      case PED_MOMENTARY2:
-      case PED_LATCH2:
-        maxbutton = 2;
-        break;
-
-      case PED_MOMENTARY3:
-        maxbutton = 3;
-        break;
-
-      case PED_LADDER:
-        maxbutton = LADDER_STEPS;
-        break;
-
-      default:
-        maxbutton = 1;
-        page += F(" disabled");
-        break;
-    }
     page += F(">");
-    for (unsigned int b = 1; b <= maxbutton; b++) {
+    for (unsigned int c = 1; c <= CONTROLS; c++) {
+      if (control_not_defined(c-1)) continue;
       page += F("<option value='");
-      page += b;
+      page += c;
       page += F("'");
-      if (act->button == b - 1) page += F(" selected");
+      if (act->control == c - 1) page += F(" selected");
       page += F(">");
-      page += b;
+      page += c;
       page += F("</option>");
 
       if (trim_page(start, len)) return;
     }
     page += F("</select>");
-    page += F("<label for='buttonSelect'>Button</label>");
+    page += F("<label for='buttonSelect'>Control</label>");
     page += F("</div>");
     page += F("</div>");
 
@@ -1361,6 +1449,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
     if (act->midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
     page += F(">Control Change</option>");
     page += F("<option value='");
+    page += PED_CONTROL_CHANGE_SNAP;
+    page += F("'");
+    if (act->midiMessage == PED_CONTROL_CHANGE_SNAP) page += F(" selected");
+    page += F(">Control Change Snap</option>");
+    page += F("<option value='");
     page += PED_NOTE_ON;
     page += F("'");
     if (act->midiMessage == PED_NOTE_ON) page += F(" selected");
@@ -1403,12 +1496,27 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("'");
     if (act->midiMessage == PED_CHANNEL_PRESSURE) page += F(" selected");
     page += F(">Channel Pressure</option>");
-    page += F("<option value='");
-    page += PED_MIDI_START;
-    page += F("'");
 
     if (trim_page(start, len)) return;
 
+    page += F("<option value='");
+    page += PED_ACTION_MIDI_CLOCK_MASTER;
+    page += F("'");
+    if (act->midiMessage == PED_ACTION_MIDI_CLOCK_MASTER) page += F(" selected");
+    page += F(">MIDI Clock Master</option>");
+    page += F("<option value='");
+    page += PED_ACTION_MIDI_CLOCK_SLAVE;
+    page += F("'");
+    if (act->midiMessage == PED_ACTION_MIDI_CLOCK_SLAVE) page += F(" selected");
+    page += F(">MIDI Clock Slave</option>");
+    page += F("<option value='");
+    page += PED_ACTION_MIDI_CLOCK_OFF;
+    page += F("'");
+    if (act->midiMessage == PED_ACTION_MIDI_CLOCK_OFF) page += F(" selected");
+    page += F(">MIDI Clock Off</option>");
+    page += F("<option value='");
+    page += PED_MIDI_START;
+    page += F("'");
     if (act->midiMessage == PED_MIDI_START) page += F(" selected");
     page += F(">Start</option>");
     page += F("<option value='");
@@ -1427,6 +1535,16 @@ void get_actions_page(unsigned int start, unsigned int len) {
     if (act->midiMessage == PED_SEQUENCE) page += F(" selected");
     page += F(">Sequence</option>");
     page += F("<option value='");
+    page += PED_SEQUENCE_STEP_BY_STEP_FWD;
+    page += F("'");
+    if (act->midiMessage == PED_SEQUENCE_STEP_BY_STEP_FWD) page += F(" selected");
+    page += F(">Step by Step+</option>");
+    page += F("<option value='");
+    page += PED_SEQUENCE_STEP_BY_STEP_REV;
+    page += F("'");
+    if (act->midiMessage == PED_SEQUENCE_STEP_BY_STEP_REV) page += F(" selected");
+    page += F(">Step by Step-</option>");
+    page += F("<option value='");
     page += PED_ACTION_BANK_PLUS;
     page += F("'");
     if (act->midiMessage == PED_ACTION_BANK_PLUS) page += F(" selected");
@@ -1439,6 +1557,26 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
     if (trim_page(start, len)) return;
 
+    page += F("<option value='");
+    page += PED_ACTION_MTC_MASTER;
+    page += F("'");
+    if (act->midiMessage == PED_ACTION_MTC_MASTER) page += F(" selected");
+    page += F(">MTC Master</option>");
+    page += F("<option value='");
+    page += PED_ACTION_MTC_SLAVE;
+    page += F("'");
+    if (act->midiMessage == PED_ACTION_MTC_SLAVE) page += F(" selected");
+    page += F(">MTC Slave</option>");
+    page += F("<option value='");
+    page += PED_ACTION_MTC_OFF;
+    page += F("'");
+    if (act->midiMessage == PED_ACTION_MTC_OFF) page += F(" selected");
+    page += F(">MTC Off</option>");
+    page += F("<option value='");
+    page += PED_ACTION_MTC_TIME_SIGNATURE;
+    page += F("'");
+    if (act->midiMessage == PED_ACTION_MTC_TIME_SIGNATURE) page += F(" selected");
+    page += F(">MTC Time Signature</option>");
     page += F("<option value='");
     page += PED_ACTION_START;
     page += F("'");
@@ -1781,8 +1919,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("</div>");
     page += F("</div>");
 
-    same_pedal = (act->next != nullptr && act->pedal == act->next->pedal);
-    if (!same_pedal) {
+    same_control = (act->next != nullptr && act->control == act->next->control);
+    if (!same_control) {
       page += F("</div>");
       page += F("</div>");
       page += F("</div>");
@@ -1795,7 +1933,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   }
   page += F("</div>");
   page += F("</div>");
-
+  /*
   page += F("<div class='row'>");
   page += F("<div class='col-auto'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
@@ -1812,6 +1950,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F(" Save</button>");
   page += F("</div>");
   page += F("</div>");
+  */
   page += F("</form>");
 
   if (trim_page(start, len)) return;
@@ -1867,9 +2006,36 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("   switch (document.getElementById('sendSelect' + i).options[document.getElementById('sendSelect' + i).selectedIndex].text) {"
             "     case 'Program Change':"
             "       document.getElementById('codeLabel'     + i).textContent = 'PC';"
-            "       document.getElementById('fromInput'     + i).disabled = true;"
-            "       document.getElementById('toInput'       + i).disabled = true;"
-            "       document.getElementById('tagOffInput'   + i).disabled = true;"
+            "       document.getElementById('tagOffLabel'   + i).textContent = 'Tag';"
+            "       document.getElementById('tagOnLabel'    + i).textContent = 'Tag';"
+            "       switch (document.getElementById('pedalMode' + i).value) {"
+            "         case 'momentary':"
+            "         case 'latch':"
+            "         case 'ladder':"
+            "           switch (document.getElementById('onSelect' + i).options[document.getElementById('onSelect' + i).selectedIndex].text) {"
+            "             case 'Press & Release':"
+            "               document.getElementById('fromLabel'     + i).textContent = 'Release PC';"
+            "               document.getElementById('toLabel'       + i).textContent = 'Press PC';"
+            "               document.getElementById('tagOffLabel'   + i).textContent = 'Release Tag';"
+            "               document.getElementById('tagOnLabel'    + i).textContent = 'Press Tag';"
+            "               document.getElementById('color0Label'   + i).textContent = 'Release';"
+            "               document.getElementById('color1Label'   + i).textContent = 'Press';"
+            "               document.getElementById('codeInput'     + i).disabled = true;"
+            "               break;"
+            "             case 'Release':"
+            "               document.getElementById('codeInput'     + i).disabled = true;"
+            "               document.getElementById('toInput'       + i).disabled = true;"
+            "               document.getElementById('tagOnInput'    + i).disabled = true;"
+            "               document.getElementById('color1Input'   + i).disabled = true;"
+            "               break;"
+            "             default:"
+            "               document.getElementById('fromInput'     + i).disabled = true;"
+            "               document.getElementById('toInput'       + i).disabled = true;"
+            "               document.getElementById('tagOffInput'   + i).disabled = true;"
+            "               break;"
+            "           }"
+            "           break;"
+            "       }"
             "       break;");
 
   if (trim_page(start, len)) return;
@@ -1882,8 +2048,29 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "         case 'latch':"
             "         case 'ladder':"
             "           document.getElementById('fromLabel'     + i).textContent = 'Velocity';"
-            "           document.getElementById('toLabel'       + i).textContent = '';"
-            "           document.getElementById('toInput'       + i).disabled = true;"
+            "           document.getElementById('toLabel'       + i).textContent = 'Velocity';"
+            "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag';"
+            "           document.getElementById('tagOnLabel'    + i).textContent = 'Tag';"
+            "           switch (document.getElementById('onSelect' + i).options[document.getElementById('onSelect' + i).selectedIndex].text) {"
+            "             case 'Press & Release':"
+            "               document.getElementById('fromLabel'     + i).textContent = 'Release Velocity';"
+            "               document.getElementById('toLabel'       + i).textContent = 'Press Velocity';"
+            "               document.getElementById('tagOffLabel'   + i).textContent = 'Release Tag';"
+            "               document.getElementById('tagOnLabel'    + i).textContent = 'Press Tag';"
+            "               document.getElementById('color0Label'   + i).textContent = 'Release';"
+            "               document.getElementById('color1Label'   + i).textContent = 'Press';"
+            "               break;"
+            "             case 'Release':"
+            "               document.getElementById('toInput'       + i).disabled = true;"
+            "               document.getElementById('tagOnInput'    + i).disabled = true;"
+            "               document.getElementById('color1Input'   + i).disabled = true;"
+            "               break;"
+            "             default:"
+            "               document.getElementById('fromInput'     + i).disabled = true;"
+            "               document.getElementById('tagOffInput'   + i).disabled = true;"
+            "               document.getElementById('color0Input'   + i).disabled = true;"
+            "               break;"
+            "           }"
             "           break;"
             "         case 'analog':"
             "         case 'jogwheel':"
@@ -1896,34 +2083,42 @@ void get_actions_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len)) return;
 
   page += F("     case 'Control Change':"
+            "     case 'Control Change Snap':"
             "       document.getElementById('codeLabel'         + i).textContent = 'CC';"
             "       switch (document.getElementById('pedalMode' + i).value) {"
             "         case 'momentary':"
             "         case 'ladder':"
-            "           document.getElementById('fromLabel'     + i).textContent = 'Value 1';"
-            "           document.getElementById('toLabel'       + i).textContent = 'Value 2';"
-            "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag 1';"
-            "           document.getElementById('tagOnLabel'    + i).textContent = 'Tag 2';"
-            //"           document.getElementById('color0Label'   + i).textContent = 'Color 1';"
-            //"           document.getElementById('color1Label'   + i).textContent = 'Color 2';"
-            "           break;");
-
-  if (trim_page(start, len)) return;
-
-  page += F("         case 'latch':"
+            "         case 'latch':"
             "           document.getElementById('fromLabel'     + i).textContent = 'Value';"
-            "           document.getElementById('toLabel'       + i).textContent = '';"
+            "           document.getElementById('toLabel'       + i).textContent = 'Value';"
             "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag';"
-            "           document.getElementById('tagOnLabel'    + i).textContent = '';"
-            //"           document.getElementById('color0Label'   + i).textContent = 'Color';"
-            //"           document.getElementById('color1Label'   + i).textContent = '';"
-            "           document.getElementById('toInput'       + i).disabled = true;"
-            "           document.getElementById('tagOnInput'    + i).disabled = true;"
-            //"           document.getElementById('color1Input'   + i).disabled = true;"
+            "           document.getElementById('tagOnLabel'    + i).textContent = 'Tag';"
+            "           switch (document.getElementById('onSelect' + i).options[document.getElementById('onSelect' + i).selectedIndex].text) {"
+            "             case 'Press & Release':"
+            "               document.getElementById('fromLabel'     + i).textContent = 'Release Value';"
+            "               document.getElementById('toLabel'       + i).textContent = 'Press Value';"
+            "               document.getElementById('tagOffLabel'   + i).textContent = 'Release Tag';"
+            "               document.getElementById('tagOnLabel'    + i).textContent = 'Press Tag';"
+            "               document.getElementById('color0Label'   + i).textContent = 'Release';"
+            "               document.getElementById('color1Label'   + i).textContent = 'Press';"
+            "               break;"
+            "             case 'Release':"
+            "               document.getElementById('toInput'       + i).disabled = true;"
+            "               document.getElementById('tagOnInput'    + i).disabled = true;"
+            "               document.getElementById('color1Input'   + i).disabled = true;"
+            "               break;"
+            "             default:"
+            "               document.getElementById('fromInput'     + i).disabled = true;"
+            "               document.getElementById('tagOffInput'   + i).disabled = true;"
+            "               document.getElementById('color0Input'   + i).disabled = true;"
+            "               break;"
+            "           }"
             "           break;"
             "         case 'analog':"
             "         case 'jogwheel':"
-            "           document.getElementById('tagOnInput'    + i).disabled = true;"
+            "           document.getElementById('tagOffLabel'   + i).textContent = 'Tag';"
+            "           document.getElementById('tagOnLabel'    + i).textContent = 'Tag';"
+            "           document.getElementById('tagOffInput'   + i).disabled = true;"
             "           break;"
             "       }"
             "       break;");
@@ -1935,6 +2130,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       document.getElementById('codeLabel'     + i).textContent = 'PC';"
             "       document.getElementById('fromLabel'     + i).textContent = 'From PC';"
             "       document.getElementById('toLabel'       + i).textContent = 'To PC';"
+            "       document.getElementById('tagOffLabel'   + i).textContent = 'Tag';"
+            "       document.getElementById('tagOnLabel'    + i).textContent = 'Tag';"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('tagOffInput'   + i).disabled = true;"
             "       break;");
@@ -2002,8 +2199,30 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('fromInput'     + i).disabled = true;"
             "       document.getElementById('toInput'       + i).disabled = true;"
+            "       document.getElementById('color0Input'   + i).disabled = true;"
+            "       document.getElementById('color1Input'   + i).disabled = true;"
+            "       break;"
+            "     case 'Step by Step+':"
+            "     case 'Step by Step-':"
+            "       document.getElementById('channelLabel'  + i).textContent = 'Sequence';"
+            "       document.getElementById('codeLabel'     + i).textContent = 'Step';"
+            "       document.getElementById('fromInput'     + i).disabled = true;"
+            "       document.getElementById('toInput'       + i).disabled = true;"
+            "       document.getElementById('color0Input'   + i).disabled = true;"
+            "       document.getElementById('color1Input'   + i).disabled = true;"
             "       break;"
             "     case 'Set Led Color':"
+            "       switch (document.getElementById('pedalMode' + i).value) {"
+            "         case 'analog':"
+            "           document.getElementById('color0Label'   + i).textContent = 'Min';"
+            "           document.getElementById('color1Label'   + i).textContent = 'Max';"
+            "           break;"
+            "         default:"
+            "           document.getElementById('color0Label'   + i).textContent = 'Color';"
+            "           document.getElementById('color1Label'   + i).textContent = 'Color';"
+            "           document.getElementById('color1Input'   + i).disabled = true;"
+            "           break;"
+            "       }"
             "       document.getElementById('channelSelect' + i).disabled = true;"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('fromInput'     + i).disabled = true;"
@@ -2229,6 +2448,21 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     if (trim_page(start, len)) return;
 
     page += F("<div class='form-check form-switch'>");
+    page += F("<input class='form-check-input' type='checkbox' id='latchEmulation");
+    page += i;
+    page += F("' name='latchemulation");
+    page += i;
+    page += F("'");
+    if (pedals[i-1].latchEmulation) page += F(" checked");
+    page += F(">");
+    page += F("<label class='form-check-label' for='latchEmulation");
+    page += i;
+    page += F("'>Latch Emulation</label>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='form-check form-switch'>");
     page += F("<input class='form-check-input' type='checkbox' id='autoCheck");
     page += i;
     page += F("' name='autosensing");
@@ -2327,41 +2561,6 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += (log10(pedals[i-1].activityThreshold) / log10(2));
     page += F("' oninput='this.previousElementSibling.textContent = `Activity Threshold: ` + Math.pow(2, this.value)'>");
 
-    if (trim_page(start, len)) return;
-
-    for (unsigned int b = 0; b < LADDER_STEPS; b++) {
-      if (b % 2 == 0) page += F("<div class='row g-1'>");
-      page += F("<div class='form-floating w-50'>");
-      page += F("<select class='form-select' id='ledButton");
-      page += (i*10+b+1);
-      page += F("' name='ledbutton");
-      page += (i*10+b+1);
-      page += F("'>");
-      for (unsigned int l = 0; l <= LEDS; l++) {
-        page += F("<option value='");
-        page += l;
-        page += F("'");
-        if ((l == 0 && pedals[i-1].ledbuttons[b] == LEDS) || pedals[i-1].ledbuttons[b] == l-1) page += F(" selected");
-        page += F(">");
-        if (l > 0) page += l;
-        page += F("</option>");
-
-        if (trim_page(start, len)) return;
-      }
-      page += F("</select>");
-      page += F("<label for='ledButtonSelect");
-      page += (i*10+b+1);
-      page += F("' id='ledButtonLabel");
-      page += (i*10+b+1);
-      page += F("'>Button ");
-      page += (b+1);
-      page += F("</label>");
-      page += F("</div>");
-      if (b % 2 != 0) page += F("</div>");
-
-      if (trim_page(start, len)) return;
-    }
-
     page += F("</div>");
     page += F("</div>");
     page += F("</div>");
@@ -2408,35 +2607,25 @@ void get_pedals_page(unsigned int start, unsigned int len) {
             "   document.getElementById('function1Check'      + i).disabled = true;"
             "   document.getElementById('function2Check'      + i).disabled = true;"
             "   document.getElementById('function3Check'      + i).disabled = true;"
+            "   document.getElementById('latchEmulation'      + i).disabled = true;"
             "   document.getElementById('mapSelect'           + i).disabled = true;"
             "   document.getElementById('minInput'            + i).disabled = true;"
             "   document.getElementById('maxInput'            + i).disabled = true;"
             "   document.getElementById('easing'              + i).disabled = true;"
             "   document.getElementById('threshold'           + i).disabled = true;"
-            "   document.getElementById('autoCheck'           + i).disabled = true;"
-            "   document.getElementById('ledButton'           + i + '1').disabled = true;"
-            "   document.getElementById('ledButton'           + i + '2').disabled = true;"
-            "   document.getElementById('ledButton'           + i + '3').disabled = true;"
-            "   document.getElementById('ledButton'           + i + '4').disabled = true;"
-            "   document.getElementById('ledButton'           + i + '5').disabled = true;"
-            "   document.getElementById('ledButton'           + i + '6').disabled = true;");
+            "   document.getElementById('autoCheck'           + i).disabled = true;");
 
   if (trim_page(start, len)) return;
 
   page += F("   switch (document.getElementById('modeSelect' + i).options[document.getElementById('modeSelect' + i).selectedIndex].text) {"
-            "     case 'Ladder':"
-            "       document.getElementById('ledButton'       + i + '4').disabled = false;"
-            "       document.getElementById('ledButton'       + i + '5').disabled = false;"
-            "       document.getElementById('ledButton'       + i + '6').disabled = false;"
-            "     case 'Momentary 3':"
-            "       document.getElementById('ledButton'       + i + '3').disabled = false;"
-            "     case 'Momentary 2':"
-            "     case 'Latch 2':"
-            "       document.getElementById('ledButton'       + i + '2').disabled = false;"
             "     case 'Momentary':"
+            "     case 'Momentary 2':"
+            "     case 'Momentary 3':"
+            "     case 'Ladder':"
+            "       document.getElementById('latchEmulation'  + i).disabled = false;"
             "     case 'Latch':"
+            "     case 'Latch 2':"
             "     case 'Jog Wheel':"
-            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
             "       document.getElementById('polarityCheck'   + i).disabled = false;"
             "       document.getElementById('function1Check'  + i).disabled = false;"
             "       document.getElementById('function2Check'  + i).disabled = false;"
@@ -2446,7 +2635,6 @@ void get_pedals_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len)) return;
 
   page += F("     case 'Ultrasonic':"
-            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
             "       document.getElementById('polarityCheck'   + i).disabled = false;"
             "       document.getElementById('mapSelect'       + i).disabled = false;"
             "       document.getElementById('minInput'        + i).disabled = false;"
@@ -2455,7 +2643,6 @@ void get_pedals_page(unsigned int start, unsigned int len) {
             "       document.getElementById('threshold'       + i).disabled = false;"
             "       break;"
             "     case 'Analog':"
-            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
             "       document.getElementById('polarityCheck'   + i).disabled = false;"
             "       document.getElementById('mapSelect'       + i).disabled = false;"
             "       document.getElementById('minInput'        + i).disabled = false;"
@@ -2465,11 +2652,11 @@ void get_pedals_page(unsigned int start, unsigned int len) {
             "       document.getElementById('autoCheck'       + i).disabled = false;"
             "       break;"
             "     case 'Analog+Momentary':"
-            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
             "       document.getElementById('polarityCheck'   + i).disabled = false;"
             "       document.getElementById('function1Check'  + i).disabled = false;"
             "       document.getElementById('function2Check'  + i).disabled = false;"
             "       document.getElementById('function3Check'  + i).disabled = false;"
+            "       document.getElementById('latchEmulation'  + i).disabled = false;"
             "       document.getElementById('mapSelect'       + i).disabled = false;"
             "       document.getElementById('minInput'        + i).disabled = false;"
             "       document.getElementById('maxInput'        + i).disabled = false;"
@@ -2478,7 +2665,6 @@ void get_pedals_page(unsigned int start, unsigned int len) {
             "       document.getElementById('autoCheck'       + i).disabled = false;"
             "       break;"
             "     case 'Analog+Latch':"
-            "       document.getElementById('ledButton'       + i + '1').disabled = false;"
             "       document.getElementById('polarityCheck'   + i).disabled = false;"
             "       document.getElementById('function1Check'  + i).disabled = false;"
             "       document.getElementById('function2Check'  + i).disabled = false;"
@@ -2501,6 +2687,235 @@ void get_pedals_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len, true)) return;
 }
 
+void get_controls_page(unsigned int start, unsigned int len) {
+
+  const byte cp = constrain(uicontrolpage.toInt(), 1, CONTROLS / CONTROLS_PER_PAGE);
+
+  if (get_top_page(4, start, len)) return;
+
+  page += F("<div class='btn-group mb-3'>");
+  for (unsigned int i = 1; i <= CONTROLS/CONTROLS_PER_PAGE; i++) {
+    page += F("<form method='get'><button type='button submit' class='btn");
+    page += (uicontrolpage == String(i) ? F(" btn-primary") : F(""));
+    page += F("' name='controlpage' value='");
+    page += i;
+    page += F("'>");
+    page += i;
+    page += F("</button></form>");
+  }
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<form method='post'>");
+
+  page += F("<div class='card mb-3'>");
+  page += F("<div class='card-header'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-auto me-auto'>");
+  page += F("<h5 class='mb-0'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-toggles' viewBox='0 0 20 20'>");
+  page += F("<path d='M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7h-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm2.45 0A3.49 3.49 0 0 1 8 3.5 3.49 3.49 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5H6.95zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7z'/>");
+  page += F("</svg>");
+  page += F(" Controls ");
+  page += (cp-1)*CONTROLS_PER_PAGE+1;
+  page += F("-");
+  page += cp*CONTROLS_PER_PAGE;
+  page += F("</h5>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='col-auto'>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='card-body'>");
+
+  page += F("<div class='container'>");
+  page += F("<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-2 g-md-3 g-xl-4'>");
+
+  if (trim_page(start, len)) return;
+
+  for (byte i = (cp-1)*CONTROLS_PER_PAGE+1; i <= cp*CONTROLS_PER_PAGE; i++) {
+    page += F("<div class='col'>");
+    page += F("<div class='card'>");
+    page += F("<h5 class='card-header'>");
+    page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-toggles' viewBox='0 0 20 20'>");
+    page += F("<path d='M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7h-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm2.45 0A3.49 3.49 0 0 1 8 3.5 3.49 3.49 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5H6.95zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7z'/>");
+    page += F("</svg>");
+    page += F(" Control ");
+    page += i;
+    page += F("</h5>");
+    page += F("<div class='card-body'>");
+    page += F("<div class='d-grid gap-1'>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='row g-1'>");
+    for (byte j = 1; j <= 2; j++) {
+      page += F("<div class='w-50'>");
+      page += F("<div class='form-floating'>");
+      page += F("<select class='form-select' id='pedalSelect");
+      page += i;
+      page += F("' name='pedal");
+      page += j;
+      page += F("-");
+      page += i;
+      page += F("'>");
+      for (byte p = 0; p <= PEDALS; p++) {
+        page += F("<option value='");
+        page += p;
+        page += F("'");
+        switch (j) {
+          case 1:
+            if ((p == 0 && controls[i-1].pedal1 == PEDALS) || controls[i-1].pedal1 == p-1) page += F(" selected");
+            break;
+          case 2:
+            if ((p == 0 && controls[i-1].pedal2 == PEDALS) || controls[i-1].pedal2 == p-1) page += F(" selected");
+            break;
+        }
+        page += F(">");
+        if (p > 0) page += p;
+        page += F("</option>");
+
+        if (trim_page(start, len)) return;
+      }
+      page += F("</select>");
+      page += F("<label for='pedalSelect");
+      page += i;
+      page += F("' id='pedalLabel");
+      page += i;
+      page += F("'>Pedal</label>");
+      page += F("</div>");
+      page += F("</div>");
+
+      if (trim_page(start, len)) return;
+
+      page += F("<div class='w-50'>");
+      page += F("<div class='form-floating'>");
+      page += F("<select class='form-select' id='buttonSelect");
+      page += i;
+      page += F("' name='button");
+      page += j;
+      page += F("-");
+      page += i;
+      page += F("'>");
+      for (byte s = 0; s <= LADDER_STEPS; s++) {
+        page += F("<option value='");
+        page += s;
+        page += F("'");
+        switch (j) {
+          case 1:
+            if ((s == 0 && controls[i-1].button1 == LADDER_STEPS) || controls[i-1].button1 == s-1) page += F(" selected");
+            break;
+          case 2:
+            if ((s == 0 && controls[i-1].button2 == LADDER_STEPS) || controls[i-1].button2 == s-1) page += F(" selected");
+            break;
+        }
+        page += F(">");
+        if (s > 0) page += s;
+        page += F("</option>");
+
+        if (trim_page(start, len)) return;
+      }
+      page += F("</select>");
+      page += F("<label for='buttonSelect");
+      page += i;
+      page += F("' id='buttonLabel");
+      page += i;
+      page += F("'>Button</label>");
+      page += F("</div>");
+      page += F("</div>");
+
+      if (trim_page(start, len)) return;
+    }
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='form-floating w-50'>");
+    page += F("<select class='form-select' id='ledSelect");
+    page += (i);
+    page += F("' name='led");
+    page += (i);
+    page += F("'>");
+    for (unsigned int l = 0; l <= LEDS; l++) {
+      page += F("<option value='");
+      page += l;
+      page += F("'");
+      if ((l == 0 && controls[i-1].led == LEDS) || controls[i-1].led == l-1) page += F(" selected");
+      page += F(">");
+      if (l > 0) page += l;
+      page += F("</option>");
+
+      if (trim_page(start, len)) return;
+    }
+    page += F("</select>");
+    page += F("<label for='ledSelect");
+    page += (i);
+    page += F("' id='ledLabel");
+    page += (i);
+    page += F("'>Led");
+    page += F("</label>");
+    page += F("</div>");
+
+    page += F("</div>");
+    page += F("</div>");
+    page += F("</div>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+  }
+
+  page += F("</div>");
+  page += F("</div>");
+/*
+  page += F("<div class='container'>");
+  page += F("<div class='row mt-3'>");
+  page += F("<div class='col-auto'>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+*/
+
+  page += F("</div>");
+  page += F("</div>");
+
+  page += F("</form>");
+
+  if (trim_page(start, len)) return;
+
+  get_footer_page();
+
+  if (trim_page(start, len, true)) return;
+}
+
 void get_interfaces_page(unsigned int start, unsigned int len) {
 
   if (get_top_page(5, start, len)) return;
@@ -2509,7 +2924,11 @@ void get_interfaces_page(unsigned int start, unsigned int len) {
 
   page += F("<div class='container'>");
   page += F("<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-2 g-md-3 g-xl-4'>");
+#ifdef ARDUINO_BPI_LEAF_S33
   for (unsigned int i = 1; i <= INTERFACES; i++) {
+#else
+  for (unsigned int i = 2; i <= INTERFACES; i++) {
+#endif
     page += F("<div class='col'>");
     page += F("<div class='card h-100'>");
     page += F("<h6 class='card-header'>");
@@ -2632,7 +3051,7 @@ void get_interfaces_page(unsigned int start, unsigned int len) {
 
 void get_sequences_page(unsigned int start, unsigned int len) {
 
-  const byte s = constrain(uisequence.toInt(), 0, SEQUENCES);
+  const byte s = constrain(uisequence.toInt(), 1, SEQUENCES);
 
   if (get_top_page(6, start, len)) return;
 
@@ -2653,7 +3072,10 @@ void get_sequences_page(unsigned int start, unsigned int len) {
   page += F("<form method='post'>");
 
   page += F("<div class='card mb-3'>");
-  page += F("<h5 class='card-header'>");
+  page += F("<div class='card-header'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-auto me-auto'>");
+  page += F("<h5 class='mb-0'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-camera-reels' viewBox='0 0 20 20'>");
   page += F("<path d='M6 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM1 3a2 2 0 1 0 4 0 2 2 0 0 0-4 0z'/>");
   page += F("<path d='M9 6h.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 7.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 16H2a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h7zm6 8.73V7.27l-3.5 1.555v4.35l3.5 1.556zM1 8v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1z'/>");
@@ -2662,6 +3084,27 @@ void get_sequences_page(unsigned int start, unsigned int len) {
   page += F(" Sequence ");
   page += s;
   page += F("</h5>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='col-auto'>");
+  page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
+  page += F("<path d='M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z'/>");
+  page += F("</svg>");
+  page += F(" Apply</button>");
+  page += F(" ");
+  page += F("<button type='submit' name='action' value='save' class='btn btn-primary btn-sm'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" Save</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
   page += F("<div class='card-body'>");
 
   if (trim_page(start, len)) return;
@@ -2693,6 +3136,11 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_CONTROL_CHANGE) page += F(" selected");
     page += F(">Control Change</option>");
+    page += F("<option value='");
+    page += PED_CONTROL_CHANGE_SNAP;
+    page += F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_CONTROL_CHANGE_SNAP) page += F(" selected");
+    page += F(">Control Change Snap</option>");
     page += F("<option value='");
     page += PED_NOTE_ON;
     page += F("'");
@@ -2759,6 +3207,11 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("'");
     if (sequences[s-1][i-1].midiMessage == PED_SEQUENCE) page += F(" selected");
     page += F(">Sequence</option>");
+    page += F("<option value='");
+    page += PED_ACTION_BANK;
+    page += F("'");
+    if (sequences[s-1][i-1].midiMessage == PED_ACTION_BANK) page += F(" selected");
+    page += F(">Set Bank</option>");
     page += F("<option value='");
     page += PED_ACTION_LED_COLOR;
     page += F("'");
@@ -2856,14 +3309,40 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("' name='led");
     page += i;
     page += F("'>");
+    page += F("<option value='0'");
+    if (sequences[s-1][i-1].led == LEDS) page += F(" selected");
+    page += F("></option>");
+    page += F("<option value='255'");
+    if (sequences[s-1][i-1].led == 255) page += F(" selected");
+    page += F(">Default</option>");
+    for (unsigned int l = 1; l <= LEDS; l++) {
+      page += F("<option value='");
+      page += l;
+      page += F("'");
+      if (sequences[s-1][i-1].led == l-1) page += F(" selected");
+      page += F(">");
+      page += l;
+      page += F("</option>");
+
+      if (trim_page(start, len)) return;
+    }
+    page += F("</select>");
+    page += F("<label for='ledSelect");
+    page += i;
+    page += F("' id='ledLabel");
+    page += i;
+    page += F("'>Led</label>");
+    /*
+    page += F("<select class='form-select' id='ledSelect");
+    page += i;
+    page += F("' name='led");
+    page += i;
+    page += F("'>");
     for (unsigned int l = 0; l <= LEDS; l++) {
       page += F("<option value='");
       page += (l+1);
       page += F("'");
-      if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) {
-        if (sequences[s-1][i-1].led == l) page += F(" selected");
-      }
-      else if (l == LEDS) page += F(" selected");
+      if (sequences[s-1][i-1].led == l) page += F(" selected");
       page += F(">");
       if (l != LEDS) page += (l+1);
       page += F("</option>");
@@ -2872,6 +3351,7 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("<label for='ledSelect");
     page += i;
     page += F("'>Led</label>");
+    */
     page += F("</div>");
     page += F("</div>");
 
@@ -2884,13 +3364,9 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("' name='color");
     page += i;
     page += F("' value='");
-    if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) {
-      char color[8];
-      sprintf(color, "#%06X", sequences[s-1][i-1].color & 0xFFFFFF);
-      page += color;
-    }
-    else
-      page += F("0xFFFFFF");
+    char color[8] = "#000000";
+    sprintf(color, "#%06X", sequences[s-1][i-1].color & 0xFFFFFF);
+    page += color;
     page += F("'>");
     page += F("<label for='colorInput");
     page += i;
@@ -2905,7 +3381,7 @@ void get_sequences_page(unsigned int start, unsigned int len) {
   }
   page += F("</div>");
   page += F("</div>");
-
+  /*
   page += F("<div class='row'>");
   page += F("<div class='col-auto'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm'>");
@@ -2922,6 +3398,7 @@ void get_sequences_page(unsigned int start, unsigned int len) {
   page += F(" Save</button>");
   page += F("</div>");
   page += F("</div>");
+  */
   page += F("</form>");
 
   if (trim_page(start, len)) return;
@@ -2953,20 +3430,14 @@ void get_sequences_page(unsigned int start, unsigned int len) {
             "     case 'Program Change-':"
             "       document.getElementById('codeLabel'     + i).textContent = 'PC';"
             "       document.getElementById('valueInput'    + i).disabled = true;"
-            "       document.getElementById('ledSelect'     + i).disabled = true;"
-            "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;"
             "     case 'Control Change':"
             "       document.getElementById('codeLabel'     + i).textContent = 'CC';"
-            "       document.getElementById('ledSelect'     + i).disabled = true;"
-            "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;"
             "     case 'Note On':"
             "     case 'Note Off':"
             "       document.getElementById('codeLabel'     + i).textContent = 'Note';"
             "       document.getElementById('valueLabel'    + i).textContent = 'Velocity';"
-            "       document.getElementById('ledSelect'     + i).disabled = true;"
-            "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;");
 
   if (trim_page(start, len)) return;
@@ -2976,14 +3447,10 @@ void get_sequences_page(unsigned int start, unsigned int len) {
             "       document.getElementById('channelLabel'  + i).textContent = 'Channel';"
             "       document.getElementById('codeLabel'     + i).textContent = 'MSB';"
             "       document.getElementById('valueLabel'    + i).textContent = 'LSB';"
-            "       document.getElementById('ledSelect'     + i).disabled = true;"
-            "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;"
             "     case 'Pitch Bend':"
             "     case 'Channel Pressure':"
             "       document.getElementById('codeInput'     + i).disabled = true;"
-            "       document.getElementById('ledSelect'     + i).disabled = true;"
-            "       document.getElementById('colorInput'    + i).disabled = true;"
             "       break;"
             "     case 'Sequence':"
             "       document.getElementById('channelLabel'  + i).textContent = 'Sequence';"
@@ -2991,6 +3458,11 @@ void get_sequences_page(unsigned int start, unsigned int len) {
             "       document.getElementById('valueInput'    + i).disabled = true;"
             "       document.getElementById('ledSelect'     + i).disabled = true;"
             "       document.getElementById('colorInput'    + i).disabled = true;"
+            "       break;"
+            "     case 'Set Bank':"
+            "       document.getElementById('channelSelect' + i).disabled = true;"
+            "       document.getElementById('codeInput'     + i).disabled = true;"
+            "       document.getElementById('valueLabel'    + i).textContent = 'Bank [0-20]';"
             "       break;"
             "     case 'Set Led Color':"
             "       document.getElementById('channelSelect' + i).disabled = true;"
@@ -3095,6 +3567,7 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("</svg>");
   page += F(" Boot Mode</h5>");
   page += F("<div class='card-body'>");
+#ifdef WIFI
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='bootModeWifi' name='bootmodewifi'");
   if (bootMode == PED_BOOT_NORMAL ||
@@ -3117,17 +3590,41 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<small id='bootModeAPHelpBlock' class='form-text text-muted'>");
   page += F("To enable AP Mode enable WiFi too.");
   page += F("</small>");
+#endif
+#ifdef BLE
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='bootModeBLE' name='bootmodeble'");
   if (bootMode == PED_BOOT_NORMAL ||
       bootMode == PED_BOOT_BLE    ||
       bootMode == PED_BOOT_AP) page += F(" checked");
   page += F(">");
-  page += F("<label class='form-check-label' for='bootModeBLE'>BLE</label>");
+#ifdef BLECLIENT
+  page += F("<label class='form-check-label' for='bootModeBLE'>BLE Client</label>");
+#else
+  page += F("<label class='form-check-label' for='bootModeBLE'>BLE Server</label>");
+#endif
   page += F("</div>");
   page += F("<small id='bootModeBLEHelpBlock' class='form-text text-muted'>");
   page += F("BLE MIDI requires BLE.");
   page += F("</small>");
+#endif
+
+  if (trim_page(start, len)) return;
+
+#ifdef BLECLIENT
+  page += F("<br><br>");
+  page += F("<div class='form-floating'>");
+  page += F("<input class='form-control' type='text' maxlength='20' id='bleserver' name='bleServer' value='");
+  page += bleServer;
+  page += F("'>");
+  page += F("<label for='bleserver'>BLE Server Name/Address</label>");
+  page += F("</div>");
+  page += F("<small id='bootModeBLEServerHelpBlock' class='form-text text-muted'>");
+  page += F("Enter the device name of another Pedalino to connect via BLE.<br>");
+  page += F("Leave blank to connect to first available BLE MIDI server with MIDI characteristic. ");
+  page += F("A BLE address (i.e. f2:c1:d9:36:e7:6b) is accepted too.");
+  page += F("</small>");
+#endif
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -3298,13 +3795,46 @@ void get_options_page(unsigned int start, unsigned int len) {
 
   page += F("<div class='row'>");
   page += F("<div class='col-md-6 col-12 mb-3'>");
-  page += F("<div class='card h-100'>");
+  page += F("<div class='card h-100 mb-3'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-toggle-on' viewBox='0 0 20 20'>");
   page += F("<path d='M5 3a5 5 0 0 0 0 10h6a5 5 0 0 0 0-10H5zm6 9a4 4 0 1 1 0-8 4 4 0 0 1 0 8z'/>");
   page += F("</svg>");
   page += F(" Momentary Switches</h5>");
   page += F("<div class='card-body'>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='row g-1'>");
+  page += F("<div class='w-50'>");
+  page += F("<div class='form-floating'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='debounceInterval' name='debounceinterval' value='");
+  page += debounceInterval;
+  page += F("'>");
+  page += F("<label for='debounceInterval'>Debounce Interval</label>");
+  page += F("</div>");
+  page += F("<small id='debounceTimeModeHelpBlock' class='form-text text-muted'>");
+  page += F("Interval in milliseconds to consider valid and stable a button push. Default value is 5 ms.<br>");
+  page += F("When a mechanical switch is pushed in an electrical circuit it makes a series of short contacts for a limited interval of time. ");
+  page += F("Increase the value if spurious pressure or release occurs.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='w-50'>");
+  page += F("<div class='form-floating'>");
+  page += F("<input class='form-control' type='text' maxlength='32' id='simultaneousGapTime' name='simultaneousgaptime' value='");
+  page += simultaneousGapTime;
+  page += F("'>");
+  page += F("<label for='simultaneousGapTime'>Simultaneous Gap Time</label>");
+  page += F("</div>");
+  page += F("<small id='simultaneousTimeModeHelpBlock' class='form-text text-muted'>");
+  page += F("Two buttons are considered simultaneous pressed if the second is pressed within a certain gap from the first.<br>");
+  page += F("Default value is 50 ms.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<div class='row g-1'>");
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
@@ -3325,7 +3855,7 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<label for='doublePressTime'>Double Press Time</label>");
   page += F("</div>");
   page += F("<small id='doublePressTimeModeHelpBlock' class='form-text text-muted'>");
-  page += F("Set double press detection time between each press time in milliseconds. Default value is 400.<br>");
+  page += F("Set double press detection time between each press time in milliseconds. Default value is 400 ms.<br>");
   page += F("A double press is detected if the switch is released and depressed within this time, measured from when the first press is detected.");
   page += F("</small>");
   page += F("</div>");
@@ -3342,7 +3872,8 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<label for='longPressTime'>Long Press Time</label>");
   page += F("</div>");
   page += F("<small id='longPressTimeModeHelpBlock' class='form-text text-muted'>");
-  page += F("Set the long press time in milliseconds after which a continuous press and release is deemed a long press, measured from when the first press is detected. Default value is 500.");
+  page += F("Set the long press time in milliseconds after which a continuous press and release is deemed a long press, measured from when the first press is detected.<br>");
+  page += F("Default value is 500 ms.");
   page += F("</small>");
   page += F("</div>");
   page += F("<div class='w-50'>");
@@ -3353,7 +3884,8 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<label for='repeatPressTime'>Repeat Press Time</label>");
   page += F("</div>");
   page += F("<small id='repeatPressTimeModeHelpBlock' class='form-text text-muted'>");
-  page += F("Set the repeat time in milliseconds after which a continuous press and hold is treated as a stream of repeated presses, measured from when the first press is detected. Default value is 500.");
+  page += F("Set the repeat time in milliseconds after which a continuous press and hold is treated as a stream of repeated presses, measured from when the first press is detected.<br>");
+  page += F("Default value is 1000 ms.");
   page += F("</small>");
   page += F("</div>");
   page += F("</div>");
@@ -3364,7 +3896,7 @@ void get_options_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len)) return;
 
   page += F("<div class='col-md-6 col-12 mb-3'>");
-  page += F("<div class='card h-50 mb-3'>");
+  page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-ladder' viewBox='0 0 20 20'>");
   page += F("<path d='M4.5 1a.5.5 0 0 1 .5.5V2h6v-.5a.5.5 0 0 1 1 0v14a.5.5 0 0 1-1 0V15H5v.5a.5.5 0 0 1-1 0v-14a.5.5 0 0 1 .5-.5zM5 14h6v-2H5v2zm0-3h6V9H5v2zm0-3h6V6H5v2zm0-3h6V3H5v2z'/>");
@@ -3402,16 +3934,16 @@ void get_options_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='card'>");
+  page += F("<div class='card mb-3'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-joystick' viewBox='0 0 20 20'>");
   page += F("<path d='M10 2a2 2 0 0 1-1.5 1.937v5.087c.863.083 1.5.377 1.5.726 0 .414-.895.75-2 .75s-2-.336-2-.75c0-.35.637-.643 1.5-.726V3.937A2 2 0 1 1 10 2z'/>");
   page += F("<path d='M0 9.665v1.717a1 1 0 0 0 .553.894l6.553 3.277a2 2 0 0 0 1.788 0l6.553-3.277a1 1 0 0 0 .553-.894V9.665c0-.1-.06-.19-.152-.23L9.5 6.715v.993l5.227 2.178a.125.125 0 0 1 .001.23l-5.94 2.546a2 2 0 0 1-1.576 0l-5.94-2.546a.125.125 0 0 1 .001-.23L6.5 7.708l-.013-.988L.152 9.435a.25.25 0 0 0-.152.23z'/>");
   page += F("</svg>");
   page += F(" Encoders</h5>");
-  page += F("<div class='card-body h-50 mb-3'>");
+  page += F("<div class='card-body'>");
   page += F("<div class='form-floating'>");
-  page += F("<select class='form-select form-select-sm' name='encodersensitivity'>");
+  page += F("<select class='form-select' name='encodersensitivity'>");
   for (unsigned int s = 1; s <= 10; s++) {
     page += F("<option value='");
     page += s;
@@ -3429,6 +3961,27 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<small id='encoderSensitivityHelpBlock' class='form-text text-muted'>");
   page += F("Default value is 5.");
   page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='card'>");
+  page += F("<h5 class='card-header'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-display' viewBox='0 0 20 20'>");
+  page += F("<path d='M0 4s0-2 2-2h12s2 0 2 2v6s0 2-2 2h-4c0 .667.083 1.167.25 1.5H11a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1h.75c.167-.333.25-.833.25-1.5H2s-2 0-2-2V4zm1.398-.855a.758.758 0 0 0-.254.302A1.46 1.46 0 0 0 1 4.01V10c0 .325.078.502.145.602.07.105.17.188.302.254a1.464 1.464 0 0 0 .538.143L2.01 11H14c.325 0 .502-.078.602-.145a.758.758 0 0 0 .254-.302 1.464 1.464 0 0 0 .143-.538L15 9.99V4c0-.325-.078-.502-.145-.602a.757.757 0 0 0-.302-.254A1.46 1.46 0 0 0 13.99 3H2c-.325 0-.502.078-.602.145z'/>");
+  page += F("</svg>");
+  page += F(" Screen Saver</h5>");
+  page += F("<div class='card-body'>");
+  page += F("<div class='form-floating'>");
+  page += F("<input class='form-control form-control-sm' type='number' id='screenSaverTimeout' name='screensavertimeout' min='0' max='1440' value='");
+  page += screenSaverTimeout / 60000;
+  page += F("'>");
+  page += F("<label for='timeout'>Timeout</label>");
+  page += F("<small id='screenSaverTimeoutHelpBlock' class='form-text text-muted'>");
+  page += F("Power off display and leds when inactive for a certain amount of time in minutes.<br>Min 0 (never) - Default 60 (1 hour) - Max 1440 (24 hours).");
+  page += F("</small>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
@@ -3500,7 +4053,7 @@ void get_options_page(unsigned int start, unsigned int len) {
 
   page += F("<div class='w-50'>");
   page += F("<div class='form-floating'>");
-  page += F("<select class='form-select form-select-sm' name='rgborder'>");
+  page += F("<select class='form-select' name='rgborder'>");
   page += F("<option value='");
   page += RGB;
   page += F("'");
@@ -3693,17 +4246,35 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<div class='row'>");
 
   page += F("<div class='col-lg-6 col-12 mb-3'>");
-  page += F("<form method='post'>");
+
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>");
+  page += F("<form method='post'>");
+  page += F("<div class='card-header'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-auto me-auto'>");
+  page += F("<h5 class='mb-0'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-file-code' viewBox='0 0 20 20'>");
   page += F("<path d='M6.646 5.646a.5.5 0 1 1 .708.708L5.707 8l1.647 1.646a.5.5 0 0 1-.708.708l-2-2a.5.5 0 0 1 0-.708l2-2zm2.708 0a.5.5 0 1 0-.708.708L10.293 8 8.646 9.646a.5.5 0 0 0 .708.708l2-2a.5.5 0 0 0 0-.708l-2-2z'/>");
   page += F("<path d='M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z'/>");
   page += F("</svg>");
-  page += F(" New Configuration</h5>");
+  page += F(" New Configuration");
+  page += F("</h5>");
+  page += F("</div>");
+  page += F("<div class='col-auto'>");
+  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm' style='width: 100%;'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
+  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
+  page += F("</svg>");
+  page += F(" New</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
   page += F("<div class='card-body'>");
   page += F("<div class='row'>");
-  page += F("<div class='col-7'>");
+  page += F("<div class='col-8'>");
   page += F("<input class='form-control' type='text' maxlength='26' id='newconfiguration' name='newconfiguration' value=''>");
   page += F("<small id='newconfigurationHelpBlock' class='form-text text-muted'>");
   page += F("Type a name, select what to include and press 'New' to save current profile with a name. An existing configuration with the same name will be overridden without further notice.");
@@ -3712,7 +4283,7 @@ void get_configurations_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='col-3'>");
+  page += F("<div class='col-4'>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='actionsCheck1' name='actions1' checked>");
   page += F("<label class='form-check-label' for='actionsCheck1'>Actions</label>");
@@ -3720,6 +4291,10 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='pedalsCheck1' name='pedals1' checked>");
   page += F("<label class='form-check-label' for='pedalsCheck1'>Pedals</label>");
+  page += F("</div>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='controlsCheck1' name='controls1' checked>");
+  page += F("<label class='form-check-label' for='controlsCheck1'>Controls</label>");
   page += F("</div>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='interfacesCheck1' name='interfaces1' checked>");
@@ -3735,58 +4310,62 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
 
-  if (trim_page(start, len)) return;
-
-  page += F("<div class='col-2'>");
-  page += F("<button type='submit' name='action' value='new' class='btn btn-primary btn-sm' style='width: 100%;'>");
-  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
-  page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
-  page += F("</svg>");
-  page += F("<br>New</button> ");
-  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
+
   page += F("</div>");
 
   if (trim_page(start, len)) return;
 
   page += F("<div class='col-lg-6 col-12 mb-3'>");
+
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>");
+  page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
+  page += F("<div class='card-header'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-auto me-auto'>");
+  page += F("<h5 class='mb-0'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-upload' viewBox='0 0 20 20'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
   page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
   page += F("</svg>");
-  page += F(" Upload Configuration</h5>");
-  page += F("<div class='card-body'>");
-  page += F("<form method='post' action='/configurations' enctype='multipart/form-data'>");
-  page += F("<div class='row'>");
-  page += F("<div class='col-10'>");
-  page += F("<div class='input-group'>");
-  page += F("<input type='file' class='form-control' id='customfile' name='upload'>");
+  page += F(" Upload Configuration");
+  page += F("</h5>");
   page += F("</div>");
-  page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
-  page += F("SPIFFS is not a high performance FS. It is designed to balance safety, wear levelling and performance for bare flash devices. ");
-  page += F("If you want good performance from SPIFFS keep the % utilisation low.");
-  page += F("</small>");
-  page += F("</div>");
-
-  if (trim_page(start, len)) return;
-
-  page += F("<div class='col-2'>");
+  page += F("<div class='col-auto'>");
   page += F("<button type='submit' name='action' value='upload' class='btn btn-primary btn-sm' style='width: 100%;'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-upload' viewBox='0 0 16 16'>");
   page += F("<path d='M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z'/>");
   page += F("<path d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z'/>");
   page += F("</svg>");
-  page += F("<br>Upload</button>");
+  page += F(" Upload</button>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<div class='card-body'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col'>");
+  page += F("<div class='input-group'>");
+  page += F("<input type='file' class='form-control' id='customfile' name='upload'>");
+  page += F("</div>");
+  page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
+  page += F("SPIFFS is not a high performance FS. It is designed to balance safety, wear levelling and performance for bare flash devices. ");
+  page += F("If you want good performance from SPIFFS keep the % utilisation low. Currently used ");
+  page += (SPIFFS.usedBytes() * 100) / SPIFFS.totalBytes();
+  page += F("%.");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("</div>");
+  page += F("</div>");
+
   page += F("</div>");
   page += F("</form>");
-  page += F("</div>");
-  page += F("</div>");
-  page += F("</div>");
+
   page += F("</div>");
 
   if (trim_page(start, len)) return;
@@ -3798,7 +4377,9 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   File    file = root.openNextFile();
   while (file) {
     String c = file.name();
-
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 0, 0)
+    c = "/" + c;
+#endif
     if (c.length() > 4 && c.lastIndexOf(".cfg") == (c.length() - 4)) {
       availableconf++;
       DPRINT("%s\n", c.c_str());
@@ -3824,13 +4405,15 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<div class='card-body'>");
   page += F("<form method='post'>");
   page += F("<div class='row'>");
-  page += F("<div class='col-7'>");
+  page += F("<div class='col-5'>");
   page += F("<select class='form-select' id='filename' name='filename'>");
   page += confoptions;
   page += F("</select>");
   page += F("<small id='filenameHelpBlock' class='form-text text-muted'>");
   page += F("'Apply' to load configuration into current profile.<br>");
   page += F("'Apply & Save' to load configuration into current profile and save the profile.<br>");
+  page += F("'Append' to load configuration into current profile. Existing Actions are not deleted.<br>");
+  page += F("'Append & Save' to load configuration into current profile and save the profile. Existing Actions are not deleted.<br>");
   page += F("'Download' to download configuration to local computer.<br>");
   page += F("'Delete' to remove configuration.");
   page += F("</small>");
@@ -3838,7 +4421,7 @@ void get_configurations_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='col-3'>");
+  page += F("<div class='col-4'>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='actionsCheck2' name='actions2' checked>");
   page += F("<label class='form-check-label' for='actionsCheck2'>Actions</label>");
@@ -3846,6 +4429,10 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='pedalsCheck2' name='pedals2' checked>");
   page += F("<label class='form-check-label' for='pedalsCheck2'>Pedals</label>");
+  page += F("</div>");
+  page += F("<div class='form-check form-switch'>");
+  page += F("<input class='form-check-input' type='checkbox' id='controlsCheck2' name='controls2' checked>");
+  page += F("<label class='form-check-label' for='controlsCheck2'>Controls</label>");
   page += F("</div>");
   page += F("<div class='form-check form-switch'>");
   page += F("<input class='form-check-input' type='checkbox' id='interfacesCheck2' name='interfaces2' checked>");
@@ -3863,7 +4450,7 @@ void get_configurations_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='col-2'>");
+  page += F("<div class='col-3'>");
   page += F("<button type='submit' name='action' value='apply' class='btn btn-primary btn-sm' style='width: 100%;'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-check2-circle' viewBox='0 0 16 16'>");
   page += F("<path d='M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z'/>");
@@ -3875,6 +4462,20 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
   page += F("</svg>");
   page += F("<br>Apply & Save</button><p></p>");
+
+  if (trim_page(start, len)) return;
+
+  page += F("<button type='submit' name='action' value='append' class='btn btn-primary btn-sm' style='width: 100%;'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-plus-circle-dotted' viewBox='0 0 16 16'>");
+  page += F("<path d='M8 0c-.176 0-.35.006-.523.017l.064.998a7.117 7.117 0 0 1 .918 0l.064-.998A8.113 8.113 0 0 0 8 0zM6.44.152c-.346.069-.684.16-1.012.27l.321.948c.287-.098.582-.177.884-.237L6.44.153zm4.132.271a7.946 7.946 0 0 0-1.011-.27l-.194.98c.302.06.597.14.884.237l.321-.947zm1.873.925a8 8 0 0 0-.906-.524l-.443.896c.275.136.54.29.793.459l.556-.831zM4.46.824c-.314.155-.616.33-.905.524l.556.83a7.07 7.07 0 0 1 .793-.458L4.46.824zM2.725 1.985c-.262.23-.51.478-.74.74l.752.66c.202-.23.418-.446.648-.648l-.66-.752zm11.29.74a8.058 8.058 0 0 0-.74-.74l-.66.752c.23.202.447.418.648.648l.752-.66zm1.161 1.735a7.98 7.98 0 0 0-.524-.905l-.83.556c.169.253.322.518.458.793l.896-.443zM1.348 3.555c-.194.289-.37.591-.524.906l.896.443c.136-.275.29-.54.459-.793l-.831-.556zM.423 5.428a7.945 7.945 0 0 0-.27 1.011l.98.194c.06-.302.14-.597.237-.884l-.947-.321zM15.848 6.44a7.943 7.943 0 0 0-.27-1.012l-.948.321c.098.287.177.582.237.884l.98-.194zM.017 7.477a8.113 8.113 0 0 0 0 1.046l.998-.064a7.117 7.117 0 0 1 0-.918l-.998-.064zM16 8a8.1 8.1 0 0 0-.017-.523l-.998.064a7.11 7.11 0 0 1 0 .918l.998.064A8.1 8.1 0 0 0 16 8zM.152 9.56c.069.346.16.684.27 1.012l.948-.321a6.944 6.944 0 0 1-.237-.884l-.98.194zm15.425 1.012c.112-.328.202-.666.27-1.011l-.98-.194c-.06.302-.14.597-.237.884l.947.321zM.824 11.54a8 8 0 0 0 .524.905l.83-.556a6.999 6.999 0 0 1-.458-.793l-.896.443zm13.828.905c.194-.289.37-.591.524-.906l-.896-.443c-.136.275-.29.54-.459.793l.831.556zm-12.667.83c.23.262.478.51.74.74l.66-.752a7.047 7.047 0 0 1-.648-.648l-.752.66zm11.29.74c.262-.23.51-.478.74-.74l-.752-.66c-.201.23-.418.447-.648.648l.66.752zm-1.735 1.161c.314-.155.616-.33.905-.524l-.556-.83a7.07 7.07 0 0 1-.793.458l.443.896zm-7.985-.524c.289.194.591.37.906.524l.443-.896a6.998 6.998 0 0 1-.793-.459l-.556.831zm1.873.925c.328.112.666.202 1.011.27l.194-.98a6.953 6.953 0 0 1-.884-.237l-.321.947zm4.132.271a7.944 7.944 0 0 0 1.012-.27l-.321-.948a6.954 6.954 0 0 1-.884.237l.194.98zm-2.083.135a8.1 8.1 0 0 0 1.046 0l-.064-.998a7.11 7.11 0 0 1-.918 0l-.064.998zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z'/>");
+  page += F("</svg>");
+  page += F("<br>Append</button><p></p>");
+  page += F("<button type='submit' name='action' value='appendsave' class='btn btn-primary btn-sm' style='width: 100%;'>");
+  page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-plus-circle' viewBox='0 0 16 16'>");
+  page += F("<path d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z'/>");
+  page += F("<path d='M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z'/>");
+  page += F("</svg>");
+  page += F("<br>Append & Save</button><p></p>");
 
   if (trim_page(start, len)) return;
 
@@ -3900,32 +4501,40 @@ void get_configurations_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len)) return;
 
   page += F("<div class='col-lg-6 col-12 mb-3'>");
+
   page += F("<div class='card h-100'>");
-  page += F("<h5 class='card-header'>");
+
+  page += F("<div class='card-header'>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-auto me-auto'>");
+  page += F("<h5 class='mb-0'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-pencil-square' viewBox='0 0 20 20'>");
   page += F("<path d='M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z'/>");
   page += F("<path fill-rule='evenodd' d='M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z'/>");
   page += F("</svg>");
-  page += F(" Configuration Editor</h5>");
-  page += F("<div class='card-body'>");
-  page += F("<div class='row'>");
-  page += F("<div class='col-10'>");
-  page += F("<div id='jsoneditor' style='width: 100%; height: 480px;'></div>");
+  page += F(" Configuration Editor");
+  page += F("</h5>");
   page += F("</div>");
-  page += F("<div class='col-2'>");
+  page += F("<div class='col-auto'>");
   page += F("<button class='btn btn-primary btn-sm' style='width: 100%;' id='saveButton'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-save' viewBox='0 0 16 16'>");
   page += F("<path d='M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z'>");
   page += F("</svg>");
-  page += F("<br>Save</button>");
+  page += F(" Save</button>");
   page += F("</div>");
   page += F("</div>");
+  page += F("</div>");
+
+  page += F("<div class='card-body'>");
+  page += F("<div id='jsoneditor' style='width: 100%; height: 480px;'></div>");
+  page += F("</div>");
+
   page += F("</div>");
 
   if (trim_page(start, len)) return;
 
-  page += F("<link href='https://cdn.jsdelivr.net/npm/jsoneditor@9.7.4/dist/jsoneditor.min.css' rel='stylesheet' type='text/css'>");
-  page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@9.7.4/dist/jsoneditor.min.js'></script>");
+  page += F("<link href='https://cdn.jsdelivr.net/npm/jsoneditor@latest/dist/jsoneditor.min.css' rel='stylesheet' type='text/css'>");
+  page += F("<script src='https://cdn.jsdelivr.net/npm/jsoneditor@latest/dist/jsoneditor.min.js'></script>");
   page += F("<script>");
   page += F("var container = document.getElementById('jsoneditor');\n"
             "var schema;\n"
@@ -4349,6 +4958,22 @@ size_t get_pedals_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
   return byteWritten;
 }
 
+size_t get_controls_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
+
+  page = "";
+  get_controls_page(index, maxLen - 1);
+  page.getBytes(buffer, maxLen, 0);
+  buffer[maxLen-1] = 0; // CWE-126
+  size_t byteWritten = strlen((const char *)buffer);
+  if (byteWritten == 0) {
+    page = "";
+    alert = "";
+    alertError = "";
+    fullPageCompleted = true;
+  }
+  return byteWritten;
+}
+
 size_t get_interfaces_page_chunked(uint8_t *buffer, size_t maxLen, size_t index) {
 
   page = "";
@@ -4494,12 +5119,12 @@ void http_handle_actions(AsyncWebServerRequest *request) {
   if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
   if (request->hasArg("bank"))        uibank   = request->arg("bank");
-  if (request->hasArg("pedal"))       uipedal  = request->arg("pedal");
+  if (request->hasArg("control"))     uicontrol  = request->arg("control");
   if (request->hasArg("banksorder"))  list     = request->arg("banksorder");
 
   for (byte b = 0; b < BANKS; b++) {
     a[b] = actions[b];
-    strncpy(n[b], banknames[b], MAXBANKNAME+1);
+    strlcpy(n[b], banknames[b], MAXBANKNAME+1);
   }
 
   int  i1 = 0;
@@ -4508,7 +5133,7 @@ void http_handle_actions(AsyncWebServerRequest *request) {
   while (to < BANKS && i2 != -1) {
     long from = constrain(list.substring(i1, i2).toInt(), 0, BANKS - 1);
     a[to] = actions[from];
-    strncpy(n[to], banknames[from], MAXBANKNAME+1);
+    strlcpy(n[to], banknames[from], MAXBANKNAME+1);
     to++;
     i1 = i2 + 1;
     i2 = (i2 == list.lastIndexOf(",")) ? list.length() : list.indexOf(",", i1);
@@ -4516,7 +5141,7 @@ void http_handle_actions(AsyncWebServerRequest *request) {
 
   for (byte b = 0; b < BANKS; b++) {
     actions[b] = a[b];
-    strncpy(banknames[b], n[b], MAXBANKNAME+1);
+    strlcpy(banknames[b], n[b], MAXBANKNAME+1);
   }
 
   create_banks();
@@ -4534,6 +5159,15 @@ void http_handle_pedals(AsyncWebServerRequest *request) {
   request->send(response);
 }
 
+void http_handle_controls(AsyncWebServerRequest *request) {
+  if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
+  http_handle_globals(request);
+    if (request->hasArg("controlpage")) uicontrolpage = request->arg("controlpage");
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_controls_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
+
 void http_handle_interfaces(AsyncWebServerRequest *request) {
   if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
@@ -4545,7 +5179,7 @@ void http_handle_interfaces(AsyncWebServerRequest *request) {
 void http_handle_sequences(AsyncWebServerRequest *request) {
   if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
-  if (request->hasArg("sequence"))  uisequence  = request->arg("sequence");
+  if (request->hasArg("sequence")) uisequence = request->arg("sequence");
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_sequences_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
@@ -4600,9 +5234,9 @@ void http_handle_post_live(AsyncWebServerRequest *request) {
 void http_handle_post_actions(AsyncWebServerRequest *request) {
 
   const byte b = constrain(uibank.toInt(), 0, BANKS - 1);
-  const byte p = constrain(uipedal.toInt() - 1, 0, PEDALS - 1);
+  const byte c = constrain(uicontrol.toInt() - 1, 0, CONTROLS - 1);
 
-  strncpy(banknames[b], request->arg(String("bankname")).c_str(), MAXBANKNAME+1);
+  strlcpy(banknames[b], request->arg(String("bankname")).c_str(), MAXBANKNAME+1);
 
   if (request->arg("action").equals("new")) {
     action *act = actions[b];
@@ -4618,8 +5252,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     }
     act->tag0[0]       = 0;
     act->tag1[0]       = 0;
-    act->pedal         = p;
-    act->button        = 0;
+    act->control       = 0;
     act->led           = 255;
     act->color0        = CRGB::Black;
     act->color1        = CRGB::Black;
@@ -4648,8 +5281,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     }
     act->tag0[0]       = 0;
     act->tag1[0]       = 0;
-    act->pedal         = constrain(request->arg("action").charAt(3) - '1', 0, PEDALS - 1);
-    act->button        = 0;
+    act->control       = constrain(request->arg("action").substring(3).toInt() - 1, 0, CONTROLS - 1);
     act->led           = 255;
     act->color0        = CRGB::Black;
     act->color1        = CRGB::Black;
@@ -4673,7 +5305,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     action      *actNext = (act == nullptr) ? nullptr : act->next;
 
     while (act != nullptr) {
-      if (act->pedal == p || uipedal.equals("All")) {
+      if (act->control == c || uicontrol.equals("All")) {
         i++;
         if (request->arg("action").equals(String("delete") + String(i))) {
           if (actPrev == nullptr) {         // first
@@ -4731,26 +5363,50 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
     unsigned int i      = 0;
     action      *act    = actions[b];
     while (act != nullptr) {
-      if (act->pedal == p || uipedal.equals("All")) {
+      if (act->control == c || uicontrol.equals("All")) {
         i++;
-        strncpy(act->tag0,            request->arg(String("nameoff")    + String(i)).c_str(), MAXACTIONNAME + 1);
-        strncpy(act->tag1,            request->arg(String("nameon")     + String(i)).c_str(), MAXACTIONNAME + 1);
-        act->button       = constrain(request->arg(String("button")     + String(i)).toInt() - 1, 0, LADDER_STEPS - 1);
-        act->led          = constrain(request->arg(String("led")        + String(i)).toInt(), 0, 255);
-        if (act->led != 255) act->led = (act->led == 0 ? LEDS : constrain(request->arg(String("led") + String(i)).toInt() - 1, 0, LEDS - 1));
-        unsigned int red, green, blue;
-        sscanf(                       request->arg(String("color0-")    + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
-        act->color0       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
-        sscanf(                       request->arg(String("color1-")    + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
-        act->color1       = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
+        act->control      = constrain(request->arg(String("control")    + String(i)).toInt() - 1, 0, CONTROLS - 1);
         act->event        = constrain(request->arg(String("event")      + String(i)).toInt(), 0, 255);
         act->midiMessage  = constrain(request->arg(String("message")    + String(i)).toInt(), 0, 255);
         act->midiCode     = constrain(request->arg(String("code")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
         act->midiValue1   = constrain(request->arg(String("from")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
         act->midiValue2   = constrain(request->arg(String("to")         + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
         act->midiChannel  = constrain(request->arg(String("channel")    + String(i)).toInt(), 1, 16);
-        strncpy(act->oscAddress,      request->arg(String("oscaddress") + String(i)).c_str(), sizeof(act->oscAddress));
         act->slot         = constrain(request->arg(String("slot")       + String(i)).toInt() - 1, 0, SLOTS);
+        strlcpy(act->tag0,            request->arg(String("nameoff")    + String(i)).c_str(), MAXACTIONNAME + 1);
+        strlcpy(act->tag1,            request->arg(String("nameon")     + String(i)).c_str(), MAXACTIONNAME + 1);
+        strlcpy(act->oscAddress,      request->arg(String("oscaddress") + String(i)).c_str(), sizeof(act->oscAddress));
+        switch (act->midiMessage) {
+          case PED_SEQUENCE:
+          case PED_SEQUENCE_STEP_BY_STEP_FWD:
+          case PED_SEQUENCE_STEP_BY_STEP_REV:
+            act->color0   = CRGB::Black;
+            act->color1   = CRGB::Black;
+            break;
+          case PED_ACTION_BANK_PLUS:
+          case PED_ACTION_BANK_MINUS:
+          case PED_ACTION_PROFILE_PLUS:
+          case PED_ACTION_PROFILE_MINUS:
+          case PED_ACTION_DEVICE_INFO:
+          case PED_ACTION_POWER_ON_OFF:
+            act->led      = 255;
+            act->color0   = CRGB::Black;
+            act->color1   = CRGB::Black;
+            break;
+          default: {
+            unsigned int red, green, blue;
+            act->led      = constrain(request->arg(String("led")        + String(i)).toInt(), 0, 255);
+            if (act->led != 255) act->led = (act->led == 0 ? LEDS : constrain(request->arg(String("led") + String(i)).toInt() - 1, 0, LEDS - 1));
+            act->color0   = CRGB::Black;
+            red = green = blue = 0;
+            sscanf(request->arg(String("color0-") + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
+            act->color0 = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
+            act->color1   = CRGB::Black;
+            red = green = blue = 0;
+            sscanf(request->arg(String("color1-") + String(i)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
+            act->color1 = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
+           }
+        }
       }
       act = act->next;
     }
@@ -4795,6 +5451,9 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     a = request->arg(String("polarity") + String(i+1));
     pedals[i].invertPolarity = (a == checked) ? PED_ENABLE : PED_DISABLE;
 
+    a = request->arg(String("latchemulation") + String(i+1));
+    pedals[i].latchEmulation = (a == checked) ? PED_ENABLE : PED_DISABLE;
+
     a = request->arg(String("map") + String(i+1));
     pedals[i].analogResponse = a.toInt();
 
@@ -4820,11 +5479,6 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
       pedals[i].expZero = ADC_RESOLUTION - 1;
       pedals[i].expMax = 0;
     }
-
-    for (unsigned int b = 0; b < LADDER_STEPS; b++) {
-      a = request->arg(String("ledbutton") + String(i+1) + String(b+1));
-      pedals[i].ledbuttons[b] = (a.toInt() == 0 ? LEDS : constrain(a.toInt() - 1, 0, LEDS - 1));
-    }
   }
   if (request->arg("action").equals("apply")) {
     loadConfig = true;
@@ -4838,6 +5492,44 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
   }
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_pedals_page_chunked);
+  response->addHeader("Connection", "close");
+  request->send(response);
+}
+
+void http_handle_post_controls(AsyncWebServerRequest *request) {
+
+  String     a;
+  const byte p = constrain(uicontrolpage.toInt() - 1, 0, CONTROLS / CONTROLS_PER_PAGE - 1);
+
+  for (unsigned int i = p*CONTROLS_PER_PAGE; i < (p+1)*CONTROLS_PER_PAGE; i++) {
+    a = request->arg(String("pedal1-") + String(i+1));
+    controls[i].pedal1 = (a.toInt() == 0 ? PEDALS : constrain(a.toInt() - 1, 0, PEDALS - 1));
+
+    a = request->arg(String("button1-") + String(i+1));
+    controls[i].button1 = (a.toInt() == 0 ? LADDER_STEPS : constrain(a.toInt() - 1, 0, LADDER_STEPS - 1));
+
+    a = request->arg(String("pedal2-") + String(i+1));
+    controls[i].pedal2 = (a.toInt() == 0 ? PEDALS : constrain(a.toInt() - 1, 0, PEDALS - 1));
+
+    a = request->arg(String("button2-") + String(i+1));
+    controls[i].button2 = (a.toInt() == 0 ? LADDER_STEPS : constrain(a.toInt() - 1, 0, LADDER_STEPS - 1));
+
+    a = request->arg(String("led") + String(i+1));
+    controls[i].led = (a.toInt() == 0 ? LEDS : constrain(a.toInt() - 1, 0, LEDS - 1));
+  }
+
+  if (request->arg("action").equals("apply")) {
+    loadConfig = true;
+    alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
+  }
+  else if (request->arg("action").equals("save")) {
+    eeprom_update_profile();
+    eeprom_update_current_profile(currentProfile);
+    loadConfig = true;
+    alert = "Changes saved.";
+  }
+
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html", get_controls_page_chunked);
   response->addHeader("Connection", "close");
   request->send(response);
 }
@@ -4884,35 +5576,30 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
 
   String     a;
   const byte s = constrain(uisequence.toInt() - 1, 0, SEQUENCES);
+  unsigned int red, green, blue;
 
   for (unsigned int i = 0; i < STEPS; i++) {
 
     a = request->arg(String("message") + String(i+1));
     sequences[s][i].midiMessage = constrain(a.toInt(), 0, 255);
 
-    switch (sequences[s][i].midiMessage) {
+    a = request->arg(String("channel") + String(i+1));
+    sequences[s][i].midiChannel = constrain(a.toInt(), 1, 16);
 
-      case PED_ACTION_LED_COLOR:
-        a = request->arg(String("led") + String(i+1));
-        sequences[s][i].led = constrain(a.toInt() - 1, 0, LEDS);
+    a = request->arg(String("code") + String(i+1));
+    sequences[s][i].midiCode = constrain(a.toInt(), 0, MIDI_RESOLUTION - 1);
 
-        a = request->arg(String("color") + String(i+1));
-        unsigned int red, green, blue;
-        sscanf(request->arg(String("color") + String(i+1)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
-        sequences[s][i].color = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
-        break;
+    a = request->arg(String("value") + String(i+1));
+    sequences[s][i].midiValue = constrain(a.toInt(), 0, MIDI_RESOLUTION - 1);
 
-      default:
-        a = request->arg(String("channel") + String(i+1));
-        sequences[s][i].midiChannel = constrain(a.toInt(), 1, 16);
+    a = request->arg(String("led") + String(i+1));
+    sequences[s][i].led = constrain(a.toInt(), 0, 255);
+    if (sequences[s][i].led != 255) sequences[s][i].led = (sequences[s][i].led == 0 ? LEDS : constrain(a.toInt() - 1, 0, LEDS - 1));
 
-        a = request->arg(String("code") + String(i+1));
-        sequences[s][i].midiCode = constrain(a.toInt(), 0, MIDI_RESOLUTION - 1);
-
-        a = request->arg(String("value") + String(i+1));
-        sequences[s][i].midiValue = constrain(a.toInt(), 0, MIDI_RESOLUTION - 1);
-        break;
-    }
+    a = request->arg(String("color") + String(i+1));
+    red = green = blue = 0;
+    sscanf(request->arg(String("color") + String(i+1)).c_str(), "#%02x%02x%02x", &red, &green, &blue);
+    sequences[s][i].color = ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff);
   }
   if (request->arg("action").equals("apply")) {
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
@@ -4959,6 +5646,16 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     //eeprom_update_boot_mode(bootMode);
   }
 
+#ifdef BLE
+  if (request->arg("bleServer") != bleServer) {
+    bleServer = request->arg("bleServer");
+    BLEBLE_MIDI.end();
+    BLEBLE_MIDI.setName(bleServer.c_str());
+    BLEBLE_MIDI.begin();
+    restartRequired = false;
+  }
+#endif
+
   if (request->arg("wifiSSID") != wifiSSID || request->arg("wifiPassword") != wifiPassword) {
     wifiSSID      = request->arg("wifiSSID");
     wifiPassword  = request->arg("wifiPassword");
@@ -4979,6 +5676,14 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     restartRequired = false;
   }
 
+  if (request->arg("debounceinterval").toInt() != debounceInterval) {
+    debounceInterval = request->arg("debounceinterval").toInt();
+    loadConfig = true;
+  }
+  if (request->arg("simultaneousgaptime").toInt() != simultaneousGapTime) {
+    simultaneousGapTime = request->arg("simultaneousgaptime").toInt();
+    loadConfig = true;
+  }
   if (request->arg("presstime").toInt() != pressTime) {
     pressTime = request->arg("presstime").toInt();
     loadConfig = true;
@@ -4996,7 +5701,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     loadConfig = true;
   }
 
-  //if (pressTimeChanged) eeprom_update_press_time(pressTime, doublePressTime,longPressTime, repeatPressTime);
+  //if (pressTimeChanged) eeprom_update_press_time(debounceInterval, simultaneousGapTime, pressTime, doublePressTime,longPressTime, repeatPressTime);
 
   bool newFlipScreen = (request->arg("flipscreen") == checked);
   if (newFlipScreen != flipScreen) {
@@ -5030,14 +5735,16 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     loadConfig = true;
   }
 
+  if (request->arg("screensavertimeout").toInt() != screenSaverTimeout / 60000) {
+    screenSaverTimeout = request->arg("screensavertimeout").toInt() * 60000;
+  }
+
   if (request->arg("rgborder").toInt() != rgbOrder) {
     rgbOrder = (EOrder)request->arg("rgborder").toInt();
   }
 
   if (request->arg("ledsonbrightness").toInt() != ledsOnBrightness) {
     ledsOnBrightness = request->arg("ledsonbrightness").toInt();
-    //FastLED.setBrightness(map2(ledsOnBrightness, 0, 25, 0, 255));
-    //FastLED.show();
   }
 
   if (request->arg("ledsoffbrightness").toInt() != ledsOffBrightness) {
@@ -5112,7 +5819,7 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
       action *act = actions[b];
       while (act != nullptr) {
         if (act->midiMessage == PED_ACTION_POWER_ON_OFF) {
-          esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(act->pedal), 0);
+          esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(controls[act->control].pedal1), 0);
           b = BANKS;
           break;
         }
@@ -5124,7 +5831,8 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     esp_bt_controller_disable();
 #endif
     esp_wifi_stop();
-    adc_power_off();
+    //adc_power_off();
+    adc_power_release();
     delay(200);
     esp_deep_sleep_start();
   }
@@ -5147,6 +5855,7 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
         spiffs_save_config(configname,
                            request->arg("actions1")    == checked,
                            request->arg("pedals1")     == checked,
+                           request->arg("controls1")   == checked,
                            request->arg("interfaces1") == checked,
                            request->arg("sequences1")  == checked,
                            request->arg("options1")    == checked);
@@ -5166,15 +5875,17 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
       alertError = F("No file selected. Choose file using Browse button.");
     }
   }
-  else if (request->arg("action").equals("apply")) {
+  else if (request->arg("action").equals("apply") || request->arg("action").equals("append")) {
     String config = request->arg("filename");
     controller_delete();
     spiffs_load_config(config,
                        request->arg("actions2")    == checked,
                        request->arg("pedals2")     == checked,
+                       request->arg("controls2")   == checked,
                        request->arg("interfaces2") == checked,
                        request->arg("sequences2")  == checked,
-                       request->arg("options2")    == checked);
+                       request->arg("options2")    == checked,
+                       request->arg("action").equals("append"));
     sort_actions();
     create_banks();
     loadConfig = true;
@@ -5182,15 +5893,17 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
     alert = F("Configuration '");
     alert += config + F("' loaded into current profile and running. Profile not saved.");
   }
-  else if (request->arg("action").equals("save")) {
+  else if (request->arg("action").equals("save") || request->arg("action").equals("appendsave")) {
     String config = request->arg("filename");
     controller_delete();
     spiffs_load_config(config,
                        request->arg("actions2")    == checked,
                        request->arg("pedals2")     == checked,
+                       request->arg("controls2")   == checked,
                        request->arg("interfaces2") == checked,
                        request->arg("sequences2")  == checked,
-                       request->arg("options2")    == checked);
+                       request->arg("options2")    == checked,
+                       request->arg("action").equals("appendsave"));
     sort_actions();
     create_banks();
     eeprom_update_globals();
@@ -5499,6 +6212,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
           int b;
           if (sscanf((const char *)data, "bank%d", &b) == 1)
             currentBank = constrain(b, 0, BANKS - 1);
+            update_current_step();
             leds_refresh();
         }
       }
@@ -5571,6 +6285,8 @@ void http_setup() {
   httpServer.on("/actions",         HTTP_POST,  http_handle_post_actions);
   httpServer.on("/pedals",          HTTP_GET,   http_handle_pedals);
   httpServer.on("/pedals",          HTTP_POST,  http_handle_post_pedals);
+  httpServer.on("/virtualpedals",   HTTP_GET,   http_handle_controls);
+  httpServer.on("/virtualpedals",   HTTP_POST,  http_handle_post_controls);
   httpServer.on("/sequences",       HTTP_GET,   http_handle_sequences);
   httpServer.on("/sequences",       HTTP_POST,  http_handle_post_sequences);
   httpServer.on("/interfaces",      HTTP_GET,   http_handle_interfaces);

@@ -235,6 +235,11 @@ void AppleMidiSendRealTimeMessage(byte type)
     }
 }
 
+void AppleMidiSendSytemExclusive(unsigned len, const byte *array)
+{
+  if (wifiEnabled && interfaces[PED_RTPMIDI].midiOut) RTP_MIDI.sendSysEx(len, array);
+}
+
 
 // Send messages to WiFi ipMIDI interface
 

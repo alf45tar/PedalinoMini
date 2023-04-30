@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2019 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -34,6 +34,7 @@ void OnUSBMidiNoteOff(byte channel, byte note, byte velocity)
   ipMIDISendNoteOff(note, velocity, channel);
   AppleMidiSendNoteOff(note, velocity, channel);
   OSCSendNoteOff(note, velocity, channel);
+  leds_update(midi::NoteOff, channel, note, velocity);
   if (IS_SHOW_ENABLED(interfaces[PED_USBMIDI].midiIn)) screen_info(midi::NoteOff, note, velocity, channel);
 }
 
@@ -60,6 +61,7 @@ void OnUSBMidiControlChange(byte channel, byte number, byte value)
   OSCSendControlChange(number, value, channel);
   leds_update(midi::ControlChange, channel, number, value);
   if (IS_SHOW_ENABLED(interfaces[PED_USBMIDI].midiIn)) screen_info(midi::ControlChange, number, value, channel);
+  switch_profile_or_bank(channel, number, value);
 }
 
 void OnUSBMidiProgramChange(byte channel, byte number)
@@ -108,6 +110,7 @@ void OnUSBMidiSystemExclusive(byte* array, unsigned size)
   ipMIDISendSystemExclusive(array, size);
   AppleMidiSendSystemExclusive(array, size);
   OSCSendSystemExclusive(array, size);
+  MTC.decodeMTCFullFrame(size, array);
 }
 
 void OnUSBMidiTimeCodeQuarterFrame(byte data)
@@ -119,6 +122,7 @@ void OnUSBMidiTimeCodeQuarterFrame(byte data)
   ipMIDISendTimeCodeQuarterFrame(data);
   AppleMidiSendTimeCodeQuarterFrame(data);
   OSCSendTimeCodeQuarterFrame(data);
+  MTC.decodMTCQuarterFrame(data);
 }
 
 void OnUSBMidiSongPosition(unsigned int beats)
@@ -157,12 +161,13 @@ void OnUSBMidiTuneRequest(void)
 void OnUSBMidiClock(void)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
-
+  
   if (interfaces[PED_DINMIDI].midiOut) DIN_MIDI.sendRealTime(midi::Clock);
   BLESendClock();
   ipMIDISendClock();
   AppleMidiSendClock();
   OSCSendClock();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) bpm = MTC.tapTempo();
 }
 
 void OnUSBMidiStart(void)
@@ -174,6 +179,7 @@ void OnUSBMidiStart(void)
   ipMIDISendStart();
   AppleMidiSendStart();
   OSCSendStart();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendPlay();
 }
 
 void OnUSBMidiContinue(void)
@@ -185,6 +191,7 @@ void OnUSBMidiContinue(void)
   ipMIDISendContinue();
   AppleMidiSendContinue();
   OSCSendContinue();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendContinue();
 }
 
 void OnUSBMidiStop(void)
@@ -196,6 +203,7 @@ void OnUSBMidiStop(void)
   ipMIDISendStop();
   AppleMidiSendStop();
   OSCSendStop();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendStop();
 }
 
 void OnUSBMidiActiveSensing(void)
@@ -231,6 +239,7 @@ void OnSerialMidiNoteOn(byte channel, byte note, byte velocity)
   ipMIDISendNoteOn(note, velocity, channel);
   AppleMidiSendNoteOn(note, velocity, channel);
   OSCSendNoteOn(note, velocity, channel);
+  leds_update(midi::NoteOn, channel, note, velocity);
   if (IS_SHOW_ENABLED(interfaces[PED_DINMIDI].midiIn)) screen_info(midi::NoteOn, note, velocity, channel);
 }
 
@@ -243,6 +252,7 @@ void OnSerialMidiNoteOff(byte channel, byte note, byte velocity)
   ipMIDISendNoteOff(note, velocity, channel);
   AppleMidiSendNoteOff(note, velocity, channel);
   OSCSendNoteOff(note, velocity, channel);
+  leds_update(midi::NoteOff, channel, note, velocity);
   if (IS_SHOW_ENABLED(interfaces[PED_DINMIDI].midiIn)) screen_info(midi::NoteOff, note, velocity, channel);
 }
 
@@ -267,6 +277,7 @@ void OnSerialMidiControlChange(byte channel, byte number, byte value)
   ipMIDISendControlChange(number, value, channel);
   AppleMidiSendControlChange(number, value, channel);
   OSCSendControlChange(number, value, channel);
+  leds_update(midi::ControlChange, channel, number, value);
   if (IS_SHOW_ENABLED(interfaces[PED_DINMIDI].midiIn)) screen_info(midi::ControlChange, number, value, channel);
 }
 
@@ -279,6 +290,7 @@ void OnSerialMidiProgramChange(byte channel, byte number)
   ipMIDISendProgramChange(number, channel);
   AppleMidiSendProgramChange(number, channel);
   OSCSendProgramChange(number, channel);
+  leds_update(midi::ProgramChange, channel, number, 0);
   if (IS_SHOW_ENABLED(interfaces[PED_DINMIDI].midiIn)) screen_info(midi::ProgramChange, number, 0, channel);
 }
 
@@ -315,6 +327,7 @@ void OnSerialMidiSystemExclusive(byte* array, unsigned size)
   ipMIDISendSystemExclusive(array, size);
   AppleMidiSendSystemExclusive(array, size);
   OSCSendSystemExclusive(array, size);
+  MTC.decodeMTCFullFrame(size, array);
 }
 
 void OnSerialMidiTimeCodeQuarterFrame(byte data)
@@ -326,6 +339,7 @@ void OnSerialMidiTimeCodeQuarterFrame(byte data)
   ipMIDISendTimeCodeQuarterFrame(data);
   AppleMidiSendTimeCodeQuarterFrame(data);
   OSCSendTimeCodeQuarterFrame(data);
+  MTC.decodMTCQuarterFrame(data);
 }
 
 void OnSerialMidiSongPosition(unsigned int beats)
@@ -370,6 +384,7 @@ void OnSerialMidiClock(void)
   ipMIDISendClock();
   AppleMidiSendClock();
   OSCSendClock();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) bpm = MTC.tapTempo();
 }
 
 void OnSerialMidiStart(void)
@@ -381,6 +396,7 @@ void OnSerialMidiStart(void)
   ipMIDISendStart();
   AppleMidiSendStart();
   OSCSendStart();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendPlay();
 }
 
 void OnSerialMidiContinue(void)
@@ -392,6 +408,7 @@ void OnSerialMidiContinue(void)
   ipMIDISendContinue();
   AppleMidiSendContinue();
   OSCSendContinue();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendContinue();
 }
 
 void OnSerialMidiStop(void)
@@ -403,6 +420,7 @@ void OnSerialMidiStop(void)
   ipMIDISendStop();
   AppleMidiSendStop();
   OSCSendStop();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendStop();
 }
 
 void OnSerialMidiActiveSensing(void)

@@ -9,9 +9,10 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-#ifdef NOWIFI
+#if !defined(ARDUINOOTA) || defined(NOWIFI)
 #define ota_begin(...)
 #define ota_handle(...)
+#define ota_end(...)
 #else
 
 #include <WiFi.h>
@@ -71,10 +72,16 @@ void ota_begin(const char *hostname) {
     fill_solid(fastleds, LEDS, swap_rgb_order(CRGB::Green, rgbOrder));
     FastLED.show();
   });
+
+  DPRINT("OTA update started\n");
 }
 
 inline void ota_handle() {
   ArduinoOTA.handle();
+}
+
+inline void ota_end() {
+  ArduinoOTA.End();
 }
 
 #endif  // NOWIFI

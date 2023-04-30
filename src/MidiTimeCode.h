@@ -5,13 +5,13 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  ) 
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /  
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/   
-                                                                                   (c) 2018-2019 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
 //                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    /*
-// Thanks to https://github.com/adanselm/padchokola
-
+//  Source code based on https://github.com/adanselm/padchokola
+//
 
 #ifndef _MIDI_CLOCK_MTC_H_
 #define _MIDI_CLOCK_MTC_H_
@@ -21,7 +21,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 // TAP_NUM_READINGS doesn't mean we have to wait for this many samples
 // to change BPM, just that smoothing operates on this value.
-#define TAP_NUM_READINGS 5
+#define TAP_NUM_READINGS 3
 
 /////////////////////////////////////
 class TapTempo
@@ -30,17 +30,17 @@ class TapTempo
     TapTempo();
     ~TapTempo();
 
-    float         tap();
+    unsigned int  tap();
     void          reset();
 
   private:
-    int           mCurrentReadingPos;
-    float         mReadings[TAP_NUM_READINGS];
+    byte          mCurrentReadingPos;
+    unsigned int  mReadings[TAP_NUM_READINGS];
     unsigned long mLastTap;
 
     bool          timeout(const unsigned long currentTime) const;
-    float         calcBpmFromTime(unsigned long currentTime) const;
-    float         computeAverage() const;
+    unsigned int  calcBpmFromTime(unsigned long currentTime) const;
+    unsigned int  computeAverage() const;
 };
 
 /////////////////////////////////////
@@ -66,10 +66,10 @@ class MidiTimeCode
     void loop();
 
     // Only active in Midi Clock mode
-    void        setBpm(const float iBpm);
-    const float tapTempo();
-    byte        getBeat();
-    void        setBeat(byte signature);
+    void               setBpm(const unsigned int iBpm);
+    const unsigned int tapTempo();
+    byte               getBeat();
+    void               setBeat(byte signature);
     //
 
     static void setMode(MidiSynchro newMode);
@@ -159,27 +159,25 @@ class MidiTimeCode
     static void setTimer(const double frequency);
 
   private:
-    static MidiSynchro                mMode;
+    static        MidiSynchro           mMode;
     static void (*mMidiSendCallback1)(byte b);
     static void (*mMidiSendCallback2)(byte b);
 
     // Midi Clock Stuff
-    TapTempo                          mTapTempo;
-    static const int                  mMidiClockPpqn;
-    static volatile unsigned long     mEventTime;
-    static volatile MidiType          mNextEvent;
-    static int                        mPrescaler;
-    static unsigned char              mSelectBits;
-    static volatile byte              mClick;
-    static volatile byte              mBeat;
-    static volatile byte              mTimeSignature;
-    static volatile bool              mPlaying;
+    TapTempo                            mTapTempo;
+    static const    byte                mMidiClockPpqn;
+    static volatile unsigned long       mEventTime;
+    static volatile MidiType            mNextEvent;
+    static volatile byte                mClick;
+    static volatile byte                mBeat;
+    static volatile byte                mTimeSignature;
+    static volatile bool                mPlaying;
 
     // MTC stuff
-    static const SmpteMask            mCurrentSmpteType;
-    static volatile Playhead          mPlayhead;
-    static volatile int               mCurrentQFrame;
-    static const MTCQuarterFrameType  mMTCQuarterFrameTypes[8];
+    static const    SmpteMask           mCurrentSmpteType;
+    static volatile Playhead            mPlayhead;
+    static volatile byte                mCurrentQFrame;
+    static const    MTCQuarterFrameType mMTCQuarterFrameTypes[8];
 };
 
 #endif

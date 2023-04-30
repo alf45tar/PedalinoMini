@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2021 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -873,14 +873,15 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 
         // Display pedals name
         display->setFont(ArialMT_Plain_10);
-        for (byte p = 0; p < PEDALS/2; p++) {
+        const byte Pedals = 6;
+        for (byte p = 0; p < Pedals/2; p++) {
           switch (p) {
             case 0:
               display->setTextAlignment(TEXT_ALIGN_LEFT);
               offsetText = 1;
               offsetBackground = 0;
               break;
-            case PEDALS / 2 - 1:
+            case Pedals / 2 - 1:
               display->setTextAlignment(TEXT_ALIGN_RIGHT);
               offsetText = -1;
               offsetBackground = 2;
@@ -895,7 +896,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           name = String((banks[currentBank][p].pedalName[0] == ':') ? &banks[currentBank][p].pedalName[1] : banks[currentBank][p].pedalName);
           name.replace(String("###"), String(currentMIDIValue[currentBank][p][0]));
           if (IS_SINGLE_PRESS_ENABLED(pedals[p].pressMode) && currentMIDIValue[currentBank][p][0] == banks[currentBank][p].midiValue2) {
-            display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
+            display->fillRect((128 / (Pedals / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
                               12 + y,
                               display->getStringWidth(name) + 1,
                               10);
@@ -903,12 +904,13 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           }
           else
             display->setColor(WHITE);
-          display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 10 + y, name);
+          display->drawString((128 / (Pedals / 2 - 1)) * p + offsetText + x, 10 + y, name);
+          display->setColor(WHITE);
           // Bottom line
-          name = String((banks[currentBank][p + PEDALS / 2].pedalName[0] == ':') ? &banks[currentBank][p + PEDALS / 2].pedalName[1] : banks[currentBank][p + PEDALS / 2].pedalName);
-          name.replace(String("###"), String(currentMIDIValue[currentBank][p + PEDALS / 2][0]));
-          if (IS_SINGLE_PRESS_ENABLED(pedals[p + PEDALS / 2].pressMode) && currentMIDIValue[currentBank][p + PEDALS / 2][0] == banks[currentBank][p + PEDALS / 2].midiValue2) {
-            display->fillRect((128 / (PEDALS / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
+          name = String((banks[currentBank][p + Pedals / 2].pedalName[0] == ':') ? &banks[currentBank][p + Pedals / 2].pedalName[1] : banks[currentBank][p + Pedals / 2].pedalName);
+          name.replace(String("###"), String(currentMIDIValue[currentBank][p + Pedals / 2][0]));
+          if (IS_SINGLE_PRESS_ENABLED(pedals[p + Pedals / 2].pressMode) && currentMIDIValue[currentBank][p + Pedals / 2][0] == banks[currentBank][p + Pedals / 2].midiValue2) {
+            display->fillRect((128 / (Pedals / 2 - 1)) * p - offsetBackground * display->getStringWidth(name) / 2 + offsetText + x,
                               53 + y,
                               display->getStringWidth(name) + 1,
                               10);
@@ -916,7 +918,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           }
           else
             display->setColor(WHITE);
-          display->drawString((128 / (PEDALS / 2 - 1)) * p + offsetText + x, 51 + y, name);
+          display->drawString((128 / (Pedals / 2 - 1)) * p + offsetText + x, 51 + y, name);
           display->setColor(WHITE);
         }
         // Center area
@@ -936,18 +938,18 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
           display->setFont(ArialMT_Plain_10);
           display->setTextAlignment(TEXT_ALIGN_RIGHT);
           display->drawString(128 + x, y, name);
-          for (byte p = 0; p < PEDALS/2; p++) {
+          for (byte p = 0; p < Pedals/2; p++) {
             if (IS_SINGLE_PRESS_ENABLED(pedals[p].pressMode) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
-              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 25 + y, 39, 11, constrain(map2(currentMIDIValue[currentBank][p][0],
+              display->drawProgressBar((128 / (Pedals / 2)) * p + 2 + x, 25 + y, 39, 11, constrain(map2(currentMIDIValue[currentBank][p][0],
                                                                                                        banks[currentBank][p].midiValue1,
                                                                                                        banks[currentBank][p].midiValue2,
                                                                                                        0, 100),
                                                                                                    0, 100));
             }
-            if (IS_SINGLE_PRESS_ENABLED(pedals[p + PEDALS / 2].pressMode) && (banks[currentBank][p + PEDALS / 2].midiMessage != PED_EMPTY)) {
-              display->drawProgressBar((128 / (PEDALS / 2)) * p + 2 + x, 39 + y, 39, 11, constrain(map2(currentMIDIValue[currentBank][p + PEDALS / 2][0],
-                                                                                                       banks[currentBank][p + PEDALS / 2].midiValue1,
-                                                                                                       banks[currentBank][p + PEDALS / 2].midiValue2,
+            if (IS_SINGLE_PRESS_ENABLED(pedals[p + Pedals / 2].pressMode) && (banks[currentBank][p + Pedals / 2].midiMessage != PED_EMPTY)) {
+              display->drawProgressBar((128 / (Pedals / 2)) * p + 2 + x, 39 + y, 39, 11, constrain(map2(currentMIDIValue[currentBank][p + Pedals / 2][0],
+                                                                                                       banks[currentBank][p + Pedals / 2].midiValue1,
+                                                                                                       banks[currentBank][p + Pedals / 2].midiValue2,
                                                                                                        0, 100),
                                                                                                    0, 100));
             }
@@ -1158,13 +1160,25 @@ void display_ui_update_enable()
   uiUpdate = true;
 }
 
-void display_update()
-{
-  if (displayInit)                display_init();
-  if (uiUpdate && !reloadProfile) ui.update();
-}
-
 void display_off()
 {
   display.displayOff();
+}
+
+void display_on()
+{
+  display.displayOn();
+}
+
+void display_update()
+{
+  static bool off = false;
+  
+  if (displayInit)                display_init();
+  if (uiUpdate && !reloadProfile) ui.update();
+
+  displayOff = screenSaverTimeout == 0 ? false : ((millis() - displayOffCountdownStart) > screenSaverTimeout);
+
+  if (!off && displayOff) { display_off(); leds_off();     off = true;  }
+  if (off && !displayOff) { display_on();  leds_refresh(); off = false; }
 }

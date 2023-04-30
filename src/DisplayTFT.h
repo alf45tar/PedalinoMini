@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2022 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -21,6 +21,7 @@ TFT_eSPI    display  = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);
 #endif
 
 #include <WiFi.h>
+#include "Version.h"
 #include "Images.h"
 #include "Fonts.h"
 
@@ -448,102 +449,96 @@ void topOverlay()
     }
   }
 
-/*
   if (millis() < endMillis2) {
     if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
         MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
-
-      display->setFont(ArialMT_Plain_10);
-      display->setTextAlignment(TEXT_ALIGN_CENTER);
-      display->drawString(64, 0, String(bpm) + "BPM");
-      display->setTextAlignment(TEXT_ALIGN_RIGHT);
-      display->setFont(block10x10);
+      byte signature = 4;
       switch (timeSignature) {
         case PED_TIMESIGNATURE_2_4:
-          display->drawString( 98, 0, String(0));
-          display->drawString(108, 0, String(0));
-          break;
-        case PED_TIMESIGNATURE_4_4:
-          display->drawString( 98, 0, String(0));
-          display->drawString(108, 0, String(0));
-          display->drawString(118, 0, String(0));
-          display->drawString(128, 0, String(0));
+          signature = 2;
+          top.drawRoundRect(0 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(1 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
           break;
         case PED_TIMESIGNATURE_3_4:
         case PED_TIMESIGNATURE_3_8:
         case PED_TIMESIGNATURE_6_8:
         case PED_TIMESIGNATURE_9_8:
         case PED_TIMESIGNATURE_12_8:
-          display->drawString( 98, 0, String(0));
-          display->drawString(108, 0, String(0));
-          display->drawString(118, 0, String(0));
+          signature = 3;
+          top.drawRoundRect(0 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(1 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(2 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          break;
+        case PED_TIMESIGNATURE_4_4:
+          signature = 4;
+          top.drawRoundRect(0 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(1 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(2 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(3 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
           break;
       }
       switch (MTC.getBeat()) {
         case 0:
           if (MTC.isPlaying())
-            display->drawString(98, 0, String(2));
+            top.fillRoundRect(0 * top.width() / signature + 4, 4, top.width() / signature - 10, 16, 2, TFT_INDEX_WHITE);
           else
-            display->drawString(98, 0, String(1));
+            top.fillRoundRect(0 * top.width() / signature + top.width() / (2 * signature) - 3, top.height() / 2 - 3, 6, 6, 2, TFT_INDEX_WHITE);
           break;
         case 1:
           if (MTC.isPlaying())
-            display->drawString(108, 0, String(2));
+            top.fillRoundRect(1 * top.width() / signature + 4, 4, top.width() / signature - 10, 16, 2, TFT_INDEX_WHITE);
           else
-            display->drawString(108, 0, String(1));
+            top.fillRoundRect(1 * top.width() / signature + top.width() / (2 * signature) - 3, top.height() / 2 - 3, 6, 6, 2, TFT_INDEX_WHITE);
           break;
         case 2:
           if (MTC.isPlaying())
-            display->drawString(118, 0, String(2));
+            top.fillRoundRect(2 * top.width() / signature + 4, 4, top.width() / signature - 10, 16, 2, TFT_INDEX_WHITE);
           else
-            display->drawString(118, 0, String(1));
+            top.fillRoundRect(2 * top.width() / signature + top.width() / (2 * signature) - 3, top.height() / 2 - 3, 6, 6, 2, TFT_INDEX_WHITE);
           break;
         case 3:
           if (MTC.isPlaying())
-            display->drawString(128, 0, String(2));
+            top.fillRoundRect(3 * top.width() / signature + 4, 4, top.width() / signature - 10, 16, 2, TFT_INDEX_WHITE);
           else
-            display->drawString(128, 0, String(1));
+            top.fillRoundRect(3 * top.width() / signature + top.width() / (2 * signature) - 3, top.height() / 2 - 3, 6, 6, 2, TFT_INDEX_WHITE);
           break;
       }
-
-      //MTC.isPlaying() ? display->setColor(WHITE) : display->setColor(BLACK);
-      switch (timeSignature) {
-        case PED_TIMESIGNATURE_2_4:
-          display->fillRect(64 * MTC.getBeat(), 0, 64, 10);
-          break;
-        case PED_TIMESIGNATURE_4_4:
-          display->drawRect(77 + 13 * 0, 0, 12, 10);
-          display->drawRect(77 + 13 * 1, 0, 12, 10);
-          display->drawRect(77 + 13 * 2, 0, 12, 10);
-          display->drawRect(77 + 13 * 3, 0, 12, 10);
-          if (MTC.isPlaying())
-            display->fillRect(79 + 13 * MTC.getBeat(), 2,  8,  6);
-          else
-            display->drawRect(81 + 13 * MTC.getBeat(), 3,  4,  4);
-          break;
-        case PED_TIMESIGNATURE_3_4:
-        case PED_TIMESIGNATURE_3_8:
-        case PED_TIMESIGNATURE_6_8:
-        case PED_TIMESIGNATURE_9_8:
-        case PED_TIMESIGNATURE_12_8:
-          display->fillRect(43 * MTC.getBeat(), 0, 42, 10);
-          break;
-      }
-      //display->setColor(WHITE);
     }
     else if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
              MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
       char buf[12];
       sprintf(buf, "%02d:%02d:%02d:%02d", MTC.getHours(), MTC.getMinutes(), MTC.getSeconds(), MTC.getFrames());
-      display->setFont(ArialMT_Plain_10);
-      display->setTextAlignment(TEXT_ALIGN_RIGHT);
-      display->drawString(128, 0, buf);
-    }
+      switch (currentProfile) {
+        case 0:
+          top.fillRect(0, 0, top.width(), top.height(), TFT_INDEX_RED);
+          top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_RED);
+          break;
+        case 1:
+          top.fillRect(0, 0, top.width(), top.height(), TFT_INDEX_GREEN);
+          top.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_GREEN);
+          break;
+        case 2:
+          top.fillRect(0, 0, top.width(), top.height(), TFT_INDEX_BLUE);
+          top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLUE);
+          break;
+      }
+      top.fillRect(0, 0, top.width(), top.height(), TFT_INDEX_RED);
+      top.setFreeFont(&FreeSans12pt7b);
+      top.setTextDatum(MC_DATUM);
+      top.drawString(buf, top.width() / 2, top.height() / 2 - 1);
+      /*
+      top.setFreeFont(&FreeSans9pt7b);
+      top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK, true);
+      top.setTextDatum(TL_DATUM);
+      if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster)
+        top.drawString("MTC Master", 0, 0);
+      else if (MTC.getMode() == MidiTimeCode::SynchroMTCSlave)
+        top.drawString("MTC Slave", 0, 0);
+      */
+    }    
   }
-  */
 
   top.pushSprite(0, 0);
-
   top.deleteSprite();
 }
 
@@ -593,6 +588,12 @@ void bottomOverlay()
         m3 = constrain(m2, rmin, rmax);
         p = map2(m3, rmin, rmax, 0, 100);
         display_progress_bar(0, display.height() - 24, display.width(), 24, p);
+        break;
+
+      case midi::Start:
+      case midi::Stop:
+      case midi::Continue:
+        display_progress_bar(0, display.height() - 24, display.width(), 24, 0);
         break;
     }
   }
@@ -673,8 +674,23 @@ void drawFrame1(int16_t x, int16_t y)
           sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
           sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
           break;
+        case midi::Start:
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString("Start", sprite.width() / 2 + x, sprite.height() / 2 + y);
+          break;
+        case midi::Stop:
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString("Stop", sprite.width() / 2 + x, sprite.height() / 2 + y);
+          break;
+        case midi::Continue:
+          sprite.setFreeFont(&FreeSans24pt7b);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString("Continue", sprite.width() / 2 + x, sprite.height() / 2 + y);
+          break;
       }
-      if (m1 != midi::InvalidType) {
+      if ((m1 != midi::InvalidType) && (m1 != midi::Start) && (m1 != midi::Stop) && (m1 != midi::Continue)) {
         sprite.setFreeFont(&FreeSans9pt7b);
         sprite.setTextDatum(ML_DATUM);
         sprite.drawString("Channel", 0 + x, 62 + y);
@@ -722,110 +738,131 @@ void drawFrame1(int16_t x, int16_t y)
   }
   else if (MTC.getMode() == MidiTimeCode::SynchroClockMaster ||
            MTC.getMode() == MidiTimeCode::SynchroClockSlave) {
-    /*
-    display->setFont(ArialMT_Plain_24);
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
-    display->drawString(22 + x, 12 + y, String(bpm));
-    display->setFont(ArialMT_Plain_10);
-    display->drawString(22 + x, 36 + y, "BPM");
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+
+    TFT_eSprite sprite = TFT_eSprite(&display);
+    sprite.setColorDepth(1);
+    sprite.createSprite(display.width(), display.height() - 24);
+    sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
+
+    sprite.setFreeFont(&FreeSans9pt7b);
+    sprite.setTextDatum(ML_DATUM);
+    if (MTC.getMode() == MidiTimeCode::SynchroClockMaster)
+      sprite.drawString("Master", 0, sprite.height() / 4);
+    else if (MTC.getMode() == MidiTimeCode::SynchroClockSlave)
+      sprite.drawString("Slave", 0, sprite.height() / 4);
+
+    sprite.setFreeFont(&FreeSans24pt7b);
+    sprite.setTextDatum(TC_DATUM);
+    sprite.drawString(String(bpm), sprite.width() / 2, 4);        
+    sprite.setFreeFont(&FreeSans9pt7b);
+    sprite.setTextDatum(MC_DATUM);
+    sprite.drawString("BPM", sprite.width() / 2, sprite.height() / 2 - 4);
+    sprite.setFreeFont(&FreeSans9pt7b);
+    sprite.setTextDatum(ML_DATUM);
+
+    sprite.setFreeFont(&FreeSans18pt7b);
+    sprite.setTextDatum(MR_DATUM);
     switch (timeSignature) {
       case PED_TIMESIGNATURE_2_4:
-        display->drawString(128 + x, 36 + y, "2/4");
+        sprite.drawString("2/4", sprite.width(), sprite.height() / 4);
         break;
       case PED_TIMESIGNATURE_4_4:
-        display->drawString(128 + x, 36 + y, "4/4");
+        sprite.drawString("4/4", sprite.width(), sprite.height() / 4);
         break;
       case PED_TIMESIGNATURE_3_4:
-        display->drawString(128 + x, 36 + y, "3/4");
+        sprite.drawString("3/4", sprite.width(), sprite.height() / 4);
         break;
       case PED_TIMESIGNATURE_3_8:
-        display->drawString(128 + x, 36 + y, "3/8");
+        sprite.drawString("3/8", sprite.width(), sprite.height() / 4);
         break;
       case PED_TIMESIGNATURE_6_8:
-        display->drawString(128 + x, 36 + y, "6/8");
+        sprite.drawString("6/8", sprite.width(), sprite.height() / 4);
         break;
       case PED_TIMESIGNATURE_9_8:
-        display->drawString(128 + x, 36 + y, "9/8");
+        sprite.drawString("9/8", sprite.width(), sprite.height() / 4);
         break;
       case PED_TIMESIGNATURE_12_8:
-        display->drawString(128 + x, 36 + y, "12/8");
+        sprite.drawString("12/8", sprite.width(), sprite.height() / 4);
         break;
     }
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
-    if (MTC.getMode() == MidiTimeCode::SynchroClockMaster)
-      display->drawString(68 + x, 36 + y, "Master");
-    else if (MTC.getMode() == MidiTimeCode::SynchroClockSlave)
-      display->drawString(68 + x, 36 + y, "Slave");
-
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->setFont(block);
+    int shift = 0;
     switch (timeSignature) {
       case PED_TIMESIGNATURE_2_4:
-        display->drawString( 68 + x, 16 + x, String(0));
-        display->drawString( 88 + x, 16 + x, String(0));
-        break;
-      case PED_TIMESIGNATURE_4_4:
-        display->drawString( 68 + x, 16 + x, String(0));
-        display->drawString( 88 + x, 16 + x, String(0));
-        display->drawString(108 + x, 16 + x, String(0));
-        display->drawString(128 + x, 16 + x, String(0));
+        sprite.drawRoundRect(5 * sprite.width() / 10 - 40, sprite.height() - 40, 40, 40, 2, TFT_WHITE);
+        sprite.drawRoundRect(7 * sprite.width() / 10 - 40, sprite.height() - 40, 40, 40, 2, TFT_WHITE);
+        shift = 1;
         break;
       case PED_TIMESIGNATURE_3_4:
       case PED_TIMESIGNATURE_3_8:
       case PED_TIMESIGNATURE_6_8:
       case PED_TIMESIGNATURE_9_8:
       case PED_TIMESIGNATURE_12_8:
-        display->drawString( 68 + x, 16 + x, String(0));
-        display->drawString( 88 + x, 16 + x, String(0));
-        display->drawString(108 + x, 16 + x, String(0));
+        sprite.drawRoundRect(4 * sprite.width() / 10 - 40, sprite.height() - 40, 40, 40, 2, TFT_WHITE);
+        sprite.drawRoundRect(6 * sprite.width() / 10 - 40, sprite.height() - 40, 40, 40, 2, TFT_WHITE);
+        sprite.drawRoundRect(8 * sprite.width() / 10 - 40, sprite.height() - 40, 40, 40, 2, TFT_WHITE);
+        shift = 0;
+        break;
+      case PED_TIMESIGNATURE_4_4:
+        sprite.drawRoundRect(3 * sprite.width() / 10 - 40, sprite.height() - 40, 40, 40, 2, TFT_WHITE);
+        sprite.drawRoundRect(5 * sprite.width() / 10 - 40, sprite.height() - 40, 40, 40, 2, TFT_WHITE);
+        sprite.drawRoundRect(7 * sprite.width() / 10 - 40, sprite.height() - 40, 40, 40, 2, TFT_WHITE);
+        sprite.drawRoundRect(9 * sprite.width() / 10 - 40, sprite.height() - 40, 40, 40, 2, TFT_WHITE);
+        shift = -1;
         break;
     }
     switch (MTC.getBeat()) {
       case 0:
         if (MTC.isPlaying())
-          display->drawString( 68 + x, 16 + x, String(2));
+          sprite.fillRoundRect((4 + shift) * sprite.width() / 10 - 40 + 2, sprite.height() - 40 + 2, 36, 36, 2, TFT_WHITE);
         else
-          display->drawString( 68 + x, 16 + x, String(1));
+          sprite.fillRoundRect((4 + shift) * sprite.width() / 10 - 40 + 15, sprite.height() - 40 + 15, 10, 10, 2, TFT_WHITE);
         break;
       case 1:
         if (MTC.isPlaying())
-          display->drawString( 88 + x, 16 + x, String(2));
+          sprite.fillRoundRect((6 + shift) * sprite.width() / 10 - 40 + 2, sprite.height() - 40 + 2, 36, 36, 2, TFT_WHITE);
         else
-          display->drawString( 88 + x, 16 + x, String(1));
+          sprite.fillRoundRect((6 + shift) * sprite.width() / 10 - 40 + 15, sprite.height() - 40 + 15, 10, 10, 2, TFT_WHITE);
         break;
       case 2:
         if (MTC.isPlaying())
-          display->drawString(108 + x, 16 + x, String(2));
+          sprite.fillRoundRect((8 + shift) * sprite.width() / 10 - 40 + 2, sprite.height() - 40 + 2, 36, 36, 2, TFT_WHITE);
         else
-          display->drawString(108 + x, 16 + x, String(1));
+          sprite.fillRoundRect((8 + shift) * sprite.width() / 10 - 40 + 15, sprite.height() - 40 + 15, 10, 10, 2, TFT_WHITE);
         break;
       case 3:
         if (MTC.isPlaying())
-          display->drawString(128 + x, 16 + x, String(2));
+          sprite.fillRoundRect((10 + shift) * sprite.width() / 10 - 40 + 2, sprite.height() - 40 + 2, 36, 36, 2, TFT_WHITE);
         else
-          display->drawString(128 + x, 16 + x, String(1));
+          sprite.fillRoundRect((10 + shift) * sprite.width() / 10 - 40 + 15, sprite.height() - 40 + 15, 10, 10, 2, TFT_WHITE);
         break;
     }
-    ui.disableAutoTransition();
-    */
+    sprite.pushSprite(0, 24);
+    sprite.deleteSprite();
+    //ui.disableAutoTransition();
   }
   else if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
            MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
-    /*
+    
     char buf[12];
     sprintf(buf, "%02d:%02d:%02d:%02d", MTC.getHours(), MTC.getMinutes(), MTC.getSeconds(), MTC.getFrames());
-    display->setFont(ArialMT_Plain_24);
-    display->setTextAlignment(TEXT_ALIGN_CENTER_BOTH);
-    display->drawString(64 + x, 32 + y, buf);
-    display->setFont(ArialMT_Plain_10);
-    display->setTextAlignment(TEXT_ALIGN_RIGHT);
+    TFT_eSprite sprite = TFT_eSprite(&display);
+    sprite.setColorDepth(1);
+    sprite.createSprite(display.width(), display.height() - 24);
+    sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
+    sprite.setFreeFont(&FreeSans24pt7b);
+    sprite.setTextDatum(MC_DATUM);
+    sprite.drawString(buf, sprite.width() / 2, sprite.height() / 2);
+    sprite.setFreeFont(&FreeSans9pt7b);
+    sprite.setTextDatum(BL_DATUM);
+    sprite.drawString("MTC", 0, sprite.height());
+    sprite.setTextDatum(BR_DATUM);
     if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster)
-      display->drawString(128 + x, 0 + y, "Master");
+      sprite.drawString("Master", sprite.width(), sprite.height());
     else if (MTC.getMode() == MidiTimeCode::SynchroMTCSlave)
-      display->drawString(128 + x, 0 + y, "Slave");
-    ui.disableAutoTransition();
-    */
+      sprite.drawString("Slave", sprite.width(), sprite.height());
+    sprite.pushSprite(0, 24);
+    sprite.deleteSprite();
+    //ui.disableAutoTransition();
   }
   else {
     if (scrollingMode) {
@@ -1234,9 +1271,9 @@ void drawFrame3(int16_t x, int16_t y)
   display.setFreeFont(&FreeSans12pt7b);
   display.setTextColor(TFT_WHITE, TFT_BLACK);
   display.setTextDatum(TR_DATUM);
-  long sec = (millis() / 1000) % 60;
-  long min = (millis() / 1000 / 60) % 60;
-  long h   = (millis() / 1000 / 3600);
+  unsigned long sec = (millis() / 1000) % 60;
+  unsigned long min = (millis() / 1000 / 60) % 60;
+  unsigned long h   = (millis() / 1000 / 3600);
   display.drawString(h + String("h ") + min + String("m ") + sec + String("s"), display.width() + x, 86 + y);
 }
 
@@ -1290,8 +1327,26 @@ void display_ui_update_enable()
   uiUpdate = true;
 }
 
+void display_off()
+{
+  digitalWrite(TFT_BL, !TFT_BACKLIGHT_ON);
+
+  display.writecommand(TFT_DISPOFF);
+  display.writecommand(TFT_SLPIN);
+}
+
+void display_on()
+{
+  digitalWrite(TFT_BL, TFT_BACKLIGHT_ON);
+
+  display.writecommand(TFT_DISPON);
+  display.writecommand(TFT_SLPOUT);
+}
+
 void display_update()
 {
+  static bool off = false;
+
   if (interruptCounter3 > 0) {
 
     interruptCounter3 = 0;
@@ -1303,13 +1358,10 @@ void display_update()
       drawFrame1(0, 0);
       bottomOverlay();
     }
+
+    displayOff = screenSaverTimeout == 0 ? false : ((millis() - displayOffCountdownStart) > screenSaverTimeout);
+
+    if (!off && displayOff) { display_off(); leds_off();     off = true;  }
+    if (off && !displayOff) { display_on();  leds_refresh(); off = false; }
   }
-}
-
-void display_off()
-{
-  digitalWrite(TFT_BL, !TFT_BACKLIGHT_ON);
-
-  display.writecommand(TFT_DISPOFF);
-  display.writecommand(TFT_SLPIN);
 }

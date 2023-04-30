@@ -5,19 +5,9 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2021 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
-
-/*
-    ESP32 PedalinoMini™ Mini
-
-      - Serial MIDI
-      - WiFi AppleMIDI a.k.a. RTP-MIDI a.k.a. Network MIDI
-      - ipMIDI
-      - Bluetooth LE MIDI
-      - WiFi OSC
-*/
 
 #ifdef NOWIFI
 #undef WIFI
@@ -54,13 +44,14 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "Pedalino.h"
 #include "TickerTimer.h"
 #include "LedsEffects.h"
+#include "SerialMidiOut.h"
 #include "UdpMidiOut.h"
 #include "BLEMidiOut.h"
+#include "USBMidiIn.h"
 #include "SerialMidiIn.h"
 #include "UdpMidiIn.h"
 #include "BLEMidiIn.h"
 #include "Config.h"
-#include "DisplayLCD.h"
 #ifdef TTGO_T_DISPLAY
 #include "DisplayTFT.h"
 #else
@@ -69,10 +60,50 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include "Controller.h"
 #include "OTAHTTPS.h"
 #include "ImprovSerial.h"
+#include "ImprovBLE.h"
 #include "OTAUpdateArduino.h"
 #include "WifiConnect.h"
 #include "WebConfigAsync.h"
 
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 0, 0)
+#if CONFIG_IDF_TARGET_ESP32
+#include <esp32/rom/rtc.h>
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include <esp32s2/rom/rtc.h>
+#elif CONFIG_IDF_TARGET_ESP32C3
+#include <esp32c3/rom/rtc.h>
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include <esp32s3/rom/rtc.h>
+#else 
+#error Target CONFIG_IDF_TARGET is not supported
+#endif
+#else // ESP32 Before IDF 4.0
+#include <rom/rtc.h>
+#endif
+
+void verbose_print_reset_reason(int reason)
+{
+  switch (reason)
+  {
+    case 1  : DPRINTLN("POWERON_RESET Vbat power on reset");                                break;
+    case 3  : DPRINTLN("SW_RESET Software reset digital core");                             break;
+    case 4  : DPRINTLN("OWDT_RESET Legacy watch dog reset digital core");                   break;
+    case 5  : DPRINTLN("DEEPSLEEP_RESET Deep Sleep reset digital core");                    break;
+    case 6  : DPRINTLN("SDIO_RESET Reset by SLC module, reset digital core");               break;
+    case 7  : DPRINTLN("TG0WDT_SYS_RESET Timer Group0 Watch dog reset digital core");       break;
+    case 8  : DPRINTLN("TG1WDT_SYS_RESET Timer Group1 Watch dog reset digital core");       break;
+    case 9  : DPRINTLN("RTCWDT_SYS_RESET RTC Watch dog Reset digital core");                break;
+    case 10 : DPRINTLN("INTRUSION_RESET Instrusion tested to reset CPU");                   break;
+    case 11 : DPRINTLN("TGWDT_CPU_RESET Time Group reset CPU");                             break;
+    case 12 : DPRINTLN("SW_CPU_RESET Software reset CPU");                                  break;
+    case 13 : DPRINTLN("RTCWDT_CPU_RESET RTC Watch dog Reset CPU");                         break;
+    case 14 : DPRINTLN("EXT_CPU_RESET for APP CPU, reseted by PRO CPU");                    break;
+    case 15 : DPRINTLN("RTCWDT_BROWN_OUT_RESET Reset when the vdd voltage is not stable");  break;
+    case 16 : DPRINTLN("RTCWDT_RTC_RESET RTC Watch dog reset digital core and rtc module"); break;
+    default : DPRINTLN("NO_MEAN");
+  }
+}
 
 void IRAM_ATTR onButtonLeft()
 {
@@ -114,6 +145,7 @@ void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t but
       }
       */
       currentBank = (currentBank == BANKS - 1 ? 0 : currentBank + 1);
+      update_current_step();
       leds_refresh();
       break;
 
@@ -125,6 +157,7 @@ void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t but
       }
       */
       currentBank = (currentBank == 0 ? BANKS - 1 : currentBank - 1);
+      update_current_step();
       leds_refresh();
       break;
 
@@ -190,8 +223,6 @@ void wifi_and_battery_level() {
 
 void setup()
 {
-  //esp_spiram_add_to_heapalloc();
-
 #ifdef DEBUG_ESP_PORT
   //esp_log_level_set("*",      ESP_LOG_ERROR);
   //esp_log_level_set("wifi",   ESP_LOG_WARN);
@@ -203,6 +234,22 @@ void setup()
   SERIALDEBUG.begin(115200);
   SERIALDEBUG.setDebugOutput(true);   // enable diagnostic output and printf() output
 #endif
+
+  DPRINT("%s - Version %d.%d.%d\n", MODEL, PEDALINO_VERSION_MAJOR, PEDALINO_VERSION_MINOR, PEDALINO_VERSION_PATCH);
+  DPRINT("CPU0 reset reason: ");
+  verbose_print_reset_reason(rtc_get_reset_reason(0));
+  DPRINT("CPU1 reset reason: ");
+  verbose_print_reset_reason(rtc_get_reset_reason(1));
+
+  if (psramFound()) {
+    if (psramInit()) {
+      DPRINT("The PSRAM is correctly initialized\n");
+    } else {
+      DPRINT("PSRAM found but PSRAM init fail");
+    }
+  } else {
+    DPRINT("PSRAM not found\n");
+  }
 
   DPRINT("ChipRevision %d, CPU Freq %d MHz, SDK Version %s\n",ESP.getChipRevision(), ESP.getCpuFreqMHz(), ESP.getSdkVersion());
   DPRINT("Flash Size %d, Flash Speed %d Hz\n",ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
@@ -233,6 +280,8 @@ void setup()
     const esp_partition_t* nvs = esp_partition_get(pi);
     DPRINT("%s Total %d\n", nvs->label, nvs->size);
     esp_partition_iterator_release(pi);
+  } else {
+    DPRINT("'nvs' partition not found\n");
   }
 
   DPRINT("PlatformIO Built Environment: %s\n", xstr(PLATFORMIO_ENV));
@@ -243,44 +292,10 @@ void setup()
   DPRINTLN("|    |   \\  ___// /_/ | / __ \\|  |_|  |   |  (  <_> )    Y    \\  |   |  \\  | (  (     |    |/    Y    \\   )  )");
   DPRINTLN("|____|    \\___  >____ |(____  /____/__|___|  /\\____/\\____|__  /__|___|  /__|  \\  \\    |____|\\____|__  /  /  / ");
   DPRINTLN("              \\/     \\/     \\/             \\/               \\/        \\/       \\__\\                 \\/  /__/ ");
-  DPRINTLN("                                                                                  (c) 2018-2022 alf45star      ");
+  DPRINTLN("                                                                                  (c) 2018-2023 alf45star     ");
   DPRINTLN("                                                                      https://github.com/alf45tar/PedalinoMini");
   DPRINT("\nHostname: %s\n", host.c_str());
   DPRINT("PSRAM%sfound\n", psramFound() ? " " : " not ");
-
-#ifdef BLE
-  if (bleEnabled) {
-    // Release Bluetooth Classic memory
-    long before = ESP.getFreeHeap();
-    esp_bt_controller_disable();
-    esp_bt_controller_deinit();
-    esp_bt_mem_release(ESP_BT_MODE_CLASSIC_BT);
-    long after = ESP.getFreeHeap();
-    DPRINT("Bluetooth Classic disabled: %ld bytes released\n", after - before);
-  }
-  else {
-    // Release Bluetooth memory
-    long before = ESP.getFreeHeap();
-    esp_bluedroid_disable();
-    esp_bluedroid_deinit();
-    esp_bt_controller_disable();
-    esp_bt_controller_deinit();
-    esp_bt_mem_release(ESP_BT_MODE_BTDM);
-    long after = ESP.getFreeHeap();
-    DPRINT("Bluetooth disabled: %ld bytes released\n", after - before);
-  }
-#endif
-
-#ifdef WIFI
-  if (!wifiEnabled) {
-    // Release WiFi memory
-    long before = ESP.getFreeHeap();
-    WiFi.mode(WIFI_OFF);
-    long after = ESP.getFreeHeap();
-    DPRINT("WiFi disabled: %ld bytes released\n", after - before);
-  }
-#endif
-
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
 
@@ -310,7 +325,6 @@ void setup()
   pinMode(FACTORY_DEFAULT_PIN, INPUT_PULLUP);
   unsigned long milliStart = millis();
   unsigned long duration = 0;
-  lcdClear();
   byte newBootMode = PED_BOOT_UNKNOWN;
   if (digitalRead(FACTORY_DEFAULT_PIN) == LOW) {
     newBootMode = PED_BOOT_NORMAL;
@@ -346,22 +360,11 @@ void setup()
       display_progress_bar_title2("Hold button for", "Factory Default");
     }
     DPRINT("#");
-    lcdSetCursor(duration / 500, 0);
-    lcdPrint("#");
     display_progress_bar_update(duration, 16000);
     duration = millis() - milliStart;
   }
 
   //display_clear();
-
-  DPRINT("\n");
-  switch ((newBootMode == PED_BOOT_UNKNOWN) ? bootMode : newBootMode) {
-    case PED_BOOT_NORMAL:     DPRINT("Boot NORMAL\n");  break;
-    case PED_BOOT_BLE:        DPRINT("Boot BLE\n");     break;
-    case PED_BOOT_WIFI:       DPRINT("Boot WIFI\n");    break;
-    case PED_BOOT_AP:         DPRINT("Boot AP+BLE\n");  break;
-    case PED_BOOT_AP_NO_BLE:  DPRINT("Boot AP\n");      break;
-  }
 
   if (newBootMode != PED_BOOT_UNKNOWN && newBootMode != bootMode) {
     switch (newBootMode) {
@@ -373,9 +376,16 @@ void setup()
         bootMode = newBootMode;
         eeprom_update_boot_mode(bootMode);
         break;
-      default:
-        break;
     }
+  }
+  newBootMode = (newBootMode == PED_BOOT_UNKNOWN) ? bootMode : newBootMode;
+  DPRINT("\n");
+  switch (newBootMode) {
+    case PED_BOOT_NORMAL:     DPRINT("Boot NORMAL\n");  break;
+    case PED_BOOT_BLE:        DPRINT("Boot BLE\n");     break;
+    case PED_BOOT_WIFI:       DPRINT("Boot WIFI\n");    break;
+    case PED_BOOT_AP:         DPRINT("Boot AP+BLE\n");  break;
+    case PED_BOOT_AP_NO_BLE:  DPRINT("Boot AP\n");      break;
   }
   switch (newBootMode) {
     case PED_BOOT_NORMAL:
@@ -429,8 +439,6 @@ void setup()
     case PED_FACTORY_DEFAULT:
       if (duration > 15000) {
         DPRINT("\nReset EEPROM to factory default\n");
-        lcdSetCursor(0, 1);
-        lcdPrint("Factory default ");
         eeprom_initialize();
         ESP.restart();
       }
@@ -440,21 +448,52 @@ void setup()
 
   }
 
+#ifdef BLE
+  if (bleEnabled) {
+    // Release Bluetooth Classic memory
+    long before = ESP.getFreeHeap();
+    esp_bt_controller_disable();
+    esp_bt_controller_deinit();
+    esp_bt_mem_release(ESP_BT_MODE_CLASSIC_BT);
+    long after = ESP.getFreeHeap();
+    DPRINT("Bluetooth Classic disabled: %ld bytes released\n", after - before);
+  }
+  else {
+    // Release Bluetooth memory
+    long before = ESP.getFreeHeap();
+    esp_bluedroid_disable();
+    esp_bluedroid_deinit();
+    esp_bt_controller_disable();
+    esp_bt_controller_deinit();
+    esp_bt_mem_release(ESP_BT_MODE_BTDM);
+    long after = ESP.getFreeHeap();
+    DPRINT("Bluetooth disabled: %ld bytes released\n", after - before);
+  }
+#endif
+
+#ifdef WIFI
+  if (!wifiEnabled) {
+    // Release WiFi memory
+    long before = ESP.getFreeHeap();
+    WiFi.mode(WIFI_OFF);
+    long after = ESP.getFreeHeap();
+    DPRINT("WiFi disabled: %ld bytes released\n", after - before);
+  }
+#endif
+
   reloadProfile = true;
   controller_run();
+
+#ifdef ARDUINO_BPI_LEAF_S33
+  // Initiate USB Device MIDI communications, listen to all channels and turn Thru on/off
+  usb_device_midi_connect();             // On receiving MIDI data callbacks setup
+  DPRINT("USB Device MIDI started\n");
+#endif
 
   // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
   serial_midi_connect();              // On receiving MIDI data callbacks setup
   DPRINT("USB MIDI started\n");
   DPRINT("DIN MIDI started\n");
-
-#ifdef BLE
-  if (bleEnabled) {
-    // BLE MIDI service advertising
-    ble_midi_start_service();
-    DPRINT("BLE MIDI service advertising started\n");
-  }
- #endif
 
 #ifdef BLUFI
   blufi_config();
@@ -463,6 +502,9 @@ void setup()
 #ifdef WIFI
   if (wifiEnabled) {
     WiFi.persistent(false);
+#ifdef ARDUINO_BPI_LEAF_S3    
+    WiFi.useStaticBuffers(true);
+#endif
     WiFi.onEvent(WiFiEvent);
     if (bootMode == PED_BOOT_AP || bootMode == PED_BOOT_AP_NO_BLE) {
       DPRINT("Skipped connection to last AP and/or SmartConfig/WPS setup\n");
@@ -480,6 +522,19 @@ void setup()
   }
 #endif
 
+#ifdef BLE
+  if (bleEnabled) {
+    // BLE MIDI service advertising
+    ble_midi_start_service();
+#ifdef BLECLIENT
+    DPRINT("BLE MIDI service connection started (client mode)\n");
+#else
+    DPRINT("BLE MIDI service advertising started (server mode)\n");
+#endif
+  }
+#endif
+
+  set_initial_led_color();
 
 #ifdef LEFT_PIN
   pinMode(LEFT_PIN, INPUT_PULLUP);
@@ -494,7 +549,7 @@ void setup()
   bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
   bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
   bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
-  bootButtonConfig.setDebounceDelay(DEBOUNCE_INTERVAL);
+  bootButtonConfig.setDebounceDelay(debounceInterval);
   bootButtonConfig.setClickDelay(pressTime);
   bootButtonConfig.setDoubleClickDelay(doublePressTime);
   bootButtonConfig.setLongPressDelay(longPressTime);
@@ -560,21 +615,24 @@ void loop()
 
   bootButton.check();
 
-  screen_update();
-
   MTC.loop();
 
   // Check whether the input has changed since last time, if so, send the new value over MIDI
   controller_run();
 
   // Listen to incoming messages
+#ifdef ARDUINO_BPI_LEAF_S33
+  if (interfaces[PED_USBDEVICEMIDI].midiIn && USB_DEVICE_MIDI.read())
+    DPRINTMIDI("USB DEVICE MIDI", USB_DEVICE_MIDI.getType(), USB_DEVICE_MIDI.getChannel(), USB_DEVICE_MIDI.getData1(), USB_DEVICE_MIDI.getData2());
+#endif
+
   if (interfaces[PED_USBMIDI].midiIn && USB_MIDI.read())
     DPRINTMIDI("USB MIDI", USB_MIDI.getType(), USB_MIDI.getChannel(), USB_MIDI.getData1(), USB_MIDI.getData2());
 
   if (interfaces[PED_DINMIDI].midiIn && DIN_MIDI.read())
     DPRINTMIDI("DIN MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
 
-#ifdef BLE
+#if defined(BLE) && !defined(BLECLIENT)
   if (bleEnabled) {
     if (interfaces[PED_BLEMIDI].midiIn && BLE_MIDI.read())
       DPRINTMIDI("BLE MIDI", BLE_MIDI.getType(), BLE_MIDI.getChannel(), BLE_MIDI.getData1(), BLE_MIDI.getData2());
@@ -594,10 +652,8 @@ void loop()
 
     http_run();
 
-#ifdef ARDUINOOTA
     // Run OTA update service
     ota_handle();
-#endif
 
     // WiFi Provisioning
     if (improv_serial::global_improv_serial.loop()) {
@@ -608,8 +664,6 @@ void loop()
       DPRINT("Password    : %s\n", wifiPassword.c_str());
 
       eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
-      //delay(2000);    // Restart only after all changes have been committed to EEPROM
-      //ESP.restart();
     }
   }
 #endif // WIFI
@@ -619,7 +673,7 @@ void loop()
   // Update display
   display_update();
 
-  if (scrollingMode) {
+  if (scrollingMode && !displayOff) {
     switch (currentProfile) {
       case 0:
         //blendwave();

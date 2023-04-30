@@ -5,11 +5,11 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2022 alf45star
+                                                                                   (c) 2018-2023 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
 */
 
-//    Source code based on improv_serial_component.cpp from https://github.com/esphome/esphome
+//    Source code based on https://github.com/esphome/esphome/tree/dev/esphome/components/improv_serial
 
 #include "ImprovSerial.h"
 
@@ -17,7 +17,7 @@ namespace improv_serial {
 
   static const char *const TAG = "improv_serial";
 
-  void ImprovSerial::setup(const String& firmware, const String& version, const String& variant, const String& name, HardwareSerial *serial) {
+  void ImprovSerial::setup(const String& firmware, const String& version, const String& variant, const String& name, Stream *serial) {
     this->hw_serial_        = serial;
     this->firmware_name_    = firmware;
     this->firmware_version_ = version;
@@ -102,7 +102,7 @@ namespace improv_serial {
   bool ImprovSerial::parse_improv_serial_byte_(uint8_t byte) {
     size_t at = this->rx_buffer_.size();
     this->rx_buffer_.push_back(byte);
-    ESP_LOGD(TAG, "Improv Serial byte: 0x%02X", byte);
+    ESP_LOGI(TAG, "Improv Serial byte: 0x%02X", byte);
     const uint8_t *raw = &this->rx_buffer_[0];
     if (at == 0)
       return byte == 'I';
@@ -166,7 +166,7 @@ namespace improv_serial {
         this->command_.command  = command.command;
         this->command_.ssid     = command.ssid;
         this->command_.password = command.password;
-        ESP_LOGD(TAG, "Received Improv wifi settings ssid=%s, password=" LOG_SECRET("%s"), command.ssid.c_str(), command.password.c_str());
+        ESP_LOGI(TAG, "Received Improv wifi settings ssid=%s, password=%s", command.ssid.c_str(), command.password.c_str());
         return true;
       }
       case improv::GET_CURRENT_STATE:
@@ -179,6 +179,24 @@ namespace improv_serial {
       case improv::GET_DEVICE_INFO: {
         std::vector<uint8_t> info = this->build_version_info_();
         this->send_response_(info);
+        return true;
+      }
+      case improv::GET_WIFI_NETWORKS: {
+        std::vector<std::string> networks;
+        int net = WiFi.scanNetworks();
+        for (int i = 0; i < net; i++) {
+          if (WiFi.SSID(i).isEmpty()) continue;
+          // Skip duplicates
+          const std::string &ssid = WiFi.SSID(i).c_str();
+          if (std::find(networks.begin(), networks.end(), ssid) != networks.end()) continue;
+          networks.push_back(ssid);
+          // Send each ssid separately to avoid overflowing the buffer
+          std::vector<uint8_t> data = improv::build_rpc_response(improv::GET_WIFI_NETWORKS, {WiFi.SSID(i), String(WiFi.RSSI(i)), WiFi.encryptionType(i) == WIFI_AUTH_OPEN ? String("NO") : String("YES")}, false);
+          this->send_response_(data);
+        }
+        // Send empty response to signify the end of the list.
+        std::vector<uint8_t> data = improv::build_rpc_response(improv::GET_WIFI_NETWORKS, std::vector<String>{}, false);
+        this->send_response_(data);
         return true;
       }
       default: {
