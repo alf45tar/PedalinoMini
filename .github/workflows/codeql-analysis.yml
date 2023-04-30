@@ -78,8 +78,8 @@ jobs:
         
     - name: Run PlatformIO build on selected platforms
       run: |
-        pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
-        pio run -t buildfs -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit
+        pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit -e bpi-leaf-s3
+        pio run -t buildfs -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit -e bpi-leaf-s3
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
