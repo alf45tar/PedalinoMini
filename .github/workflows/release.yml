@@ -40,7 +40,7 @@ jobs:
         cp .pio/build/esp32doit-devkit-v1/partitions.bin  ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-partitions.bin
         cp .pio/build/esp32doit-devkit-v1/firmware.bin    ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-firmware.bin
         cp .pio/build/esp32doit-devkit-v1/spiffs.bin      ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-spiffs.bin
-        cp ./manifest/template.json ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}.json
+        cp ./manifest/template_esp32.json ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/esp32doit-devkit-v1/g'              ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/ttgo-t-eight/*
@@ -49,7 +49,7 @@ jobs:
         cp .pio/build/ttgo-t-eight/partitions.bin         ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-partitions.bin
         cp .pio/build/ttgo-t-eight/firmware.bin           ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-firmware.bin
         cp .pio/build/ttgo-t-eight/spiffs.bin             ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-spiffs.bin
-        cp ./manifest/template.json ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}.json
+        cp ./manifest/template_esp32.json ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/ttgo-t-eight/g'                     ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/ttgo-t-display/*
@@ -58,7 +58,7 @@ jobs:
         cp .pio/build/ttgo-t-display/partitions.bin       ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-partitions.bin
         cp .pio/build/ttgo-t-display/firmware.bin         ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-firmware.bin
         cp .pio/build/ttgo-t-display/spiffs.bin           ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-spiffs.bin
-        cp ./manifest/template.json ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}.json
+        cp ./manifest/template_esp32.json ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/ttgo-t-display/g'                   ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/heltec_wifi_kit_32/*
@@ -67,7 +67,7 @@ jobs:
         cp .pio/build/heltec_wifi_kit_32/partitions.bin   ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-partitions.bin
         cp .pio/build/heltec_wifi_kit_32/firmware.bin     ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-firmware.bin
         cp .pio/build/heltec_wifi_kit_32/spiffs.bin       ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-spiffs.bin
-        cp ./manifest/template.json ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.json
+        cp ./manifest/template_esp32.json ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/heltec_wifi_kit_32/g'               ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/esp-wrover-kit/*
@@ -76,7 +76,7 @@ jobs:
         cp .pio/build/esp-wrover-kit/partitions.bin       ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-partitions.bin
         cp .pio/build/esp-wrover-kit/firmware.bin         ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-firmware.bin
         cp .pio/build/esp-wrover-kit/spiffs.bin           ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-spiffs.bin
-        cp ./manifest/template.json ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
+        cp ./manifest/template_esp32.json ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/esp-wrover-kit/g'                   ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/bpi-leaf-s3/*
@@ -85,7 +85,7 @@ jobs:
         cp .pio/build/bpi-leaf-s3/partitions.bin       ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}-partitions.bin
         cp .pio/build/bpi-leaf-s3/firmware.bin         ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}-firmware.bin
         cp .pio/build/bpi-leaf-s3/spiffs.bin           ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}-spiffs.bin
-        cp ./manifest/template.json ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}.json
+        cp ./manifest/template_esp32s3.json ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/bpi-leaf-s3/g'                   ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}.json
 
