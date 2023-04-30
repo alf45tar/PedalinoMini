@@ -1014,7 +1014,7 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
       lastLedColor[currentBank][l] = fastleds[l];
       DPRINT("--------------------------------------------------\n");
       currentMIDIValue[bank][pedal][button] = channel;
-      lastMIDIMessage[currentBank] = {message == PED_SEQUENCE_STEP_BY_STEP_FWD ? PED_SEQUENCE_STEP_BY_STEP_FWD : PED_SEQUENCE_STEP_BY_STEP_REV, code, value, channel};
+      lastMIDIMessage[currentBank] = {(byte)(message == PED_SEQUENCE_STEP_BY_STEP_FWD ? PED_SEQUENCE_STEP_BY_STEP_FWD : PED_SEQUENCE_STEP_BY_STEP_REV), code, value, channel};
       break;
   }
 }
