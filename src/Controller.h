@@ -1333,8 +1333,8 @@ void fire_action(action* act, byte p, byte i, byte e)
 #ifdef WIFI
               esp_wifi_stop();
 #endif
-              //adc_power_off();
-              adc_power_release();
+              adc_power_off();
+              //adc_power_release();
               delay(200);
               esp_deep_sleep_start();
               break;

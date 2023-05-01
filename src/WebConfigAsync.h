@@ -5831,8 +5831,8 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     esp_bt_controller_disable();
 #endif
     esp_wifi_stop();
-    //adc_power_off();
-    adc_power_release();
+    adc_power_off();
+    //adc_power_release();
     delay(200);
     esp_deep_sleep_start();
   }
