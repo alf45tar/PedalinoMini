@@ -1,0 +1,16 @@
+{
+  "name": "PedalinoMini™",
+  "version": "3.1.5",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/3.1.5/firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-3.1.5-bootloader.bin",  "offset": 4096 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/3.1.5/firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-3.1.5-partitions.bin",  "offset": 32768 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/3.1.5/firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-3.1.5-firmware.bin",    "offset": 65536 },
+        { "path": "https://raw.githubusercontent.com/alf45tar/PedalinoMini/3.1.5/firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-3.1.5-spiffs.bin",      "offset": 3932160 }
+      ]
+    }
+  ]
+}
