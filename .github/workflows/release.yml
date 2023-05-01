@@ -37,7 +37,7 @@ jobs:
         rm -rf ./firmware/esp32doit-devkit-v1/*
         echo ${{ github.event.inputs.tag }} > ./firmware/esp32doit-devkit-v1/version.txt
         python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
-                                                                -o ./firmware/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                -o ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-firmware.bin \
                                                                 --flash_mode dio \
                                                                 --flash_freq 80m \
                                                                 --flash_size 4MB \
@@ -53,7 +53,7 @@ jobs:
         rm -rf ./firmware/ttgo-t-eight/*
         echo ${{ github.event.inputs.tag }} > ./firmware/ttgo-t-eight/version.txt
         python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
-                                                                -o ./firmware/ttgo-t-eight-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                -o ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-firmware.bin \
                                                                 --flash_mode dio \
                                                                 --flash_freq 80m \
                                                                 --flash_size 4MB \
@@ -69,7 +69,7 @@ jobs:
         rm -rf ./firmware/ttgo-t-display/*
         echo ${{ github.event.inputs.tag }} > ./firmware/ttgo-t-display/version.txt
         python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
-                                                                -o ./firmware/ttgo-t-display-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                -o ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-firmware.bin \
                                                                 --flash_mode dio \
                                                                 --flash_freq 80m \
                                                                 --flash_size 4MB \
@@ -85,7 +85,7 @@ jobs:
         rm -rf ./firmware/heltec_wifi_kit_32/*
         echo ${{ github.event.inputs.tag }} > ./firmware/heltec_wifi_kit_32/version.txt
         python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
-                                                                -o ./firmware/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                -o ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-firmware.bin \
                                                                 --flash_mode dio \
                                                                 --flash_freq 80m \
                                                                 --flash_size 4MB \
@@ -101,7 +101,7 @@ jobs:
         rm -rf ./firmware/esp-wrover-kit/*
         echo ${{ github.event.inputs.tag }} > ./firmware/esp-wrover-kit/version.txt
         python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
-                                                                -o ./firmware/esp-wrover-kit-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                -o ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-firmware.bin \
                                                                 --flash_mode dio \
                                                                 --flash_freq 80m \
                                                                 --flash_size 4MB \
