@@ -34,8 +34,8 @@ jobs:
 
     - name: Copy binary files
       run: |
-        ~/.platformio/penv/bin/python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip ESP32 elf2image ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/bin/bootloader_dio_40m.elf
-        ~/.platformio/penv/bin/python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip ESP32S3 elf2image ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/bin/bootloader_dio_80m.elf
+        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip ESP32 elf2image ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/bin/bootloader_dio_40m.elf
+        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip ESP32S3 elf2image ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/bin/bootloader_dio_80m.elf
         rm -rf ./firmware/esp32doit-devkit-v1/*
         echo ${{ github.event.inputs.tag }} > ./firmware/esp32doit-devkit-v1/version.txt
         cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/bin/bootloader_dio_40m.bin ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-bootloader.bin
