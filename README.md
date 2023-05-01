@@ -614,7 +614,7 @@ During normal operation
 
 On TTGO T-Eight replace BOOT button with CENTER button.
 
-# End User Built (oldest first)
+## End User Built (oldest first)
 
 https://github.com/marosell
 ![marosell](https://user-images.githubusercontent.com/1125586/65741408-f1188b80-e0b9-11e9-868f-e65c7d6db10b.JPG)
