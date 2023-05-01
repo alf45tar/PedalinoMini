@@ -34,58 +34,94 @@ jobs:
 
     - name: Copy binary files
       run: |
+        ls -la ~/.platformio/packages/
         rm -rf ./firmware/esp32doit-devkit-v1/*
         echo ${{ github.event.inputs.tag }} > ./firmware/esp32doit-devkit-v1/version.txt
-        cp ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-bootloader.bin
-        cp .pio/build/esp32doit-devkit-v1/partitions.bin  ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-partitions.bin
-        cp .pio/build/esp32doit-devkit-v1/firmware.bin    ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-firmware.bin
-        cp .pio/build/esp32doit-devkit-v1/spiffs.bin      ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-spiffs.bin
+        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
+                                                                -o ./firmware/esp32doit-devkit-v1-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                --flash_mode dio \
+                                                                --flash_freq 80m \
+                                                                --flash_size 4MB \
+                                                                0x1000 ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_80m.bin \
+                                                                0x8000 partitions.bin \
+                                                                0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+                                                                0x10000 firmware.bin \
+                                                                0x3c0000 spiffs.bin
         cp ./manifest/template_esp32.json ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/esp32doit-devkit-v1/g'              ./firmware/esp32doit-devkit-v1/esp32doit-devkit-v1-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/ttgo-t-eight/*
         echo ${{ github.event.inputs.tag }} > ./firmware/ttgo-t-eight/version.txt
-        cp ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-bootloader.bin
-        cp .pio/build/ttgo-t-eight/partitions.bin         ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-partitions.bin
-        cp .pio/build/ttgo-t-eight/firmware.bin           ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-firmware.bin
-        cp .pio/build/ttgo-t-eight/spiffs.bin             ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}-spiffs.bin
+        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
+                                                                -o ./firmware/ttgo-t-eight-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                --flash_mode dio \
+                                                                --flash_freq 80m \
+                                                                --flash_size 4MB \
+                                                                0x1000 ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_80m.bin \
+                                                                0x8000 partitions.bin \
+                                                                0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+                                                                0x10000 firmware.bin \
+                                                                0x3c0000 spiffs.bin
         cp ./manifest/template_esp32.json ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/ttgo-t-eight/g'                     ./firmware/ttgo-t-eight/ttgo-t-eight-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/ttgo-t-display/*
         echo ${{ github.event.inputs.tag }} > ./firmware/ttgo-t-display/version.txt
-        cp ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-bootloader.bin
-        cp .pio/build/ttgo-t-display/partitions.bin       ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-partitions.bin
-        cp .pio/build/ttgo-t-display/firmware.bin         ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-firmware.bin
-        cp .pio/build/ttgo-t-display/spiffs.bin           ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}-spiffs.bin
+        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
+                                                                -o ./firmware/ttgo-t-display-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                --flash_mode dio \
+                                                                --flash_freq 80m \
+                                                                --flash_size 4MB \
+                                                                0x1000 ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_80m.bin \
+                                                                0x8000 partitions.bin \
+                                                                0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+                                                                0x10000 firmware.bin \
+                                                                0x3c0000 spiffs.bin
         cp ./manifest/template_esp32.json ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/ttgo-t-display/g'                   ./firmware/ttgo-t-display/ttgo-t-display-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/heltec_wifi_kit_32/*
         echo ${{ github.event.inputs.tag }} > ./firmware/heltec_wifi_kit_32/version.txt
-        cp ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-bootloader.bin
-        cp .pio/build/heltec_wifi_kit_32/partitions.bin   ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-partitions.bin
-        cp .pio/build/heltec_wifi_kit_32/firmware.bin     ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-firmware.bin
-        cp .pio/build/heltec_wifi_kit_32/spiffs.bin       ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-spiffs.bin
+        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
+                                                                -o ./firmware/heltec_wifi_kit_32-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                --flash_mode dio \
+                                                                --flash_freq 80m \
+                                                                --flash_size 4MB \
+                                                                0x1000 ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_80m.bin \
+                                                                0x8000 partitions.bin \
+                                                                0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+                                                                0x10000 firmware.bin \
+                                                                0x3c0000 spiffs.bin
         cp ./manifest/template_esp32.json ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/heltec_wifi_kit_32/g'               ./firmware/heltec_wifi_kit_32/heltec_wifi_kit_32-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/esp-wrover-kit/*
         echo ${{ github.event.inputs.tag }} > ./firmware/esp-wrover-kit/version.txt
-        cp ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_40m.bin ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-bootloader.bin
-        cp .pio/build/esp-wrover-kit/partitions.bin       ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-partitions.bin
-        cp .pio/build/esp-wrover-kit/firmware.bin         ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-firmware.bin
-        cp .pio/build/esp-wrover-kit/spiffs.bin           ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}-spiffs.bin
+        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32 merge_bin \
+                                                                -o ./firmware/esp-wrover-kit-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                --flash_mode dio \
+                                                                --flash_freq 80m \
+                                                                --flash_size 4MB \
+                                                                0x1000 ~/.platformio/packages/framework-arduinoespressif32-3.10006.210326/tools/sdk/bin/bootloader_dio_80m.bin \
+                                                                0x8000 partitions.bin \
+                                                                0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+                                                                0x10000 firmware.bin \
+                                                                0x3c0000 spiffs.bin
         cp ./manifest/template_esp32.json ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/esp-wrover-kit/g'                   ./firmware/esp-wrover-kit/esp-wrover-kit-${{ github.event.inputs.tag }}.json
         rm -rf ./firmware/bpi-leaf-s3/*
         echo ${{ github.event.inputs.tag }} > ./firmware/bpi-leaf-s3/version.txt
-        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip ESP32S3 elf2image ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/bin/bootloader_dio_80m.elf
-        cp ~/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s3/bin/bootloader_dio_80m.bin ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}-bootloader.bin
-        cp .pio/build/bpi-leaf-s3/partitions.bin       ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}-partitions.bin
-        cp .pio/build/bpi-leaf-s3/firmware.bin         ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}-firmware.bin
-        cp .pio/build/bpi-leaf-s3/spiffs.bin           ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}-spiffs.bin
+        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32s3 merge_bin \
+                                                                -o ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                --flash_mode dio \
+                                                                --flash_freq 80m \
+                                                                --flash_size 8MB \
+                                                                0x0000 .pio/build/bpi-leaf-s3/bootloader.bin \
+                                                                0x8000 .pio/build/bpi-leaf-s3/partitions.bin \
+                                                                0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+                                                                0x10000 .pio/build/bpi-leaf-s3/firmware.bin \
+                                                                0x6e0000 .pio/build/bpi-leaf-s3/spiffs.bin
         cp ./manifest/template_esp32s3.json ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}.json
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/bpi-leaf-s3/g'                   ./firmware/bpi-leaf-s3/bpi-leaf-s3-${{ github.event.inputs.tag }}.json
