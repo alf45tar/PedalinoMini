@@ -27,7 +27,7 @@ You can change the presets of your guitar rig, turn old MIDI equipment into some
 ## Features
 
 - Support for digital foot switches (momentary or latch), analog expression pedals and jog wheels (rotary encoders)
-- 6 controllers ports for ESP32 and 10 controllers ports for ESP32S3. One controller port can support up to 6 indipendent switches for a total of 36 (ESP32) or 60 (ESP32S3) switches.
+- 6 controllers ports for ESP32 and 8 controllers ports for ESP32S3. One controller port can support up to 6 indipendent switches for a total of 36 (ESP32) or 48 (ESP32S3) switches.
 - 20 banks + 1 global bank
 - 3 user profiles
 - 16 sequences of 10 steps each
