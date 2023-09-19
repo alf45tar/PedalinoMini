@@ -74,7 +74,9 @@ When one of the previous goals will be reached sponsors will continue to receive
 
 Sponsors version additions/fixes since May 1st, 2023:
 - BPI Leaf S3 and LILYGO® T-Display-S3 USB MIDI device mode
-- LILYGO® T-Display-S3 initial display support 
+- LILYGO® T-Display-S3 initial display support
+- Fixed sequence led in configuration file
+- Added MIDI Channel "None" (do not send any message but recorded as last message sent to be used with Repeat Overwrite) and "All"
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
