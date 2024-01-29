@@ -59,7 +59,7 @@ New features and bug corrections will be released to this public repository when
 
   >Goal is 500 stars.
 
-- **12 months from February 1st, 2023**
+- **12 months from February 1st, 2024**
 
   _Be patience if you are not ready to add a star._
 
@@ -76,6 +76,7 @@ Sponsors version additions/fixes since February 1st, 2024:
 
 <details>
 <summary>3.2.1 - February 1st, 2024</summary>
+
 - BPI Leaf S3 and LILYGO® T-Display-S3 USB MIDI device mode
 - LILYGO® T-Display-S3 display support
 - Fixed sequence led in configuration file
