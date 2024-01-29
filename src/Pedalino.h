@@ -138,7 +138,7 @@ typedef uint8_t   byte;
 #include <MD_REncoder.h>                // https://github.com/MajicDesigns/MD_REncoder
 #include <AceButton.h>                  // https://github.com/bxparks/AceButton
 #include <hellodrum.h>                  // https://github.com/RyoKosaka/HelloDrum-arduino-Library
-#include "AnalogPad.h"
+//#include "AnalogPad.h"
 using namespace ace_button;
 
 #define DEBOUNCE_INTERVAL        5
