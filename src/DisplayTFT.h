@@ -5,18 +5,51 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2023 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-#ifdef TTGO_T_DISPLAY
+#if (defined ARDUINO_LILYGO_T_DISPLAY) || (defined ARDUINO_LILYGO_T_DISPLAY_S3)
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <Wire.h>
 
-TFT_eSPI    display  = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);
-#define DISPLAY_WIDTH   display.width()
-#define DISPLAY_HEIGHT  display.height()
+TFT_eSPI display = TFT_eSPI(TFT_WIDTH, TFT_HEIGHT);
+#define DISPLAY_WIDTH   TFT_HEIGHT                                                     // T-Display = 240; T-Display-S3 = 320
+#define DISPLAY_HEIGHT  TFT_WIDTH                                                      // T-Display = 135; T-Display-S3 = 170
+#define TOP_HEIGHT      24
+#define TOP_BLANK       6
+#define BOTTOM_HEIGHT   24
+#define CENTER_HEIGHT   (DISPLAY_HEIGHT - TOP_HEIGHT - TOP_BLANK - BOTTOM_HEIGHT)      // T-Display =  81; T-Display-S3 = 116
+
+/*
+                                          DISPLAY WIDTH
+        +---------------------------------------------------------------------------------+
+        |                                                                                 |
+        |       TOP_HEIGHT        WiFi/Bluetooth/Profile/Battery Level                    |
+        |                                                                                 |
+        +---------------------------------------------------------------------------------+   D
+        |       TOP_BLANK                                                                 |   I
+        +---------------------------------------------------------------------------------+   S
+        |                                                                                 |   P
+        |                                                                                 |   L
+        |                                                                                 |   A
+        |                                                                                 |   Y
+        |                                                                                 |
+        |       CENTER_HEIGHT     Main area                                               |   H
+        |                                                                                 |   E
+        |                                                                                 |   I
+        |                                                                                 |   G
+        |                                                                                 |   H
+        |                                                                                 |   T
+        |                                                                                 |
+        +---------------------------------------------------------------------------------+
+        |                                                                                 |
+        |       BOTTOM_HEIGHT     Progress Bar                                            |
+        |                                                                                 |
+        +---------------------------------------------------------------------------------+
+*/
+
 
 #endif
 
@@ -200,6 +233,8 @@ void display_progress_bar_2_label(unsigned int label, unsigned int x)
 
 void topOverlay()
 {
+  // First 24 lines of display
+
   TFT_eSprite top = TFT_eSprite(&display);
 
   top.setColorDepth(4);
@@ -290,16 +325,16 @@ void topOverlay()
 #ifdef BLE
       if (bleEnabled) {
         if (bleMidiConnected) {
-          top.fillRect(0, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+          top.fillRect(0, 0, display.width() / 4, TOP_HEIGHT, TFT_INDEX_WHITE);
           top.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
         }
         else {
-          top.fillRect(0, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
+          top.fillRect(0, 0, display.width() / 4, TOP_HEIGHT, TFT_INDEX_BLACK);
           top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
         }
-        top.drawRoundRect(0, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
-        top.drawRoundRect(0, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
-        top.drawRoundRect(0, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
+        top.drawRoundRect(0, 0, display.width() / 4, TOP_HEIGHT, 0, TFT_INDEX_BLACK);
+        top.drawRoundRect(0, 0, display.width() / 4, TOP_HEIGHT, 2, TFT_INDEX_BLACK);
+        top.drawRoundRect(0, 0, display.width() / 4, TOP_HEIGHT, 4, TFT_INDEX_BLACK);
         top.drawString("BLE", 1 * display.width() / 8, 11);
       }
 #endif
@@ -307,41 +342,41 @@ void topOverlay()
 #ifdef WIFI
       if (wifiEnabled) {
         if (appleMidiConnected) {
-          top.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+          top.fillRect(1 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, TFT_INDEX_WHITE);
           top.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
         }
         else {
-          top.fillRect(1 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
+          top.fillRect(1 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, TFT_INDEX_BLACK);
           top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
         }
-        top.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
-        top.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
-        top.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
+        top.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, 0, TFT_INDEX_BLACK);
+        top.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, 2, TFT_INDEX_BLACK);
+        top.drawRoundRect(1 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, 4, TFT_INDEX_BLACK);
         top.drawString("MIDI",   3 * display.width() / 8, 11);
         if (interfaces[PED_IPMIDI].midiIn || interfaces[PED_IPMIDI].midiOut) {
-          top.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+          top.fillRect(2 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, TFT_INDEX_WHITE);
           top.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
         }
         else {
-          top.fillRect(2 * display.width() / 4, 0, display.width() / 4, 24, TFT_BLACK);
+          top.fillRect(2 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, TFT_BLACK);
           top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
         }
-        top.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
-        top.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
-        top.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
+        top.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, 0, TFT_INDEX_BLACK);
+        top.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, 2, TFT_INDEX_BLACK);
+        top.drawRoundRect(2 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, 4, TFT_INDEX_BLACK);
         top.drawString("ipMidi", 5 * display.width() / 8, 11);
 
         if (interfaces[PED_OSC].midiIn    || interfaces[PED_OSC].midiOut) {
-          top.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_WHITE);
+          top.fillRect(3 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, TFT_INDEX_WHITE);
           top.setTextColor(TFT_INDEX_BLACK, TFT_INDEX_WHITE);
         }
         else {
-          top.fillRect(3 * display.width() / 4, 0, display.width() / 4, 24, TFT_INDEX_BLACK);
+          top.fillRect(3 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, TFT_INDEX_BLACK);
           top.setTextColor(TFT_INDEX_DARKGREY, TFT_INDEX_BLACK);
         }
-        top.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 0, TFT_INDEX_BLACK);
-        top.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 2, TFT_INDEX_BLACK);
-        top.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, 24, 4, TFT_INDEX_BLACK);
+        top.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, 0, TFT_INDEX_BLACK);
+        top.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, 2, TFT_INDEX_BLACK);
+        top.drawRoundRect(3 * display.width() / 4, 0, display.width() / 4, TOP_HEIGHT, 4, TFT_INDEX_BLACK);
         top.drawString("OSC", 7 * display.width() / 8, 11);
       }
 #endif
@@ -444,7 +479,7 @@ void topOverlay()
       case 2:
         top.fillRoundRect(52 + 24*currentProfile, 1, 22, 22, 4, TFT_INDEX_BLUE);
         top.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLUE);
-        top.drawString("C", 52 + 24*currentProfile + 11, 11);
+        top.drawString("C", 52 + TOP_HEIGHT*currentProfile + 11, 11);
         break;
     }
   }
@@ -456,8 +491,8 @@ void topOverlay()
       switch (timeSignature) {
         case PED_TIMESIGNATURE_2_4:
           signature = 2;
-          top.drawRoundRect(0 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
-          top.drawRoundRect(1 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(0 * top.width() / signature, 0, top.width() / signature - 2, TOP_HEIGHT, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(1 * top.width() / signature, 0, top.width() / signature - 2, TOP_HEIGHT, 2, TFT_INDEX_WHITE);
           break;
         case PED_TIMESIGNATURE_3_4:
         case PED_TIMESIGNATURE_3_8:
@@ -465,16 +500,16 @@ void topOverlay()
         case PED_TIMESIGNATURE_9_8:
         case PED_TIMESIGNATURE_12_8:
           signature = 3;
-          top.drawRoundRect(0 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
-          top.drawRoundRect(1 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
-          top.drawRoundRect(2 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(0 * top.width() / signature, 0, top.width() / signature - 2, TOP_HEIGHT, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(1 * top.width() / signature, 0, top.width() / signature - 2, TOP_HEIGHT, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(2 * top.width() / signature, 0, top.width() / signature - 2, TOP_HEIGHT, 2, TFT_INDEX_WHITE);
           break;
         case PED_TIMESIGNATURE_4_4:
           signature = 4;
-          top.drawRoundRect(0 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
-          top.drawRoundRect(1 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
-          top.drawRoundRect(2 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
-          top.drawRoundRect(3 * top.width() / signature, 0, top.width() / signature - 2, 24, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(0 * top.width() / signature, 0, top.width() / signature - 2, TOP_HEIGHT, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(1 * top.width() / signature, 0, top.width() / signature - 2, TOP_HEIGHT, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(2 * top.width() / signature, 0, top.width() / signature - 2, TOP_HEIGHT, 2, TFT_INDEX_WHITE);
+          top.drawRoundRect(3 * top.width() / signature, 0, top.width() / signature - 2, TOP_HEIGHT, 2, TFT_INDEX_WHITE);
           break;
       }
       switch (MTC.getBeat()) {
@@ -535,7 +570,7 @@ void topOverlay()
       else if (MTC.getMode() == MidiTimeCode::SynchroMTCSlave)
         top.drawString("MTC Slave", 0, 0);
       */
-    }    
+    }
   }
 
   top.pushSprite(0, 0);
@@ -544,6 +579,8 @@ void topOverlay()
 
 void bottomOverlay()
 {
+  // Last 24 lines of display
+
   if (lastUsed == lastUsedPedal && lastUsed != 0xFF && millis() < endMillis2 && lastPedalName[0] != ':') {
     int p;
     switch (m1) {
@@ -556,9 +593,9 @@ void bottomOverlay()
         m3 = constrain(m3, rmin, rmax);
         p = map2(m3, rmin, rmax, 0, 100);
         if (lastPedalName[0] == 0)
-          display_progress_bar(0, display.height() - 24, display.width(), 24, p);
+          display_progress_bar(0, display.height() - BOTTOM_HEIGHT, display.width(), BOTTOM_HEIGHT, p);
         else
-          display_progress_bar(0, display.height() - 24, display.width(), 24, p, false, String(m3));
+          display_progress_bar(0, display.height() - BOTTOM_HEIGHT, display.width(), BOTTOM_HEIGHT, p, false, String(m3));
         break;
 
       case midi::ProgramChange:
@@ -567,33 +604,33 @@ void bottomOverlay()
         m3 = constrain(m2, rmin, rmax);
         p = map2(m2, rmin, rmax, 0, 100);
         if (lastPedalName[0] == 0)
-          display_progress_bar(0, display.height() - 24, display.width(), 24, p);
+          display_progress_bar(0, display.height() - BOTTOM_HEIGHT, display.width(), BOTTOM_HEIGHT, p);
         else
-          display_progress_bar(0, display.height() - 24, display.width(), 24, p, false, String(m3));
+          display_progress_bar(0, display.height() - BOTTOM_HEIGHT, display.width(), BOTTOM_HEIGHT, p, false, String(m3));
         break;
 
       case midi::PitchBend:
         p = map2(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MIN, MIDI_PITCHBEND_MAX, -100, 100);
         if ( p >= 0 ) {
-          display_progress_bar(0,                        display.height() - 24, display.width() / 2 + 11, 24, 0, true);
-          display_progress_bar(display.width() / 2 - 12, display.height() - 24, display.width() / 2 + 11, 24, p);
+          display_progress_bar(0,                        display.height() - BOTTOM_HEIGHT, display.width() / 2 + 11, BOTTOM_HEIGHT, 0, true);
+          display_progress_bar(display.width() / 2 - 12, display.height() - BOTTOM_HEIGHT, display.width() / 2 + 11, BOTTOM_HEIGHT, p);
         }
         else {
-          display_progress_bar(display.width() / 2 - 12, display.height() - 24, display.width() / 2 + 11, 24, 0);
-          display_progress_bar(0,                        display.height() - 24, display.width() / 2 + 11, 24, -p, true);
+          display_progress_bar(display.width() / 2 - 12, display.height() - BOTTOM_HEIGHT, display.width() / 2 + 11, BOTTOM_HEIGHT, 0);
+          display_progress_bar(0,                        display.height() - BOTTOM_HEIGHT, display.width() / 2 + 11, BOTTOM_HEIGHT, -p, true);
         }
         break;
 
       case midi::AfterTouchChannel:
         m3 = constrain(m2, rmin, rmax);
         p = map2(m3, rmin, rmax, 0, 100);
-        display_progress_bar(0, display.height() - 24, display.width(), 24, p);
+        display_progress_bar(0, display.height() - BOTTOM_HEIGHT, display.width(), BOTTOM_HEIGHT, p);
         break;
 
       case midi::Start:
       case midi::Stop:
       case midi::Continue:
-        display_progress_bar(0, display.height() - 24, display.width(), 24, 0);
+        display_progress_bar(0, display.height() - BOTTOM_HEIGHT, display.width(), BOTTOM_HEIGHT, 0);
         break;
     }
   }
@@ -605,74 +642,80 @@ void drawFrame1(int16_t x, int16_t y)
   if (millis() < endMillis2 && lastPedalName[0] != ':') {
     if (strlen(lastPedalName) != 0 && lastPedalName[strlen(lastPedalName) - 1] == '.') lastPedalName[strlen(lastPedalName) - 1] = 0;
     if (lastPedalName[0] == 0) {
-      display.fillRect(0, 24, display.width(), 6, TFT_INDEX_BLACK);
+      display.fillRect(0, TOP_HEIGHT, display.width(), TOP_BLANK, TFT_INDEX_BLACK);   // Clear blank area
       TFT_eSprite sprite = TFT_eSprite(&display);
       sprite.setColorDepth(1);
-      sprite.createSprite(display.width(), display.height() - 30 - 24);
+      sprite.createSprite(display.width(), CENTER_HEIGHT);
       sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
       sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
       switch (m1) {
         case midi::InvalidType:
           sprite.setFreeFont(&FreeSans9pt7b);
-          sprite.setTextDatum(MC_DATUM);
-          sprite.drawString("Bank", sprite.width() / 2 + x, 62 + y);
+          sprite.setTextDatum(BC_DATUM);
+          sprite.drawString("Bank", sprite.width() / 2 + x, sprite.height() * 9 / 10 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
-          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
-          display.fillRect(0, display.height() - 24, display.width(), 24, TFT_BLACK);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, (sprite.height() * 9 / 10 - 24) / 2 + y);
+          sprite.drawRoundRect(sprite.width() / 2 - sprite.width() * 2 / 10, 0, sprite.width() * 4 / 10, sprite.height() * 9 / 10 - 24, 8, TFT_WHITE);
+          display.fillRect(0, display.height() - BOTTOM_HEIGHT, display.width(), BOTTOM_HEIGHT, TFT_BLACK);   // Clear bottom area
           break;
         case midi::NoteOn:
         case midi::NoteOff:
           sprite.setFreeFont(&FreeSans9pt7b);
-          sprite.setTextDatum(MC_DATUM);
-          sprite.drawString("Note", sprite.width() / 2 + x, 62 + y);
+          sprite.setTextDatum(BC_DATUM);
+          sprite.drawString("Note", sprite.width() / 2 + x, sprite.height() * 9 / 10 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
-          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, (sprite.height() * 9 / 10 - 24) / 2 + y);
+          sprite.drawRoundRect(sprite.width() / 2 - sprite.width() * 2 / 10, 0, sprite.width() * 4 / 10, sprite.height() * 9 / 10 - 24, 8, TFT_WHITE);
           sprite.setFreeFont(&FreeSans9pt7b);
-          sprite.setTextDatum(MR_DATUM);
-          sprite.drawString("Velocity", sprite.width() + x, 62 + y);
+          sprite.setTextDatum(BC_DATUM);
+          sprite.drawString("Velocity", sprite.width() * 17 / 20 + x, sprite.height() * 9 / 10  + y);
           sprite.setFreeFont(&FreeSans18pt7b);
           sprite.setTextDatum(MC_DATUM);
-          sprite.drawString(String(m3), sprite.width() - display.width() / 8 + x, 22 + y);
+          sprite.drawString(String(m3), sprite.width() * 17 / 20 + x, (sprite.height() * 9 / 10 - 24) / 2 + y);
           break;
         case midi::ControlChange:
           sprite.setFreeFont(&FreeSans9pt7b);
-          sprite.setTextDatum(MC_DATUM);
-          sprite.drawString("CC", sprite.width() / 2 + x, 62 + y);
+          sprite.setTextDatum(BC_DATUM);
+          sprite.drawString("CC", sprite.width() / 2 + x, sprite.height() * 9 / 10 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
-          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, (sprite.height() * 9 / 10 - 24) / 2 + y);
+          sprite.drawRoundRect(sprite.width() / 2 - sprite.width() * 2 / 10, 0, sprite.width() * 4 / 10, sprite.height() * 9 / 10 - 24, 8, TFT_WHITE);
           sprite.setFreeFont(&FreeSans9pt7b);
-          sprite.setTextDatum(MR_DATUM);
-          sprite.drawString("Value", sprite.width() + x, 62 + y);
+          sprite.setTextDatum(BC_DATUM);
+          sprite.drawString("Value", sprite.width() * 17 / 20 + x, sprite.height() * 9 / 10  + y);
           sprite.setFreeFont(&FreeSans18pt7b);
           sprite.setTextDatum(MC_DATUM);
-          sprite.drawString(String(m3), sprite.width() - display.width() / 8 + x, 22 + y);
+          sprite.drawString(String(m3), sprite.width() * 17 / 20 + x, (sprite.height() * 9 / 10 - 24) / 2 + y);
           break;
         case midi::ProgramChange:
           sprite.setFreeFont(&FreeSans9pt7b);
-          sprite.setTextDatum(MC_DATUM);
-          sprite.drawString("PC", sprite.width() / 2 + x, 62 + y);
+          sprite.setTextDatum(BC_DATUM);
+          sprite.drawString("PC", sprite.width() / 2 + x, sprite.height() * 9 / 10 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
-          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, (sprite.height() * 9 / 10 - 24) / 2 + y);
+          sprite.drawRoundRect(sprite.width() / 2 - sprite.width() * 2 / 10, 0, sprite.width() * 4 / 10, sprite.height() * 9 / 10 - 24, 8, TFT_WHITE);
           break;
         case midi::PitchBend:
           sprite.setFreeFont(&FreeSans9pt7b);
-          sprite.setTextDatum(MC_DATUM);
-          sprite.drawString("Pitch", sprite.width() / 8 * 5 + x, 62 + y);
+          sprite.setTextDatum(BC_DATUM);
+          sprite.drawString("Pitch", sprite.width() / 2 + x, sprite.height() * 9 / 10 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
-          sprite.drawString(String(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN), sprite.width() / 8 * 5 + x, 22 + y);
-          sprite.drawRoundRect(display.width() / 8 * 5 - 70, 0, 140, 50, 8, TFT_WHITE);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString(String(((m3 << 7) | m2) + MIDI_PITCHBEND_MIN), sprite.width() / 2 + x, (sprite.height() * 9 / 10 - 24) / 2 + y);
+          sprite.drawRoundRect(sprite.width() / 2 - sprite.width() / 4, 0, sprite.width() / 2, sprite.height() * 9 / 10 - 24, 8, TFT_WHITE);
           break;
         case midi::AfterTouchChannel:
           sprite.setFreeFont(&FreeSans9pt7b);
-          sprite.setTextDatum(MC_DATUM);
-          sprite.drawString("Pressure", sprite.width() / 2 + x, 62 + y);
+          sprite.setTextDatum(BC_DATUM);
+          sprite.drawString("Pressure", sprite.width() / 2 + x, sprite.height() * 9 / 10 + y);
           sprite.setFreeFont(&FreeSans24pt7b);
-          sprite.drawString(String(m2), sprite.width() / 2 + x, 22 + y);
-          sprite.drawRoundRect(display.width() / 2 - 50, 0, 100, 50, 8, TFT_WHITE);
+          sprite.setTextDatum(MC_DATUM);
+          sprite.drawString(String(m2), sprite.width() / 2 + x, (sprite.height() * 9 / 10 - 24) / 2 + y);
+          sprite.drawRoundRect(sprite.width() / 2 - sprite.width() * 2 / 10, 0, sprite.width() * 4 / 10, sprite.height() * 9 / 10 - 24, 8, TFT_WHITE);
           break;
         case midi::Start:
           sprite.setFreeFont(&FreeSans24pt7b);
@@ -692,21 +735,21 @@ void drawFrame1(int16_t x, int16_t y)
       }
       if ((m1 != midi::InvalidType) && (m1 != midi::Start) && (m1 != midi::Stop) && (m1 != midi::Continue)) {
         sprite.setFreeFont(&FreeSans9pt7b);
-        sprite.setTextDatum(ML_DATUM);
-        sprite.drawString("Channel", 0 + x, 62 + y);
+        sprite.setTextDatum(BC_DATUM);
+        sprite.drawString("Channel", sprite.width() * 3 / 20 + x, sprite.height() * 9 / 10  + y);
         sprite.setFreeFont(&FreeSans18pt7b);
         sprite.setTextDatum(MC_DATUM);
-        sprite.drawString(String(m4), display.width() / 8 + x, 22 + y);
+        sprite.drawString(String(m4), sprite.width() * 3 / 20 + x, (sprite.height() * 9 / 10 - 24) / 2 + y);
       }
-      sprite.pushSprite(0, 30);
+      sprite.pushSprite(0, TOP_HEIGHT + TOP_BLANK);
       sprite.deleteSprite();
     }
     else {
       String name = lastPedalName;
-      display.fillRect(0, 24, display.width(), 6, TFT_INDEX_BLACK);
+      display.fillRect(0, TOP_HEIGHT, display.width(), TOP_BLANK, TFT_INDEX_BLACK);   // Clear blank area
       TFT_eSprite sprite = TFT_eSprite(&display);
       sprite.setColorDepth(1);
-      sprite.createSprite(display.width(), display.height() - 30 - 24);
+      sprite.createSprite(display.width(), CENTER_HEIGHT);
       sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
       sprite.fillRect(0, 0, sprite.width(), sprite.height(), TFT_BLACK);
       switch (m1) {
@@ -732,7 +775,7 @@ void drawFrame1(int16_t x, int16_t y)
           sprite.drawString(name, sprite.width() / 2, sprite.height() / 2);
           break;
       }
-      sprite.pushSprite(0, 30);
+      sprite.pushSprite(0, TOP_HEIGHT + TOP_BLANK);
       sprite.deleteSprite();
     }
   }
@@ -741,7 +784,7 @@ void drawFrame1(int16_t x, int16_t y)
 
     TFT_eSprite sprite = TFT_eSprite(&display);
     sprite.setColorDepth(1);
-    sprite.createSprite(display.width(), display.height() - 24);
+    sprite.createSprite(display.width(), display.height() - TOP_HEIGHT);
     sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
 
     sprite.setFreeFont(&FreeSans9pt7b);
@@ -753,7 +796,7 @@ void drawFrame1(int16_t x, int16_t y)
 
     sprite.setFreeFont(&FreeSans24pt7b);
     sprite.setTextDatum(TC_DATUM);
-    sprite.drawString(String(bpm), sprite.width() / 2, 4);        
+    sprite.drawString(String(bpm), sprite.width() / 2, 4);
     sprite.setFreeFont(&FreeSans9pt7b);
     sprite.setTextDatum(MC_DATUM);
     sprite.drawString("BPM", sprite.width() / 2, sprite.height() / 2 - 4);
@@ -836,18 +879,17 @@ void drawFrame1(int16_t x, int16_t y)
           sprite.fillRoundRect((10 + shift) * sprite.width() / 10 - 40 + 15, sprite.height() - 40 + 15, 10, 10, 2, TFT_WHITE);
         break;
     }
-    sprite.pushSprite(0, 24);
+    sprite.pushSprite(0, TOP_HEIGHT);
     sprite.deleteSprite();
-    //ui.disableAutoTransition();
   }
   else if (MTC.getMode() == MidiTimeCode::SynchroMTCMaster ||
            MTC.getMode() == MidiTimeCode::SynchroMTCSlave) {
-    
+
     char buf[12];
     sprintf(buf, "%02d:%02d:%02d:%02d", MTC.getHours(), MTC.getMinutes(), MTC.getSeconds(), MTC.getFrames());
     TFT_eSprite sprite = TFT_eSprite(&display);
     sprite.setColorDepth(1);
-    sprite.createSprite(display.width(), display.height() - 24);
+    sprite.createSprite(display.width(), display.height() - BOTTOM_HEIGHT);
     sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
     sprite.setFreeFont(&FreeSans24pt7b);
     sprite.setTextDatum(MC_DATUM);
@@ -860,34 +902,98 @@ void drawFrame1(int16_t x, int16_t y)
       sprite.drawString("Master", sprite.width(), sprite.height());
     else if (MTC.getMode() == MidiTimeCode::SynchroMTCSlave)
       sprite.drawString("Slave", sprite.width(), sprite.height());
-    sprite.pushSprite(0, 24);
+    sprite.pushSprite(0, TOP_HEIGHT);
     sprite.deleteSprite();
-    //ui.disableAutoTransition();
   }
   else {
-    if (scrollingMode) {
-      /*
-      display.fillRect(0, 24, display.width(), display.height() - 48, TFT_BLACK);
-      display.setTextColor(TFT_WHITE, TFT_BLACK);
-      display.setFreeFont(&FreeSansBold12pt7b);
-      display.setTextDatum(MC_DATUM);
-      display.drawString(MODEL, display.width() / 2 + x, display.height() / 2 + y);
-      display.setTextFont(1);
-      display.setTextDatum(BL_DATUM);
-      display.drawString("TM", display.width() - 40 + x, display.height() / 2 - 5 + y);
-      */
+    if (scannerActivated) {
+        TFT_eSprite sprite = TFT_eSprite(&display);
+        sprite.setColorDepth(4);
+        sprite.createSprite(POINTS, display.height() - 28);
+        sprite.drawRect(0, 3, sprite.width(), sprite.height() - 6, TFT_INDEX_DARKGREY);
+        switch (pedals[scanPedal].mode) {
+          case PED_ANALOG:
+          case PED_ULTRASONIC:
+            for (uint16_t i = 0; i < POINTS; i = i + 4) {
+              sprite.drawPixel(i, 3 + (sprite.height() - 6) / 2,     TFT_INDEX_DARKGREY);
+              sprite.drawPixel(i, 3 + (sprite.height() - 6) / 4,     TFT_INDEX_DARKGREY);
+              sprite.drawPixel(i, 3 + (sprite.height() - 6) / 4 * 3, TFT_INDEX_DARKGREY);
+            }
+            for (uint16_t i = 0; i < POINTS - 1; i++) {
+              uint16_t x = (POINTS + i - scanIndex) % POINTS;
+              sprite.drawPixel(x, map2(scan[i],          ADC_RESOLUTION - 1, 0, 3, sprite.height() - 4), TFT_INDEX_BLUE);
+              sprite.drawPixel(x, map2(scanProcessed[i], ADC_RESOLUTION - 1, 0, 3, sprite.height() - 4), TFT_INDEX_CYAN);
+            }
+            sprite.setTextColor(TFT_INDEX_CYAN, TFT_INDEX_BLACK);
+            sprite.setTextDatum(BC_DATUM);
+            sprite.drawString("Processed", sprite.width() / 4, sprite.height() / 8 + 2);
+            sprite.setTextColor(TFT_INDEX_BLUE, TFT_INDEX_BLACK);
+            sprite.setTextDatum(TC_DATUM);
+            sprite.drawString("Raw", sprite.width() / 4, sprite.height() / 8 + 4);
+            sprite.setTextColor(TFT_INDEX_RED, TFT_INDEX_BLACK);
+            sprite.setTextDatum(MC_DATUM);
+            sprite.drawString("1023", sprite.width() / 2, sprite.height() / 2 - (sprite.height() - 8) / 2);
+            sprite.drawString("767",  sprite.width() / 2, sprite.height() / 2 - (sprite.height() - 8) / 4);
+            sprite.drawString("511",  sprite.width() / 2, sprite.height() / 2);
+            sprite.drawString("255",  sprite.width() / 2, sprite.height() / 2 + (sprite.height() - 8) / 4);
+            sprite.drawString("0",    sprite.width() / 2, sprite.height() / 2 + (sprite.height() - 8) / 2);
+            sprite.setTextColor(TFT_INDEX_BLUE, TFT_INDEX_BLACK);
+            sprite.setTextDatum(ML_DATUM);
+            sprite.drawString("3.2V", 3,                  sprite.height() / 2 - (sprite.height() - 8) / 2);
+            sprite.drawString("2.4V", 3,                  sprite.height() / 2 - (sprite.height() - 8) / 4);
+            sprite.drawString("1.6V", 3,                  sprite.height() / 2);
+            sprite.drawString("0.8V", 3,                  sprite.height() / 2 + (sprite.height() - 8) / 4);
+            sprite.drawString("0V",   3,                  sprite.height() / 2 + (sprite.height() - 8) / 2);
+            break;
+          case PED_ANALOG_PAD:
+          case PED_ANALOG_PAD_MOMENTARY:
+            int t = map2(pedals[scanPedal].expZero, ADC_RESOLUTION - 1, 0, 4, sprite.height() - 4);
+            int h = map2(pedals[scanPedal].expMax,  ADC_RESOLUTION - 1, 0, 4, sprite.height() - 4);
+            for (uint16_t i = 1; i < pedals[scanPedal].scanCycles; i++)
+              sprite.drawLine(i, 4, i, sprite.height() - 4, TFT_INDEX_DARKGREEN);
+            for (uint16_t i = pedals[scanPedal].scanCycles; i < pedals[scanPedal].holdCycles; i++)
+              sprite.drawLine(i, 4, i, sprite.height() - 4, TFT_INDEX_ORANGE);
+            for (uint16_t i = 0; i < POINTS; i++) {
+              if (i < pedals[scanPedal].holdCycles) {
+                sprite.drawLine(i, map2(scan[i], ADC_RESOLUTION - 1, 0, 3, sprite.height() - 4), i, sprite.height() - 4, (i <= pedals[scanPedal].scanCycles) ? TFT_INDEX_GREEN : (i <= pedals[scanPedal].holdCycles) ? TFT_INDEX_YELLOW : TFT_INDEX_RED);
+              }
+              else {
+                int q = map2(scan[i], ADC_RESOLUTION - 1, 0, 3, sprite.height() - 4);
+                sprite.drawLine(i, max(q, t), i, sprite.height() - 4, TFT_INDEX_DARKGREY);
+                if (q <= t) sprite.drawLine(i, q, i, t, TFT_INDEX_RED);
+              }
+            }
+            sprite.drawLine(0, t, sprite.width() - 2, t, TFT_INDEX_CYAN);
+            sprite.setTextColor(TFT_INDEX_CYAN, TFT_INDEX_BLACK);
+            sprite.setTextDatum(MR_DATUM);
+            sprite.drawString("Threshold", sprite.width() - 2, t);
+            sprite.drawLine(0, h, sprite.width() - 2, h, TFT_INDEX_BLUE);
+            sprite.setTextColor(TFT_INDEX_BLUE, TFT_INDEX_BLACK);
+            sprite.setTextDatum(MR_DATUM);
+            sprite.drawString("High Cut", sprite.width() - 2, h);
+            sprite.setTextColor(TFT_INDEX_WHITE, TFT_INDEX_BLACK);
+            sprite.setTextDatum(MC_DATUM);
+            sprite.drawString("SCAN",  pedals[scanPedal].scanCycles / 2 - 1,                                                                 sprite.height() / 2 - (sprite.height() - 8) / 2);
+            sprite.drawString("HOLD",  pedals[scanPedal].scanCycles + (pedals[scanPedal].holdCycles - pedals[scanPedal].scanCycles) / 2 + 1, sprite.height() / 2 - (sprite.height() - 8) / 2);
+            sprite.drawString("DECAY", pedals[scanPedal].holdCycles + (sprite.width() - pedals[scanPedal].holdCycles) / 2 - 1,               sprite.height() / 2 - (sprite.height() - 8) / 2);
+            break;
+        }
+        sprite.pushSprite(0, 28);
+        sprite.deleteSprite();
+    }
+    else if (scrollingMode) {
 #ifdef DIAGNOSTIC
       TFT_eSprite sprite = TFT_eSprite(&display);
 
       sprite.setColorDepth(4);
-      sprite.createSprite(POINTS, 108);
-      sprite.drawRect(0, 3, sprite.width(), 102, TFT_INDEX_DARKGREY);
-      for (byte i = 0; i < POINTS; i = i + 4) {
-        sprite.drawPixel(i, 3 + 102 / 2,     TFT_INDEX_DARKGREY);
-        sprite.drawPixel(i, 3 + 102 / 4,     TFT_INDEX_DARKGREY);
-        sprite.drawPixel(i, 3 + 102 / 4 * 3, TFT_INDEX_DARKGREY);
+      sprite.createSprite(POINTS, display.height() - 28);
+      sprite.drawRect(0, 3, sprite.width(), sprite.height() - 6, TFT_INDEX_DARKGREY);
+      for (uint16_t i = 0; i < POINTS; i = i + 4) {
+        sprite.drawPixel(i, 3 + (sprite.height() - 6) / 2,     TFT_INDEX_DARKGREY);
+        sprite.drawPixel(i, 3 + (sprite.height() - 6) / 4,     TFT_INDEX_DARKGREY);
+        sprite.drawPixel(i, 3 + (sprite.height() - 6) / 4 * 3, TFT_INDEX_DARKGREY);
       }
-      for (byte i = 3; i < 105; i = i + 6) {
+      for (uint16_t i = 3; i < (sprite.height() - 3); i = i + 6) {
         sprite.drawPixel(sprite.width() / 2,     i, TFT_INDEX_DARKGREY);
         sprite.drawPixel(sprite.width() / 4,     i, TFT_INDEX_DARKGREY);
         sprite.drawPixel(sprite.width() / 4 * 3, i, TFT_INDEX_DARKGREY);
@@ -900,14 +1006,14 @@ void drawFrame1(int16_t x, int16_t y)
       String label2 = "-";
       String label3 = "-";
       String label4 = "-";
-      if (GRAPH_DURATION_QUARTER_HOUR > 0) {
+      if (GRAPH_DURATION_QUARTER_HOUR > 0 && (GRAPH_DURATION_QUARTER_MIN % 60) == 0) {
         label0 += String(0*GRAPH_DURATION_QUARTER_HOUR) + "h";
         label1 += String(1*GRAPH_DURATION_QUARTER_HOUR) + "h";
         label2 += String(2*GRAPH_DURATION_QUARTER_HOUR) + "h";
         label3 += String(3*GRAPH_DURATION_QUARTER_HOUR) + "h";
         label4 += String(4*GRAPH_DURATION_QUARTER_HOUR) + "h";
       }
-      else if (GRAPH_DURATION_QUARTER_MIN > 0) {
+      else if (GRAPH_DURATION_QUARTER_MIN > 0 && (GRAPH_DURATION_QUARTER_SEC % 60) == 0) {
         label0 += String(0*GRAPH_DURATION_QUARTER_MIN) + "m";
         label1 += String(1*GRAPH_DURATION_QUARTER_MIN) + "m";
         label2 += String(2*GRAPH_DURATION_QUARTER_MIN) + "m";
@@ -936,51 +1042,51 @@ void drawFrame1(int16_t x, int16_t y)
       sprite.drawString(label0, sprite.width() - 1, sprite.height() / 4);
       sprite.drawString(label0, sprite.width() - 1, sprite.height() / 4 * 3 - 3);
 
-      for (byte i = 0; i < POINTS - 1; i++) {
-        byte h = (historyStart + i) % POINTS;
-        if (memoryHistory[h]        != 0 && memoryHistory[h+1]        != 0) sprite.drawLine(i, 104 - memoryHistory[h],        i + 1, 104 - memoryHistory[h+1],        TFT_INDEX_RED);
-        if (fragmentationHistory[h] != 0 && fragmentationHistory[h+1] != 0) sprite.drawLine(i, 104 - fragmentationHistory[h], i + 1, 104 - fragmentationHistory[h+1], TFT_INDEX_YELLOW);
-        if (wifiHistory[h]          != 0 && wifiHistory[h+1]          != 0) sprite.drawLine(i, 104 - wifiHistory[h],          i + 1, 104 - wifiHistory[h+1],          TFT_INDEX_BLUE);
-        if (batteryHistory[h]       != 0 && batteryHistory[h+1]       != 0) sprite.drawLine(i, 104 - batteryHistory[h],       i + 1, 104 - batteryHistory[h+1],       TFT_INDEX_GREEN);
+      for (uint16_t i = 0; i < POINTS; i++) {
+        uint16_t h  = (historyStart + i) % POINTS;
+        uint16_t h1 = (h + 1)            % POINTS;
+        if (memoryHistory[h]        != 0 && memoryHistory[h1]        != 0) sprite.drawLine(i, map2(memoryHistory[h],        100, 0, 3, sprite.height() - 3), i + 1, map2(memoryHistory[h1],        100, 0, 3, sprite.height() - 3), TFT_INDEX_RED);
+        if (fragmentationHistory[h] != 0 && fragmentationHistory[h1] != 0) sprite.drawLine(i, map2(fragmentationHistory[h], 100, 0, 3, sprite.height() - 3), i + 1, map2(fragmentationHistory[h1], 100, 0, 3, sprite.height() - 3), TFT_INDEX_YELLOW);
+        if (wifiHistory[h]          != 0 && wifiHistory[h1]          != 0) sprite.drawLine(i, map2(wifiHistory[h],          100, 0, 3, sprite.height() - 3), i + 1, map2(wifiHistory[h1],          100, 0, 3, sprite.height() - 3), TFT_INDEX_BLUE);
+        if (batteryHistory[h]       != 0 && batteryHistory[h1]       != 0) sprite.drawLine(i, map2(batteryHistory[h],       100, 0, 3, sprite.height() - 3), i + 1, map2(batteryHistory[h1],       100, 0, 3, sprite.height() - 3), TFT_INDEX_GREEN);
       }
 
       sprite.setTextFont(1);
       sprite.setTextColor(TFT_INDEX_BLUE, TFT_INDEX_BLACK);
       sprite.setTextDatum(ML_DATUM);
-      sprite.drawString("-10dB", 0, sprite.height() / 2 - 50);
+      sprite.drawString("-10dB", 0, sprite.height() / 2 - (sprite.height() - 8) / 2);
       sprite.setTextDatum(ML_DATUM);
       sprite.drawString("-50dB", 0, sprite.height() / 2);
       sprite.setTextDatum(ML_DATUM);
-      sprite.drawString("-90dB", 0, sprite.height() / 2 + 50);
+      sprite.drawString("-90dB", 0, sprite.height() / 2 + (sprite.height() - 8) / 2);
       sprite.setTextColor(TFT_INDEX_RED, TFT_INDEX_BLACK);
       sprite.setTextDatum(MC_DATUM);
-      sprite.drawString("200Kb", sprite.width() / 2, sprite.height() / 2 - 50);
+      sprite.drawString("200Kb", sprite.width() / 2, sprite.height() / 2 - (sprite.height() - 8) / 2);
       sprite.setTextDatum(MC_DATUM);
       sprite.drawString("100Kb", sprite.width() / 2, sprite.height() / 2);
       sprite.setTextDatum(MC_DATUM);
-      sprite.drawString("0Kb",  sprite.width() / 2, sprite.height() / 2 + 50);
+      sprite.drawString("0Kb",  sprite.width() / 2, sprite.height() / 2 + (sprite.height() - 8) / 2);
       sprite.setTextColor(TFT_INDEX_GREEN, TFT_INDEX_BLACK);
       sprite.setTextDatum(MR_DATUM);
-      sprite.drawString("5.0V", sprite.width() - 1, sprite.height() / 2 - 50);
+      sprite.drawString("5.0V", sprite.width() - 1, sprite.height() / 2 - (sprite.height() - 8) / 2);
       sprite.setTextDatum(MR_DATUM);
       sprite.drawString("4.0V", sprite.width() - 1, sprite.height() / 2);
       sprite.setTextDatum(MR_DATUM);
-      sprite.drawString("3.0V", sprite.width() - 1, sprite.height() / 2 + 50);
+      sprite.drawString("3.0V", sprite.width() - 1, sprite.height() / 2 + (sprite.height() - 8) / 2);
       sprite.pushSprite(0, 27);
       sprite.deleteSprite();
-      //ui.enableAutoTransition();
 #endif
     }
     else {
       if (banknames[currentBank][0] == 0) {
         String p;
 
-        display.fillRect(0, 24, display.width(), 6, TFT_INDEX_BLACK);
+        display.fillRect(0, TOP_HEIGHT, display.width(), TOP_BLANK, TFT_INDEX_BLACK);   // Clear blank area
 
         TFT_eSprite sprite = TFT_eSprite(&display);
 
         sprite.setColorDepth(1);
-        sprite.createSprite(display.width(), display.height() - 30);
+        sprite.createSprite(display.width(), display.height() - TOP_HEIGHT - TOP_BLANK);
         sprite.setFreeFont(&DSEG14_Classic_Bold_100);
         switch (currentProfile) {
           case 0:
@@ -1002,7 +1108,7 @@ void drawFrame1(int16_t x, int16_t y)
         }
         sprite.setTextDatum(MC_DATUM);
         sprite.drawString(p, sprite.width() / 2, sprite.height() / 2);
-        sprite.pushSprite(0, 30);
+        sprite.pushSprite(0, TOP_HEIGHT + TOP_BLANK);
         sprite.deleteSprite();
       }
       else {
@@ -1012,10 +1118,10 @@ void drawFrame1(int16_t x, int16_t y)
         int offsetBackground = 0;
         static unsigned long ms = millis();
 
+        display.fillRect(0, TOP_HEIGHT, display.width(), TOP_BLANK, TFT_INDEX_BLACK);   // Clear blank area
         TFT_eSprite sprite = TFT_eSprite(&display);
-
         sprite.setColorDepth(1);
-        sprite.createSprite(display.width(), display.height() - 30);
+        sprite.createSprite(display.width(), display.height() - TOP_HEIGHT - TOP_BLANK);
         sprite.setBitmapColor(TFT_WHITE, TFT_BLACK);
 
         // Display pedals name
@@ -1124,7 +1230,7 @@ void drawFrame1(int16_t x, int16_t y)
         else {
           ms = millis();
         }
-        sprite.pushSprite(0, 30);
+        sprite.pushSprite(0, TOP_HEIGHT + TOP_BLANK);
         sprite.deleteSprite();
       }
     }
@@ -1181,17 +1287,16 @@ void drawFrame1(int16_t x, int16_t y)
 void drawFrame2(int16_t x, int16_t y)
 {
   if (!scrollingMode || MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2) return;
-    //ui.switchToFrame(0);
 
-  display.fillRect(0, 24, display.width(), display.height() - 48, TFT_BLACK);
+  display.fillRect(0, TOP_HEIGHT, display.width(), display.height() - TOP_HEIGHT - BOTTOM_HEIGHT, TFT_BLACK);
   display.setFreeFont(&FreeSans12pt7b);
   display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   display.setTextDatum(TL_DATUM);
-  display.drawString("Device:", 0 + x, 30 + y);
+  display.drawString("Device:", 0 + x, TOP_HEIGHT + TOP_BLANK + y);
   display.setFreeFont(&FreeSans12pt7b);
   display.setTextColor(TFT_WHITE, TFT_BLACK);
   display.setTextDatum(TR_DATUM);
-  display.drawString(host, display.width() + x, 30 + y);
+  display.drawString(host, display.width() + x, TOP_HEIGHT + TOP_BLANK + y);
 #ifdef WIFI
   switch (WiFi.getMode()) {
     case WIFI_AP:
@@ -1199,11 +1304,11 @@ void drawFrame2(int16_t x, int16_t y)
       display.setFreeFont(&FreeSans12pt7b);
       display.setTextColor(TFT_DARKGREY, TFT_BLACK);
       display.setTextDatum(TL_DATUM);
-      display.drawString( "AP:", 0 + x, 30 + y);
+      display.drawString( "AP:", 0 + x, TOP_HEIGHT + TOP_BLANK + y);
       display.setFreeFont(&FreeSans12pt7b);
       display.setTextColor(TFT_WHITE, TFT_BLACK);
       display.setTextDatum(TR_DATUM);
-      display.drawString(ssidSoftAP, display.width() + x, 30 + y);
+      display.drawString(ssidSoftAP, display.width() + x, TOP_HEIGHT + TOP_BLANK + y);
       display.setFreeFont(&FreeSans12pt7b);
       display.setTextColor(TFT_DARKGREY, TFT_BLACK);
       display.setTextDatum(TL_DATUM);
@@ -1241,17 +1346,16 @@ void drawFrame2(int16_t x, int16_t y)
 void drawFrame3(int16_t x, int16_t y)
 {
   if (!scrollingMode || MTC.isPlaying() || MTC.getMode() != PED_MTC_NONE || millis() < endMillis2) return;
-    //ui.switchToFrame(0);
 
-  display.fillRect(0, 24, display.width(), display.height() - 48, TFT_BLACK);
+  display.fillRect(0, TOP_HEIGHT, display.width(), display.height() - TOP_HEIGHT -BOTTOM_HEIGHT, TFT_BLACK);
   display.setFreeFont(&FreeSans12pt7b);
   display.setTextColor(TFT_DARKGREY, TFT_BLACK);
   display.setTextDatum(TL_DATUM);
-  display.drawString("Free heap:", 0 + x, 30 + y);
+  display.drawString("Free heap:", 0 + x, TOP_HEIGHT + TOP_BLANK + y);
   display.setFreeFont(&FreeSans12pt7b);
   display.setTextColor(TFT_WHITE, TFT_BLACK);
   display.setTextDatum(TR_DATUM);
-  display.drawString(ESP.getFreeHeap()/1024 + String(" Kb"), display.width() + x, 30 + y);
+  display.drawString(ESP.getFreeHeap()/1024 + String(" Kb"), display.width() + x, TOP_HEIGHT + TOP_BLANK + y);
 
 #ifdef BATTERY
   display.setFreeFont(&FreeSans12pt7b);
@@ -1284,9 +1388,9 @@ void display_init()
     flipScreen ? display.setRotation(3) : display.setRotation(1);
     display.fillScreen(TFT_BLACK);
     /*
-    if (TFT_BL > 0) {                           // TFT_BL has been set in the TFT_eSPI library in the User Setup file TTGO_T_Display.h
+    if (TFT_BL > 0) {                           // TFT_BL has been set in the TFT_eSPI library in the User Setup file ARDUINO_LILYGO_T_DISPLAY.h
         pinMode(TFT_BL, OUTPUT);                // Set backlight pin to output mode
-        digitalWrite(TFT_BL, TFT_BACKLIGHT_ON); // Turn backlight on. TFT_BACKLIGHT_ON has been set in the TFT_eSPI library in the User Setup file TTGO_T_Display.h
+        digitalWrite(TFT_BL, TFT_BACKLIGHT_ON); // Turn backlight on. TFT_BACKLIGHT_ON has been set in the TFT_eSPI library in the User Setup file ARDUINO_LILYGO_T_DISPLAY.h
     }
     */
 

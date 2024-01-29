@@ -5,34 +5,12 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2023 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-#ifdef ARDUINO_BPI_LEAF_S33
 
-//#include "USBDeviceMIDI.h"
-
-//USBDEVICEMIDI_CREATE_INSTANCE(USB_DEVICE_MIDI, "PedalinoMini", 1);
-
-//#include <MIDIUSB.h>
-
-//TinyUSBMIDI_CREATE_DEFAULT_INSTANCE();
-
-#include <Adafruit_TinyUSB.h>
-
-#include <MIDI.h>
-
-// USB MIDI object
-Adafruit_USBD_MIDI usb_midi;
-
-// Create a new instance of the Arduino MIDI Library,
-// and attach usb_midi as the transport.
-MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, USB_DEVICE_MIDI);
-
-
-
-void OnUsbDeviceMidiNoteOn(byte channel, byte note, byte velocity)
+void OnUSBMidiNoteOn(byte channel, byte note, byte velocity)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -45,7 +23,7 @@ void OnUsbDeviceMidiNoteOn(byte channel, byte note, byte velocity)
   if (IS_SHOW_ENABLED(interfaces[PED_USBMIDI].midiIn)) screen_info(midi::NoteOn, note, velocity, channel);
 }
 
-void OnUsbDeviceMidiNoteOff(byte channel, byte note, byte velocity)
+void OnUSBMidiNoteOff(byte channel, byte note, byte velocity)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -58,7 +36,7 @@ void OnUsbDeviceMidiNoteOff(byte channel, byte note, byte velocity)
   if (IS_SHOW_ENABLED(interfaces[PED_USBMIDI].midiIn)) screen_info(midi::NoteOff, note, velocity, channel);
 }
 
-void OnUsbDeviceMidiAfterTouchPoly(byte channel, byte note, byte pressure)
+void OnUSBMidiAfterTouchPoly(byte channel, byte note, byte pressure)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -70,7 +48,7 @@ void OnUsbDeviceMidiAfterTouchPoly(byte channel, byte note, byte pressure)
   if (IS_SHOW_ENABLED(interfaces[PED_USBMIDI].midiIn)) screen_info(midi::AfterTouchPoly, note, pressure, channel);
 }
 
-void OnUsbDeviceMidiControlChange(byte channel, byte number, byte value)
+void OnUSBMidiControlChange(byte channel, byte number, byte value)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -84,7 +62,7 @@ void OnUsbDeviceMidiControlChange(byte channel, byte number, byte value)
   switch_profile_or_bank(channel, number, value);
 }
 
-void OnUsbDeviceMidiProgramChange(byte channel, byte number)
+void OnUSBMidiProgramChange(byte channel, byte number)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -97,7 +75,7 @@ void OnUsbDeviceMidiProgramChange(byte channel, byte number)
   if (IS_SHOW_ENABLED(interfaces[PED_USBMIDI].midiIn)) screen_info(midi::ProgramChange, number, 0, channel);
 }
 
-void OnUsbDeviceMidiAfterTouchChannel(byte channel, byte pressure)
+void OnUSBMidiAfterTouchChannel(byte channel, byte pressure)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -109,7 +87,7 @@ void OnUsbDeviceMidiAfterTouchChannel(byte channel, byte pressure)
   if (IS_SHOW_ENABLED(interfaces[PED_USBMIDI].midiIn)) screen_info(midi::AfterTouchChannel, pressure, 0, channel);
 }
 
-void OnUsbDeviceMidiPitchBend(byte channel, int bend)
+void OnUSBMidiPitchBend(byte channel, int bend)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -121,7 +99,7 @@ void OnUsbDeviceMidiPitchBend(byte channel, int bend)
   if (IS_SHOW_ENABLED(interfaces[PED_USBMIDI].midiIn)) screen_info(midi::PitchBend, bend, 0, channel);
 }
 
-void OnUsbDeviceMidiSystemExclusive(byte* array, unsigned size)
+void OnUSBMidiSystemExclusive(byte* array, unsigned size)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -130,9 +108,10 @@ void OnUsbDeviceMidiSystemExclusive(byte* array, unsigned size)
   ipMIDISendSystemExclusive(array, size);
   AppleMidiSendSystemExclusive(array, size);
   OSCSendSystemExclusive(array, size);
+  MTC.decodeMTCFullFrame(size, array);
 }
 
-void OnUsbDeviceMidiTimeCodeQuarterFrame(byte data)
+void OnUSBMidiTimeCodeQuarterFrame(byte data)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -141,9 +120,10 @@ void OnUsbDeviceMidiTimeCodeQuarterFrame(byte data)
   ipMIDISendTimeCodeQuarterFrame(data);
   AppleMidiSendTimeCodeQuarterFrame(data);
   OSCSendTimeCodeQuarterFrame(data);
+  MTC.decodMTCQuarterFrame(data);
 }
 
-void OnUsbDeviceMidiSongPosition(unsigned int beats)
+void OnUSBMidiSongPosition(unsigned int beats)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -154,7 +134,7 @@ void OnUsbDeviceMidiSongPosition(unsigned int beats)
   OSCSendSongPosition(beats);
 }
 
-void OnUsbDeviceMidiSongSelect(byte songnumber)
+void OnUSBMidiSongSelect(byte songnumber)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -165,7 +145,7 @@ void OnUsbDeviceMidiSongSelect(byte songnumber)
   OSCSendSongSelect(songnumber);
 }
 
-void OnUsbDeviceMidiTuneRequest(void)
+void OnUSBMidiTuneRequest(void)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -176,7 +156,7 @@ void OnUsbDeviceMidiTuneRequest(void)
   OSCSendTuneRequest();
 }
 
-void OnUsbDeviceMidiClock(void)
+void OnUSBMidiClock(void)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -185,9 +165,10 @@ void OnUsbDeviceMidiClock(void)
   ipMIDISendClock();
   AppleMidiSendClock();
   OSCSendClock();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) bpm = MTC.tapTempo();
 }
 
-void OnUsbDeviceMidiStart(void)
+void OnUSBMidiStart(void)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -196,9 +177,10 @@ void OnUsbDeviceMidiStart(void)
   ipMIDISendStart();
   AppleMidiSendStart();
   OSCSendStart();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendPlay();
 }
 
-void OnUsbDeviceMidiContinue(void)
+void OnUSBMidiContinue(void)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -207,9 +189,10 @@ void OnUsbDeviceMidiContinue(void)
   ipMIDISendContinue();
   AppleMidiSendContinue();
   OSCSendContinue();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendContinue();
 }
 
-void OnUsbDeviceMidiStop(void)
+void OnUSBMidiStop(void)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -218,9 +201,10 @@ void OnUsbDeviceMidiStop(void)
   ipMIDISendStop();
   AppleMidiSendStop();
   OSCSendStop();
+  if (MTC.getMode() == MidiTimeCode::SynchroClockSlave) MTC.sendStop();
 }
 
-void OnUsbDeviceMidiActiveSensing(void)
+void OnUSBMidiActiveSensing(void)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -231,7 +215,7 @@ void OnUsbDeviceMidiActiveSensing(void)
   OSCSendActiveSensing();
 }
 
-void OnUsbDeviceMidiSystemReset(void)
+void OnUSBMidiSystemReset(void)
 {
   if (!interfaces[PED_USBMIDI].midiIn) return;
 
@@ -242,36 +226,43 @@ void OnUsbDeviceMidiSystemReset(void)
   OSCSendSystemReset();
 }
 
-void usb_device_midi_connect()
+
+void usb_midi_connect()
 {
   // Connect the handle function called upon reception of a MIDI message from USB MIDI interface
-  USB_DEVICE_MIDI.setHandleNoteOn(OnUsbDeviceMidiNoteOn);
-  USB_DEVICE_MIDI.setHandleNoteOff(OnUsbDeviceMidiNoteOff);
-  USB_DEVICE_MIDI.setHandleAfterTouchPoly(OnUsbDeviceMidiAfterTouchPoly);
-  USB_DEVICE_MIDI.setHandleControlChange(OnUsbDeviceMidiControlChange);
-  USB_DEVICE_MIDI.setHandleProgramChange(OnUsbDeviceMidiProgramChange);
-  USB_DEVICE_MIDI.setHandleAfterTouchChannel(OnUsbDeviceMidiAfterTouchChannel);
-  USB_DEVICE_MIDI.setHandlePitchBend(OnUsbDeviceMidiPitchBend);
-  USB_DEVICE_MIDI.setHandleSystemExclusive(OnUsbDeviceMidiSystemExclusive);
-  USB_DEVICE_MIDI.setHandleTimeCodeQuarterFrame(OnUsbDeviceMidiTimeCodeQuarterFrame);
-  USB_DEVICE_MIDI.setHandleSongPosition(OnUsbDeviceMidiSongPosition);
-  USB_DEVICE_MIDI.setHandleSongSelect(OnUsbDeviceMidiSongSelect);
-  USB_DEVICE_MIDI.setHandleTuneRequest(OnUsbDeviceMidiTuneRequest);
-  USB_DEVICE_MIDI.setHandleClock(OnUsbDeviceMidiClock);
-  USB_DEVICE_MIDI.setHandleStart(OnUsbDeviceMidiStart);
-  USB_DEVICE_MIDI.setHandleContinue(OnUsbDeviceMidiContinue);
-  USB_DEVICE_MIDI.setHandleStop(OnUsbDeviceMidiStop);
-  USB_DEVICE_MIDI.setHandleActiveSensing(OnUsbDeviceMidiActiveSensing);
-  USB_DEVICE_MIDI.setHandleSystemReset(OnUsbDeviceMidiSystemReset);
+  USB_MIDI.setHandleNoteOn(OnUSBMidiNoteOn);
+  USB_MIDI.setHandleNoteOff(OnUSBMidiNoteOff);
+  USB_MIDI.setHandleAfterTouchPoly(OnUSBMidiAfterTouchPoly);
+  USB_MIDI.setHandleControlChange(OnUSBMidiControlChange);
+  USB_MIDI.setHandleProgramChange(OnUSBMidiProgramChange);
+  USB_MIDI.setHandleAfterTouchChannel(OnUSBMidiAfterTouchChannel);
+  USB_MIDI.setHandlePitchBend(OnUSBMidiPitchBend);
+  USB_MIDI.setHandleSystemExclusive(OnUSBMidiSystemExclusive);
+  USB_MIDI.setHandleTimeCodeQuarterFrame(OnUSBMidiTimeCodeQuarterFrame);
+  USB_MIDI.setHandleSongPosition(OnUSBMidiSongPosition);
+  USB_MIDI.setHandleSongSelect(OnUSBMidiSongSelect);
+  USB_MIDI.setHandleTuneRequest(OnUSBMidiTuneRequest);
+  USB_MIDI.setHandleClock(OnUSBMidiClock);
+  USB_MIDI.setHandleStart(OnUSBMidiStart);
+  USB_MIDI.setHandleContinue(OnUSBMidiContinue);
+  USB_MIDI.setHandleStop(OnUSBMidiStop);
+  USB_MIDI.setHandleActiveSensing(OnUSBMidiActiveSensing);
+  USB_MIDI.setHandleSystemReset(OnUSBMidiSystemReset);
+
+#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
+  //usb_midi.setStringDescriptor("PedalinoMini USB MIDI");
+  TinyUSBDevice.setManufacturerDescriptor("Pedalino");
+  TinyUSBDevice.setProductDescriptor("PedalinoMini USB MIDI");
+  usb_midi.setCableName(1, "PedalinoMini");
+#endif
 
   // Initiate USB MIDI communications, listen to all channels
-  USB_DEVICE_MIDI.begin(MIDI_CHANNEL_OMNI);
+  USB_MIDI.begin(MIDI_CHANNEL_OMNI);
   // Enable/disable MIDI Thru
-  interfaces[PED_USBDEVICEMIDI].midiThru ? USB_DEVICE_MIDI.turnThruOn() : USB_DEVICE_MIDI.turnThruOff();
-}
+  interfaces[PED_USBMIDI].midiThru ? USB_MIDI.turnThruOn() : USB_MIDI.turnThruOff();
 
-#else
-
-void usb_device_midi_connect();
-
+#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
+  // Wait until device mounted
+  // while(!TinyUSBDevice.mounted()) delay(1);
 #endif
+}

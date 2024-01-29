@@ -1,3 +1,14 @@
+/*
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
+                                                                                   (c) 2018-2024 alf45star
+                                                                       https://github.com/alf45tar/PedalinoMini
+ */
+
 // Created by http://oleddisplay.squix.ch/
 // Edited with the glyphEditor https://rawgit.com/lorol/esp8266-oled-ssd1306/master/resources/glyphEditor.html
 
@@ -62,7 +73,7 @@ const uint8_t DSEG7_Classic_Bold_50[] PROGMEM = {
 };
 
 
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
 // Created by http://oleddisplay.squix.ch/ Consider a donation
 // In case of problems make sure that you are using the font file with the correct version!
 // Edited with https://tchapi.github.io/Adafruit-GFX-Font-Customiser/

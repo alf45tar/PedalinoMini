@@ -5,22 +5,21 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2023 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
-
-#define LOG_LOCAL_LEVEL   ESP_LOG_VERBOSE
-
-#include <vector>
-#include <Arduino.h>
 
 #ifndef _PEDALINO_H
 #define _PEDALINO_H
 
+//#define LOG_LOCAL_LEVEL   ESP_LOG_VERBOSE
+
+#include <vector>
+#include <Arduino.h>
 
 #define MODEL           "PedalinoMini™"
 
-#define INTERFACES        7
+#define INTERFACES        6
 #define PROFILES          3
 #define BANKS            21   // 20 banks + 1 bank for global actions
 #define PEDALS            6   // real number of pedals is board specific (see below)
@@ -35,12 +34,13 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define SLOTS             SLOTS_ROWS * SLOTS_COLS
 
 
-#define MAXACTIONNAME    10
-#define MAXBANKNAME      10
+#define MAXACTIONNAME    16
+#define MAXBANKNAME      16
 
 // https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 // GPIOs 34 to 39 are GPIs – input only pins.
 // These pins don’t have internal pull-ups or pull-down resistors.
+// https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/gpio.html
 
 #ifdef HELTEC_WIFI_KIT_32
 #undef  PEDALS
@@ -55,7 +55,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NU
 #define BATTERY_PIN           GPIO_NUM_13   // Pin connected to VBAT
 #define BATTERY_ADC_EN        GPIO_NUM_21   // ADC_EN is the ADC detection enable port
 #define FASTLEDS_DATA_PIN     GPIO_NUM_5
-#elif defined TTGO_T_DISPLAY
+#elif defined ARDUINO_LILYGO_T_DISPLAY
 #undef  PEDALS
 #define PEDALS                8
 const byte pinD[] = {GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_27, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_17, GPIO_NUM_35, GPIO_NUM_0};
@@ -65,7 +65,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_37, GPIO_NUM_38, GPIO_NUM_39, GPIO_NU
 #define USB_MIDI_OUT_PIN      GPIO_NUM_22   // SCL
 #define DIN_MIDI_IN_PIN       GPIO_NUM_15
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_2
-#define BATTERY_PIN           GPIO_NUM_34   // Pin connected to VBAT
+#define BATTERY_PIN           GPIO_NUM_34   // Pin connected to BAT (BAT is not VBAT)
 #define BATTERY_ADC_EN        GPIO_NUM_14   // ADC_EN is the ADC detection enable port
 #define FASTLEDS_DATA_PIN     GPIO_NUM_15
 #elif defined TTGO_T_EIGHT
@@ -81,24 +81,35 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_4
 #define BATTERY_PIN           GPIO_NUM_36   // GPIO_NUM_32 to GPIO_NUM_39 only
 #define FASTLEDS_DATA_PIN     GPIO_NUM_5
-#elif defined ARDUINO_BPI_LEAF_S3
-#undef  LEDS
-#define LEDS                  1
+#elif defined ARDUINO_BPI_LEAF_S3           // https://wiki.banana-pi.org/BPI-Leaf-S3
 #undef  PEDALS
-#define PEDALS                11
-const byte pinD[] = {GPIO_NUM_1,  GPIO_NUM_2,  GPIO_NUM_3,  GPIO_NUM_4,  GPIO_NUM_5,  GPIO_NUM_6,  GPIO_NUM_7,  GPIO_NUM_8,  GPIO_NUM_9,  GPIO_NUM_10, GPIO_NUM_0};
-const byte pinA[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_14, GPIO_NUM_15, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_19, GPIO_NUM_20, GPIO_NUM_0};
+#define PEDALS                9
+// https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
+// Strapping pins: 1, 3, 45, 46
+// ADC1:    1-10
+// ADC2:   11-20 (19=D- 20=D+)
+// SPI0/1: 26-32 (usually used for SPI flash and PSRAM)
+const byte pinD[] = {GPIO_NUM_10, GPIO_NUM_9,  GPIO_NUM_8,  GPIO_NUM_7,  GPIO_NUM_6,  GPIO_NUM_5,  GPIO_NUM_4,  GPIO_NUM_2,  GPIO_NUM_0};
+const byte pinA[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_14, GPIO_NUM_15, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_0};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button BOOT
-#define USB_MIDI_IN_PIN       GPIO_NUM_44
-#define USB_MIDI_OUT_PIN      GPIO_NUM_43
 #define DIN_MIDI_IN_PIN       GPIO_NUM_44
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_43
 #define BATTERY_PIN           GPIO_NUM_14   // Pin connected to +BATT
 #define FASTLEDS_DATA_PIN     GPIO_NUM_48
 #undef  SDA
 #undef  SCL
-#define SDA                   GPIO_NUM_41
-#define SCL                   GPIO_NUM_42
+#define SDA                   GPIO_NUM_15
+#define SCL                   GPIO_NUM_16
+#elif defined ARDUINO_LILYGO_T_DISPLAY_S3   // https://github.com/Xinyuan-LilyGO/T-Display-S3
+#undef  PEDALS
+#define PEDALS                8
+const byte pinD[] = {GPIO_NUM_10, GPIO_NUM_2,  GPIO_NUM_43, GPIO_NUM_44, GPIO_NUM_21, GPIO_NUM_3,  GPIO_NUM_14, GPIO_NUM_0};
+const byte pinA[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_14, GPIO_NUM_0};
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button BOOT
+#define DIN_MIDI_IN_PIN       GPIO_NUM_44
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_43
+#define BATTERY_PIN           GPIO_NUM_4    // Pin connected to BAT (BAT is not VBAT)
+#define FASTLEDS_DATA_PIN     GPIO_NUM_3
 #else
 #undef  PEDALS
 #define PEDALS                7
@@ -120,42 +131,14 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 CRGB    fastleds[LEDS+1];               // fastleds[LEDS] not used
 EOrder  rgbOrder = RGB;
 
-// Serial MIDI interfaces
-
-#include <MIDI.h>                       // https://github.com/FortySevenEffects/arduino_midi_library
-#include "ESPSerialMIDI.h"
-
-#define MIDI_BAUD_RATE                  31250
-#define HIGH_SPEED_SERIAL_BAUD_RATE     1000000
-
-
-struct Serial1MIDISettings : public midi::DefaultSettings
-{
-  static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = USB_MIDI_IN_PIN;
-  static const int8_t TxPin  = USB_MIDI_OUT_PIN;
-};
-
-struct Serial2MIDISettings : public midi::DefaultSettings
-{
-  static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = DIN_MIDI_IN_PIN;
-  static const int8_t TxPin  = DIN_MIDI_OUT_PIN;
-};
-
-#define SERIAL_MIDI_USB   Serial1
-#define SERIAL_MIDI_DIN   Serial2
-
-MIDI_CREATE_CUSTOM_INSTANCE_ESP(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, Serial1MIDISettings);
-MIDI_CREATE_CUSTOM_INSTANCE_ESP(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MIDISettings);
-
-
 typedef uint8_t   byte;
 
 #include <HCSR04.h>                     // https://github.com/d03n3rfr1tz3/HC-SR04
 #include <ResponsiveAnalogRead.h>       // https://github.com/dxinteractive/ResponsiveAnalogRead
 #include <MD_REncoder.h>                // https://github.com/MajicDesigns/MD_REncoder
 #include <AceButton.h>                  // https://github.com/bxparks/AceButton
+#include <hellodrum.h>                  // https://github.com/RyoKosaka/HelloDrum-arduino-Library
+#include "AnalogPad.h"
 using namespace ace_button;
 
 #define DEBOUNCE_INTERVAL        5
@@ -198,7 +181,7 @@ using namespace ace_button;
 #define PED_MIDI_STOP                 midi::Stop
 #define PED_MIDI_CONTINUE             midi::Continue
 #define PED_SEQUENCE                  20
-#define PED_ACTION_BANK               21  // duplication is ok because used in Sequences only
+#define PED_ACTION_BANK               19
 #define PED_ACTION_BANK_PLUS          21
 #define PED_ACTION_BANK_MINUS         22
 #define PED_ACTION_START              23
@@ -223,22 +206,25 @@ using namespace ace_button;
 #define PED_ACTION_MTC_OFF            45
 #define PED_ACTION_MTC_TIME_SIGNATURE 46
 #define PED_OSC_MESSAGE               50
+#define PED_ACTION_SCAN               98
 #define PED_ACTION_POWER_ON_OFF       99
 
-#define PED_NONE                1
-#define PED_MOMENTARY1          2
-#define PED_LATCH1              3
-#define PED_ANALOG              4
-#define PED_JOG_WHEEL           5
-#define PED_MOMENTARY2          6
-#define PED_MOMENTARY3          7
-#define PED_LATCH2              8
-#define PED_LADDER              9
-#define PED_ULTRASONIC          10    // HC-SR04
-#define PED_ANALOG_MOMENTARY    11
-#define PED_ANALOG_LATCH        12
+#define PED_NONE                  1
+#define PED_MOMENTARY1            2
+#define PED_LATCH1                3
+#define PED_ANALOG                4
+#define PED_JOG_WHEEL             5
+#define PED_MOMENTARY2            6
+#define PED_MOMENTARY3            7
+#define PED_LATCH2                8
+#define PED_LADDER                9
+#define PED_ULTRASONIC            10    // HC-SR04
+#define PED_ANALOG_MOMENTARY      11
+#define PED_ANALOG_LATCH          12
+#define PED_ANALOG_PAD            13    // Piezo
+#define PED_ANALOG_PAD_MOMENTARY  14    // Piezo + switch
 
-const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic", "Analog+Momentary", "Analog+Latch"};
+const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2", "Momentary 3", "Latch 2", "Ladder", "Ultrasonic", "Analog+Momentary", "Analog+Latch", "Analog Pad", "Analog Pad+Momentary"};
 
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
@@ -277,7 +263,8 @@ const char *pedalPressModeName[] = {"None", "1", "2", "12", "L", "1L","2L", "12L
 #define PED_EVENT_NONE            9
 #define PED_EVENT_OSC             10
 #define PED_EVENT_PRESS_RELEASE   11
-#define PED_EVENT_LAST            12
+#define PED_EVENT_SHOT            12
+#define PED_EVENT_LAST            13
 
 const char *eventName[] = {"Press", "Release", "Click", "Double Click", "Long Press", "Repeat Pressed", "Long Released", "Move", "Jog", "None", "OSC", "Press & Release"};
 
@@ -287,13 +274,12 @@ const char *eventName[] = {"Press", "Release", "Click", "Double Click", "Long Pr
 
 const char *pedalAnalogResponse[] = {"Linear", "Log", "Antilog"};
 
-#define PED_USBDEVICEMIDI       0
-#define PED_USBMIDI             1
-#define PED_DINMIDI             2
-#define PED_RTPMIDI             3
-#define PED_IPMIDI              4
-#define PED_BLEMIDI             5
-#define PED_OSC                 6
+#define PED_USBMIDI             0
+#define PED_DINMIDI             1
+#define PED_RTPMIDI             2
+#define PED_IPMIDI              3
+#define PED_BLEMIDI             4
+#define PED_OSC                 5
 
 #define PED_DISABLE             0
 #define PED_ENABLE              1
@@ -389,6 +375,12 @@ struct pedal {
                                             // when sleep is not enabled.
   float                  activityThreshold; // the amount of movement that must take place for it
                                             // to register as activity and start moving the output value
+  float                  gain;
+  float                  retrigger;
+  int                    holdCycles;
+  int                    scanCycles;
+  int                    crosstalk;
+  float                  crosstalkRatio;
   int                    pedalValue[2];     // [0, ADC_RESOLUTION-1]
   unsigned long          lastUpdate[2];     // last time the value is changed
   byte                   latchStatus[LADDER_STEPS]; // latch emulation status: 0 = off, 1 = on
@@ -396,6 +388,8 @@ struct pedal {
   ButtonConfig          *buttonConfig;
   MD_REncoder           *jogwheel;
   ResponsiveAnalogRead  *analogPedal;
+  //AnalogPad             *analogPad;
+  HelloDrum             *analogPad;
 };
 
 struct control {
@@ -418,7 +412,7 @@ struct message {
   byte                   midiMessage;
   byte                   midiCode;         /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue;        /* Control Code value, Note velocity */
-  byte                   midiChannel;      /* MIDI channel 1-16 */
+  byte                   midiChannel;      /* MIDI channel 1-16, 0 = None, 17 = All */
   byte                   led;              // 0..LEDS-1 existing leds, if equal to LEDS ...
   uint32_t               color;
 };
@@ -439,13 +433,12 @@ CRGB      lastLedColor[BANKS][LEDS];
 std::vector<byte> ultrasonicEcho(PEDALS);         // Echo pins
 byte      ultrasonicTrigger;                      // Trigger pin
 
-interface interfaces[] = { "USB MIDI(S3)", 0,          PED_ENABLE + PED_SHOW, 0, 0,
-                           "USB MIDI    ", 0,          PED_ENABLE + PED_SHOW, 0, 0,
-                           "Legacy MIDI ", 0,          PED_ENABLE + PED_SHOW, 0, 0,
-                           "RTP-MIDI    ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
-                           "ipMIDI      ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
-                           "BLE MIDI    ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
-                           "OSC         ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0
+interface interfaces[] = { "USB MIDI   ", 0,          PED_ENABLE + PED_SHOW, 0, 0,
+                           "Legacy MIDI", 0,          PED_ENABLE + PED_SHOW, 0, 0,
+                           "RTP-MIDI   ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
+                           "ipMIDI     ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
+                           "BLE MIDI   ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0,
+                           "OSC        ", PED_ENABLE, PED_ENABLE + PED_SHOW, 0, 0
                          };                       // Interfaces Setup
 
 AceButton       bootButton;
@@ -470,6 +463,8 @@ volatile bool saveProfile     = false;
 volatile bool loadConfig      = false;
 volatile bool scrollingMode   = false;  // Display scrolling mode
 volatile bool displayInit     = false;
+volatile bool webServerStart  = false;
+
 byte  currentBank             = 1;
 byte  currentPedal            = 0;
 byte  currentInterface        = PED_USBMIDI;
@@ -521,18 +516,28 @@ int    wifiLevel    = 0;
 uint16_t  batteryVoltage = 4200;  // mV
 
 #ifdef DIAGNOSTIC
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
+#define POINTS                        320             // Logged data points
+#else
 #define POINTS                        240             // Logged data points
+#endif // ARDUINO_LILYGO_T_DISPLAY_S3
 #define SECONDS_BETWEEN_SAMPLES       1
 #define GRAPH_DURATION                POINTS * SECONDS_BETWEEN_SAMPLES
 #define GRAPH_DURATION_QUARTER_SEC    GRAPH_DURATION / 4
 #define GRAPH_DURATION_QUARTER_MIN    GRAPH_DURATION_QUARTER_SEC / 60
 #define GRAPH_DURATION_QUARTER_HOUR   GRAPH_DURATION_QUARTER_MIN / 60
-RTC_DATA_ATTR byte historyStart = 0;
+RTC_DATA_ATTR uint16_t historyStart = 0;
 RTC_DATA_ATTR byte memoryHistory[POINTS];         // 0% =   0Kb    100% = 200Kb
 RTC_DATA_ATTR byte fragmentationHistory[POINTS];  // 0% =   0Kb    100% = 200Kb
 RTC_DATA_ATTR byte wifiHistory[POINTS];           // 0% = -90dB    100% = -10dB
 RTC_DATA_ATTR byte batteryHistory[POINTS];        // 0% =  3.0V    100% =  5.0V
-#endif
+#endif // DIAGNOSTIC
+
+uint16_t  scan[POINTS];
+uint16_t  scanProcessed[POINTS];
+uint16_t  scanIndex = 0;
+bool      scannerActivated = false;
+byte      scanPedal = 0;
 
 bool powersaver = false;
 byte firmwareUpdate = PED_UPDATE_NONE;

@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2023 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -835,7 +835,7 @@ void OscSendLive()
   oscMsg4.add(0).send(udpMsg4).empty();
   udpOut.sendTo(udpMsg4, oscControllerIP, OSC_CONTROLLER_PORT);
   char beats_per_minute[4] = {0, 0, 0, 0};
-  sprintf(beats_per_minute, "%3d", bpm);
+  sprintf(beats_per_minute, "%3u", bpm);
   oscMsg5.add(bpm).send(udpMsg5).empty();
   udpOut.sendTo(udpMsg5, oscControllerIP, OSC_CONTROLLER_PORT);
 }

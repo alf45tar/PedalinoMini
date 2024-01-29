@@ -188,7 +188,7 @@ static void blufi_event_callback(esp_blufi_cb_event_t event, esp_blufi_cb_param_
           .ssid        = NULL,
           .bssid       = NULL,
           .channel     = 0,
-          .show_hidden = false
+          .show_disabled = false
         };
         ESP_ERROR_CHECK(esp_wifi_scan_start(&scanConf, true));
         break;

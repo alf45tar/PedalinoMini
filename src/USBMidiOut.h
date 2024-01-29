@@ -9,57 +9,67 @@ __________           .___      .__  .__                 _____  .__       .__    
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
-#include <MIDI.h>                       // https://github.com/FortySevenEffects/arduino_midi_library
+#include <MIDI.h>
 
-#include "ESPSerialMIDI.h"
+#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
 
-#define MIDI_BAUD_RATE                  31250
-#define HIGH_SPEED_SERIAL_BAUD_RATE     1000000
+#include <Adafruit_TinyUSB.h>
 
-struct Serial2MIDISettings : public midi::DefaultSettings
+// USB MIDI object
+Adafruit_USBD_MIDI usb_midi;
+
+// Create a new instance of the Arduino MIDI Library,
+// and attach usb_midi as the transport.
+MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, USB_MIDI);
+
+#else
+
+struct Serial1MIDISettings : public midi::DefaultSettings
 {
   static const long BaudRate = MIDI_BAUD_RATE;
-  static const int8_t RxPin  = DIN_MIDI_IN_PIN;
-  static const int8_t TxPin  = DIN_MIDI_OUT_PIN;
+  static const int8_t RxPin  = USB_MIDI_IN_PIN;
+  static const int8_t TxPin  = USB_MIDI_OUT_PIN;
 };
 
-#define SERIAL_MIDI_DIN   Serial2
+#define SERIAL_MIDI_USB   Serial1
 
-MIDI_CREATE_CUSTOM_INSTANCE_ESP(HardwareSerial, SERIAL_MIDI_DIN, DIN_MIDI, Serial2MIDISettings);
+MIDI_CREATE_CUSTOM_INSTANCE_ESP(HardwareSerial, SERIAL_MIDI_USB, USB_MIDI, Serial1MIDISettings);
+
+#endif
 
 
-void DIN_MIDI_SendRealTimeMessage(byte type)
+void USB_MIDI_SendRealTimeMessage(byte type)
 {
-  if (!interfaces[PED_DINMIDI].midiOut) return;
+  if (!interfaces[PED_USBMIDI].midiOut) return;
 
   switch (type) {
 
       case midi::TuneRequest:
-        DIN_MIDI.sendTuneRequest();
+        USB_MIDI.sendTuneRequest();
         break;
 
       case midi::Clock:
-        DIN_MIDI.sendClock();
+        USB_MIDI.sendClock();
         break;
 
       case midi::Start:
-        DIN_MIDI.sendStart();
+        USB_MIDI.sendStart();
         break;
 
       case midi::Continue:
-        DIN_MIDI.sendContinue();
+        USB_MIDI.sendContinue();
         break;
 
       case midi::Stop:
-        DIN_MIDI.sendStop();
+        USB_MIDI.sendStop();
         break;
 
       case midi::ActiveSensing:
-        DIN_MIDI.sendActiveSensing();
+        USB_MIDI.sendActiveSensing();
         break;
 
       case midi::SystemReset:
-        DIN_MIDI.sendSystemReset();
+        USB_MIDI.sendSystemReset();
         break;
     }
 }

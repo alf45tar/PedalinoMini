@@ -23,10 +23,11 @@ You can change the presets of your guitar rig, turn old MIDI equipment into some
 - OSC to MIDI and vicecersa
 - Any number of pedals of any type in any order
 - Auto-sensing footswitches and expression pedals
+- Trigger-to-MIDI (soon)
 
 ## Features
 
-- Support for digital foot switches (momentary or latch), analog expression pedals and jog wheels (rotary encoders)
+- Support for digital foot switches (momentary or latch), analog expression pedals, jog wheels (rotary encoders) and triggers.
 - 6 controllers ports for ESP32 and 8 controllers ports for ESP32S3. One controller port can support up to 6 indipendent switches for a total of 36 (ESP32) or 48 (ESP32S3) switches.
 - 20 banks + 1 global bank
 - 3 user profiles
@@ -52,35 +53,42 @@ New features, bug corrections, priority reply will be offered at zero-day to **s
 
 New features and bug corrections will be released to this public repository when one of the following goals is met (whichever come first):
 
-- **40 active sponsors**
-
-  _Select the level of sponsorship which best fit to you. Sponsorship starts from $1 per month._
-
-  >Goal is 40 active sponsors. Starting point is 30 active sponsors as of August 2nd, 2022.
-
 - **Five hundread stars**
 
   _Add a star to the project if you don't want be a sponsor._
 
   >Goal is 500 stars.
 
-- **9 months from May 1st, 2023**
+- **12 months from February 1st, 2023**
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on February 1st, 2024.
+  >Goal is reached on February 1st, 2025.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
-Sponsors version additions/fixes since May 1st, 2023:
-- BPI Leaf S3 and LILYGO® T-Display-S3 USB MIDI device mode
-- LILYGO® T-Display-S3 initial display support
-- Fixed sequence led in configuration file
-- Added MIDI Channel "None" (do not send any message but recorded as last message sent to be used with Repeat Overwrite) and "All"
+Sponsors version additions/fixes since February 1st, 2024:
+- None
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
 ## Public versions history
+
+<details>
+<summary>3.2.1 - February 1st, 2024</summary>
+- BPI Leaf S3 and LILYGO® T-Display-S3 USB MIDI device mode
+- LILYGO® T-Display-S3 display support
+- Fixed sequence led in configuration file
+- Added MIDI Channel "None" (do not send any message but recorded as last message sent to be used with Repeat Overwrite) and "All"
+- Fixed sequences loop when last slot is not empty
+- Fixed an error preventing AP mode with ESP32 S3
+- Added "MIDI Clock Master", "MIDI CLock Slave", "MIDI Clock Off", "Repeat", "Repeat Overwrite" to configuration file
+- Updated onboard Bootstrap to 5.3.2
+- Better battery voltage detection for BPI Leaf S3
+- Updated SortableJS to 1.15.2
+- Moved low priority tasks to Core 0
+- Added `lilygo-t-display` target board with Espressif 6.5.0
+</details>
 
 <details>
 <summary>3.1.6 - May 1st, 2023</summary>
@@ -706,3 +714,7 @@ https://github.com/Keeze
 https://github.com/mattzzw
 ![Keeze](https://user-images.githubusercontent.com/1312120/224659984-124092b5-49f4-4abf-a4c2-acec75f85838.jpg)
 [More details](https://github.com/alf45tar/PedalinoMini/discussions/438)
+
+https://github.com/Jelle7and9
+![Jelle7and9](https://private-user-images.githubusercontent.com/137293236/296360183-a406c9c0-85ea-4de2-8c7b-98e684c2ecfc.jpg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDY1NDQ2MjEsIm5iZiI6MTcwNjU0NDMyMSwicGF0aCI6Ii8xMzcyOTMyMzYvMjk2MzYwMTgzLWE0MDZjOWMwLTg1ZWEtNGRlMi04YzdiLTk4ZTY4NGMyZWNmYy5qcGc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwMTI5JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDEyOVQxNjA1MjFaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1iNTZhOTc3MmY0NzZmMjYyN2M4YWQ1OGJlZDY0YWU0MzI2ZWRjZTcyYmVkOTMzMjlkMDk2MTg1NWJlMzNjYWViJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.sq_9kq5V_pSjptEbSwXTBYt72uao0_-1hkDD48aqJd0)
+[More details](https://github.com/alf45tar/PedalinoMini/discussions/454)

@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2023 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -68,7 +68,7 @@ bool trim_page(unsigned int start, unsigned int len, bool lastcall = false) {
   const unsigned int saved = page.length();
 
   if (saved > WEBPAGE_MEMORY_ALLOCATION) {
-    DPRINT("Memory fragmentation warning: webpage memory allocation %d bytes greater then %d bytes reserved.\n%s\n", saved, WEBPAGE_MEMORY_ALLOCATION, page.c_str());
+    DPRINT("Memory fragmentation warning: webpage memory allocation %d bytes greater then %d bytes reserved (requested %d bytes).\n%s\n", saved, WEBPAGE_MEMORY_ALLOCATION, len, page.c_str());
   }
 
   if (fullPageCompleted) {
@@ -104,8 +104,7 @@ bool trim_page(unsigned int start, unsigned int len, bool lastcall = false) {
 
 bool get_top_page(int p, unsigned int start, unsigned int len) {
 
-  while (reloadProfile)
-    delay(100);
+  if (reloadProfile) controller_run();
 
   page = "";
 
@@ -117,7 +116,7 @@ bool get_top_page(int p, unsigned int start, unsigned int len) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN' crossorigin='anonymous'>");
   #else
     page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/css/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   #endif
@@ -126,8 +125,7 @@ bool get_top_page(int p, unsigned int start, unsigned int len) {
     page += theme;
     page += F("/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   }
-  page += F("<script src='/js/Sortable.min.js' integrity='' crossorigin='anonymous'></script>");
-  //page += F("<link href='/css/sidebars.css' rel='stylesheet'>");
+  if (p == 2) page += F("<script defer src='/js/Sortable.min.js' integrity='' crossorigin='anonymous'></script>");
   page += F("</head>");
 
   page += F("<body>");
@@ -365,7 +363,7 @@ void get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script src='/js/bootstrap.bundle.min.js' integrity='sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3' crossorigin='anonymous'></script>");
+  page += F("<script defer src='/js/bootstrap.bundle.min.js' integrity='sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL' crossorigin='anonymous'></script>");
 #else
   page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/js/bootstrap.bundle.min.js' crossorigin='anonymous'></script>");
 #endif
@@ -551,12 +549,19 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += maxAllocation / 1024;
   page += F(" kB)</dd>");
 #ifdef BATTERY
+#ifdef ARDUINO_BPI_LEAF_S3
   page += F("<dt>Battery Voltage</dt><dd>");
+  page += String(batteryVoltage / 1000.0, 1);
+  page += F(" V ");
+  page += F("</dd>");
+#else
+  page += F("<dt>Input Voltage</dt><dd>");
   page += String(batteryVoltage / 1000.0, 1);
   page += F(" V ");
   page += batteryVoltage > 4300 ? F("plugged") : F("on battery");
   page += F("</dd>");
-#endif
+#endif // ARDUINO_BPI_LEAF_S3
+#endif // BATTERY
   page += F("<dt>Uptime</dt><dd>");
   unsigned long sec = (millis() / 1000) % 60;
   unsigned long min = (millis() / 1000 / 60) % 60;
@@ -568,9 +573,9 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += sec;
   page += F("s");
   page += F("</dd>");
-  //page += F("<dt>Running On Core</dt><dd>");
-  //page += xPortGetCoreID();
-  //page += F("</dd>");
+  page += F("<dt>Webserver Running On Core</dt><dd>");
+  page += xPortGetCoreID();
+  page += F("</dd>");
   page += F("</div>");
 
   if (trim_page(start, len)) return;
@@ -964,9 +969,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
   if (get_top_page(2, start, len)) return;
 
-  page += F("<div class='row mb-3'>");
-  page += F("<div class='col-8 col-md-9 col-xl-10'>");
-  page += F("<div class='card h-100'>");
+  page += F("<div class='card h-100 mb-3'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-book' viewBox='0 0 20 20'>");
   page += F("<path d='M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z'/>");
@@ -978,7 +981,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("<form method='get' id='banks-form'>");
   page += F("<input type='hidden' id='banksorder' name='banksorder' value=''/>");
   page += F("<div class='container g-0'>");
-  page += F("<div id='banklist' class='row row-cols-6 g-0'>");
+  page += F("<div id='banklist' class='row g-0'>");
 
   if (trim_page(start, len)) return;
 
@@ -1006,7 +1009,6 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</form>");
   page += F("</div>");
   page += F("</div>");
-  page += F("</div>");
 
   if (trim_page(start, len)) return;
 
@@ -1030,8 +1032,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("<div class='col-4 col-md-3 col-xl-2'>");
-  page += F("<div class='card h-100'>");
+  page += F("<div class='card h-100 mb-3'>");
   page += F("<h5 class='card-header'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='currentColor' class='bi bi-toggles' viewBox='0 0 20 20'>");
   page += F("<path d='M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7h-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm2.45 0A3.49 3.49 0 0 1 8 3.5 3.49 3.49 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5H6.95zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7z'/>");
@@ -1040,11 +1041,9 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += uicontrol;
   page += F("</h5>");
   page += F("<div class='card-body'>");
-  //page += F("<div class='input-group input-group-sm'>");
-  //page += F("<div class='btn-group flex-wrap'>");
   page += F("<form method='get'>");
   page += F("<div class='container g-0'>");
-  page += F("<div class='row row-cols-3'>");
+  page += F("<div class='row'>");
   page += F("<div class='col text-center'>");
   page += F("<button type='button submit' class='btn btn-sm");
   page += (uicontrol.equals("All") ? F(" btn-primary") : F(""));
@@ -1070,8 +1069,6 @@ void get_actions_page(unsigned int start, unsigned int len) {
   page += F("</div>");
   page += F("</div>");
   page += F("</form>");
-  page += F("</div>");
-  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
@@ -1248,6 +1245,10 @@ void get_actions_page(unsigned int start, unsigned int len) {
         page +=F("analog");
         break;
 
+      case PED_ANALOG_PAD:
+        page +=F("analogpad");
+        break;
+
       case PED_JOG_WHEEL:
         page +=F("jogwheel");
         break;
@@ -1360,6 +1361,15 @@ void get_actions_page(unsigned int start, unsigned int len) {
         if (act->event == PED_EVENT_MOVE) page += F(" selected");
         page += F(">");
         page += F("Move</option>");
+        break;
+
+      case PED_ANALOG_PAD:
+        page += F("<option value='");
+        page += PED_EVENT_SHOT;
+        page += F("'");
+        if (act->event == PED_EVENT_SHOT) page += F(" selected");
+        page += F(">");
+        page += F("Shot</option>");
         break;
 
       case PED_JOG_WHEEL:
@@ -1641,6 +1651,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
     if (act->midiMessage == PED_ACTION_REPEAT_OVERWRITE) page += F(" selected");
     page += F(">Repeat Overwrite</option>");
     page += F("<option value='");
+    page += PED_ACTION_SCAN;
+    page += F("'");
+    if (act->midiMessage == PED_ACTION_SCAN) page += F(" selected");
+    page += F(">Scan</option>");
+    page += F("<option value='");
     page += PED_ACTION_DEVICE_INFO;
     page += F("'");
     if (act->midiMessage == PED_ACTION_DEVICE_INFO) page += F(" selected");
@@ -1666,13 +1681,23 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("' name='channel");
     page += i;
     page += F("'>");
-    for (unsigned int c = 1; c <= 16; c++) {
+    for (unsigned int c = 0; c <= 17; c++) {
       page += F("<option value='");
       page += c;
       page += F("'");
       if (act->midiChannel == c) page += F(" selected");
       page += F(">");
-      page += c;
+      switch (c) {
+        case 0:
+          page += "None";
+          break;
+        case 17:
+          page += "All";
+          break;
+        default:  // 1..16
+          page += c;
+          break;
+      }
       page += F("</option>");
 
       if (trim_page(start, len)) return;
@@ -2023,7 +2048,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "               document.getElementById('codeInput'     + i).disabled = true;"
             "               break;"
             "             case 'Release':"
-            "               document.getElementById('codeInput'     + i).disabled = true;"
+            "               document.getElementById('fromInput'     + i).disabled = true;"
             "               document.getElementById('toInput'       + i).disabled = true;"
             "               document.getElementById('tagOnInput'    + i).disabled = true;"
             "               document.getElementById('color1Input'   + i).disabled = true;"
@@ -2340,6 +2365,11 @@ void get_pedals_page(unsigned int start, unsigned int len) {
       if (pedals[i-1].mode == PED_ANALOG) page += F(" selected");
       page += F(">Analog</option>");
       page += F("<option value='");
+      page += PED_ANALOG_PAD;
+      page += F("'");
+      if (pedals[i-1].mode == PED_ANALOG_PAD) page += F(" selected");
+      page += F(">Analog Pad</option>");
+      page += F("<option value='");
       page += PED_JOG_WHEEL;
       page += F("'");
       if (pedals[i-1].mode == PED_JOG_WHEEL) page += F(" selected");
@@ -2379,15 +2409,24 @@ void get_pedals_page(unsigned int start, unsigned int len) {
       page += F("'");
       if (pedals[i-1].mode == PED_ANALOG_LATCH) page += F(" selected");
       page += F(">Analog+Latch</option>");
+      page += F("<option value='");
+      page += PED_ANALOG_PAD_MOMENTARY;
+      page += F("'");
+      if (pedals[i-1].mode == PED_ANALOG_PAD_MOMENTARY) page += F(" selected");
+      page += F(">Analog Pad+Momentary</option>");
     }
 
     page += F("</select>");
-    page += F("<label for='modeSelect'>Mode</label>");
+    page += F("<label for='modeSelect");
+    page += i;
+    page += F("'>Mode</label>");
     page += F("</div>");
 
     if (trim_page(start, len)) return;
 
-    page += F("<div class='form-check form-switch'>");
+    page += F("<div class='form-check form-switch' id='polarityCheck_");
+    page += i;
+    page += F("'>");
     page += F("<input class='form-check-input' type='checkbox' id='polarityCheck");
     page += i;
     page += F("' name='polarity");
@@ -2402,7 +2441,9 @@ void get_pedals_page(unsigned int start, unsigned int len) {
 
     if (trim_page(start, len)) return;
 
-    page += F("<div class='form-check form-switch'>");
+    page += F("<div class='form-check form-switch' id='function1Check_");
+    page += i;
+    page += F("'>");
     page += F("<input class='form-check-input' type='checkbox' id='function1Check");
     page += i;
     page += F("' name='function1");
@@ -2417,7 +2458,9 @@ void get_pedals_page(unsigned int start, unsigned int len) {
 
     if (trim_page(start, len)) return;
 
-    page += F("<div class='form-check form-switch'>");
+    page += F("<div class='form-check form-switch'id='function2Check_");
+    page += i;
+    page += F("'>");
     page += F("<input class='form-check-input' type='checkbox' id='function2Check");
     page += i;
     page += F("' name='function2");
@@ -2432,7 +2475,9 @@ void get_pedals_page(unsigned int start, unsigned int len) {
 
     if (trim_page(start, len)) return;
 
-    page += F("<div class='form-check form-switch'>");
+    page += F("<div class='form-check form-switch' id='function3Check_");
+    page += i;
+    page += F("'>");
     page += F("<input class='form-check-input' type='checkbox' id='function3Check");
     page += i;
     page += F("' name='function3");
@@ -2447,7 +2492,9 @@ void get_pedals_page(unsigned int start, unsigned int len) {
 
     if (trim_page(start, len)) return;
 
-    page += F("<div class='form-check form-switch'>");
+    page += F("<div class='form-check form-switch' id='latchEmulation_");
+    page += i;
+    page += F("'>");
     page += F("<input class='form-check-input' type='checkbox' id='latchEmulation");
     page += i;
     page += F("' name='latchemulation");
@@ -2462,7 +2509,9 @@ void get_pedals_page(unsigned int start, unsigned int len) {
 
     if (trim_page(start, len)) return;
 
-    page += F("<div class='form-check form-switch'>");
+    page += F("<div class='form-check form-switch' id='autoCheck_");
+    page += i;
+    page += F("'>");
     page += F("<input class='form-check-input' type='checkbox' id='autoCheck");
     page += i;
     page += F("' name='autosensing");
@@ -2477,7 +2526,9 @@ void get_pedals_page(unsigned int start, unsigned int len) {
 
     if (trim_page(start, len)) return;
 
-    page += F("<div class='form-floating'>");
+    page += F("<div class='form-floating' id='mapSelect_");
+    page += i;
+    page += F("'>");
     page += F("<select class='form-select' id='mapSelect");
     page += i;
     page += F("' name='map");
@@ -2499,13 +2550,17 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     if (pedals[i-1].analogResponse == PED_ANTILOG) page += F(" selected");
     page += F(">Antilog</option>");
     page += F("</select>");
-    page += F("<label for='mapSelect'>Analog Response</label>");
+    page += F("<label for='mapSelect");
+    page += i;
+    page += F("'>Analog Response</label>");
     page += F("</div>");
 
     if (trim_page(start, len)) return;
 
     page += F("<div class='row g-1'>");
-    page += F("<div class='form-floating w-50'>");
+    page += F("<div class='form-floating w-50' id='minInput_");
+    page += i;
+    page += F("'>");
     page += F("<input type='number' class='form-control' id='minInput");
     page += i;
     page += F("' name='min");
@@ -2515,12 +2570,18 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("' value='");
     page += pedals[i-1].expZero;
     page += F("'>");
-    page += F("<label for='minInput'>Min</label>");
+    page += F("<label for='minInput");
+    page += i;
+    page += F("' id='minInputLabel");
+    page += i;
+    page += F("'>Min</label>");
     page += F("</div>");
 
     if (trim_page(start, len)) return;
 
-    page += F("<div class='form-floating w-50'>");
+    page += F("<div class='form-floating w-50' id='maxInput_");
+    page += i;
+    page += F("'>");
     page += F("<input type='number' class='form-control' id='maxInput");
     page += i;
     page += F("' name='max");
@@ -2530,12 +2591,19 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("' value='");
     page += pedals[i-1].expMax;
     page += F("'>");
-    page += F("<label for='maxInput'>Max</label>");
+    page += F("<label for='maxInput");
+    page += i;
+    page += F("' id='maxInputLabel");
+    page += i;
+    page += F("'>Max</label>");
     page += F("</div>");
     page += F("</div>");
 
     if (trim_page(start, len)) return;
 
+    page += F("<div id='easing_");
+    page += i;
+    page += F("'>");
     page += F("<label for='easing");
     page += i;
     page += F("'>Easing: ");
@@ -2548,6 +2616,11 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("' value='");
     page += (4 + lround(log10(pedals[i-1].snapMultiplier)));
     page += F("' oninput='this.previousElementSibling.textContent = `Easing: ` + this.value'>");
+    page += F("</div>");
+
+    page += F("<div id='threshold_");
+    page += i;
+    page += F("'>");
     page += F("<label for='threshold");
     page += i;
     page += F("'>Activity Threshold: ");
@@ -2560,6 +2633,127 @@ void get_pedals_page(unsigned int start, unsigned int len) {
     page += F("' value='");
     page += (log10(pedals[i-1].activityThreshold) / log10(2));
     page += F("' oninput='this.previousElementSibling.textContent = `Activity Threshold: ` + Math.pow(2, this.value)'>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='row g-1'>");
+    page += F("<div class='form-floating w-50' id='gain_");
+    page += i;
+    page += F("'>");
+    page += F("<input type='number' class='form-control' id='gain");
+    page += i;
+    page += F("' name='gain");
+    page += i;
+    page += F("' min='0' max='");
+    page += 100;
+    page += F("' step='0.01' value='");
+    page += pedals[i-1].gain;
+    page += F("'>");
+    page += F("<label for='gain");
+    page += i;
+    page += F("'>Gain</label>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='form-floating w-50' id='retrigger_");
+    page += i;
+    page += F("'>");
+    page += F("<input type='number' class='form-control' id='retrigger");
+    page += i;
+    page += F("' name='retrigger");
+    page += i;
+    page += F("' step='0.01' min='0' max='");
+    page += 1;
+    page += F("' value='");
+    page += pedals[i-1].retrigger;
+    page += F("'>");
+    page += F("<label for='retrigger");
+    page += i;
+    page += F("'>Retrigger</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='row g-1'>");
+    page += F("<div class='form-floating w-50' id='scanCycles_");
+    page += i;
+    page += F("'>");
+    page += F("<input type='number' class='form-control' id='scanCycles");
+    page += i;
+    page += F("' name='scancycles");
+    page += i;
+    page += F("' min='0' max='");
+    page += 100;
+    page += F("' value='");
+    page += pedals[i-1].scanCycles;
+    page += F("'>");
+    page += F("<label for='scanCycles");
+    page += i;
+    page += F("'>Scan</label>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='form-floating w-50' id='holdCycles_");
+    page += i;
+    page += F("'>");
+    page += F("<input type='number' class='form-control' id='holdCycles");
+    page += i;
+    page += F("' name='holdcycles");
+    page += i;
+    page += F("' min='0' max='");
+    page += 100;
+    page += F("' value='");
+    page += pedals[i-1].holdCycles;
+    page += F("'>");
+    page += F("<label for='holdCycles");
+    page += i;
+    page += F("'>Hold</label>");
+    page += F("</div>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='row g-1'>");
+    page += F("<div class='form-floating w-50' id='crosstalk_");
+    page += i;
+    page += F("'>");
+    page += F("<input type='number' class='form-control' id='crosstalk");
+    page += i;
+    page += F("' name='crosstalk");
+    page += i;
+    page += F("' min='0' max='");
+    page += 100;
+    page += F("' value='");
+    page += pedals[i-1].crosstalk;
+    page += F("'>");
+    page += F("<label for='crosstalk");
+    page += i;
+    page += F("'>Crosstalk (ms)</label>");
+    page += F("</div>");
+
+    if (trim_page(start, len)) return;
+
+    page += F("<div class='form-floating w-50' id='crosstalkRatio_");
+    page += i;
+    page += F("'>");
+    page += F("<input type='number' class='form-control' id='crosstalkRatio");
+    page += i;
+    page += F("' name='crosstalkratio");
+    page += i;
+    page += F("' step='0.01' min='0' max='");
+    page += 100;
+    page += F("' value='");
+    page += pedals[i-1].crosstalkRatio;
+    page += F("'>");
+    page += F("<label for='crosstalkRatio");
+    page += i;
+    page += F("'>Crosstalk Ratio</label>");
+    page += F("</div>");
+    page += F("</div>");
 
     page += F("</div>");
     page += F("</div>");
@@ -2603,17 +2797,25 @@ void get_pedals_page(unsigned int start, unsigned int len) {
   }
   page += F("};");
   page += F("function init_pedal(i) {"
-            "   document.getElementById('polarityCheck'       + i).disabled = true;"
-            "   document.getElementById('function1Check'      + i).disabled = true;"
-            "   document.getElementById('function2Check'      + i).disabled = true;"
-            "   document.getElementById('function3Check'      + i).disabled = true;"
-            "   document.getElementById('latchEmulation'      + i).disabled = true;"
-            "   document.getElementById('mapSelect'           + i).disabled = true;"
-            "   document.getElementById('minInput'            + i).disabled = true;"
-            "   document.getElementById('maxInput'            + i).disabled = true;"
-            "   document.getElementById('easing'              + i).disabled = true;"
-            "   document.getElementById('threshold'           + i).disabled = true;"
-            "   document.getElementById('autoCheck'           + i).disabled = true;");
+            "   document.getElementById('minInputLabel'        + i).textContent = 'Min';"
+            "   document.getElementById('maxInputLabel'        + i).textContent = 'Max';"
+            "   document.getElementById('polarityCheck_'       + i).style.display = 'none';"
+            "   document.getElementById('function1Check_'      + i).style.display = 'none';"
+            "   document.getElementById('function2Check_'      + i).style.display = 'none';"
+            "   document.getElementById('function3Check_'      + i).style.display = 'none';"
+            "   document.getElementById('latchEmulation_'      + i).style.display = 'none';"
+            "   document.getElementById('mapSelect_'           + i).style.display = 'none';"
+            "   document.getElementById('minInput_'            + i).style.display = 'none';"
+            "   document.getElementById('maxInput_'            + i).style.display = 'none';"
+            "   document.getElementById('easing_'              + i).style.display = 'none';"
+            "   document.getElementById('threshold_'           + i).style.display = 'none';"
+            "   document.getElementById('autoCheck_'           + i).style.display = 'none';"
+            "   document.getElementById('gain_'                + i).style.display = 'none';"
+            "   document.getElementById('retrigger_'           + i).style.display = 'none';"
+            "   document.getElementById('scanCycles_'          + i).style.display = 'none';"
+            "   document.getElementById('holdCycles_'          + i).style.display = 'none';"
+            "   document.getElementById('crosstalk_'           + i).style.display = 'none';"
+            "   document.getElementById('crosstalkRatio_'      + i).style.display = 'none';");
 
   if (trim_page(start, len)) return;
 
@@ -2622,59 +2824,81 @@ void get_pedals_page(unsigned int start, unsigned int len) {
             "     case 'Momentary 2':"
             "     case 'Momentary 3':"
             "     case 'Ladder':"
-            "       document.getElementById('latchEmulation'  + i).disabled = false;"
+            "       document.getElementById('latchEmulation_'  + i).style.display = 'block';"
             "     case 'Latch':"
             "     case 'Latch 2':"
             "     case 'Jog Wheel':"
-            "       document.getElementById('polarityCheck'   + i).disabled = false;"
-            "       document.getElementById('function1Check'  + i).disabled = false;"
-            "       document.getElementById('function2Check'  + i).disabled = false;"
-            "       document.getElementById('function3Check'  + i).disabled = false;"
+            "       document.getElementById('polarityCheck_'   + i).style.display = 'block';"
+            "       document.getElementById('function1Check_'  + i).style.display = 'block';"
+            "       document.getElementById('function2Check_'  + i).style.display = 'block';"
+            "       document.getElementById('function3Check_'  + i).style.display = 'block';"
             "       break;");
 
   if (trim_page(start, len)) return;
 
   page += F("     case 'Ultrasonic':"
-            "       document.getElementById('polarityCheck'   + i).disabled = false;"
-            "       document.getElementById('mapSelect'       + i).disabled = false;"
-            "       document.getElementById('minInput'        + i).disabled = false;"
-            "       document.getElementById('maxInput'        + i).disabled = false;"
-            "       document.getElementById('easing'          + i).disabled = false;"
-            "       document.getElementById('threshold'       + i).disabled = false;"
+            "       document.getElementById('polarityCheck_'   + i).style.display = 'block';"
+            "       document.getElementById('mapSelect_'       + i).style.display = 'block';"
+            "       document.getElementById('minInput_'        + i).style.display = 'block';"
+            "       document.getElementById('maxInput_'        + i).style.display = 'block';"
+            "       document.getElementById('easing_'          + i).style.display = 'block';"
+            "       document.getElementById('threshold_'       + i).style.display = 'block';"
             "       break;"
             "     case 'Analog':"
-            "       document.getElementById('polarityCheck'   + i).disabled = false;"
-            "       document.getElementById('mapSelect'       + i).disabled = false;"
-            "       document.getElementById('minInput'        + i).disabled = false;"
-            "       document.getElementById('maxInput'        + i).disabled = false;"
-            "       document.getElementById('easing'          + i).disabled = false;"
-            "       document.getElementById('threshold'       + i).disabled = false;"
-            "       document.getElementById('autoCheck'       + i).disabled = false;"
+            "       document.getElementById('polarityCheck_'   + i).style.display = 'block';"
+            "       document.getElementById('mapSelect_'       + i).style.display = 'block';"
+            "       document.getElementById('minInput_'        + i).style.display = 'block';"
+            "       document.getElementById('maxInput_'        + i).style.display = 'block';"
+            "       document.getElementById('easing_'          + i).style.display = 'block';"
+            "       document.getElementById('threshold_'       + i).style.display = 'block';"
+            "       document.getElementById('autoCheck_'       + i).style.display = 'block';"
             "       break;"
-            "     case 'Analog+Momentary':"
-            "       document.getElementById('polarityCheck'   + i).disabled = false;"
-            "       document.getElementById('function1Check'  + i).disabled = false;"
-            "       document.getElementById('function2Check'  + i).disabled = false;"
-            "       document.getElementById('function3Check'  + i).disabled = false;"
-            "       document.getElementById('latchEmulation'  + i).disabled = false;"
-            "       document.getElementById('mapSelect'       + i).disabled = false;"
-            "       document.getElementById('minInput'        + i).disabled = false;"
-            "       document.getElementById('maxInput'        + i).disabled = false;"
-            "       document.getElementById('easing'          + i).disabled = false;"
-            "       document.getElementById('threshold'       + i).disabled = false;"
-            "       document.getElementById('autoCheck'       + i).disabled = false;"
+            "     case 'Analog Pad+Momentary':"
+            "       document.getElementById('polarityCheck_'   + i).style.display = 'block';"
+            "       document.getElementById('function1Check_'  + i).style.display = 'block';"
+            "       document.getElementById('function2Check_'  + i).style.display = 'block';"
+            "       document.getElementById('function3Check_'  + i).style.display = 'block';"
+            "       document.getElementById('latchEmulation_'  + i).style.display = 'block';"
+            "     case 'Analog Pad':"
+            "       document.getElementById('minInputLabel'    + i).textContent   = 'Threshold';"
+            "       document.getElementById('maxInputLabel'    + i).textContent   = 'High Cut';"
+            "       document.getElementById('mapSelect_'       + i).style.display = 'block';"
+            "       document.getElementById('minInput_'        + i).style.display = 'block';"
+            "       document.getElementById('maxInput_'        + i).style.display = 'block';"
+            "       document.getElementById('gain_'            + i).style.display = 'block';"
+            "       document.getElementById('retrigger_'       + i).style.display = 'block';"
+            "       document.getElementById('scanCycles_'      + i).style.display = 'block';"
+            "       document.getElementById('holdCycles_'      + i).style.display = 'block';"
+            "       document.getElementById('crosstalk_'       + i).style.display = 'block';"
+            "       document.getElementById('crosstalkRatio_'  + i).style.display = 'block';"
+            "       break;");
+
+  if (trim_page(start, len)) return;
+
+  page += F("     case 'Analog+Momentary':"
+            "       document.getElementById('polarityCheck_'   + i).style.display = 'block';"
+            "       document.getElementById('function1Check_'  + i).style.display = 'block';"
+            "       document.getElementById('function2Check_'  + i).style.display = 'block';"
+            "       document.getElementById('function3Check_'  + i).style.display = 'block';"
+            "       document.getElementById('latchEmulation_'  + i).style.display = 'block';"
+            "       document.getElementById('mapSelect_'       + i).style.display = 'block';"
+            "       document.getElementById('minInput_'        + i).style.display = 'block';"
+            "       document.getElementById('maxInput_'        + i).style.display = 'block';"
+            "       document.getElementById('easing_'          + i).style.display = 'block';"
+            "       document.getElementById('threshold_'       + i).style.display = 'block';"
+            "       document.getElementById('autoCheck_'       + i).style.display = 'block';"
             "       break;"
             "     case 'Analog+Latch':"
-            "       document.getElementById('polarityCheck'   + i).disabled = false;"
-            "       document.getElementById('function1Check'  + i).disabled = false;"
-            "       document.getElementById('function2Check'  + i).disabled = false;"
-            "       document.getElementById('function3Check'  + i).disabled = false;"
-            "       document.getElementById('mapSelect'       + i).disabled = false;"
-            "       document.getElementById('minInput'        + i).disabled = false;"
-            "       document.getElementById('maxInput'        + i).disabled = false;"
-            "       document.getElementById('easing'          + i).disabled = false;"
-            "       document.getElementById('threshold'       + i).disabled = false;"
-            "       document.getElementById('autoCheck'       + i).disabled = false;"
+            "       document.getElementById('polarityCheck_'   + i).style.display = 'block';"
+            "       document.getElementById('function1Check_'  + i).style.display = 'block';"
+            "       document.getElementById('function2Check_'  + i).style.display = 'block';"
+            "       document.getElementById('function3Check_'  + i).style.display = 'block';"
+            "       document.getElementById('mapSelect_'       + i).style.display = 'block';"
+            "       document.getElementById('minInput_'        + i).style.display = 'block';"
+            "       document.getElementById('maxInput_'        + i).style.display = 'block';"
+            "       document.getElementById('easing_'          + i).style.display = 'block';"
+            "       document.getElementById('threshold_'       + i).style.display = 'block';"
+            "       document.getElementById('autoCheck_'       + i).style.display = 'block';"
             "       break;"
             "     default:"
             "       break;"
@@ -2924,11 +3148,7 @@ void get_interfaces_page(unsigned int start, unsigned int len) {
 
   page += F("<div class='container'>");
   page += F("<div class='row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-2 g-md-3 g-xl-4'>");
-#ifdef ARDUINO_BPI_LEAF_S33
   for (unsigned int i = 1; i <= INTERFACES; i++) {
-#else
-  for (unsigned int i = 2; i <= INTERFACES; i++) {
-#endif
     page += F("<div class='col'>");
     page += F("<div class='card h-100'>");
     page += F("<h6 class='card-header'>");
@@ -3233,16 +3453,26 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("' name='channel");
     page += i;
     page += F("'>");
-    for (unsigned int c = 1; c <= 16; c++) {
+    for (unsigned int c = 0; c <= 17; c++) {
       page += F("<option value='");
       page += c;
       page += F("'");
       if (sequences[s-1][i-1].midiMessage == PED_ACTION_LED_COLOR) {
-        if (c == 1) page += F(" selected");
+        if (c == 0) page += F(" selected");
       }
       else if (sequences[s-1][i-1].midiChannel == c) page += F(" selected");
       page += F(">");
-      page += c;
+      switch (c) {
+        case 0:
+          page += "None";
+          break;
+        case 17:
+          page += "All";
+          break;
+        default:  // 1..16
+          page += c;
+          break;
+      }
       page += F("</option>");
 
       if (trim_page(start, len)) return;
@@ -4215,6 +4445,9 @@ void get_options_page(unsigned int start, unsigned int len) {
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-wrench' viewBox='0 0 16 16'>");
   page += F("<path d='M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019l.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z'/>");
   page += F("</svg>");
+
+  if (trim_page(start, len)) return;
+
   page += F(" Reset to Factory Default</button> ");
   page += F("<button type='submit' name='action' value='reboot' class='btn btn-primary btn-sm'>");
   page += F("<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-bootstrap-reboot' viewBox='0 0 16 16'>");
@@ -4564,6 +4797,7 @@ void get_configurations_page(unsigned int start, unsigned int len) {
 
             "document.querySelector('#saveButton').addEventListener('click', function() { saveConfiguration(); });\n");
   page += F("</script>");
+
   page += F("</div>");
   page += F("</div>");
 
@@ -5371,7 +5605,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
         act->midiCode     = constrain(request->arg(String("code")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
         act->midiValue1   = constrain(request->arg(String("from")       + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
         act->midiValue2   = constrain(request->arg(String("to")         + String(i)).toInt(), 0, MIDI_RESOLUTION - 1);
-        act->midiChannel  = constrain(request->arg(String("channel")    + String(i)).toInt(), 1, 16);
+        act->midiChannel  = constrain(request->arg(String("channel")    + String(i)).toInt(), 0, 17);
         act->slot         = constrain(request->arg(String("slot")       + String(i)).toInt() - 1, 0, SLOTS);
         strlcpy(act->tag0,            request->arg(String("nameoff")    + String(i)).c_str(), MAXACTIONNAME + 1);
         strlcpy(act->tag1,            request->arg(String("nameon")     + String(i)).c_str(), MAXACTIONNAME + 1);
@@ -5469,6 +5703,24 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
     a = request->arg(String("analogthreshold") + String(i+1));
     pedals[i].activityThreshold = pow(2, constrain(a.toInt(), 1, 8));
 
+    a = request->arg(String("gain") + String(i+1));
+    pedals[i].gain = constrain(a.toFloat(), 0.0, 100.0);
+
+    a = request->arg(String("retrigger") + String(i+1));
+    pedals[i].retrigger = constrain(a.toFloat(), 0.0, 1.0);
+
+    a = request->arg(String("scancycles") + String(i+1));
+    pedals[i].scanCycles = constrain(a.toInt(), 0, 100);
+
+    a = request->arg(String("holdcycles") + String(i+1));
+    pedals[i].holdCycles = constrain(a.toInt(), 0, 100);
+
+    a = request->arg(String("crosstalk") + String(i+1));
+    pedals[i].crosstalk = constrain(a.toInt(), 0, 100);
+
+    a = request->arg(String("crosstalkratio") + String(i+1));
+    pedals[i].crosstalkRatio = constrain(a.toFloat(), 0.0, 100.0);
+
     if (pedals[i].expMax < pedals[i].expZero) {
       int t;
       t = pedals[i].expMax;
@@ -5479,7 +5731,10 @@ void http_handle_post_pedals(AsyncWebServerRequest *request) {
       pedals[i].expZero = ADC_RESOLUTION - 1;
       pedals[i].expMax = 0;
     }
+    if (pedals[i].mode == PED_ANALOG_PAD || pedals[i].mode == PED_ANALOG_PAD_MOMENTARY)
+      pedals[i].autoSensing = PED_DISABLE;
   }
+
   if (request->arg("action").equals("apply")) {
     loadConfig = true;
     alert = F("Changes applied. Changes will be lost on next reboot or on profile switch if not saved.");
@@ -5584,7 +5839,7 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
     sequences[s][i].midiMessage = constrain(a.toInt(), 0, 255);
 
     a = request->arg(String("channel") + String(i+1));
-    sequences[s][i].midiChannel = constrain(a.toInt(), 1, 16);
+    sequences[s][i].midiChannel = constrain(a.toInt(), 0, 17);
 
     a = request->arg(String("code") + String(i+1));
     sequences[s][i].midiCode = constrain(a.toInt(), 0, MIDI_RESOLUTION - 1);
@@ -5815,10 +6070,19 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
   if (poweroffRequired) {
     display_off();
     leds_off();
+#ifdef BLE
+    esp_bluedroid_disable();
+    esp_bt_controller_disable();
+#endif
+    esp_wifi_stop();
+    adc_power_off();
+    delay(200);
     for (byte b = 0; b < BANKS; b++) {
       action *act = actions[b];
       while (act != nullptr) {
         if (act->midiMessage == PED_ACTION_POWER_ON_OFF) {
+          rtc_gpio_pullup_en((gpio_num_t)PIN_D(controls[act->control].pedal1));
+          rtc_gpio_pulldown_dis((gpio_num_t)PIN_D(controls[act->control].pedal1));
           esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_D(controls[act->control].pedal1), 0);
           b = BANKS;
           break;
@@ -5826,14 +6090,6 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
         act = act->next;
       }
     }
-#ifdef BLE
-    esp_bluedroid_disable();
-    esp_bt_controller_disable();
-#endif
-    esp_wifi_stop();
-    adc_power_off();
-    //adc_power_release();
-    delay(200);
     esp_deep_sleep_start();
   }
 }
@@ -6020,7 +6276,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
     // Start with max available size
     if (Update.begin(UPDATE_SIZE_UNKNOWN, cmd)) {
       DPRINT("Update start\n");
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
     display_clear();
     display_progress_bar_title("OTA Update");
 #else
@@ -6039,7 +6295,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
     if (Update.write(data, len) == len) {
       if (Update.size()) {
         DPRINT("Progress: %5.1f%%\n", 100.0 * Update.progress() / Update.size());
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
         display_progress_bar_update(Update.progress(), Update.size());
 #else
 #endif
@@ -6049,7 +6305,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
       StreamString str;
       Update.printError(str);
       DPRINT("Update fail: %s", str.c_str());
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
       display_clear();
       display_progress_bar_title2("Fail!", str.c_str());
 #else
@@ -6061,7 +6317,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
   if (final) {
     if (Update.end(true)) {   //true to set the size to the current progress
       DPRINT("Update Success: %uB\n", index+len);
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
       display_clear();
       display_progress_bar_title("Success!");
 #else
@@ -6070,7 +6326,7 @@ void http_handle_update_file_upload(AsyncWebServerRequest *request, String filen
       StreamString str;
       Update.printError(str);
       DPRINT("Update fail: %s", str.c_str());
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
       display_clear();
       display_progress_bar_title2("Fail!", str.c_str());
 #else
@@ -6270,8 +6526,8 @@ void http_setup() {
 #endif
   httpServer.serveStatic("/favicon.ico",                SPIFFS, "/favicon.ico").setDefaultFile("/favicon.ico").setCacheControl("max-age=600");
   httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
-  httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
-  httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
+  //httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
+  //httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/Sortable.min.js",         SPIFFS, "/js/Sortable.min.js").setDefaultFile("/js/Sortable.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json").setDefaultFile("/schema.json").setCacheControl("max-age=600");
   httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
@@ -6299,12 +6555,45 @@ void http_setup() {
   httpServer.on("/update",          HTTP_GET,   http_handle_update);
   httpServer.on("/update",          HTTP_POST,  http_handle_post_update, http_handle_update_file_upload);
   httpServer.on("/progress",        HTTP_GET,   http_handle_progress);
+
+
+  // Workaround to serve big files without WDT or waiting forever
+  // https://github.com/me-no-dev/ESPAsyncWebServer/pull/770
+
+  httpServer.on("/css/bootstrap.min.css", HTTP_GET, [](AsyncWebServerRequest *request){
+    File f = SPIFFS.open("/css/bootstrap.min.css.gz", FILE_READ);
+    if (!f || !f.available()) return;
+
+    AsyncWebServerResponse *response = request->beginChunkedResponse("text/css", [f](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+      File fl = f;
+      return fl.read(buffer, maxLen);
+    });
+
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+    }
+  );
+
+  httpServer.on("/js/bootstrap.bundle.min.js", HTTP_GET, [](AsyncWebServerRequest *request){
+    File f = SPIFFS.open("/js/bootstrap.bundle.min.js.gz", FILE_READ);
+    if (!f || !f.available()) return;
+
+    AsyncWebServerResponse *response = request->beginChunkedResponse("text/css", [f](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
+      File fl = f;
+      return fl.read(buffer, maxLen);
+    });
+
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+    }
+  );
+
   httpServer.onNotFound(http_handle_not_found);
 
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
   httpServer.begin();
 
-  // Setup a 10Hz timer
+  // Setup a 10Hz timer (every 100 ms)
   Timer2Attach(100);
 
   // Allocate memory for web page
@@ -6316,13 +6605,21 @@ void http_setup() {
 
 inline void http_run() {
 
+  if (webServerStart) {
+    webServerStart = false;
+    http_setup();
+    DPRINT("HTTP server started on port 80\n");
+    DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
+    DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
+  }
+
   if (interruptCounter2 > 0) {
 
     interruptCounter2 = 0;
 
 #ifdef WEBSOCKET
     //webSocket.binaryAll(display.buffer, 128*64);
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
 #else
     if (wsClient) wsClient->binary(display.buffer, 128*64);
 #endif

@@ -242,30 +242,39 @@
                                 "Program Change-",
                                 "Pitch Bend",
                                 "Channel Pressure",
-                                "Midi Start",
-                                "Midi Stop",
-                                "Midi Continue",
-                                "Sequence",
-                                "Step by Step+",
-                                "Step by Step-",
-                                "Bank+",
-                                "Bank-",
                                 "Start",
                                 "Stop",
                                 "Continue",
+                                "Sequence",
+                                "Step by Step+",
+                                "Step by Step-",
+                                "MIDI Clock Master",
+                                "MIDI Clock Slave",
+                                "MIDI Clock Off",
+                                "MTC Master",
+                                "MTC Slave",
+                                "MTC Off",
+                                "MTC Time Signature",
+                                "MTC Start",
+                                "MTC Stop",
+                                "MTC Continue",
                                 "Tap",
                                 "BPM+",
                                 "BPM-",
                                 "OSC Message",
+                                "Bank+",
+                                "Bank-",
                                 "Profile+",
                                 "Profile-",
                                 "Set Led Color",
+                                "Repeat",
+                                "Repeat Overwrite",
                                 "Device Info",
                                 "Power On/Off"]
                     },
                     "Channel": {
                         "type": "integer",
-                        "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
                     },
                     "Code": {
                         "type": "integer",
@@ -328,7 +337,7 @@
                     },
                     "Channel": {
                         "type": "integer",
-                        "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
                     },
                     "Code": {
                         "type": "integer",
@@ -336,6 +345,11 @@
                         "maximum": 255
                     },
                     "Value": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                    },
+                    "Led": {
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 255
@@ -398,7 +412,7 @@
                     },
                     "Mode": {
                         "type": "string",
-                        "enum": ["None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic", "Analog+Momentary", "Analog+Latch"]
+                        "enum": ["None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2","Momentary 3", "Latch 2", "Ladder", "Ultrasonic", "Analog+Momentary", "Analog+Latch", "Analog Pad", "Analog Pad+Momentary"]
                     },
                     "InvertPolarity": {
                         "type": "boolean"

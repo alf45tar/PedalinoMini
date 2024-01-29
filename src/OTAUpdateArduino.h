@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2020 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -30,7 +30,7 @@ void ota_begin(const char *hostname) {
     webSocket.enable(false);
     webSocket.closeAll();
 #endif
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
     display_clear();
     display_progress_bar_title("OTA Update");
 #else
@@ -45,7 +45,7 @@ void ota_begin(const char *hostname) {
   });
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
     display_progress_bar_update(progress, total);
 #else
     display.drawProgressBar(4, 32, 120, 8, progress / (total / 100) );
@@ -59,7 +59,7 @@ void ota_begin(const char *hostname) {
   });
 
   ArduinoOTA.onEnd([]() {
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
     display_clear();
     display_progress_bar_title("Restart");
 #else

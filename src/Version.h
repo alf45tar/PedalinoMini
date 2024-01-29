@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2023 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -18,9 +18,9 @@ extern "C" {
 /** Major version number (X.x.x) */
 #define PEDALINO_VERSION_MAJOR   3
 /** Minor version number (x.X.x) */
-#define PEDALINO_VERSION_MINOR   1
+#define PEDALINO_VERSION_MINOR   2
 /** Patch version number (x.x.X) */
-#define PEDALINO_VERSION_PATCH   6
+#define PEDALINO_VERSION_PATCH   1
 
 #define xstr(s) sstr(s)  // stringize the result of expansion of a macro argument
 #define sstr(s) #s

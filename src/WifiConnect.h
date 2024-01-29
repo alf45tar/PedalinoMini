@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2023 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -101,10 +101,7 @@ void start_services()
     case PED_BOOT_WIFI:
     case PED_BOOT_AP:
     case PED_BOOT_AP_NO_BLE:
-      http_setup();
-      DPRINT("HTTP server started on port 80\n");
-      DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());
-      DPRINT("Connect to http://%s.local for configuration\n", host.c_str());
+      webServerStart = true;
       break;
   }
 #endif
@@ -274,9 +271,10 @@ void WiFiEvent(WiFiEvent_t event)
     case SYSTEM_EVENT_STA_WPS_ER_SUCCESS:
       DPRINT("SYSTEM_EVENT_STA_WPS_ER_SUCCESS\n");
       wpsStatus = 1;
-      if (WiFi.getMode() == WIFI_STA) ESP_ERROR_CHECK(esp_wifi_wps_disable());
-      //WiFi.begin();
-      ESP_ERROR_CHECK(esp_wifi_connect());
+      if (WiFi.getMode() == WIFI_STA) {
+        ESP_ERROR_CHECK(esp_wifi_wps_disable());
+        ESP_ERROR_CHECK(esp_wifi_connect());
+      }
       break;
 
     case SYSTEM_EVENT_STA_WPS_ER_FAILED:
@@ -523,7 +521,7 @@ bool wps_config()
 #endif
   wpsConfig.wps_type = WPS_TYPE_PBC;
   strcpy(wpsConfig.factory_info.manufacturer, "ESPRESSIF");
-#ifdef ARDUINO_BPI_LEAF_S3
+#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
   strcpy(wpsConfig.factory_info.model_number, "ESP32-S3");
 #else
   strcpy(wpsConfig.factory_info.model_number, "ESP32");

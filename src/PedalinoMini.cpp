@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2023 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -40,19 +40,21 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <esp_partition.h>
 #include <esp_wifi.h>
 #include <esp_bt_main.h>
+#include <driver/rtc_io.h>
 #include <string>
 #include "Pedalino.h"
 #include "TickerTimer.h"
 #include "LedsEffects.h"
 #include "SerialMidiOut.h"
+#include "USBMidiOut.h"
 #include "UdpMidiOut.h"
 #include "BLEMidiOut.h"
-#include "USBMidiIn.h"
 #include "SerialMidiIn.h"
+#include "USBMidiIn.h"
 #include "UdpMidiIn.h"
 #include "BLEMidiIn.h"
 #include "Config.h"
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
 #include "DisplayTFT.h"
 #else
 #include "DisplayOLED.h"
@@ -75,12 +77,16 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <esp32c3/rom/rtc.h>
 #elif CONFIG_IDF_TARGET_ESP32S3
 #include <esp32s3/rom/rtc.h>
-#else 
+#else
 #error Target CONFIG_IDF_TARGET is not supported
 #endif
 #else // ESP32 Before IDF 4.0
 #include <rom/rtc.h>
 #endif
+
+TaskHandle_t loopCore0;   // loop() on core 0
+void loop0(void * pvParameters);
+
 
 void verbose_print_reset_reason(int reason)
 {
@@ -105,69 +111,6 @@ void verbose_print_reset_reason(int reason)
   }
 }
 
-void IRAM_ATTR onButtonLeft()
-{
-  static unsigned long last_interrupt_time = 0;
-  unsigned long interrupt_time = millis();
-  // If interrupts come faster than 200ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 200) {
-    if (reloadProfile) return;
-    currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
-    reloadProfile = true;
-  }
-  last_interrupt_time = interrupt_time;
-}
-
-void IRAM_ATTR onButtonRight()
-{
-  static unsigned long last_interrupt_time = 0;
-  unsigned long interrupt_time = millis();
-  // If interrupts come faster than 200ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 200) {
-    if (reloadProfile) return;
-    currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
-    reloadProfile = true;
-  }
-  last_interrupt_time = interrupt_time;
-}
-
-void boot_button_event_handler(AceButton* button, uint8_t eventType, uint8_t buttonState)
-{
-  DPRINT("Pedal: Boot    Button: %d    EventType: %d     ButtonState: %d\n", button->getId(), eventType, buttonState);
-
-  switch (eventType) {
-
-    case AceButton::kEventClicked:
-      /*
-      if (!reloadProfile) {
-        currentProfile = (currentProfile == (PROFILES - 1) ? 0 : currentProfile + 1);
-        reloadProfile = true;
-      }
-      */
-      currentBank = (currentBank == BANKS - 1 ? 0 : currentBank + 1);
-      update_current_step();
-      leds_refresh();
-      break;
-
-    case AceButton::kEventDoubleClicked:
-      /*
-      if (!reloadProfile) {
-        currentProfile = (currentProfile == 0 ? PROFILES - 1 : currentProfile - 1);
-        reloadProfile = true;
-      }
-      */
-      currentBank = (currentBank == 0 ? BANKS - 1 : currentBank - 1);
-      update_current_step();
-      leds_refresh();
-      break;
-
-    case AceButton::kEventLongPressed:
-      scrollingMode = !scrollingMode;
-      leds_refresh();
-      break;
-  }
-}
-
 void wifi_and_battery_level() {
 
   if (interruptCounter1 > 0) {
@@ -179,7 +122,7 @@ void wifi_and_battery_level() {
 
 #ifdef WIFI
     if (wifiEnabled) wifiLevel = (3 * wifiLevel + WiFi.RSSI()) / 4;
-#endif
+#endif // WIFI
 
 #ifdef BATTERY
 #ifdef BATTERY_ADC_EN
@@ -191,19 +134,23 @@ void wifi_and_battery_level() {
     pinMode(BATTERY_ADC_EN, OUTPUT);
     digitalWrite(BATTERY_ADC_EN, HIGH);
     delay(10);
-#endif
+#endif // BATTERY_ADC_EN
     uint16_t v = analogRead(BATTERY_PIN);
 #ifdef BATTERY_ADC_EN
     digitalWrite(BATTERY_ADC_EN, LOW);
-#endif
+#endif // BATTERY_ADC_EN
+#ifdef ARDUINO_BPI_LEAF_S3
+    uint16_t voltage = ((uint32_t)v * 2 * 37 * vref) / 10240;   //  float voltage = ((float)v / 1024.0) * 2.0 * 3.3 * (vref / 1000.0);
+#else
     uint16_t voltage = ((uint32_t)v * 2 * 33 * vref) / 10240;   //  float voltage = ((float)v / 1024.0) * 2.0 * 3.3 * (vref / 1000.0);
+#endif // ARDUINO_BPI_LEAF_S3
     uint16_t difference = abs(voltage - batteryVoltage);
-    //DPRINT("%d %d %d\n", voltage, batteryVoltage, difference);
-    if (difference > 200)
+    //DPRINT("%d %d %d %d\n", voltage, batteryVoltage, difference, map2(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100));
+    if (difference > 100)
       batteryVoltage = (uint16_t)voltage;
     else
       batteryVoltage = (7 * batteryVoltage + voltage) / 8;
-#endif
+#endif // BATTERY
 
 #ifdef DIAGNOSTIC
     static byte sec = 0;
@@ -216,7 +163,7 @@ void wifi_and_battery_level() {
       historyStart = (historyStart + 1) % POINTS;
     }
     sec = (sec + 1) % SECONDS_BETWEEN_SAMPLES;
-#endif
+#endif // DIAGNOSTIC
   }
 }
 
@@ -255,10 +202,29 @@ void setup()
   DPRINT("Flash Size %d, Flash Speed %d Hz\n",ESP.getFlashChipSize(), ESP.getFlashChipSpeed());
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
-#ifdef TTGO_T_DISPLAY
-  //Check type of calibration value used to characterize ADC for BATTERY_PIN (GPIO34)
+
+  // Reset the pin used for power off
+  // If the specified GPIO is a valid RTC GPIO, init as digital GPIO
+  for (byte p = 0; p < PEDALS; p++) {
+    if (rtc_gpio_is_valid_gpio((gpio_num_t)PIN_D(p))) rtc_gpio_deinit((gpio_num_t)PIN_D(p));
+  }
+
+#ifdef BATTERY_PIN
+  //Check type of calibration value used to characterize ADC for BATTERY_PIN
   esp_adc_cal_characteristics_t adc_chars;
-  esp_adc_cal_value_t           val_type = esp_adc_cal_characterize((adc_unit_t)ADC_UNIT_1, (adc_atten_t)ADC1_CHANNEL_6, (adc_bits_width_t)ADC_WIDTH_BIT_12, 1100, &adc_chars);
+#if defined ARDUINO_LILYGO_T_DISPLAY
+  // GPIO34
+  esp_adc_cal_value_t           val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+#elif defined ARDUINO_BPI_LEAF_S3
+  // GPIO14
+  esp_adc_cal_value_t           val_type = esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+#elif defined ARDUINO_LILYGO_T_DISPLAY_S3
+  // GPIO04
+  esp_adc_cal_value_t           val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+#else
+  // GPIO__
+  esp_adc_cal_value_t           val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+#endif
   if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
     vref = adc_chars.vref;
     DPRINT("eFuse Vref:%u mV\n", adc_chars.vref);
@@ -267,7 +233,7 @@ void setup()
   } else {
     DPRINT("Default Vref: 1100mV\n");
   }
-#endif
+#endif // BATTERY_PIN
 
   // Setup a 1Hz timer for wifi and battery level monitoring and logging
   Timer1Attach(1000);
@@ -292,7 +258,7 @@ void setup()
   DPRINTLN("|    |   \\  ___// /_/ | / __ \\|  |_|  |   |  (  <_> )    Y    \\  |   |  \\  | (  (     |    |/    Y    \\   )  )");
   DPRINTLN("|____|    \\___  >____ |(____  /____/__|___|  /\\____/\\____|__  /__|___|  /__|  \\  \\    |____|\\____|__  /  /  / ");
   DPRINTLN("              \\/     \\/     \\/             \\/               \\/        \\/       \\__\\                 \\/  /__/ ");
-  DPRINTLN("                                                                                  (c) 2018-2023 alf45star     ");
+  DPRINTLN("                                                                                  (c) 2018-2024 alf45star     ");
   DPRINTLN("                                                                      https://github.com/alf45tar/PedalinoMini");
   DPRINT("\nHostname: %s\n", host.c_str());
   DPRINT("PSRAM%sfound\n", psramFound() ? " " : " not ");
@@ -484,15 +450,12 @@ void setup()
   reloadProfile = true;
   controller_run();
 
-#ifdef ARDUINO_BPI_LEAF_S33
   // Initiate USB Device MIDI communications, listen to all channels and turn Thru on/off
-  usb_device_midi_connect();             // On receiving MIDI data callbacks setup
-  DPRINT("USB Device MIDI started\n");
-#endif
+  usb_midi_connect();                 // On receiving MIDI data callbacks setup
+  DPRINT("USB MIDI started\n");
 
   // Initiate serial MIDI communications, listen to all channels and turn Thru on/off
   serial_midi_connect();              // On receiving MIDI data callbacks setup
-  DPRINT("USB MIDI started\n");
   DPRINT("DIN MIDI started\n");
 
 #ifdef BLUFI
@@ -502,7 +465,7 @@ void setup()
 #ifdef WIFI
   if (wifiEnabled) {
     WiFi.persistent(false);
-#ifdef ARDUINO_BPI_LEAF_S3    
+#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
     WiFi.useStaticBuffers(true);
 #endif
     WiFi.onEvent(WiFiEvent);
@@ -536,32 +499,14 @@ void setup()
 
   set_initial_led_color();
 
-#ifdef LEFT_PIN
-  pinMode(LEFT_PIN, INPUT_PULLUP);
-  attachInterrupt(LEFT_PIN, onButtonLeft, CHANGE);
-#endif
-#ifdef CENTER_PIN
-  pinMode(CENTER_PIN, INPUT_PULLUP);
-  bootButtonConfig.setFeature(ButtonConfig::kFeatureClick);
-  bootButtonConfig.setFeature(ButtonConfig::kFeatureDoubleClick);
-  bootButtonConfig.setFeature(ButtonConfig::kFeatureLongPress);
-  bootButtonConfig.setFeature(ButtonConfig::kFeatureRepeatPress);
-  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
-  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterClick);
-  bootButtonConfig.setFeature(ButtonConfig::kFeatureSuppressAfterDoubleClick);
-  bootButtonConfig.setDebounceDelay(debounceInterval);
-  bootButtonConfig.setClickDelay(pressTime);
-  bootButtonConfig.setDoubleClickDelay(doublePressTime);
-  bootButtonConfig.setLongPressDelay(longPressTime);
-  bootButtonConfig.setRepeatPressDelay(repeatPressTime);
-  bootButtonConfig.setRepeatPressInterval(repeatPressTime);
-  bootButton.init(&bootButtonConfig, CENTER_PIN);
-  bootButton.setEventHandler(boot_button_event_handler);
-#endif
-#ifdef RIGHT_PIN
-  pinMode(RIGHT_PIN, INPUT_PULLUP);
-  attachInterrupt(RIGHT_PIN, onButtonRight, CHANGE);
-#endif
+  xTaskCreatePinnedToCore(
+                    loop0,       /* Task function. */
+                    "loopTask",  /* name of task. */
+                    8192,        /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &loopCore0,  /* Task handle to keep track of created task */
+                    0);          /* pin task to core 0 */
 
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
 }
@@ -569,123 +514,131 @@ void setup()
 
 void loop()
 {
-  switch (firmwareUpdate) {
-    case PED_UPDATE_ARDUINO_OTA:
-    case PED_UPDATE_HTTP:
-      return;
-
-    case PED_UPDATE_CLOUD:
-      //set_clock();
-      url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/css/bootstrap.min.css.gz");
-      get_file_from_cloud(url, "/css/bootstrap.min.css.gz");
-      url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/js/bootstrap.bundle.min.js.gz");
-      get_file_from_cloud(url, "/js/bootstrap.bundle.min.js.gz");
-      url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/schema.json");
-      get_file_from_cloud(url, "/schema.json");
-
-      latestFirmwareVersion = get_latest_firmware_version();
-      ota_http_update();
-      while (firmwareUpdate == PED_UPDATE_CLOUD) {
-        otaStatus = HttpsOTA.status();
-        switch (otaStatus) {
-          case HTTPS_OTA_IDLE:
-            //DPRINT("OTA upgrade have not started yet.\n");
-            break;
-          case HTTPS_OTA_UPDATING:
-            //DPRINT("OTA upgrade is in progress.\n");
-            break;
-          case HTTPS_OTA_SUCCESS:
-            DPRINT("OTA upgrade is successful.\n");
-            DPRINT("Restart!\n");
-            ESP.restart();
-            break;
-          case HTTPS_OTA_FAIL:
-            DPRINT("OTA upgrade failed.\n");
-            firmwareUpdate = PED_UPDATE_NONE;
-            break;
-          case HTTPS_OTA_ERR:
-            DPRINT("Error occured while creating xEventGroup().\n");
-            firmwareUpdate = PED_UPDATE_NONE;
-            break;
-        }
-        yield();
-      }
-      return;
-  }
-
-  bootButton.check();
-
-  MTC.loop();
+  // High priority activities run on Core 1
 
   // Check whether the input has changed since last time, if so, send the new value over MIDI
   controller_run();
 
-  // Listen to incoming messages
-#ifdef ARDUINO_BPI_LEAF_S33
-  if (interfaces[PED_USBDEVICEMIDI].midiIn && USB_DEVICE_MIDI.read())
-    DPRINTMIDI("USB DEVICE MIDI", USB_DEVICE_MIDI.getType(), USB_DEVICE_MIDI.getChannel(), USB_DEVICE_MIDI.getData1(), USB_DEVICE_MIDI.getData2());
-#endif
+  // Send MTC or MIDI CLock
+  MTC.loop();
+}
 
-  if (interfaces[PED_USBMIDI].midiIn && USB_MIDI.read())
-    DPRINTMIDI("USB MIDI", USB_MIDI.getType(), USB_MIDI.getChannel(), USB_MIDI.getData1(), USB_MIDI.getData2());
 
-  if (interfaces[PED_DINMIDI].midiIn && DIN_MIDI.read())
-    DPRINTMIDI("DIN MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
+void loop0(void * pvParameters)
+{
+  // Low priority activities run on Core 0 within WiFi and Bluetooth
+
+  for(;;) {
+
+    // Feed the watchdog of FreeRTOS
+    vTaskDelay(1);
+
+    // Listen to incoming messages
+    if (interfaces[PED_USBMIDI].midiIn && USB_MIDI.read())
+      DPRINTMIDI("USB MIDI", USB_MIDI.getType(), USB_MIDI.getChannel(), USB_MIDI.getData1(), USB_MIDI.getData2());
+
+    if (interfaces[PED_DINMIDI].midiIn && DIN_MIDI.read())
+      DPRINTMIDI("DIN MIDI", DIN_MIDI.getType(), DIN_MIDI.getChannel(), DIN_MIDI.getData1(), DIN_MIDI.getData2());
 
 #if defined(BLE) && !defined(BLECLIENT)
-  if (bleEnabled) {
-    if (interfaces[PED_BLEMIDI].midiIn && BLE_MIDI.read())
-      DPRINTMIDI("BLE MIDI", BLE_MIDI.getType(), BLE_MIDI.getChannel(), BLE_MIDI.getData1(), BLE_MIDI.getData2());
-  }
+    if (bleEnabled) {
+      if (interfaces[PED_BLEMIDI].midiIn && BLE_MIDI.read())
+        DPRINTMIDI("BLE MIDI", BLE_MIDI.getType(), BLE_MIDI.getChannel(), BLE_MIDI.getData1(), BLE_MIDI.getData2());
+    }
 #endif
 
 #ifdef WIFI
-  if (wifiEnabled) {
-    //if (WiFi.isConnected())
-    {
-      if (interfaces[PED_RTPMIDI].midiIn && RTP_MIDI.read())
-        DPRINTMIDI("RTP MIDI", RTP_MIDI.getType(), RTP_MIDI.getChannel(), RTP_MIDI.getData1(), RTP_MIDI.getData2());
+    if (wifiEnabled) {
+      //if (WiFi.isConnected())
+      {
+        if (interfaces[PED_RTPMIDI].midiIn && RTP_MIDI.read())
+          DPRINTMIDI("RTP MIDI", RTP_MIDI.getType(), RTP_MIDI.getChannel(), RTP_MIDI.getData1(), RTP_MIDI.getData2());
 
-      if (interfaces[PED_IPMIDI].midiIn && IP_MIDI.read())
-        DPRINTMIDI("IP  MIDI", IP_MIDI.getType(), IP_MIDI.getChannel(), IP_MIDI.getData1(), IP_MIDI.getData2());
+        if (interfaces[PED_IPMIDI].midiIn && IP_MIDI.read())
+          DPRINTMIDI("IP  MIDI", IP_MIDI.getType(), IP_MIDI.getChannel(), IP_MIDI.getData1(), IP_MIDI.getData2());
+      }
+
+      http_run();
+
+      // Run OTA update service
+      ota_handle();
+
+      // WiFi Provisioning
+      if (improv_serial::global_improv_serial.loop()) {
+        wifiSSID     = improv_serial::global_improv_serial.get_ssid();
+        wifiPassword = improv_serial::global_improv_serial.get_password();
+
+        DPRINT("SSID        : %s\n", wifiSSID.c_str());
+        DPRINT("Password    : %s\n", wifiPassword.c_str());
+
+        eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
+      }
     }
-
-    http_run();
-
-    // Run OTA update service
-    ota_handle();
-
-    // WiFi Provisioning
-    if (improv_serial::global_improv_serial.loop()) {
-      wifiSSID     = improv_serial::global_improv_serial.get_ssid();
-      wifiPassword = improv_serial::global_improv_serial.get_password();
-
-      DPRINT("SSID        : %s\n", wifiSSID.c_str());
-      DPRINT("Password    : %s\n", wifiPassword.c_str());
-
-      eeprom_update_sta_wifi_credentials(wifiSSID, wifiPassword);
-    }
-  }
 #endif // WIFI
 
-  wifi_and_battery_level();
+    wifi_and_battery_level();
 
-  // Update display
-  display_update();
+    // Update display
+    display_update();
 
-  if (scrollingMode && !displayOff) {
-    switch (currentProfile) {
-      case 0:
-        //blendwave();
-        ease2();
-        break;
-      case 1:
-        pacifica_loop();
-        break;
-      case 2:
-        pride();
-        break;
+    if (scrollingMode && !displayOff) {
+      switch (currentProfile) {
+        case 0:
+          //blendwave();
+          ease2();
+          break;
+        case 1:
+          pacifica_loop();
+          break;
+        case 2:
+          pride();
+          break;
+      }
+      FastLED.show();
     }
-    FastLED.show();
+
+    switch (firmwareUpdate) {
+      case PED_UPDATE_ARDUINO_OTA:
+      case PED_UPDATE_HTTP:
+        return;
+
+      case PED_UPDATE_CLOUD:
+        //set_clock();
+        url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/css/bootstrap.min.css.gz");
+        get_file_from_cloud(url, "/css/bootstrap.min.css.gz");
+        url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/js/bootstrap.bundle.min.js.gz");
+        get_file_from_cloud(url, "/js/bootstrap.bundle.min.js.gz");
+        url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/data/schema.json");
+        get_file_from_cloud(url, "/schema.json");
+
+        latestFirmwareVersion = get_latest_firmware_version();
+        ota_http_update();
+        while (firmwareUpdate == PED_UPDATE_CLOUD) {
+          otaStatus = HttpsOTA.status();
+          switch (otaStatus) {
+            case HTTPS_OTA_IDLE:
+              //DPRINT("OTA upgrade have not started yet.\n");
+              break;
+            case HTTPS_OTA_UPDATING:
+              //DPRINT("OTA upgrade is in progress.\n");
+              break;
+            case HTTPS_OTA_SUCCESS:
+              DPRINT("OTA upgrade is successful.\n");
+              DPRINT("Restart!\n");
+              ESP.restart();
+              break;
+            case HTTPS_OTA_FAIL:
+              DPRINT("OTA upgrade failed.\n");
+              firmwareUpdate = PED_UPDATE_NONE;
+              break;
+            case HTTPS_OTA_ERR:
+              DPRINT("Error occured while creating xEventGroup().\n");
+              firmwareUpdate = PED_UPDATE_NONE;
+              break;
+          }
+          delay(1);
+        }
+        return;
+    }
   }
 }

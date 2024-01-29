@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2023 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -873,7 +873,7 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
 
         // Display pedals name
         display->setFont(ArialMT_Plain_10);
-        const byte Pedals = 6;
+        const byte Pedals = _min(PEDALS, 6);
         for (byte p = 0; p < Pedals/2; p++) {
           switch (p) {
             case 0:
@@ -933,11 +933,13 @@ void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int1
         }
         else if (((millis() - ms < 8000) || (banknames[currentBank][0] == '.')) && (banknames[currentBank][0] != ':')) {
           // Display pedal values
+#ifndef BATTERY
           name = (banknames[currentBank][0] == '.') ? &banknames[currentBank][1] : banknames[currentBank];
           name.replace(String("##"), String(currentBank));
           display->setFont(ArialMT_Plain_10);
           display->setTextAlignment(TEXT_ALIGN_RIGHT);
           display->drawString(128 + x, y, name);
+#endif
           for (byte p = 0; p < Pedals/2; p++) {
             if (IS_SINGLE_PRESS_ENABLED(pedals[p].pressMode) && (banks[currentBank][p].midiMessage != PED_EMPTY)) {
               display->drawProgressBar((128 / (Pedals / 2)) * p + 2 + x, 25 + y, 39, 11, constrain(map2(currentMIDIValue[currentBank][p][0],
@@ -1173,7 +1175,7 @@ void display_on()
 void display_update()
 {
   static bool off = false;
-  
+
   if (displayInit)                display_init();
   if (uiUpdate && !reloadProfile) ui.update();
 

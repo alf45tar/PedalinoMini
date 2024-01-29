@@ -1,3 +1,14 @@
+/*
+__________           .___      .__  .__                 _____  .__       .__     ___ ________________    ___
+\______   \ ____   __| _/____  |  | |__| ____   ____   /     \ |__| ____ |__|   /  / \__    ___/     \   \  \
+ |     ___// __ \ / __ |\__  \ |  | |  |/    \ /  _ \ /  \ /  \|  |/    \|  |  /  /    |    | /  \ /  \   \  \
+ |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
+ |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
+               \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
+                                                                                   (c) 2018-2024 alf45star
+                                                                       https://github.com/alf45tar/PedalinoMini
+ */
+
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
@@ -56,7 +67,6 @@ void set_clock() {
   DPRINT("Waiting for NTP time sync: ");
   time_t now = time(nullptr);
   while (now < 8 * 3600 * 2) {
-    yield();
     delay(500);
     DPRINT(".");
     now = time(nullptr);
@@ -134,7 +144,7 @@ void ota_https_update_event_handler(HttpEvent_t *event) {
         case HTTP_EVENT_ON_CONNECTED:
             DPRINT("HTTP_EVENT_ON_CONNECTED\n");
             otaProgress = 0;
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
     display_clear();
     display_progress_bar_title("OTA Update");
 #else
@@ -154,7 +164,7 @@ void ota_https_update_event_handler(HttpEvent_t *event) {
         case HTTP_EVENT_ON_DATA:
             DPRINT("#");
             otaProgress += event->data_len;
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
     display_progress_bar_update(otaProgress, OTA_PARTITION_SIZE);
 #else
     display.drawProgressBar(4, 32, 120, 8, otaProgress / (OTA_PARTITION_SIZE / 100) );
@@ -166,7 +176,7 @@ void ota_https_update_event_handler(HttpEvent_t *event) {
             break;
         case HTTP_EVENT_DISCONNECTED:
             DPRINT("HTTP_EVENT_DISCONNECTED\n");
-#ifdef TTGO_T_DISPLAY
+#if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
     display_clear();
     display_progress_bar_title("Restart");
 #else

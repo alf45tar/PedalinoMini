@@ -5,7 +5,7 @@ __________           .___      .__  .__                 _____  .__       .__    
  |    |   \  ___// /_/ | / __ \|  |_|  |   |  (  <_> )    Y    \  |   |  \  | (  (     |    |/    Y    \   )  )
  |____|    \___  >____ |(____  /____/__|___|  /\____/\____|__  /__|___|  /__|  \  \    |____|\____|__  /  /  /
                \/     \/     \/             \/               \/        \/       \__\                 \/  /__/
-                                                                                   (c) 2018-2022 alf45star
+                                                                                   (c) 2018-2024 alf45star
                                                                        https://github.com/alf45tar/PedalinoMini
  */
 
@@ -52,6 +52,7 @@ BLEMIDI_CREATE_INSTANCE(host.c_str(), BLE_MIDI);
 #define BLESendStop(...)
 #define BLESendActiveSensing(...)
 #define BLESendSystemReset(...)
+#define BLESendRealTimeMessage(...)
 #else
 
 void BLESendNoteOn(byte note, byte velocity, byte channel)
