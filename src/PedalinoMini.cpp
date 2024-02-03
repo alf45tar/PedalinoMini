@@ -265,6 +265,11 @@ void setup()
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
 
+  sketchSize = ESP.getSketchSize();
+  sketchMD5  = ESP.getSketchMD5();
+
+  DPRINT("Sketch Size %d bytes, Firmware Hash %s\n", sketchSize, sketchMD5.c_str());
+
   if (!SPIFFS.begin()) {
       DPRINT("SPIFFS mount FAILED\n");
   }

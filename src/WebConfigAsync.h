@@ -472,15 +472,15 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F("<dt>SDK Version</dt><dd>");
   page += ESP.getSdkVersion();
   page += F("</dd>");
-  /*
-  page += F("<dt>ESP Arduino Version</dt><dd>");
+/*
+  page += F("<dt>Arduino Version</dt><dd>");
   page += ESP_ARDUINO_VERSION_MAJOR;
   page += F(".");
   page += ESP_ARDUINO_VERSION_MINOR;
   page += F(".");
   page += ESP_ARDUINO_VERSION_PATCH;
   page += F("</dd>");
-  */
+*/
   page += F("<dt>PlatformIO Build Env</dt><dd>");
   page += xstr(PLATFORMIO_ENV);
   page += F("</dd>");
@@ -491,11 +491,12 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F(".");
   page += PEDALINO_VERSION_PATCH;
   page += F("</dd>");
+
   page += F("<dt>Firmware Size</dt><dd>");
-  page += ESP.getSketchSize();
+  page += sketchSize;
   page += F(" bytes</dd>");
   page += F("<dt>Firmware Hash</dt><dd>");
-  page += ESP.getSketchMD5();
+  page += sketchMD5;
   page += F("</dd>");
   page += F("</div>");
 
@@ -6524,12 +6525,21 @@ void http_setup() {
   //events.setAuthentication("user", "pass");
   httpServer.addHandler(&events);
 #endif
+/*
   httpServer.serveStatic("/favicon.ico",                SPIFFS, "/favicon.ico").setDefaultFile("/favicon.ico").setCacheControl("max-age=600");
   httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png").setDefaultFile("/logo.png").setCacheControl("max-age=600");
-  //httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
-  //httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setDefaultFile("/css/bootstrap.min.css").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setDefaultFile("/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/js/Sortable.min.js",         SPIFFS, "/js/Sortable.min.js").setDefaultFile("/js/Sortable.min.js").setCacheControl("max-age=600");
   httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json").setDefaultFile("/schema.json").setCacheControl("max-age=600");
+  httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
+*/
+  httpServer.serveStatic("/favicon.ico",                SPIFFS, "/favicon.ico");
+  httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png");
+  httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css");
+  httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js");
+  httpServer.serveStatic("/js/Sortable.min.js",         SPIFFS, "/js/Sortable.min.js");
+  httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json");
   httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
   httpServer.on("/",                            http_handle_root);
@@ -6556,38 +6566,6 @@ void http_setup() {
   httpServer.on("/update",          HTTP_POST,  http_handle_post_update, http_handle_update_file_upload);
   httpServer.on("/progress",        HTTP_GET,   http_handle_progress);
 
-
-  // Workaround to serve big files without WDT or waiting forever
-  // https://github.com/me-no-dev/ESPAsyncWebServer/pull/770
-
-  httpServer.on("/css/bootstrap.min.css", HTTP_GET, [](AsyncWebServerRequest *request){
-    File f = SPIFFS.open("/css/bootstrap.min.css.gz", FILE_READ);
-    if (!f || !f.available()) return;
-
-    AsyncWebServerResponse *response = request->beginChunkedResponse("text/css", [f](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
-      File fl = f;
-      return fl.read(buffer, maxLen);
-    });
-
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-    }
-  );
-
-  httpServer.on("/js/bootstrap.bundle.min.js", HTTP_GET, [](AsyncWebServerRequest *request){
-    File f = SPIFFS.open("/js/bootstrap.bundle.min.js.gz", FILE_READ);
-    if (!f || !f.available()) return;
-
-    AsyncWebServerResponse *response = request->beginChunkedResponse("text/css", [f](uint8_t *buffer, size_t maxLen, size_t index) -> size_t {
-      File fl = f;
-      return fl.read(buffer, maxLen);
-    });
-
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-    }
-  );
-
   httpServer.onNotFound(http_handle_not_found);
 
   DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
@@ -6605,8 +6583,8 @@ void http_setup() {
 
 inline void http_run() {
 
-  if (webServerStart) {
-    webServerStart = false;
+  if (startWebServer) {
+    startWebServer = false;
     http_setup();
     DPRINT("HTTP server started on port 80\n");
     DPRINT("Connect to http://%s.local/update for firmware update\n", host.c_str());

@@ -101,7 +101,7 @@ void start_services()
     case PED_BOOT_WIFI:
     case PED_BOOT_AP:
     case PED_BOOT_AP_NO_BLE:
-      webServerStart = true;
+      startWebServer = true;
       break;
   }
 #endif

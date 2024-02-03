@@ -907,6 +907,7 @@ void drawFrame1(int16_t x, int16_t y)
   }
   else {
     if (scannerActivated) {
+        display.fillRect(0, TOP_HEIGHT, display.width(), TOP_BLANK, TFT_INDEX_BLACK);   // Clear blank area
         TFT_eSprite sprite = TFT_eSprite(&display);
         sprite.setColorDepth(4);
         sprite.createSprite(POINTS, display.height() - 28);

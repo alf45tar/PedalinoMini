@@ -87,13 +87,14 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
 // Strapping pins: 1, 3, 45, 46
 // ADC1:    1-10
-// ADC2:   11-20 (19=D- 20=D+)
+// ADC2:   11-20 (19=D- 20=D+) (ADC2 module is also used by the Wi-Fi)
 // SPI0/1: 26-32 (usually used for SPI flash and PSRAM)
-const byte pinD[] = {GPIO_NUM_10, GPIO_NUM_9,  GPIO_NUM_8,  GPIO_NUM_7,  GPIO_NUM_6,  GPIO_NUM_5,  GPIO_NUM_4,  GPIO_NUM_2,  GPIO_NUM_0};
-const byte pinA[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_14, GPIO_NUM_15, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_0};
+// SPI0/1: 33-37 (on boards embedded with ESP32-S3R8 / ESP32-S3R8V chip, GPIO33~37 are also not recommended for other uses)
+const byte pinD[] = {GPIO_NUM_38, GPIO_NUM_39, GPIO_NUM_40, GPIO_NUM_41, GPIO_NUM_42, GPIO_NUM_43, GPIO_NUM_44, GPIO_NUM_2, GPIO_NUM_0};
+const byte pinA[] = {GPIO_NUM_4,  GPIO_NUM_5,  GPIO_NUM_6,  GPIO_NUM_7,  GPIO_NUM_8,  GPIO_NUM_9,  GPIO_NUM_10, GPIO_NUM_2, GPIO_NUM_0};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button BOOT
-#define DIN_MIDI_IN_PIN       GPIO_NUM_44
-#define DIN_MIDI_OUT_PIN      GPIO_NUM_43
+#define DIN_MIDI_IN_PIN       GPIO_NUM_21
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_47
 #define BATTERY_PIN           GPIO_NUM_14   // Pin connected to +BATT
 #define FASTLEDS_DATA_PIN     GPIO_NUM_48
 #undef  SDA
@@ -103,11 +104,17 @@ const byte pinA[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_14, GPIO_NU
 #elif defined ARDUINO_LILYGO_T_DISPLAY_S3   // https://github.com/Xinyuan-LilyGO/T-Display-S3
 #undef  PEDALS
 #define PEDALS                8
-const byte pinD[] = {GPIO_NUM_10, GPIO_NUM_2,  GPIO_NUM_43, GPIO_NUM_44, GPIO_NUM_21, GPIO_NUM_3,  GPIO_NUM_14, GPIO_NUM_0};
+// https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
+// Strapping pins: 1, 3, 45, 46
+// ADC1:    1-10
+// ADC2:   11-20 (19=D- 20=D+) (ADC2 module is also used by the Wi-Fi)
+// SPI0/1: 26-32 (usually used for SPI flash and PSRAM)
+// SPI0/1: 33-37 (board with ESP32-S3R8 chip not recommended for other uses)
+const byte pinD[] = {GPIO_NUM_10, GPIO_NUM_2,  GPIO_NUM_43, GPIO_NUM_44, GPIO_NUM_21, GPIO_NUM_1,  GPIO_NUM_14, GPIO_NUM_0};
 const byte pinA[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_14, GPIO_NUM_0};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button BOOT
-#define DIN_MIDI_IN_PIN       GPIO_NUM_44
-#define DIN_MIDI_OUT_PIN      GPIO_NUM_43
+#define DIN_MIDI_IN_PIN       GPIO_NUM_1
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_3
 #define BATTERY_PIN           GPIO_NUM_4    // Pin connected to BAT (BAT is not VBAT)
 #define FASTLEDS_DATA_PIN     GPIO_NUM_3
 #else
@@ -463,7 +470,7 @@ volatile bool saveProfile     = false;
 volatile bool loadConfig      = false;
 volatile bool scrollingMode   = false;  // Display scrolling mode
 volatile bool displayInit     = false;
-volatile bool webServerStart  = false;
+volatile bool startWebServer  = false;
 
 byte  currentBank             = 1;
 byte  currentPedal            = 0;
@@ -505,6 +512,9 @@ bool  bleEnabled              = false;
 #endif
 bool  wifiConnected           = false;
 bool  bleConnected            = false;
+
+uint32_t  sketchSize;
+String    sketchMD5;
 
 uint32_t freeMemory;
 uint32_t maxAllocation;

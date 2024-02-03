@@ -20,7 +20,7 @@ extern "C" {
 /** Minor version number (x.X.x) */
 #define PEDALINO_VERSION_MINOR   2
 /** Patch version number (x.x.X) */
-#define PEDALINO_VERSION_PATCH   1
+#define PEDALINO_VERSION_PATCH   2
 
 #define xstr(s) sstr(s)  // stringize the result of expansion of a macro argument
 #define sstr(s) #s
