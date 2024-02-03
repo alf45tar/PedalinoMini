@@ -67,12 +67,20 @@ New features and bug corrections will be released to this public repository when
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
-Sponsors version additions/fixes since February 1st, 2024:
+Sponsors version additions/fixes since February 3st, 2024:
 - None
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
 ## Public versions history
+
+<details>
+<summary>3.2.2 - February 3st, 2024</summary>
+
+- BPI Leaf S3 new pins assignment
+- ESPAsyncWebServer from esphome
+
+</details>
 
 <details>
 <summary>3.2.1 - February 1st, 2024</summary>
