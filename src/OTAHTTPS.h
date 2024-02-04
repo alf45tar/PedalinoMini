@@ -16,7 +16,13 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #include "Version.h"
 
-#define OTA_PARTITION_SIZE    0x1D0000      // 1900544 bytes
+#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
+#define OTA_PARTITION_SIZE    0x360000            // 3538944 bytes
+#define FIRMWARE_MAX_SIZE     (8 * 1024 * 1024)   // 8M
+#else
+#define OTA_PARTITION_SIZE    0x1D0000            // 1900544 bytes
+#define FIRMWARE_MAX_SIZE     (4 * 1024 * 1024)   // 4M
+#endif
 
 String            latestFirmwareVersion = VERSION;
 String            url;
@@ -112,7 +118,7 @@ String get_latest_firmware_version(void) {
           DPRINT("[HTTPS] GET... code: %d\n", httpCode);
           // file found at server
           if (httpCode == HTTP_CODE_OK) {
-           payload = https.getString();
+            payload = https.getString();
             payload.trim();
             if (payload.equals(VERSION)) {
               DPRINT("Device already on latest firmware version: %s\n", VERSION);
@@ -132,6 +138,65 @@ String get_latest_firmware_version(void) {
   }
 
   return payload;
+}
+
+
+String get_firmware_md5(void) {
+
+  String  payload = "";
+
+  if (!wifiEnabled) return payload;
+
+  WiFiClientSecure *client = new WiFiClientSecure;
+
+  if (client) {
+
+    client->setCACert(rootCACertificate);
+
+    {
+      // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is
+      HTTPClient https;
+
+      url = F("https://raw.githubusercontent.com/alf45tar/PedalinoMini/");
+      url += F(VERSION);
+      url += F("/firmware/");
+      url += xstr(PLATFORMIO_ENV);
+      url += F("/firmware.bin.md5?");
+      url += String(rand());
+
+      if (https.begin(*client, url)) {
+
+        DPRINT("[HTTPS] GET... %s\n", url.c_str());
+        // start connection and send HTTP header
+        int httpCode = https.GET();
+
+        // httpCode will be negative on error
+        if (httpCode > 0) {
+          // HTTP header has been send and Server response header has been handled
+          DPRINT("[HTTPS] GET... code: %d\n", httpCode);
+          // file found at server
+          if (httpCode == HTTP_CODE_OK) {
+            payload = https.getString();
+            payload.trim();
+          }
+        } else {
+          DPRINT("[HTTPS] GET... failed, error: %s\n", https.errorToString(httpCode).c_str());
+        }
+        https.end();
+      } else {
+        DPRINT("[HTTPS] Unable to connect\n");
+      }
+    }
+    delete client;
+  }
+
+  return payload;
+}
+
+
+bool official_firmware () {
+  String md5 = get_firmware_md5();
+  return md5.equals(sketchMD5);
 }
 
 
@@ -165,9 +230,9 @@ void ota_https_update_event_handler(HttpEvent_t *event) {
             DPRINT("#");
             otaProgress += event->data_len;
 #if defined(ARDUINO_LILYGO_T_DISPLAY) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
-    display_progress_bar_update(otaProgress, OTA_PARTITION_SIZE);
+    display_progress_bar_update(otaProgress, FIRMWARE_MAX_SIZE);
 #else
-    display.drawProgressBar(4, 32, 120, 8, otaProgress / (OTA_PARTITION_SIZE / 100) );
+    display.drawProgressBar(4, 32, 120, 8, otaProgress / (FIRMWARE_MAX_SIZE / 100) );
     display.display();
 #endif
             break;

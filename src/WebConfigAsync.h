@@ -4845,6 +4845,26 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F(" Update</button>");
   page += F("</div>");
   page += F("</div>");
+  page += F("<div class='row'>");
+  page += F("<div class='col-4'>");
+  page += F("<small>");
+  page += sketchMD5;
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='col-4'>");
+  page += F("<small>");
+  page += F("<div id='latestFirmwareVersion' w3-include-html='https://raw.githubusercontent.com/alf45tar/PedalinoMini/master/firmware/");
+  page += xstr(PLATFORMIO_ENV);
+  page += F("/firmware.bin.md5?");
+  page += (rand() % (999999 - 100000 + 1) + 100000);
+  page += F("'></div>");
+  page += F("</small>");
+  page += F("</div>");
+  page += F("<div class='col-1'>");
+  page += F("</div>");
+  page += F("<div class='col-3'>");
+  page += F("</div>");
+  page += F("</div>");
   page += F("</div>");
   page += F("</div>");
 
@@ -4864,7 +4884,9 @@ void get_update_page(unsigned int start, unsigned int len) {
   page += F("<input type='file' class='form-control' id='firmwareFile' name='upload'>");
   page += F("</div>");
   page += F("<small id='uploadHelpBlock' class='form-text text-muted'>");
-  page += F("Select firmware.bin or spiffs.bin and press Upload to upgrade firmware or file system image.");
+  page += F("Select firmware.bin or spiffs.bin and press Upload to upgrade firmware or file system image. Max file size is ");
+  page += FIRMWARE_MAX_SIZE;
+  page += F(" bytes.");
   page += F("</small>");
   page += F("</div>");
   page += F("<div class='col-1'>");
@@ -5060,7 +5082,7 @@ void get_update_page(unsigned int start, unsigned int len) {
 	              "const allowed_mime_types = [ 'application/octet-stream', 'application/macbinary' ];\n"
 
 	              "const allowed_size = ");
-  page += OTA_PARTITION_SIZE;
+  page += FIRMWARE_MAX_SIZE;
   page += F(";\n");
 
   if (trim_page(start, len)) return;
@@ -5071,7 +5093,7 @@ void get_update_page(unsigned int start, unsigned int len) {
                 "}\n"
 
 	              "if(file.size > allowed_size) {\n"
-		                "alert('File size exceeed 2M');\n"
+		                "alert('File size exceeed allowed size');\n"
 		                "return;"
 	              "}\n"
 
@@ -5447,7 +5469,7 @@ void http_handle_update(AsyncWebServerRequest *request) {
 
 void http_handle_progress(AsyncWebServerRequest *request) {
   if (firmwareUpdate == PED_UPDATE_CLOUD)
-    request->send(200, "text/plain", String(HttpsOTA.status() == HTTPS_OTA_UPDATING ? 100 * otaProgress / OTA_PARTITION_SIZE : 0));
+    request->send(200, "text/plain", String(HttpsOTA.status() == HTTPS_OTA_UPDATING ? 100 * otaProgress / FIRMWARE_MAX_SIZE : 0));
   else
     request->send(200, "text/plain", String(Update.isRunning() && Update.size() ? 100 * Update.progress() / Update.size() : 0));
 }
