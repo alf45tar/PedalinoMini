@@ -31,7 +31,7 @@ You can change the presets of your guitar rig, turn old MIDI equipment into some
 - 6 controllers ports for ESP32 and 8 controllers ports for ESP32S3. One controller port can support up to 6 indipendent switches for a total of 36 (ESP32) or 48 (ESP32S3) switches.
 - 20 banks + 1 global bank
 - 3 user profiles
-- 16 sequences of 10 steps each
+- 20 sequences of 10 steps each
 - Each port can connect 1 expression pedal or 1 jog wheel or up to 6 foot switches via a resitors ladder (TC HELICON Switch-6).
 - MIDI output via AppleMIDI (also known as RTP-MIDI) or ipMIDI via Wi-Fi
 - Send almost every MIDI messages: Program Change, Control Code, Note On/Off, Channel Pressure, Pitch Bend, Bank Select, Start, Stop, Continue or a sequence of the previous messages
@@ -46,6 +46,14 @@ You can change the presets of your guitar rig, turn old MIDI equipment into some
 - Installing firmware and WiFi provisioning directly from your browser
 - Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
 - OTA (Over the Air) firmware update or via HTTP (<http://pedalino.local/update>)
+
+## PedalinoMini™ 4
+
+An easy way to create one is by building the [PedalinoMini™ 4](https://github.com/alf45tar/PedalinoMini-4). I aimed to keep it as simple as possible.
+
+[PedalinoMini™ 4](https://github.com/alf45tar/PedalinoMini-4) operates seamlessly with its 4 footswitches, featuring a big 1.9" color display equipped with WiFi, Bluetooth, and USB MIDI capabilities. It is powered through a USB-C port, using either a power adapter or, for enhanced convenience, a compact power bank, ensuring up to 6 hours of uninterrupted functionality.
+
+[](https://github.com/alf45tar/PedalinoMini-4/blob/main/images/PedalinoMini%204.jpg)
 
 ## Sponsors
 
@@ -68,7 +76,8 @@ New features and bug corrections will be released to this public repository when
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
 Sponsors version additions/fixes since February 3st, 2024:
-- None
+- Fixed simultaneous button press
+- Increased sequences to 20
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
