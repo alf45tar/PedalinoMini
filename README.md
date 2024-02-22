@@ -53,7 +53,7 @@ An easy way to create one is by building the [PedalinoMini™ 4](https://github.
 
 [PedalinoMini™ 4](https://github.com/alf45tar/PedalinoMini-4) operates seamlessly with its 4 footswitches, featuring a big 1.9" color display equipped with WiFi, Bluetooth, and USB MIDI capabilities. It is powered through a USB-C port, using either a power adapter or, for enhanced convenience, a compact power bank, ensuring up to 6 hours of uninterrupted functionality.
 
-[](https://github.com/alf45tar/PedalinoMini-4/blob/main/images/PedalinoMini%204.jpg)
+[![](https://github.com/alf45tar/PedalinoMini-4/blob/main/images/PedalinoMini%204.jpg)](https://github.com/alf45tar/PedalinoMini-4)
 
 ## Sponsors
 
