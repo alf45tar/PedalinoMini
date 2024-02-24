@@ -40,7 +40,7 @@ You can change the presets of your guitar rig, turn old MIDI equipment into some
 - Invert polarity via software
 - Individual automatic calibration of expression pedals. Manual fine tuning is not usually requested.
 - Transform a linear expression pedal into log expression pedal and vice versa
-- Resistors ladder calibrated is easy as pressing footswitches in sequence
+- Calibrating resistors ladder is easy as pressing footswitches in sequence
 - RGB NeoPixel/WS2812B status leds
 - Responsive and mobile-first configuration web interface (<http://pedalino.local>)
 - Installing firmware and WiFi provisioning directly from your browser
@@ -88,6 +88,7 @@ Sponsors version additions/fixes since February 3st, 2024:
 
 - BPI Leaf S3 new pins assignment
 - ESPAsyncWebServer from esphome
+- Updated onboard Bootstrap to 5.3.3
 
 </details>
 
