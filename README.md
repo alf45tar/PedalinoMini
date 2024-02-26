@@ -91,6 +91,7 @@ Sponsors version additions/fixes since February 3st, 2024:
 - Updated onboard Bootstrap to 5.3.3
 - Fixed reboot on configuration load
 - Enabled PSRAM for LILYGO® T-Display-S3
+- Updated to ArduinoJson v7
 
 </details>
 
