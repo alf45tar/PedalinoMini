@@ -78,6 +78,10 @@ When one of the previous goals will be reached sponsors will continue to receive
 Sponsors version additions/fixes since February 3st, 2024:
 - Fixed simultaneous button press
 - Increased sequences to 20
+- Updated onboard Bootstrap to 5.3.3
+- Fixed reboot on configuration load
+- Enabled PSRAM for LILYGO® T-Display-S3
+- Updated to ArduinoJson v7
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -88,10 +92,6 @@ Sponsors version additions/fixes since February 3st, 2024:
 
 - BPI Leaf S3 new pins assignment
 - ESPAsyncWebServer from esphome
-- Updated onboard Bootstrap to 5.3.3
-- Fixed reboot on configuration load
-- Enabled PSRAM for LILYGO® T-Display-S3
-- Updated to ArduinoJson v7
 
 </details>
 
