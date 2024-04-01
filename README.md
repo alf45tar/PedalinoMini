@@ -58,7 +58,7 @@ An easy way to create one is by building the [PedalinoMini™ 4](https://github.
 
 ## PedalinoMini™ 8
 
-Do you need more footswitches? [PedalinoMini™ 8](https://github.com/alf45tar/PedalinoMini-4) is for you.
+Do you need more footswitches? [PedalinoMini™ 8](https://github.com/alf45tar/PedalinoMini-8) is for you.
 
 [![](https://github.com/alf45tar/PedalinoMini-8/blob/fde349a01218d866c310c22895a28c323da8b707/images/PedalinoMini%208%20Naked.jpg)](https://github.com/alf45tar/PedalinoMini-8)
 
