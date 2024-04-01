@@ -1,4 +1,5 @@
-[![](./images/PedalinoMini-Case-1.png)](https://www.youtube.com/watch?v=PgAAQd82aIo)
+[![](https://github.com/alf45tar/PedalinoMini-8/blob/fde349a01218d866c310c22895a28c323da8b707/images/PedalinoMini%208.jpg)](https://github.com/alf45tar/PedalinoMini-8)
+
 
 # PedalinoMini™
 
@@ -84,6 +85,8 @@ Sponsors version additions/fixes since February 3st, 2024:
 - Updated to ArduinoJson v7
 - Fixed reboot on change profile via WebUI
 - Fixed bank 0 Program Change leds
+- Updated to Adafruit TinyUSB Library version 3 (configuration description override)
+- Fixed LiLILYGO® T-Display-S3 display off on battery
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
