@@ -92,7 +92,9 @@ Sponsors version additions/fixes since February 3st, 2024:
 - Fixed reboot on change profile via WebUI
 - Fixed bank 0 Program Change leds
 - Updated to Adafruit TinyUSB Library version 3 (configuration description override)
-- Fixed LiLILYGO® T-Display-S3 display off on battery
+- Fixed LiLYGO® T-Display-S3 display off on battery
+- Modified the voltage detection
+- Fixed LiLYGO® T-Display-S3 leds strip and midi out pin overlap
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
