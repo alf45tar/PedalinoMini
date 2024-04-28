@@ -1,4 +1,4 @@
-[![](https://github.com/alf45tar/PedalinoMini-8/blob/fde349a01218d866c310c22895a28c323da8b707/images/PedalinoMini%208.jpg)](https://github.com/alf45tar/PedalinoMini-8)
+[![](./images/PedalinoMini486.png)](https://github.com/alf45tar/PedalinoMini-6)
 
 
 # PedalinoMini™
@@ -56,9 +56,9 @@ An easy way to create one is by building the [PedalinoMini™ 4](https://github.
 
 [![](https://github.com/alf45tar/PedalinoMini-4/blob/main/images/PedalinoMini%204.jpg)](https://github.com/alf45tar/PedalinoMini-4)
 
-## PedalinoMini™ 8
+## PedalinoMini™ 6/8
 
-Do you need more footswitches? [PedalinoMini™ 8](https://github.com/alf45tar/PedalinoMini-8) is for you.
+Do you need more footswitches? [PedalinoMini™ 6](https://github.com/alf45tar/PedalinoMini-6) or [PedalinoMini™ 8](https://github.com/alf45tar/PedalinoMini-8) is for you.
 
 [![](https://github.com/alf45tar/PedalinoMini-8/blob/fde349a01218d866c310c22895a28c323da8b707/images/PedalinoMini%208%20Naked.jpg)](https://github.com/alf45tar/PedalinoMini-8)
 
@@ -92,9 +92,10 @@ Sponsors version additions/fixes since February 3st, 2024:
 - Fixed reboot on change profile via WebUI
 - Fixed bank 0 Program Change leds
 - Updated to Adafruit TinyUSB Library version 3 (configuration description override)
-- Fixed LiLYGO® T-Display-S3 display off on battery
+- Fixed LILYGO® T-Display-S3 display off on battery
 - Modified the voltage detection
-- Fixed LiLYGO® T-Display-S3 leds strip and midi out pin overlap
+- Fixed LILYGO® T-Display-S3 leds strip and midi out pin overlap
+- Removed default credentials to connect to WebUI
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -478,9 +479,7 @@ In order to know your device name and/or the IP address press for at least half 
 
 As alternative method you can use the IP address. If you are using the AP mode the IP address is always `192.168.4.1` and the connection address is `http://192.168.4.1` for everyone.
 
-The default username and password to connect to web user interface are `admin` as username and your `device-name` in __uppercase__ as password. For example I am using `admin` as username and `2AB267AC` as password.
-
-Device name, username and password can be changed via web user interface in the Options page.
+There is no credentials to connect to web user interface. Device name and credentials to connect to web user interface can be changed in the Options page.
 
 ## Pedals
 
