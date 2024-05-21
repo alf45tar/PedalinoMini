@@ -746,9 +746,13 @@ https://github.com/Keeze
 [More details](https://github.com/alf45tar/PedalinoMini/discussions/430)
 
 https://github.com/mattzzw
-![Keeze](https://user-images.githubusercontent.com/1312120/224659984-124092b5-49f4-4abf-a4c2-acec75f85838.jpg)
+![mattzzw](https://user-images.githubusercontent.com/1312120/224659984-124092b5-49f4-4abf-a4c2-acec75f85838.jpg)
 [More details](https://github.com/alf45tar/PedalinoMini/discussions/438)
 
 https://github.com/Jelle7and9
-![Jelle7and9](https://private-user-images.githubusercontent.com/137293236/296360183-a406c9c0-85ea-4de2-8c7b-98e684c2ecfc.jpg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTU4ODAyNjEsIm5iZiI6MTcxNTg3OTk2MSwicGF0aCI6Ii8xMzcyOTMyMzYvMjk2MzYwMTgzLWE0MDZjOWMwLTg1ZWEtNGRlMi04YzdiLTk4ZTY4NGMyZWNmYy5qcGc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNTE2JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDUxNlQxNzE5MjFaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0zYTNlYjNhM2JkY2Q4YWY1ZWU4YmY0YWMyNTkwNTZmM2NlZTAyMGEzZDc2ZTM0ZWJjYjY5YTZkNDM5MGMzOWY1JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.3YxU2PHSo0qvpAU5YC--mnNRTfvYVeOAB1Uh3ckBAa0)
+![Jelle7and9](https://private-user-images.githubusercontent.com/137293236/296360183-a406c9c0-85ea-4de2-8c7b-98e684c2ecfc.jpg)
 [More details](https://github.com/alf45tar/PedalinoMini/discussions/454)
+
+https://github.com/regisampa
+![regisampa](https://private-user-images.githubusercontent.com/168490796/331563312-2737da52-6488-47e2-81e9-4d5d59a08fad.jpg)
+[More details](https://github.com/alf45tar/PedalinoMini/discussions/515)
