@@ -96,6 +96,7 @@ Sponsors version additions/fixes since February 3st, 2024:
 - Modified the voltage detection
 - Fixed LILYGO® T-Display-S3 leds strip and midi out pin overlap
 - Removed default credentials to connect to WebUI
+- Add support for ADS1115 16-bit analog-to-digital converter for 4 additional Analog pedals
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
