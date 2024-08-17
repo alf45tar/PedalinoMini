@@ -133,7 +133,7 @@
     async function generateDropdown() {
         // Update status message to indicate scanning has started
         const statusMessage = document.getElementById('status-message');
-        statusMessage.textContent = "Scanning started...";
+        statusMessage.textContent = "Scanning in progress...";
 
         const selectElement = document.getElementById('firmware-select');
         const tags = await fetchTags();
