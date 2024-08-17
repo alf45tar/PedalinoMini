@@ -43,10 +43,20 @@
       </ol>
       </br>
 
-<select id="firmware-select">
-    <!-- Options will be dynamically populated here -->
-</select>
-</br></br>
+      <!-- Dropdown menu for firmware options -->
+      <select id="firmware-select">
+          <!-- Options will be dynamically populated here -->
+      </select>
+
+      <!-- Container for status messages -->
+      <div id="status-container">
+          <!-- Status message for the start of the scanning process -->
+          <span id="scan-start">Scanning not started.</span> |
+          <!-- Status message for the end of the scanning process -->
+          <span id="scan-end">Scanning not completed.</span>
+      </div>
+      
+      </br></br>
       <p>
         <esp-web-install-button id="inst">
           <button slot='activate'>Connect via USB</button>
@@ -85,6 +95,7 @@
     const GITHUB_REPO = "alf45tar/PedalinoMini";
     const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/git/refs/tags`;
 
+    // Mapping of board keys to their display names
     const boards = {
         "esp32doit-devkit-v1": "Esp32 DOIT DevKit v1",
         "ttgo-t-eight": "TTGO T-Eight",
@@ -96,30 +107,56 @@
         "lilygo-t-display-s3": "LilyGO T-Display-S3"
     };
 
+    // Fetch tags from the GitHub API
     async function fetchTags() {
         try {
             const response = await fetch(GITHUB_API_URL);
-            const tags = await response.json();
-            return tags;
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return await response.json();
         } catch (error) {
-            console.error("Errore durante il recupero dei tag da GitHub:", error);
+            console.error("Error fetching tags from GitHub:", error);
+            // Display error message if tags could not be fetched
+            document.getElementById('status-message').textContent = "Error fetching tags from GitHub.";
+            return [];
         }
     }
 
+    // Check if a specific file exists at the given URL
     async function checkFileExists(url) {
         try {
             const response = await fetch(url, { method: 'HEAD' });
             return response.ok;
         } catch (error) {
-            console.error("Errore durante la verifica del file:", error);
+            console.error("Error checking file existence:", error);
             return false;
         }
     }
 
+    // Generate the dropdown menu with firmware options
     async function generateDropdown() {
-        const tags = await fetchTags();
+        // Update status messages
+        const statusStart = document.getElementById('scan-start');
+        const statusEnd = document.getElementById('scan-end');
         const selectElement = document.getElementById('firmware-select');
+        const statusMessage = document.getElementById('status-message');
+        
+        statusStart.textContent = "Scanning started...";
+        statusEnd.textContent = "Scanning in progress...";
 
+        // Fetch the tags from GitHub
+        const tags = await fetchTags();
+
+        if (tags.length === 0) {
+            statusMessage.textContent = "No tags found or there was an error.";
+            statusEnd.textContent = "Scanning completed.";
+            return;
+        }
+
+        let optionsAdded = false;
+
+        // Iterate over each board and tag to generate options
         for (const [boardKey, boardName] of Object.entries(boards)) {
             const optgroup = document.createElement('optgroup');
             optgroup.label = boardName;
@@ -128,22 +165,34 @@
                 const version = tag.ref.split('/').pop();
                 const versionNumber = version.replace('v', '');
                 const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/${version}/firmware/${boardKey}/${boardKey}-${versionNumber}.json`;
-                
+
+                // Check if the firmware file exists
                 const exists = await checkFileExists(url);
                 if (exists) {
                     const option = document.createElement('option');
                     option.value = url;
                     option.textContent = `${boardName} ${versionNumber}`;
                     optgroup.appendChild(option);
+                    optionsAdded = true;
                 }
             }
 
+            // Add the optgroup to the select element if it contains any options
             if (optgroup.children.length > 0) {
                 selectElement.appendChild(optgroup);
             }
         }
+
+        // Display a message if no firmware files were found
+        if (!optionsAdded) {
+            statusMessage.textContent = "No firmware files found.";
+        }
+
+        // Update the status message to indicate that scanning is complete
+        statusEnd.textContent = "Scanning completed.";
     }
 
+    // Initialize the dropdown generation process
     generateDropdown();
     </script>
     <script>
