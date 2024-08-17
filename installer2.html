@@ -48,13 +48,8 @@
           <!-- Options will be dynamically populated here -->
       </select>
 
-      <!-- Container for status messages -->
-      <div id="status-container">
-          <!-- Status message for the start of the scanning process -->
-          <span id="scan-start">Scanning not started.</span> |
-          <!-- Status message for the end of the scanning process -->
-          <span id="scan-end">Scanning not completed.</span>
-      </div>
+      <!-- Status message element for displaying scanning progress -->
+      <div id="status-message">Scanning not started.</div>
       
       </br></br>
       <p>
@@ -136,21 +131,15 @@
 
     // Generate the dropdown menu with firmware options
     async function generateDropdown() {
-        // Update status messages
-        const statusStart = document.getElementById('scan-start');
-        const statusEnd = document.getElementById('scan-end');
-        const selectElement = document.getElementById('firmware-select');
+        // Update status message to indicate scanning has started
         const statusMessage = document.getElementById('status-message');
-        
-        statusStart.textContent = "Scanning started...";
-        statusEnd.textContent = "Scanning in progress...";
+        statusMessage.textContent = "Scanning started...";
 
-        // Fetch the tags from GitHub
+        const selectElement = document.getElementById('firmware-select');
         const tags = await fetchTags();
 
         if (tags.length === 0) {
             statusMessage.textContent = "No tags found or there was an error.";
-            statusEnd.textContent = "Scanning completed.";
             return;
         }
 
@@ -186,10 +175,10 @@
         // Display a message if no firmware files were found
         if (!optionsAdded) {
             statusMessage.textContent = "No firmware files found.";
+        } else {
+            // Update status message to indicate that scanning is complete
+            statusMessage.textContent = "Scanning completed.";
         }
-
-        // Update the status message to indicate that scanning is complete
-        statusEnd.textContent = "Scanning completed.";
     }
 
     // Initialize the dropdown generation process
