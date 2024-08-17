@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firmware Dropdown Generator</title>
+</head>
+<body>
+
+<select id="firmware-select">
+    <!-- Options will be dynamically populated here -->
+</select>
+
+<script>
+    // Replace with the GitHub repository details
+    const GITHUB_REPO = "alf45tar/PedalinoMini";
+    const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/git/refs/tags`;
+
+    // List of supported boards
+    const boards = {
+        "esp32doit-devkit-v1": "Esp32 DOIT DevKit v1",
+        "ttgo-t-eight": "TTGO T-Eight",
+        "ttgo-t-display": "TTGO T-Display",
+        "lilygo-t-display": "LilyGO T-Display",
+        "heltec_wifi_kit_32": "Heltec WiFi Kit 32",
+        "esp-wrover-kit": "ESP-WROVER-KIT",
+        "bpi-leaf-s3": "BPI-Leaf-S3",
+        "lilygo-t-display-s3": "LilyGO T-Display-S3"
+    };
+
+    // Function to fetch tags from the GitHub repository
+    async function fetchTags() {
+        try {
+            const response = await fetch(GITHUB_API_URL);
+            const tags = await response.json();
+            return tags;
+        } catch (error) {
+            console.error("Error fetching tags from GitHub:", error);
+        }
+    }
+
+    // Function to check if a JSON file exists
+    async function checkFileExists(url) {
+        try {
+            const response = await fetch(url, { method: 'HEAD' });
+            return response.ok;  // true if status is 200-299
+        } catch (error) {
+            console.error("Error checking file existence:", error);
+            return false;
+        }
+    }
+
+    // Function to generate the HTML for the select dropdown
+    async function generateDropdown() {
+        const tags = await fetchTags();
+        const selectElement = document.getElementById('firmware-select');
+
+        // Iterate over the boards and create optgroups
+        for (const [boardKey, boardName] of Object.entries(boards)) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = boardName;
+
+            // Iterate over the tags to create options for each version
+            for (const tag of tags) {
+                const version = tag.ref.split('/').pop();  // Extract the version from the ref
+                const versionNumber = version.replace('v', '');  // Strip the 'v' from version
+                const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/${version}/firmware/${boardKey}/${boardKey}-${versionNumber}.json`;
+
+                const exists = await checkFileExists(url);
+                if (exists) {
+                    const option = document.createElement('option');
+                    option.value = url;
+                    option.textContent = `${boardName} ${versionNumber}`;
+                    optgroup.appendChild(option);
+                }
+            }
+
+            // Add the optgroup to the select element if it has options
+            if (optgroup.children.length > 0) {
+                selectElement.appendChild(optgroup);
+            }
+        }
+    }
+
+    // Call the function to generate the dropdown on page load
+    generateDropdown();
+</script>
+
+</body>
+</html>
