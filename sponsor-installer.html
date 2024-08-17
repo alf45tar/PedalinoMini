@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+    <title>Install PedalinoMini™</title>
+    <style>
+        div,fieldset,input,select{padding:5px;font-size:1em;}
+        fieldset{background:#4f4f4f;}
+        p{margin:0.5em 0;}
+        input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;background:#dddddd;color:#000000;}
+        input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px;}
+        input[type=range]{width:99%;}
+        select{width:100%;background:#dddddd;color:#000000;}
+        textarea{resize:vertical;width:98%;height:318px;padding:5px;overflow:auto;background:#1f1f1f;color:#65c115;}
+        body{text-align:center;font-family:verdana,sans-serif;background:#252525;}
+        td{padding:0px;}
+        button{border:0;border-radius:0.3rem;background:#1fa3ec;color:#faffff;line-height:2.4rem;font-size:1.2rem;width:100%;-webkit-transition-duration:0.4s;transition-duration:0.4s;cursor:pointer;}
+        button:hover{background:#0e70a4;}
+        .bred{background:#d43535;}
+        .bred:hover{background:#931f1f;}
+        .bgrn{background:#47c266;}
+        .bgrn:hover{background:#5aaf6f;}
+        a{color:#1fa3ec;text-decoration:none;}
+        .p{float:left;text-align:left;}
+        .q{float:right;text-align:right;}
+        .r{border-radius:0.3em;padding:2px;margin:6px 2px;}
+        .pick-variant{margin-bottom:16px;}
+    </style>
+    <script type="module" src="https://unpkg.com/esp-web-tools@9/dist/web/install-button.js?module"></script>
+    <script type="module" src="https://www.improv-wifi.com/sdk-js/launch-button.js"></script>
+</head>
+<body>
+    <div style='display:inline-block;color:#eaeaea;min-width:340px;'>
+        <h1>PedalinoMini™ Installer</h1>
+
+        <div class="pick-variant">
+            <ol style='text-align:left'>
+                <li>Connect the ESP device to your computer</br>using USB or serial-to-USB adapter</li></br>
+                <li>Select the firmware variant suitable for</br>your device</li></br>
+                <li>Hit "Connect" and select the correct port</br>or find help if <a href="https://tasmota.github.io/docs/Getting-Started/" target='_blank' style='color:#aaa;'>no device found</a></li>
+            </ol>
+            </br>
+
+            <!-- Text input for PAT -->
+            <input type="password" id="pat-input" placeholder="Enter your GitHub PAT here" />
+
+            <!-- Button to trigger scanning -->
+            <button id="scan-button">Scan for Firmware</button>
+
+            </br></br>
+
+            <!-- Dropdown menu for firmware options -->
+            <select id="firmware-select">
+                <!-- Options will be dynamically populated here -->
+            </select>
+
+            <!-- Status message element for displaying scanning progress -->
+            <div id="status-message">Scanning not started.</div>
+            
+            </br></br>
+            <p>
+                <esp-web-install-button id="inst">
+                    <button slot='activate'>Connect via USB</button>
+                    <i slot="unsupported">
+                        Your browser does not support Web Serial.</br>Open this page in Google Chrome or</br>Microsoft Edge instead
+                        <span class="not-supported-i hidden">(but not on your iOS device)</span>.
+                    </i>
+                </esp-web-install-button>
+            </p>
+            <p>or</p>
+            <p>
+                <improv-wifi-launch-button>
+                    <button slot='activate'>Connect via Bluetooth LE</button>
+                    <i slot="unsupported">
+                        Your browser does not support Web Bluetooth.</br>Visit this page with Google Chrome or<br>Microsoft Edge
+                        <span class="not-supported-i hidden">(but not on your iOS device)</span>.
+                    </i>
+                </improv-wifi-launch-button>
+            </p>
+            <p>Events:</p>
+            <pre id="events"></pre>
+            <script>
+                document.querySelectorAll("improv-wifi-launch-button").forEach((button) =>
+                    button.addEventListener("state-changed", (ev) => {
+                        document.querySelector("pre").innerText +=
+                            JSON.stringify(ev.detail) + "\n";
+                    })
+                );
+            </script>
+        </div>
+        <div style='text-align:right;font-size:11px;'>
+            <hr/>
+            <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
+        </div>
+        <script>
+        const GITHUB_REPO = "pedalino-sponsors/PedalinoMini";
+        const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/git/refs/tags`;
+
+        // Mapping of board keys to their display names
+        const boards = {
+            "esp32doit-devkit-v1": "Esp32 DOIT DevKit v1",
+            "ttgo-t-eight": "TTGO T-Eight",
+            "ttgo-t-display": "TTGO T-Display",
+            "lilygo-t-display": "LilyGO T-Display",
+            "heltec_wifi_kit_32": "Heltec WiFi Kit 32",
+            "esp-wrover-kit": "ESP-WROVER-KIT",
+            "bpi-leaf-s3": "BPI-Leaf-S3",
+            "lilygo-t-display-s3": "LilyGO T-Display-S3"
+        };
+
+        // Fetch tags from the GitHub API
+        async function fetchTags() {
+            const pat = document.getElementById('pat-input').value;  // Get the PAT from the input field
+            if (!pat) {
+                alert("Please enter your GitHub PAT.");
+                return [];
+            }
+
+            try {
+                const response = await fetch(GITHUB_API_URL, {
+                    headers: {
+                        'Authorization': `token ${pat}`
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error("Error fetching tags from GitHub:", error);
+                // Display error message if tags could not be fetched
+                document.getElementById('status-message').textContent = "Error fetching tags from GitHub.";
+                return [];
+            }
+        }
+
+        // Check if a specific file exists at the given URL
+        async function checkFileExists(url) {
+            const pat = document.getElementById('pat-input').value;  // Get the PAT from the input field
+            try {
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    headers: {
+                        'Authorization': `token ${pat}`
+                    }
+                });
+                return response.ok;
+            } catch (error) {
+                console.error("Error checking file existence:", error);
+                return false;
+            }
+        }
+
+        // Generate the dropdown menu with firmware options
+        async function generateDropdown() {
+            // Update status message to indicate scanning has started
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = "Scanning in progress...";
+
+            const selectElement = document.getElementById('firmware-select');
+            const tags = await fetchTags();
+
+            if (tags.length === 0) {
+                statusMessage.textContent = "No tags found or there was an error.";
+                return;
+            }
+
+            let optionsAdded = false;
+
+            // Iterate over each board and tag to generate options
+            for (const [boardKey, boardName] of Object.entries(boards)) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = boardName;
+
+                for (const tag of tags) {
+                    const version = tag.ref.split('/').pop();
+                    const versionNumber = version.replace('v', '');
+                    const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/${version}/firmware/${boardKey}/${boardKey}-${versionNumber}.json`;
+
+                    // Check if the firmware file exists
+                    const exists = await checkFileExists(url);
+                    if (exists) {
+                        const option = document.createElement('option');
+                        option.value = url;
+                        option.textContent = `${boardName} ${versionNumber}`;
+                        optgroup.appendChild(option);
+                        optionsAdded = true;
+                    }
+                }
+
+                // Add the optgroup to the select element if it contains any options
+                if (optgroup.children.length > 0) {
+                    selectElement.appendChild(optgroup);
+                }
+            }
+
+            // Display a message if no firmware files were found
+            if (!optionsAdded) {
+                statusMessage.textContent = "No firmware files found.";
+            } else {
+                // Update status message to indicate that scanning is complete
+                statusMessage.textContent = "Scanning completed.";
+            }
+        }
+
+        // Set up the button to trigger scanning
+        document.getElementById('scan-button').addEventListener('click', generateDropdown);
+
+        // Ensure the install button manifest is updated based on selection
+        const selectEl = document.querySelector("#firmware-select");
+        const installEl = document.querySelector("esp-web-install-button");
+        selectEl.addEventListener("change", () => {
+            installEl.manifest = selectEl.value;
+        });
+        </script>
+    </div>
+</body>
+</html>
