@@ -192,4 +192,14 @@
         // Event listener for board selection
         const boardSelect = document.getElementById('board-select');
         boardSelect.addEventListener('change', function() {
-            const boardKey
+            const boardKey = boardSelect.value;
+            if (boardKey) {
+                generateVersionDropdown(boardKey);
+            } else {
+                document.getElementById('version-select').disabled = true;
+            }
+        });
+    });
+    </script>
+  </body>
+</html>
