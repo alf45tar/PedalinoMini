@@ -38,13 +38,20 @@
     <div class="pick-variant">
       <ol style='text-align:left'>
         <li>Connect the ESP device to your computer</br>using USB or serial-to-USB adapter</li></br>
-        <li>Select the firmware variant suitable for</br>your device</li></br>
+        <li>Select the board and firmware variant suitable for</br>your device</li></br>
         <li>Hit "Connect" and select the correct port</br>or find help if <a href="https://tasmota.github.io/docs/Getting-Started/" target='_blank' style='color:#aaa;'>no device found</a></li>
       </ol>
       </br>
 
-      <!-- Dropdown menu for firmware options -->
-      <select id="firmware-select">
+      <!-- Dropdown menu for board options -->
+      <select id="board-select">
+          <option value="">Select Board</option>
+          <!-- Options will be dynamically populated here -->
+      </select>
+
+      <!-- Dropdown menu for version options -->
+      <select id="version-select" disabled>
+          <option value="">Select Version</option>
           <!-- Options will be dynamically populated here -->
       </select>
 
@@ -112,7 +119,6 @@
             return await response.json();
         } catch (error) {
             console.error("Error fetching tags from GitHub:", error);
-            // Display error message if tags could not be fetched
             document.getElementById('status-message').textContent = "Error fetching tags from GitHub.";
             return [];
         }
@@ -129,13 +135,25 @@
         }
     }
 
-    // Generate the dropdown menu with firmware options
-    async function generateDropdown() {
-        // Update status message to indicate scanning has started
+    // Populate the board dropdown
+    function populateBoardDropdown() {
+        const boardSelect = document.getElementById('board-select');
+        for (const [boardKey, boardName] of Object.entries(boards)) {
+            const option = document.createElement('option');
+            option.value = boardKey;
+            option.textContent = boardName;
+            boardSelect.appendChild(option);
+        }
+    }
+
+    // Generate the version dropdown based on the selected board
+    async function generateVersionDropdown(boardKey) {
+        const versionSelect = document.getElementById('version-select');
+        versionSelect.innerHTML = ''; // Clear existing options
+        versionSelect.disabled = true; // Disable initially
         const statusMessage = document.getElementById('status-message');
         statusMessage.textContent = "Scanning in progress...";
 
-        const selectElement = document.getElementById('firmware-select');
         const tags = await fetchTags();
 
         if (tags.length === 0) {
@@ -145,53 +163,24 @@
 
         let optionsAdded = false;
 
-        // Iterate over each board and tag to generate options
-        for (const [boardKey, boardName] of Object.entries(boards)) {
-            const optgroup = document.createElement('optgroup');
-            optgroup.label = boardName;
+        // Iterate over each tag to generate version options
+        for (const tag of tags) {
+            const version = tag.ref.split('/').pop();
+            const versionNumber = version.replace('v', '');
+            const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/${version}/firmware/${boardKey}/${boardKey}-${versionNumber}.json`;
 
-            for (const tag of tags) {
-                const version = tag.ref.split('/').pop();
-                const versionNumber = version.replace('v', '');
-                const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/${version}/firmware/${boardKey}/${boardKey}-${versionNumber}.json`;
-
-                // Check if the firmware file exists
-                const exists = await checkFileExists(url);
-                if (exists) {
-                    const option = document.createElement('option');
-                    option.value = url;
-                    option.textContent = `${boardName} ${versionNumber}`;
-                    optgroup.appendChild(option);
-                    optionsAdded = true;
-                }
-            }
-
-            // Add the optgroup to the select element if it contains any options
-            if (optgroup.children.length > 0) {
-                selectElement.appendChild(optgroup);
+            const exists = await checkFileExists(url);
+            if (exists) {
+                const option = document.createElement('option');
+                option.value = url;
+                option.textContent = versionNumber;
+                versionSelect.appendChild(option);
+                optionsAdded = true;
             }
         }
 
-        // Display a message if no firmware files were found
-        if (!optionsAdded) {
-            statusMessage.textContent = "No firmware files found.";
-        } else {
-            // Update status message to indicate that scanning is complete
+        if (optionsAdded) {
+            versionSelect.disabled = false; // Enable if options are available
             statusMessage.textContent = "Scanning completed.";
-        }
-    }
-
-    // Initialize the dropdown generation process
-    generateDropdown();
-    </script>
-    <script>
-      const selectEl = document.querySelector(".pick-variant select");
-      const installEl = document.querySelector("esp-web-install-button");
-      installEl.manifest = selectEl.value;
-      selectEl.addEventListener("change", () => {
-        installEl.manifest = selectEl.value;
-      });
-
-    </script>
-  </body>
-</html>
+        } else {
+            statusMessage.text
