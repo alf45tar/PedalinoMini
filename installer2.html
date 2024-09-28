@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en">
   <head>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
@@ -46,13 +46,11 @@
       <!-- Dropdown menu for board options -->
       <select id="board-select">
           <option value="">Select Board</option>
-          <!-- Options will be dynamically populated here -->
       </select>
 
       <!-- Dropdown menu for version options -->
       <select id="version-select" disabled>
           <option value="">Select Version</option>
-          <!-- Options will be dynamically populated here -->
       </select>
 
       <!-- Status message element for displaying scanning progress -->
@@ -183,4 +181,15 @@
             versionSelect.disabled = false; // Enable if options are available
             statusMessage.textContent = "Scanning completed.";
         } else {
-            statusMessage.text
+            statusMessage.textContent = "No firmware files found for the selected board.";
+        }
+    }
+
+    // Initialize the board dropdown on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        populateBoardDropdown();
+
+        // Event listener for board selection
+        const boardSelect = document.getElementById('board-select');
+        boardSelect.addEventListener('change', function() {
+            const boardKey
