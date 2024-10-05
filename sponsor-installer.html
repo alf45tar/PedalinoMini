@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset='utf-8'>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
     <title>Install PedalinoMini™</title>
     <style>
       div, fieldset, input, select { padding: 5px; font-size: 1em; }
@@ -32,7 +32,6 @@
   </head>
   <body>
     <div style='display:inline-block;color:#eaeaea;min-width:340px;'>
-
     <h1>PedalinoMini™ Installer</h1>
 
     <div class="pick-variant">
@@ -49,7 +48,6 @@
         <input type="text" id="github-token" placeholder="Enter your token here" style="width: 90%;"/>
       </div>
 
-      <!-- Dropdown container for boards and versions -->
       <div class="dropdown-container">
         <label for="board-select">Select Board:</label>
         <select id="board-select">
@@ -62,7 +60,6 @@
         </select>
       </div>
 
-      <!-- Status message element for displaying scanning progress -->
       <div id="status-message">Scanning not started.</div>
       
       </br></br>
@@ -88,7 +85,6 @@
       <p>Events:</p>
       <pre id="events"></pre>
     <script>
-        // Event listener for the version select dropdown
         document.querySelector('#version-select').addEventListener("change", (event) => {
             const button = document.querySelector('esp-web-install-button');
             button.manifest = event.target.value;
@@ -108,10 +104,10 @@
       <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
     </div>
     <script>
-    const GITHUB_REPO = "pedalino-sponsors/PedalinoMini";
+    const GITHUB_REPO = "alf45tar/PedalinoMini";
     const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/git/refs/tags`;
 
-    // Mapping of board keys to their display names
+    // Existing board mappings...
     const boards = {
         "esp32doit-devkit-v1": "Esp32 DOIT DevKit v1",
         "ttgo-t-eight": "TTGO T-Eight",
@@ -139,22 +135,6 @@
             console.error("Error fetching tags from GitHub:", error);
             document.getElementById('status-message').textContent = "Error fetching tags from GitHub.";
             return [];
-        }
-    }
-
-    // Check if a specific file exists at the given URL
-    async function checkFileExists(url, token) {
-        try {
-            const response = await fetch(url, {
-                method: 'HEAD',
-                headers: {
-                    'Authorization': `token ${token}`
-                }
-            });
-            return response.ok;
-        } catch (error) {
-            console.error("Error checking file existence:", error);
-            return false;
         }
     }
 
@@ -190,8 +170,11 @@
         const token = document.getElementById('github-token').value; // Get the token from input field
         const tags = await fetchTags(token); // Pass the token to fetchTags
 
+        const versionSelect = document.getElementById('version-select');
+        versionSelect.innerHTML = ''; // Clear existing options
+        versionSelect.disabled = true; // Disable until options are populated
+
         if (tags.length) {
-            const versionSelect = document.getElementById('version-select');
             versionSelect.disabled = false;
             const sortedTags = sortVersions(tags.map(tag => tag.ref.split('/').pop()));
             sortedTags.forEach(tag => {
@@ -200,6 +183,10 @@
                 option.textContent = tag;
                 versionSelect.appendChild(option);
             });
+
+            // Update the manifest for the button to the first version
+            const button = document.querySelector('esp-web-install-button');
+            button.manifest = versionSelect.options[0].value; 
             document.getElementById('status-message').textContent = "Tags fetched successfully.";
         } else {
             document.getElementById('status-message').textContent = "No tags found.";
@@ -216,7 +203,6 @@
             document.getElementById('status-message').textContent = "Enter your token to fetch tags.";
         }
     });
-
-    </script>
+</script>
   </body>
 </html>
