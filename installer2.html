@@ -85,13 +85,7 @@
         // Event listener for the version select dropdown
         document.querySelector('#version-select').addEventListener("change", (event) => {
             const button = document.querySelector('esp-web-install-button');
-            if (button) {
-                button.manifest = event.target.value; // Make sure 'manifest' is a valid property
-                console.log("Selected value:", event.target.value);
-                console.log("Manifest:", button.manifest);
-            } else {
-                console.error("Button not found.");
-            }
+            button.manifest = event.target.value;
         });
     </script>
       <script>
@@ -213,6 +207,8 @@
             });
 
             versionSelect.disabled = false;
+            const button = document.querySelector('esp-web-install-button');
+            button.manifest = versions[0].value;
             statusMessage.textContent = "Scanning completed.";
         } else {
             statusMessage.textContent = "No firmware files found for the selected board.";
