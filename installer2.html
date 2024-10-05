@@ -87,7 +87,8 @@
             const button = document.querySelector('esp-web-install-button');
             if (button) {
                 button.manifest = event.target.value; // Make sure 'manifest' is a valid property
-                button.classList.remove('invisible');
+                console.log("Selected value:", event.target.value);
+                console.log("Manifest:", button.manifest);
             } else {
                 console.error("Button not found.");
             }
