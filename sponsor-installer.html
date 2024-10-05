@@ -187,7 +187,7 @@
                     const sortedTags = sortVersions(tags.map(tag => tag.ref.split('/').pop()));
                     sortedTags.forEach(tag => {
                         const option = document.createElement('option');
-                        option.value = `https://raw.githubusercontent.com/${GITHUB_REPO}/${version}/firmware/${boardKey}/${boardKey}-${version}.json`;
+                        option.value = `https://raw.githubusercontent.com/${GITHUB_REPO}/${tag}/firmware/${boardKey}/${boardKey}-${tag}.json`; // Updated URL format
                         option.textContent = tag;
                         versionSelect.appendChild(option);
                     });
