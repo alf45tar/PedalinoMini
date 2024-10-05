@@ -5,27 +5,27 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
     <title>Install PedalinoMini™</title>
     <style>
-      div,fieldset,input,select{padding:5px;font-size:1em;}
-      fieldset{background:#4f4f4f;}
-      p{margin:0.5em 0;}
-      input{width:100%;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;background:#dddddd;color:#000000;}
-      input[type=checkbox],input[type=radio]{width:1em;margin-right:6px;vertical-align:-1px;}
-      input[type=range]{width:99%;}
-      select{width:100%;background:#dddddd;color:#000000;}
-      textarea{resize:vertical;width:98%;height:318px;padding:5px;overflow:auto;background:#1f1f1f;color:#65c115;}
-      body{text-align:center;font-family:verdana,sans-serif;background:#252525;}
-      td{padding:0px;}
-      button{border:0;border-radius:0.3rem;background:#1fa3ec;color:#faffff;line-height:2.4rem;font-size:1.2rem;width:100%;-webkit-transition-duration:0.4s;transition-duration:0.4s;cursor:pointer;}
-      button:hover{background:#0e70a4;}
-      .bred{background:#d43535;}
-      .bred:hover{background:#931f1f;}
-      .bgrn{background:#47c266;}
-      .bgrn:hover{background:#5aaf6f;}
-      a{color:#1fa3ec;text-decoration:none;}
-      .p{float:left;text-align:left;}
-      .q{float:right;text-align:right;}
-      .r{border-radius:0.3em;padding:2px;margin:6px 2px;}
-      .pick-variant{margin-bottom:16px;}
+      div, fieldset, input, select { padding: 5px; font-size: 1em; }
+      fieldset { background: #4f4f4f; }
+      p { margin: 0.5em 0; }
+      input, select { background: #dddddd; color: #000000; }
+      input[type=checkbox], input[type=radio] { width: 1em; margin-right: 6px; vertical-align: -1px; }
+      input[type=range] { width: 99%; }
+      textarea { resize: vertical; width: 98%; height: 318px; padding: 5px; overflow: auto; background: #1f1f1f; color: #65c115; }
+      body { text-align: center; font-family: verdana, sans-serif; background: #252525; }
+      td { padding: 0px; }
+      button { border: 0; border-radius: 0.3rem; background: #1fa3ec; color: #faffff; line-height: 2.4rem; font-size: 1.2rem; width: 100%; -webkit-transition-duration: 0.4s; transition-duration: 0.4s; cursor: pointer; }
+      button:hover { background: #0e70a4; }
+      .bred { background: #d43535; }
+      .bred:hover { background: #931f1f; }
+      .bgrn { background: #47c266; }
+      .bgrn:hover { background: #5aaf6f; }
+      a { color: #1fa3ec; text-decoration: none; }
+      label { display: block; margin-top: 10px; color: #eaeaea; }
+      select { width: 80%; background: #dddddd; color: #000000; margin: 0 auto; text-align: center; }
+      .pick-variant { margin-bottom: 16px; text-align: center; }
+      .dropdown-container { margin: 0 auto; display: inline-block; text-align: left; width: 70%; }
+      #board-select, #version-select { width: 90%; }
     </style>
     <script type="module" src="https://unpkg.com/esp-web-tools@9/dist/web/install-button.js?module"></script>
     <script type="module" src="https://www.improv-wifi.com/sdk-js/launch-button.js"></script>
@@ -43,15 +43,18 @@
       </ol>
       </br>
 
-      <!-- Dropdown menu for board options -->
-      <select id="board-select">
+      <!-- Dropdown container for boards and versions -->
+      <div class="dropdown-container">
+        <label for="board-select">Select Board:</label>
+        <select id="board-select">
           <option value="">Select Board</option>
-      </select>
+        </select>
 
-      <!-- Dropdown menu for version options -->
-      <select id="version-select" disabled>
+        <label for="version-select">Select Version:</label>
+        <select id="version-select" disabled>
           <option value="">Select Version</option>
-      </select>
+        </select>
+      </div>
 
       <!-- Status message element for displaying scanning progress -->
       <div id="status-message">Scanning not started.</div>
@@ -144,11 +147,11 @@
         }
     }
 
-    // Sort tags by version, with the most recent versions first
+    // Sort versions by most recent first
     function sortVersions(versions) {
         return versions.sort((a, b) => {
-            const versionA = a.replace(/[^\d.]/g, '').split('.').map(Number);
-            const versionB = b.replace(/[^\d.]/g, '').split('.').map(Number);
+            const versionA = a.split('.').map(Number);
+            const versionB = b.split('.').map(Number);
 
             for (let i = 0; i < Math.max(versionA.length, versionB.length); i++) {
                 const diff = (versionB[i] || 0) - (versionA[i] || 0);
@@ -175,27 +178,24 @@
 
         let versions = [];
 
-        // Iterate over each tag to generate version options
         for (const tag of tags) {
-            const version = tag.ref.split('/').pop();
-            const versionNumber = version.replace('v', '');
-            const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/${version}/firmware/${boardKey}/${boardKey}-${versionNumber}.json`;
+            const version = tag.ref.split('/').pop().replace('v', '');
+            const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/${tag.ref.split('/').pop()}/firmware/${boardKey}/${boardKey}-${version}.json`;
 
             const exists = await checkFileExists(url);
             if (exists) {
-                versions.push(versionNumber);
+                versions.push(version);
             }
         }
 
         if (versions.length > 0) {
-            // Sort the versions (most recent first)
             versions = sortVersions(versions);
 
             // Populate the version dropdown
             versions.forEach(version => {
                 const option = document.createElement('option');
                 option.value = version;
-                option.textContent = `v${version}`;
+                option.textContent = version;
                 versionSelect.appendChild(option);
             });
 
