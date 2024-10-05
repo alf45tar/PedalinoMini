@@ -180,7 +180,7 @@
 
         for (const tag of tags) {
             const version = tag.ref.split('/').pop().replace('v', '');
-            const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/${tag.ref.split('/').pop()}/firmware/${boardKey}/${boardKey}-${version}.json`;
+            const url = `https://raw.githubusercontent.com/${GITHUB_REPO}/${version}/firmware/${boardKey}/${boardKey}-${version}.json`;
 
             const exists = await checkFileExists(url);
             if (exists) {
@@ -194,7 +194,7 @@
             // Populate the version dropdown
             versions.forEach(version => {
                 const option = document.createElement('option');
-                option.value = version;
+                option.value = `https://raw.githubusercontent.com/${GITHUB_REPO}/${version}/firmware/${boardKey}/${boardKey}-${version}.json`;
                 option.textContent = version;
                 versionSelect.appendChild(option);
             });
