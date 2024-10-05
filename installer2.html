@@ -208,7 +208,7 @@
 
             versionSelect.disabled = false;
             const button = document.querySelector('esp-web-install-button');
-            button.manifest = versions[0].value;
+            button.manifest = versionSelect.options[0].value;
             statusMessage.textContent = "Scanning completed.";
         } else {
             statusMessage.textContent = "No firmware files found for the selected board.";
