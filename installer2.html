@@ -144,6 +144,20 @@
         }
     }
 
+    // Sort tags by version, with the most recent versions first
+    function sortVersions(versions) {
+        return versions.sort((a, b) => {
+            const versionA = a.replace(/[^\d.]/g, '').split('.').map(Number);
+            const versionB = b.replace(/[^\d.]/g, '').split('.').map(Number);
+
+            for (let i = 0; i < Math.max(versionA.length, versionB.length); i++) {
+                const diff = (versionB[i] || 0) - (versionA[i] || 0);
+                if (diff !== 0) return diff;
+            }
+            return 0;
+        });
+    }
+
     // Generate the version dropdown based on the selected board
     async function generateVersionDropdown(boardKey) {
         const versionSelect = document.getElementById('version-select');
@@ -159,7 +173,7 @@
             return;
         }
 
-        let optionsAdded = false;
+        let versions = [];
 
         // Iterate over each tag to generate version options
         for (const tag of tags) {
@@ -169,29 +183,35 @@
 
             const exists = await checkFileExists(url);
             if (exists) {
-                const option = document.createElement('option');
-                option.value = url;
-                option.textContent = versionNumber;
-                versionSelect.appendChild(option);
-                optionsAdded = true;
+                versions.push(versionNumber);
             }
         }
 
-        if (optionsAdded) {
-            versionSelect.disabled = false; // Enable if options are available
+        if (versions.length > 0) {
+            // Sort the versions (most recent first)
+            versions = sortVersions(versions);
+
+            // Populate the version dropdown
+            versions.forEach(version => {
+                const option = document.createElement('option');
+                option.value = version;
+                option.textContent = `v${version}`;
+                versionSelect.appendChild(option);
+            });
+
+            versionSelect.disabled = false;
             statusMessage.textContent = "Scanning completed.";
         } else {
             statusMessage.textContent = "No firmware files found for the selected board.";
         }
     }
 
-    // Initialize the board dropdown on page load
-    document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the dropdowns
+    document.addEventListener('DOMContentLoaded', () => {
         populateBoardDropdown();
 
-        // Event listener for board selection
         const boardSelect = document.getElementById('board-select');
-        boardSelect.addEventListener('change', function() {
+        boardSelect.addEventListener('change', () => {
             const boardKey = boardSelect.value;
             if (boardKey) {
                 generateVersionDropdown(boardKey);
