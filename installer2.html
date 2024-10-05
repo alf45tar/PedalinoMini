@@ -95,6 +95,14 @@
       <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
     </div>
     <script>
+      const selectEl = document.querySelector(".pick-variant version-select");
+      const installEl = document.querySelector("esp-web-install-button");
+      installEl.manifest = selectEl.value;
+      selectEl.addEventListener("change", () => {
+        installEl.manifest = selectEl.value;
+      });
+    </script>
+    <script>
     const GITHUB_REPO = "alf45tar/PedalinoMini";
     const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/git/refs/tags`;
 
