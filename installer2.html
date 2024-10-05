@@ -61,7 +61,7 @@
       
       </br></br>
       <p>
-        <esp-web-install-button id="inst">
+        <esp-web-install-button manifest=''>
           <button slot='activate'>Connect via USB</button>
           <i slot="unsupported">
             Your browser does not support Web Serial.</br>Open this page in Google Chrome or</br>Microsoft Edge instead
@@ -81,6 +81,18 @@
       </p>
       <p>Events:</p>
       <pre id="events"></pre>
+    <script>
+        // Event listener for the version select dropdown
+        document.querySelector('#version-select').addEventListener("change", (event) => {
+            const button = document.querySelector('esp-web-install-button');
+            if (button) {
+                button.manifest = event.target.value; // Make sure 'manifest' is a valid property
+                button.classList.remove('invisible');
+            } else {
+                console.error("Button not found.");
+            }
+        });
+    </script>
       <script>
         document.querySelectorAll("improv-wifi-launch-button").forEach((button) =>
           button.addEventListener("state-changed", (ev) => {
@@ -94,13 +106,6 @@
       <hr/>
       <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
     </div>
-    <script>
-      document.querySelector('#version-select').addEventListener("change", () => {
-      const button = document.querySelector('esp-web-install-button');
-      button.manifest = event.target.value;
-      button.classList.remove('invisible');
-    });
-    </script>
     <script>
     const GITHUB_REPO = "alf45tar/PedalinoMini";
     const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/git/refs/tags`;
