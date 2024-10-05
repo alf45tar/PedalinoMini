@@ -27,7 +27,7 @@
       .dropdown-container { margin: 0 auto; display: inline-block; text-align: left; width: 70%; }
       #board-select, #version-select { width: 90%; }
     </style>
-    <script type="module" src="https://unpkg.com/esp-web-tools@9/dist/web/install-button.js?module"></script>
+    <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
     <script type="module" src="https://www.improv-wifi.com/sdk-js/launch-button.js"></script>
   </head>
   <body>
@@ -95,12 +95,13 @@
       <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
     </div>
     <script>
-      const selectEl = document.querySelector(".pick-variant version-select");
-      const installEl = document.querySelector("esp-web-install-button");
-      installEl.manifest = selectEl.value;
-      selectEl.addEventListener("change", () => {
-        installEl.manifest = selectEl.value;
-      });
+      document.querySelectorAll('input[name="version-select"]').forEach(opt =>
+        opt.addEventListener("change", () => {
+          const button = document.querySelector('esp-web-install-button');
+          button.manifest = opt.value;
+          button.classList.remove('invisible');
+        }
+      ));
     </script>
     <script>
     const GITHUB_REPO = "alf45tar/PedalinoMini";
