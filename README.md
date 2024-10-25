@@ -98,18 +98,15 @@ Sponsors version additions/fixes since October 25th, 2024:
 - Fixed bank 0 Program Change leds
 - Fixed LILYGO® T-Display-S3 display off on battery
 - Fixed LILYGO® T-Display-S3 leds strip and midi out pin overlap
-
 - Increased sequences to 20
 - Add support for ADS1115 16-bit analog-to-digital converter for 4 additional Analog pedals
 - Modified the voltage detection
 - Removed default credentials to connect to WebUI
 - Enabled PSRAM for LILYGO® T-Display-S3
-
 - Updated onboard Bootstrap to 5.3.3
 - Updated SorttableJS to 1.15.3
 - Updated to ArduinoJson v7
 - Updated to Adafruit TinyUSB Library version 3 (configuration description override)
-
 </details>
 
 <details>
