@@ -68,39 +68,49 @@ New features, bug corrections, priority reply will be offered at zero-day to **s
 
 New features and bug corrections will be released to this public repository when one of the following goals is met (whichever come first):
 
-- **Five hundread stars**
+- **One thousand stars**
 
   _Add a star to the project if you don't want be a sponsor._
 
-  >Goal is 500 stars.
+  >Goal is 1000 stars.
 
-- **12 months from February 1st, 2024**
+- **12 months from October 25th, 2024**
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on February 1st, 2025.
+  >Goal is reached on Ocotber 25th, 2025.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
-Sponsors version additions/fixes since February 3st, 2024:
-- Fixed simultaneous button press
-- Increased sequences to 20
-- Updated onboard Bootstrap to 5.3.3
-- Fixed reboot on configuration load
-- Enabled PSRAM for LILYGO® T-Display-S3
-- Updated to ArduinoJson v7
-- Fixed reboot on change profile via WebUI
-- Fixed bank 0 Program Change leds
-- Updated to Adafruit TinyUSB Library version 3 (configuration description override)
-- Fixed LILYGO® T-Display-S3 display off on battery
-- Modified the voltage detection
-- Fixed LILYGO® T-Display-S3 leds strip and midi out pin overlap
-- Removed default credentials to connect to WebUI
-- Add support for ADS1115 16-bit analog-to-digital converter for 4 additional Analog pedals
+Sponsors version additions/fixes since October 25th, 2024:
+- None
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
 ## Public versions history
+
+<details>
+<summary>3.5.0 - October 25th, 2024 - Bonus release for 500 stars</summary>
+
+- Fixed simultaneous button press
+- Fixed reboot on configuration load
+- Fixed reboot on change profile via WebUI
+- Fixed bank 0 Program Change leds
+- Fixed LILYGO® T-Display-S3 display off on battery
+- Fixed LILYGO® T-Display-S3 leds strip and midi out pin overlap
+
+- Increased sequences to 20
+- Add support for ADS1115 16-bit analog-to-digital converter for 4 additional Analog pedals
+- Modified the voltage detection
+- Removed default credentials to connect to WebUI
+- Enabled PSRAM for LILYGO® T-Display-S3
+
+- Updated onboard Bootstrap to 5.3.3
+- Updated SorttableJS to 1.15.3
+- Updated to ArduinoJson v7
+- Updated to Adafruit TinyUSB Library version 3 (configuration description override)
+
+</details>
 
 <details>
 <summary>3.2.2 - February 3st, 2024</summary>
@@ -311,7 +321,9 @@ Simulate "D1 Robot LCD Keypad Shield" voltage ladder
 
 ## How to upload firmware, WiFi provisioning and access to web user interface
 
-Visit http://alf45tar.github.io/PedalinoMini/installer to install new firmware, update firmware, connect device to a WiFi network and visit the device's hosted web interface.
+Visit http://alf45tar.github.io/PedalinoMini/installer to install *public* firmware, update firmware, connect device to a WiFi network and visit the device's hosted web interface.
+
+For sponsor only visit http://alf45tar.github.io/PedalinoMini/sponsor-installer to install *latest* firmware, update firmware, connect device to a WiFi network and visit the device's hosted web interface. It is required a secret key available on sponsor area.
 
 The only requirement for now is to use a Google Chrome or Microsoft Edge browser (Safari and iOS devices are not supported yet). WiFi provisioing via Bluetooth is only supported in Google Chrome on Windows.
 
