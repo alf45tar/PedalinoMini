@@ -22,16 +22,21 @@ extern String httpUsername;
 extern String httpPassword;
 
 #ifdef BOARD_HAS_PSRAM
-struct SpiRamAllocator {
-  void* allocate(size_t size) {
+struct SpiRamAllocator : ArduinoJson::Allocator {
+  void* allocate(size_t size) override {
     return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
   }
-  void deallocate(void* pointer) {
+
+  void deallocate(void* pointer) override {
     heap_caps_free(pointer);
+  }
+
+  void* reallocate(void* ptr, size_t new_size) override {
+    return heap_caps_realloc(ptr, new_size, MALLOC_CAP_SPIRAM);
   }
 };
 
-using SpiRamJsonDocument = BasicJsonDocument<SpiRamAllocator>;
+SpiRamAllocator allocator;
 #endif
 
 bool control_not_defined (unsigned int c) {
@@ -276,20 +281,15 @@ void spiffs_remove_profile(byte profile) {
 
 void spiffs_save_config(const String& filename, bool saveActions = true, bool savePedals = true, bool saveControls = true, bool saveInterfaces = true, bool saveSequences = true, bool saveOptions  = true) {
 
-  uint32_t allocated;
-
 #ifdef BOARD_HAS_PSRAM
-  allocated = 256*1024;
-  SpiRamJsonDocument jdoc(allocated);
+  JsonDocument jdoc(&allocator);
 #else
-  allocated = ESP.getMaxAllocHeap();
-  DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
+  JsonDocument jdoc;
 #endif
-  DPRINT("Memory allocated for JSON document: %d bytes\n", allocated);
 
   if (saveOptions) {
-    JsonArray jglobals = jdoc.createNestedArray("Globals");
-    JsonObject jo = jglobals.createNestedObject();
+    JsonArray jglobals = jdoc["Globals"].to<JsonArray>();
+    JsonObject jo = jglobals.add<JsonObject>();
     jo["Hostname"]            = host;
     jo["BootMode"]            = bootMode;
     jo["BLEServer"]           = bleServer;
@@ -339,18 +339,18 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
     jo["OSCLocalPort"]        = oscLocalPort;
     jo["OSCRemoteHost"]       = oscRemoteHost;
     jo["OSCRemotePort"]       = oscRemotePort;
-    JsonArray jladder = jdoc.createNestedArray("Ladder");
+    JsonArray jladder = jdoc["Ladder"].to<JsonArray>();
     for (byte s = 0; s < LADDER_STEPS + 1; s++) {
-      JsonObject jo = jladder.createNestedObject();
+      JsonObject jo = jladder.add<JsonObject>();
       jo["Step"]            = s + 1;
       jo["Level"]           = ladderLevels[s];
     }
   }
 
   if (savePedals) {
-    JsonArray jpedals = jdoc.createNestedArray("Pedals");
+    JsonArray jpedals = jdoc["Pedals"].to<JsonArray>();
     for (byte p = 0; p < PEDALS; p++) {
-      JsonObject jo = jpedals.createNestedObject();
+      JsonObject jo = jpedals.add<JsonObject>();
       jo["Pedal"]             = p + 1;
       jo["Mode"]              = pedalModeName[pedals[p].mode];
       jo["InvertPolarity"]    = (pedals[p].invertPolarity == PED_ENABLE);
@@ -366,10 +366,10 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
   }
 
   if (saveControls) {
-    JsonArray jpedals = jdoc.createNestedArray("Controls");
+    JsonArray jpedals = jdoc["Controls"].to<JsonArray>();
     for (byte c = 0; c < CONTROLS; c++) {
       if (control_not_defined(c)) continue;
-      JsonObject jo = jpedals.createNestedObject();
+      JsonObject jo = jpedals.add<JsonObject>();
       jo["Control"]            = c + 1;
       jo["Pedal1"]             = (controls[c].pedal1  == PEDALS        ? 0 : controls[c].pedal1  + 1);
       jo["Button1"]            = (controls[c].button1 == LADDER_STEPS  ? 0 : controls[c].button1 + 1);
@@ -380,20 +380,20 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
   }
 
   if (saveActions) {
-    JsonArray jbnames = jdoc.createNestedArray("BankNames");
+    JsonArray jbnames = jdoc["BankNames"].to<JsonArray>();
     for (byte b = 0; b < BANKS; b++) {
-      JsonObject jo = jbnames.createNestedObject();
+      JsonObject jo = jbnames.add<JsonObject>();
       jo["Bank"]              = b;
       jo["Name"]              = banknames[b];
     }
 
 
-    JsonArray jactions = jdoc.createNestedArray("Actions");
+    JsonArray jactions = jdoc["Actions"].to<JsonArray>();
     for (byte b = 0; b < BANKS; b++) {
       action *act = actions[b];
       while (act != nullptr) {
         char color[8];
-        JsonObject jo = jactions.createNestedObject();
+        JsonObject jo = jactions.add<JsonObject>();
         jo["Bank"]            = b;
         jo["Control"]         = act->control + 1;
         jo["Led"]             = (act->led == LEDS ? 0 : (act->led == 255 ? 255 : act->led + 1));
@@ -417,9 +417,9 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
   }
 
   if (saveInterfaces) {
-    JsonArray jinterfaces = jdoc.createNestedArray("Interfaces");
+    JsonArray jinterfaces = jdoc["Interfaces"].to<JsonArray>();
     for (byte i = 0; i < INTERFACES; i++) {
-      JsonObject jo = jinterfaces.createNestedObject();
+      JsonObject jo = jinterfaces.add<JsonObject>();
       jo["Interface"]       = i + 1;
       jo["Name"]            = interfaces[i].name;
       jo["In"]              = (IS_INTERFACE_ENABLED(interfaces[i].midiIn));
@@ -432,14 +432,21 @@ void spiffs_save_config(const String& filename, bool saveActions = true, bool sa
   }
 
   if (saveSequences) {
-    JsonArray jsequences = jdoc.createNestedArray("Sequences");
+    JsonArray jsequences = jdoc["Sequences"].to<JsonArray>();
     for (byte s = 0; s < SEQUENCES; s++) {
       for (byte t = 0; t < STEPS; t++) {
-        JsonObject jo = jsequences.createNestedObject();
+        JsonObject jo = jsequences.add<JsonObject>();
         jo["Sequence"]    = s + 1;
         jo["Step"]        = t + 1;
         jo["Message"]     = ActionEnumToString(sequences[s][t].midiMessage);
-        jo["Channel"]     = sequences[s][t].midiChannel;
+        switch (sequences[s][t].midiMessage) {
+            case PED_SEQUENCE:
+              jo["Channel"] = sequences[s][t].midiChannel + 1;
+              break;
+            default:
+              jo["Channel"] = sequences[s][t].midiChannel;
+              break;
+          }
         jo["Code"]        = sequences[s][t].midiCode;
         jo["Value"]       = sequences[s][t].midiValue;
         jo["Led"]         = (sequences[s][t].led == LEDS ? 0 : (sequences[s][t].led == 255 ? 255 : sequences[s][t].led + 1));
@@ -516,16 +523,11 @@ void spiffs_save_profile(byte profile) {
 
 void spiffs_load_config(const String& filename, bool loadActions = true, bool loadPedals = true, bool loadControls = true, bool loadInterfaces = true, bool loadSequences = true, bool loadOptions  = true, bool append = false) {
 
-  uint32_t allocated;
-
 #ifdef BOARD_HAS_PSRAM
-  allocated = 256*1024;
-  SpiRamJsonDocument jdoc(allocated);
+  JsonDocument jdoc(&allocator);
 #else
-  allocated = ESP.getMaxAllocHeap();
-  DynamicJsonDocument jdoc(ESP.getMaxAllocHeap());
+  JsonDocument jdoc;
 #endif
-  DPRINT("Memory allocated for JSON document: %d bytes\n", allocated);
 
   DPRINT("Reading %s from SPIFFS ... ", filename.c_str());
   File file = SPIFFS.open(filename, FILE_READ);
@@ -542,11 +544,6 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
 
   file.close();
   DPRINT("done\n");
-
-#ifndef BOARD_HAS_PSRAM
-  jdoc.shrinkToFit();
-  DPRINT("Memory used by JSON document: %d bytes\n", jdoc.memoryUsage());
-#endif
 
 #ifdef DEBUG_ESP_PORT
   serializeJson(jdoc, SERIALDEBUG);
@@ -786,7 +783,14 @@ void spiffs_load_config(const String& filename, bool loadActions = true, bool lo
           t = constrain(t, 0, STEPS - 1);
           sequences[s][t].midiMessage = ActionStringToEnum(jo["Message"]);
           sequences[s][t].midiChannel = jo["Channel"];
-          sequences[s][t].midiChannel = constrain(sequences[s][t].midiChannel, 0, 17);
+          switch (sequences[s][t].midiMessage) {
+            case PED_SEQUENCE:
+              sequences[s][t].midiChannel  = constrain(sequences[s][t].midiChannel - 1, 0, SEQUENCES - 1);
+              break;
+            default:
+              sequences[s][t].midiChannel = constrain(sequences[s][t].midiChannel, 0, 17);
+              break;
+          }
           sequences[s][t].midiCode    = jo["Code"];
           sequences[s][t].midiCode    = constrain(sequences[s][t].midiCode,    0, MIDI_RESOLUTION - 1);
           sequences[s][t].midiValue   = jo["Value"];
@@ -840,8 +844,8 @@ void load_factory_default()
   wifiPassword       = "";
   ssidSoftAP         = String("Pedalino-") + getChipId();
   passwordSoftAP     = getChipId();
-  httpUsername       = "admin";
-  httpPassword       = getChipId();
+  httpUsername       = "";
+  httpPassword       = "";
   theme              = "bootstrap";
   currentBank        = 1;
   currentProfile     = 0;
@@ -889,6 +893,8 @@ void load_factory_default()
                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                  nullptr,
                  nullptr,
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                 nullptr, nullptr, nullptr, nullptr,
                  nullptr
                 };
   }
@@ -985,6 +991,8 @@ void load_factory_default()
                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                  nullptr,
                  nullptr,
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                 nullptr, nullptr, nullptr, nullptr,
                  nullptr
                 };
   pedals[PEDALS-1].pressMode = PED_PRESS_1_2_L;
@@ -1079,6 +1087,8 @@ void load_factory_default()
                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                  nullptr,
                  nullptr,
+                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                 nullptr, nullptr, nullptr, nullptr,
                  nullptr
                 };
   action *act;
@@ -1194,12 +1204,12 @@ void load_factory_default()
   }
 
   // TC-Helicon Switch 6
-  ladderLevels[0] = 352;
-  ladderLevels[1] = 533;
-  ladderLevels[2] = 640;
-  ladderLevels[3] = 723;
-  ladderLevels[4] = 806;
-  ladderLevels[5] = 908;
+  ladderLevels[0] = 352/2;
+  ladderLevels[1] = 533/2;
+  ladderLevels[2] = 640/2;
+  ladderLevels[3] = 723/2;
+  ladderLevels[4] = 806/2;
+  ladderLevels[5] = 908/2;
   ladderLevels[6] = ADC_RESOLUTION - 1;
 }
 
@@ -1283,7 +1293,7 @@ void eeprom_update_ap_wifi_credentials(const String& ssid = String("Pedalino-") 
 #endif
 }
 
-void eeprom_update_login_credentials(const String& username = "admin", const String& password = getChipId())
+void eeprom_update_login_credentials(const String& username = "", const String& password = "")
 {
 #ifdef NVS
   DPRINT("Updating NVS ... ");
@@ -1537,9 +1547,12 @@ void eeprom_update_profile(byte profile = currentProfile)
     pedals_copy[i].pedalValue[1] = 0;
     pedals_copy[i].lastUpdate[0] = 0;
     pedals_copy[i].lastUpdate[1] = 0;
-    pedals_copy[i].analogPedal   = nullptr;
+    for (byte j = 0; j < ADC_INPUTS; j++)
+      pedals_copy[i].analogPedal[j] = nullptr;
     pedals_copy[i].jogwheel      = nullptr;
     pedals_copy[i].buttonConfig  = nullptr;
+    for (byte a = 0; a < 4; a++)
+      pedals_copy[i].ads[a]      = nullptr;
     for (byte s = 0; s < LADDER_STEPS; s++) {
       pedals_copy[i].latchStatus[s] = 0;
       pedals_copy[i].button[s]      = nullptr;
@@ -1689,8 +1702,8 @@ void eeprom_read_global()
 void eeprom_read_profile(byte profile = currentProfile)
 {
 #ifdef NVS
-  controller_delete();
   delete_actions();
+  controller_delete();
   DPRINT("Reading NVS Profile ");
   switch (profile) {
     case 0:
@@ -1714,7 +1727,8 @@ void eeprom_read_profile(byte profile = currentProfile)
     pedals[i].pedalValue[1] = 0;
     pedals[i].lastUpdate[0] = 0;
     pedals[i].lastUpdate[1] = 0;
-    pedals[i].analogPedal   = nullptr;
+    for (byte j = 0; j < ADC_INPUTS; j++)
+      pedals[i].analogPedal[j] = nullptr;
     pedals[i].analogPad     = nullptr;
     pedals[i].jogwheel      = nullptr;
     pedals[i].buttonConfig  = nullptr;
@@ -1756,12 +1770,13 @@ void eeprom_read_profile(byte profile = currentProfile)
       }
     }
   }
+
   create_banks();
   preferences.end();
   DPRINT("done\n");
 #else
-  controller_delete();
   delete_actions();
+  delete_controller();
   spiffs_load_profile(profile);
   create_banks();
 #endif

@@ -118,7 +118,8 @@ void leds_update_single(byte e, action *act, byte value, byte bank = currentBank
           case PED_PROGRAM_CHANGE_DEC:
 
                   if (e == PED_EVENT_NONE) {
-                    set_last_led_color(bank, led_control(act->control, act->led), act->color0, ledsOffBrightness);
+                    set_last_led_color(bank,        led_control(act->control, act->led), act->color0, ledsOffBrightness);
+                    set_last_led_color(currentBank, led_control(act->control, act->led), act->color0, ledsOffBrightness);
                     leds_refresh(led_control(act->control, act->led));
                     return;
                   }
@@ -774,7 +775,6 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
 {
   code    = constrain(code,    0, MIDI_RESOLUTION - 1);
   value   = constrain(value,   0, MIDI_RESOLUTION - 1);
-  channel = constrain(channel, 0, 17);
 
   bool channelMessage = (message == PED_NOTE_ON            ) ||
                         (message == PED_NOTE_OFF           ) ||
@@ -785,6 +785,8 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
                         (message == PED_PROGRAM_CHANGE_DEC ) ||
                         (message == PED_PITCH_BEND         ) ||
                         (message == PED_CHANNEL_PRESSURE   );
+
+  if (channelMessage) channel = constrain(channel, 0, SEQUENCES);
 
   if (channel == 0 && channelMessage) {
     switch (message) {
@@ -1027,20 +1029,21 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
 
     case PED_SEQUENCE:
 
-      channel = constrain(channel, 1, SEQUENCES);
+      channel = constrain(channel, 0, SEQUENCES - 1);
+      DPRINT("\n");
       DPRINT("=======================================================\n");
-      DPRINT("SEQUENCE.....Number %2d\n", channel);
+      DPRINT("SEQUENCE.....Number %2d\n", channel + 1);
       DPRINT("-------------------------------------------------------\n");
       for (byte s = 0; s < STEPS; s++) {
-        if (sequences[channel-1][s].midiMessage == PED_EMPTY) continue;
-        if (sequences[channel-1][s].midiMessage != PED_ACTION_LED_COLOR) {
-          midi_send(sequences[channel-1][s].midiMessage, sequences[channel-1][s].midiCode, sequences[channel-1][s].midiValue, sequences[channel-1][s].midiChannel, on_off, 0, MIDI_RESOLUTION - 1, bank, pedal, button, led);
+        if (sequences[channel][s].midiMessage == PED_EMPTY) continue;
+        if (sequences[channel][s].midiMessage != PED_ACTION_LED_COLOR) {
+          midi_send(sequences[channel][s].midiMessage, sequences[channel][s].midiCode, sequences[channel][s].midiValue, sequences[channel][s].midiChannel, on_off, 0, MIDI_RESOLUTION - 1, bank, pedal, button, led);
         }
-        byte l = (sequences[channel-1][s].led == 255 ? led : sequences[channel-1][s].led);
+        byte l = (sequences[channel][s].led == 255 ? led : sequences[channel][s].led);
         l = constrain(l, 0, LEDS);
-        fastleds[l] = sequences[channel-1][s].color;
+        fastleds[l] = sequences[channel][s].color;
         fastleds[l].nscale8(ledsOnBrightness);
-        if (sequences[channel-1][s].led != LEDS) { DPRINT("LED COLOR.....Led %2d......RGB Color #%02x%02x%02x\n", l + 1, fastleds[l].red, fastleds[l].green, fastleds[l].blue); }
+        if (sequences[channel][s].led != LEDS) { DPRINT("LED COLOR.....Led %2d......RGB Color #%02x%02x%02x\n", l + 1, fastleds[l].red, fastleds[l].green, fastleds[l].blue); }
         fastleds[l] = swap_rgb_order(fastleds[l], rgbOrder);
         FastLED.show();
         lastLedColor[currentBank][l] = fastleds[l];
@@ -1053,21 +1056,21 @@ void midi_send(byte message, byte code, byte value, byte channel, bool on_off, b
     case PED_SEQUENCE_STEP_BY_STEP_FWD:
     case PED_SEQUENCE_STEP_BY_STEP_REV:
 
-      channel = constrain(channel, 1, SEQUENCES);
-      byte step = constrain(code, 1, STEPS);
-      DPRINT("SEQUENCE.....Number %2d.....Step %2d\n", channel, step);
-      midi_send(sequences[channel-1][step-1].midiMessage, sequences[channel-1][step-1].midiCode, sequences[channel-1][step-1].midiValue, sequences[channel-1][step-1].midiChannel, on_off, 0, MIDI_RESOLUTION - 1, bank, pedal, button, led);
-      byte l = (sequences[channel-1][step-1].led == 255 ? led : sequences[channel-1][step-1].led);
+      channel = constrain(channel, 0, SEQUENCES - 1);
+      byte step = constrain(code, 0, STEPS - 1);
+      DPRINT("SEQUENCE.....Number %2d.....Step %2d\n", channel + 1, step + 1);
+      midi_send(sequences[channel][step].midiMessage, sequences[channel][step].midiCode, sequences[channel][step].midiValue, sequences[channel][step].midiChannel, on_off, 0, MIDI_RESOLUTION - 1, bank, pedal, button, led);
+      byte l = (sequences[channel][step].led == 255 ? led : sequences[channel][step].led);
       l = constrain(l, 0, LEDS);
-      fastleds[l] = sequences[channel-1][step-1].color;
+      fastleds[l] = sequences[channel][step].color;
       fastleds[l].nscale8(ledsOnBrightness);
-      if (sequences[channel-1][step-1].led != LEDS) { DPRINT("LED COLOR.....Led %2d......RGB Color #%02x%02x%02x\n", l + 1, fastleds[l].red, fastleds[l].green, fastleds[l].blue); }
+      if (sequences[channel][step].led != LEDS) { DPRINT("LED COLOR.....Led %2d......RGB Color #%02x%02x%02x\n", l + 1, fastleds[l].red, fastleds[l].green, fastleds[l].blue); }
       fastleds[l] = swap_rgb_order(fastleds[l], rgbOrder);
       FastLED.show();
       lastLedColor[currentBank][l] = fastleds[l];
       DPRINT("--------------------------------------------------\n");
-      currentMIDIValue[bank][pedal][button] = channel;
-      lastMIDIMessage[currentBank] = {(byte)(message == PED_SEQUENCE_STEP_BY_STEP_FWD ? PED_SEQUENCE_STEP_BY_STEP_FWD : PED_SEQUENCE_STEP_BY_STEP_REV), code, value, channel};
+      //currentMIDIValue[bank][pedal][button] = channel;
+      //lastMIDIMessage[currentBank] = {(byte)(message == PED_SEQUENCE_STEP_BY_STEP_FWD ? PED_SEQUENCE_STEP_BY_STEP_FWD : PED_SEQUENCE_STEP_BY_STEP_REV), code, value, channel};
       break;
   }
 }
@@ -1087,34 +1090,36 @@ void fire_action(action* act, byte p, byte i, byte e)
             case PED_MIDI_START:
             case PED_MIDI_STOP:
             case PED_MIDI_CONTINUE:
-            case PED_SEQUENCE:
               midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i);
+              break;
+
+            case PED_SEQUENCE:
+              midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel - 1, true, act->midiValue1, act->midiValue2, currentBank, p, i);
               break;
 
             case PED_SEQUENCE_STEP_BY_STEP_FWD:
             case PED_SEQUENCE_STEP_BY_STEP_REV:
               act->midiChannel = constrain(act->midiChannel, 1, SEQUENCES);
-              act->midiCode    = constrain(act->midiCode, 0, STEPS);
+              act->midiCode    = constrain(act->midiCode, 0, STEPS - 1);
+              act->midiCode    = (sequences[act->midiChannel - 1][act->midiCode].midiMessage == PED_EMPTY) ? 0 : act->midiCode;
+              if (sequences[act->midiChannel - 1][0].midiMessage == PED_EMPTY) break;
+              midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel - 1, true, act->midiValue1, act->midiValue2, currentBank, p, i, led_control(act->control, act->led));
               switch (act->midiMessage) {
                 case PED_SEQUENCE_STEP_BY_STEP_FWD:
-                  act->midiCode = act->midiCode % STEPS + 1;
-                  act->midiCode = (sequences[act->midiChannel-1][act->midiCode-1].midiMessage == PED_EMPTY ? 1 : act->midiCode);
+                  act->midiCode = (act->midiCode + 1 ) % STEPS;
+                  act->midiCode = (sequences[act->midiChannel - 1][act->midiCode].midiMessage == PED_EMPTY ? 0 : act->midiCode);
                   break;
                 case PED_SEQUENCE_STEP_BY_STEP_REV:
-                  if (act->midiCode <= 1) {
-                    for (byte s = 0; s < STEPS; s++) {
-                      if (sequences[act->midiChannel-1][s].midiMessage == PED_EMPTY) {
-                        act->midiCode = s;
-                        break;
-                      }
-                      if (s == (STEPS - 1)) act->midiCode = STEPS;
+                  if (act->midiCode == 0) {
+                    byte s;
+                    for (s = 0; s < STEPS; s++) {
+                      if (sequences[act->midiChannel - 1][s].midiMessage == PED_EMPTY) break;
                     }
+                    if (s > 0) act->midiCode = s - 1;
                   }
-                  else
-                    act->midiCode = act->midiCode % (STEPS + 1) - 1;
+                  else if (act->midiCode > 0) act->midiCode--;
                   break;
               }
-              midi_send(act->midiMessage, act->midiCode, act->midiValue1, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, p, i, led_control(act->control, act->led));
               for (byte b = 0; b < BANKS; b++) {
                 action *a = actions[b];
                 while ( a != nullptr) {
@@ -1402,7 +1407,8 @@ void fire_action(action* act, byte p, byte i, byte e)
 #ifdef WIFI
               esp_wifi_stop();
 #endif
-              adc_power_off();
+              //adc_power_off();
+              adc_power_release();
               delay(200);
               rtc_gpio_pullup_en((gpio_num_t)PIN_D(p));
               rtc_gpio_pulldown_dis((gpio_num_t)PIN_D(p));
@@ -1495,12 +1501,13 @@ void process_backlog()
                   (controls[act->control].pedal2 == e->pedal) && (controls[act->control].button2 == e->button)
                  )
                 ) &&
-                (((act->event == e->event) ||                                                                                                 // Events match or
-                  (act->event == PED_EVENT_PRESS_RELEASE) && ((e->event == PED_EVENT_PRESS) || (e->event == PED_EVENT_RELEASE))               // PRESS_RELEASE matches with PRESS or RELEASE
-                  ) &&
-                  ((act->event == f->event) ||                                                                                                // Events match or
-                   (act->event == PED_EVENT_PRESS_RELEASE) && ((f->event == PED_EVENT_PRESS) || (f->event == PED_EVENT_RELEASE))              // PRESS_RELEASE matches with PRESS or RELEASE
-                  )
+                (((act->event == e->event) ||                                                                                                // Events match or
+                  (act->event == PED_EVENT_PRESS_RELEASE) && ((e->event == PED_EVENT_PRESS) || (e->event == PED_EVENT_RELEASE))              // PRESS_RELEASE matches with PRESS or RELEASE
+                 ) &&
+                 ((act->event == f->event) ||                                                                                                // Events match or
+                  (act->event == PED_EVENT_PRESS_RELEASE) && ((f->event == PED_EVENT_PRESS) || (f->event == PED_EVENT_RELEASE))              // PRESS_RELEASE matches with PRESS or RELEASE
+                 ) &&
+                 (e->event == f->event)
                 )
                ) {
               fire_action(act, e->pedal, e->button, e->event);
@@ -1517,7 +1524,8 @@ void process_backlog()
       }
     }
   }
-  backlog.clear();
+  for (std::list<event>::iterator e = backlog.begin(); e != backlog.end(); )
+    e->processed ? e = backlog.erase(e) : e++;
 }
 
 //
@@ -1633,12 +1641,12 @@ void controller_event_handler_button(AceButton* button, uint8_t eventType, uint8
 //
 // Trigger Actions on Analog Events
 //
-void controller_event_handler_analog(byte pedal, int value)
+void controller_event_handler_analog(byte pedal, byte button, int value)
 {
       bool    global = actions[0] != nullptr;
       action *act    = actions[0] == nullptr ? actions[currentBank] : actions[0];
       while (act != nullptr) {
-        if (controls[act->control].pedal1 == pedal && (act->event == PED_EVENT_MOVE || act->event == PED_EVENT_SHOT)) {
+        if (controls[act->control].pedal1 == pedal && controls[act->control].button1 == button && (act->event == PED_EVENT_MOVE || act->event == PED_EVENT_SHOT)) {
           if (act->midiMessage == PED_ACTION_REPEAT) {
             value = map2(value,                                      // map from [0, ADC_RESOLUTION-1] to [0, 127] MIDI value
                       0,
@@ -1688,7 +1696,7 @@ void controller_event_handler_analog(byte pedal, int value)
               break;
 
             case PED_SEQUENCE:
-              midi_send(act->midiMessage, act->midiCode, value, act->midiChannel, true, act->midiValue1, act->midiValue2, currentBank, pedal);
+              midi_send(act->midiMessage, act->midiCode, value, act->midiChannel - 1, true, act->midiValue1, act->midiValue2, currentBank, pedal);
               set_led_color(led_control(act->control, act->led), act->color0, ledsOffBrightness, act->color1, ledsOnBrightness, value);
               FastLED.show();
               lastLedColor[currentBank][led_control(act->control, act->led)] = fastleds[led_control(act->control, act->led)];
@@ -1767,29 +1775,67 @@ void refresh_analog(byte i, bool send)
 
   int input;
   int value;
-  static int direction = 0;
 
-  if (pedals[i].analogPedal == nullptr) return;             // sanity check
+  if (pedals[i].analogPedal[0] == nullptr) return;          // sanity check
 
   input = analogRead(PIN_A(i));                             // read the raw analog input value
   if (pedals[i].autoSensing) {                              // continuos calibration
     if (pedals[i].expZero > (input + SAFE_ZONE)) {
+      pedals[i].expZero = constrain(input + SAFE_ZONE, SAFE_ZONE, ADC_RESOLUTION - 1 - SAFE_ZONE);
+      pedals[i].expMax  = constrain(pedals[i].expMax, pedals[i].expZero, ADC_RESOLUTION - 1 - SAFE_ZONE);
       DPRINT("Pedal %2d calibration min %d\n", i + 1, input);
     }
     if (pedals[i].expMax < (input - SAFE_ZONE)) {
+      pedals[i].expMax  = constrain(input - SAFE_ZONE, SAFE_ZONE, ADC_RESOLUTION - 1 - SAFE_ZONE);
+      pedals[i].expZero = constrain(pedals[i].expZero, SAFE_ZONE, pedals[i].expMax);
       DPRINT("Pedal %2d calibration max %d\n", i + 1, input);
     }
-    pedals[i].expZero = _min(pedals[i].expZero, input + SAFE_ZONE);
-    pedals[i].expMax  = _max(pedals[i].expMax,  input - SAFE_ZONE);
-    //DPRINT("%d -> [%d, %d]\n", input, pedals[i].expZero, pedals[i].expMax);
   }
   value = map_analog(i, input);                             // expand to [0, ADC_RESOLUTION-1] and apply the map function
-  pedals[i].analogPedal->update(value);                     // update the responsive analog average
-  if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
-    value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
+  pedals[i].analogPedal[0]->update(value);                  // update the responsive analog average
+  if (pedals[i].analogPedal[0]->hasChanged()) {             // if the value changed since last time
+    value = pedals[i].analogPedal[0]->getValue();           // get the responsive analog average value
     double velocity = (1000.0 * (value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
     DPRINT("Pedal %2d   input %d output %d velocity %.2f\n", i + 1, input, value, velocity);
-    if (send) controller_event_handler_analog(i, value);
+    if (send) controller_event_handler_analog(i, 0, value);
+    pedals[i].pedalValue[0] = value;
+    pedals[i].lastUpdate[0] = micros();
+    if (scannerActivated) {
+      scanPedal = i;
+      scanIndex = (scanIndex + 1) % POINTS;
+      scan[scanIndex] = input;
+      scanProcessed[scanIndex] = value;
+    }
+  }
+}
+
+void refresh_analog4(int input, byte i, byte j, bool send)
+{
+  const int SAFE_ZONE = ADC_RESOLUTION / 20;                  // 5% of margin at both end of the scale
+
+  int value;
+
+  if (pedals[i].analogPedal[j] == nullptr) return;            // sanity check
+
+  if (pedals[i].autoSensing) {                                // continuos calibration
+    if (pedals[i].expZero > (input + SAFE_ZONE)) {
+      pedals[i].expZero = constrain(input + SAFE_ZONE, SAFE_ZONE, ADC_RESOLUTION - 1 - SAFE_ZONE);
+      pedals[i].expMax  = constrain(pedals[i].expMax, pedals[i].expZero, ADC_RESOLUTION - 1 - SAFE_ZONE);
+      DPRINT("Pedal %2d/%2d calibration min %d\n", i + 1, j + 1, input);
+    }
+    if (pedals[i].expMax < (input - SAFE_ZONE)) {
+      pedals[i].expMax  = constrain(input - SAFE_ZONE, SAFE_ZONE, ADC_RESOLUTION - 1 - SAFE_ZONE);
+      pedals[i].expZero = constrain(pedals[i].expZero, SAFE_ZONE, pedals[i].expMax);
+      DPRINT("Pedal %2d/%2d calibration max %d\n", i + 1, j + 1, input);
+    }
+  }
+  value = map_analog(i, input);                               // expand to [0, ADC_RESOLUTION-1] and apply the map function
+  pedals[i].analogPedal[j]->update(value);                    // update the responsive analog average
+  if (pedals[i].analogPedal[j]->hasChanged()) {               // if the value changed since last time
+    value = pedals[i].analogPedal[j]->getValue();             // get the responsive analog average value
+    double velocity = (1000.0 * (value - pedals[i].pedalValue[j])) / (micros() - pedals[i].lastUpdate[j]);
+    DPRINT("Pedal %2d   Button %2d   input %d output %d velocity %.2f\n", i + 1, j + 1, input, value, velocity);
+    if (send) controller_event_handler_analog(i, j, value);
     pedals[i].pedalValue[0] = value;
     pedals[i].lastUpdate[0] = micros();
     if (scannerActivated) {
@@ -1831,12 +1877,12 @@ void refresh_ultrasonic(bool send)
         */
 
         value = map_analog(i, input);                             // expand to [0, ADC_RESOLUTION-1] and apply the map function
-        pedals[i].analogPedal->update(value);                     // update the responsive analog average
-        if (pedals[i].analogPedal->hasChanged()) {                // if the value changed since last time
-          value = pedals[i].analogPedal->getValue();              // get the responsive analog average value
+        pedals[i].analogPedal[0]->update(value);                     // update the responsive analog average
+        if (pedals[i].analogPedal[0]->hasChanged()) {                // if the value changed since last time
+          value = pedals[i].analogPedal[0]->getValue();              // get the responsive analog average value
           double velocity = (1000.0 * (value - pedals[i].pedalValue[0])) / (micros() - pedals[i].lastUpdate[0]);
           DPRINT("Pedal %2d   input %d output %d velocity %.2f\n", i + 1, input, value, velocity);
-          if (send) controller_event_handler_analog(i, value);
+          if (send) controller_event_handler_analog(i, 0, value);
           pedals[i].pedalValue[0] = value;
           pedals[i].lastUpdate[0] = micros();
           if (scannerActivated) {
@@ -1856,7 +1902,7 @@ void refresh_ultrasonic(bool send)
 void onAnalogPad(int id, int pressure)
 {
   pressure = map_analog(id, pressure);                             // expand to [0, ADC_RESOLUTION-1] and apply the map function
-  controller_event_handler_analog(id, pressure);
+  controller_event_handler_analog(id, 0, pressure);
 }
 
 
@@ -1867,25 +1913,32 @@ void controller_setup();
 //
 void controller_delete()
 {
-  for (byte i = 0; i < PEDALS; i++) {
-    if (pedals[i].analogPedal   != nullptr)  {
-      delete pedals[i].analogPedal;
-      pedals[i].analogPedal = nullptr;
+  for (byte i = 0; i < PEDALS; i++)
+    for (byte j = 0; j < ADC_INPUTS; j++) {
+      if (pedals[i].analogPedal[j]  != nullptr)  {
+        delete pedals[i].analogPedal[j];
+        pedals[i].analogPedal[j] = nullptr;
     }
-    if (pedals[i].analogPad   != nullptr)  {
+    for (byte a = 0; a < 4; a++) {
+      if (pedals[i].ads[a]  != nullptr)  {
+        delete pedals[i].ads[a];
+        pedals[i].ads[a] = nullptr;
+      }
+    }
+    if (pedals[i].analogPad    != nullptr)  {
       delete pedals[i].analogPad;
       pedals[i].analogPad = nullptr;
     }
-    if (pedals[i].jogwheel      != nullptr)  {
+    if (pedals[i].jogwheel     != nullptr)  {
       delete pedals[i].jogwheel;
       pedals[i].jogwheel = nullptr;
     }
-    if (pedals[i].buttonConfig  != nullptr)  {
+    if (pedals[i].buttonConfig != nullptr)  {
       delete pedals[i].buttonConfig;
       pedals[i].buttonConfig = nullptr;
     }
     for (byte s = 0; s < LADDER_STEPS; s++)
-      if (pedals[i].button[s]   != nullptr)  {
+      if (pedals[i].button[s]  != nullptr)  {
         delete pedals[i].button[s];
         pedals[i].button[s] = nullptr;
       }
@@ -1899,10 +1952,16 @@ void controller_delete()
 //
 void controller_run(bool send = true)
 {
+  static byte adsChannel[ADC_BOARDS] = {0, 0, 0, 0};
+
+  while (controllerRunning) vTaskDelay(1/portTICK_PERIOD_MS);  // wait for fist task to complete
+  controllerRunning = true;                                    // block second tasks to run
+
   if (saveProfile && send) {
     saveProfile = false;
     DPRINT("Saving profile ...\n");
     eeprom_update_current_profile(currentProfile);
+    controllerRunning = false;
     return;
   }
 
@@ -1939,6 +1998,7 @@ void controller_run(bool send = true)
     //OscControllerUpdate();
 #endif
     DPRINT("... profile %d loaded.\n", currentProfile);
+    controllerRunning = false;
     return;
   }
 
@@ -1952,6 +2012,7 @@ void controller_run(bool send = true)
     OscControllerUpdate();
 #endif
     DPRINT("... configuration loaded.\n");
+    controllerRunning = false;
     return;
   }
 
@@ -1979,6 +2040,41 @@ void controller_run(bool send = true)
         refresh_analog(i, send);
         break;
 
+      case PED_ANALOG4:
+        for (byte a = 0; a < ADC_BOARDS; a++) {
+
+          if (!ads1115Found[a]) continue;
+
+          if (pedals[i].ads[a]->conversionComplete()) {                      // The ADS1115 provide 16 bits of data in binary two's complement format
+            int16_t result = pedals[i].ads[a]->getLastConversionResults();   // It returns value range from 0000h to 7FFFh when input is between 0V to positive Full Scale
+                                                                             // It returns value range from 8000h to FFFFh when input is between negative Full Scale to 0V
+            result = result < 0 ? 0 : result>>6;                             // The ADS1115 can still output negative values in case input is close to 0V
+                                                                             // Convert from 16 bits to 10 bits in case of positive values
+            refresh_analog4(result, i, adsChannel[a] * (a + 1), send);
+            // The ADS1115 contains an input multiplexer to connect signals to the internal ADC.
+            // Either four single-ended or two differential signals can be measured.
+            // When single-ended signals are measured, the negative input of the ADC is internally connected to GND by a switch within the multiplexer.
+            // Only one signal can be converted at time.
+            // Non-blocking start conversion function
+            adsChannel[a] = (adsChannel[a] + 1) % 4;
+            switch (adsChannel[a]) {
+              case 0:
+                pedals[i].ads[a]->startADCReading(ADS1X15_REG_CONFIG_MUX_SINGLE_0, false);
+                break;
+              case 1:
+                pedals[i].ads[a]->startADCReading(ADS1X15_REG_CONFIG_MUX_SINGLE_1, false);
+                break;
+              case 2:
+                pedals[i].ads[a]->startADCReading(ADS1X15_REG_CONFIG_MUX_SINGLE_2, false);
+                break;
+              case 3:
+                pedals[i].ads[a]->startADCReading(ADS1X15_REG_CONFIG_MUX_SINGLE_3, false);
+                break;
+            }
+          }
+        }
+        break;
+
       case PED_ANALOG_PAD:
         if (pedals[i].analogPad != nullptr) {
           //int v = analogRead(PIN_A(i));
@@ -1986,7 +2082,7 @@ void controller_run(bool send = true)
           pedals[i].analogPad->singlePiezo(pedals[i].gain, pedals[i].expZero, pedals[i].scanCycles, pedals[i].holdCycles); //(sensitivity, threshold, scantime, masktime)
           if (pedals[i].analogPad->hit) {
             int pressure = map_analog(i, pedals[i].analogPad->velocity);                             // expand to [0, ADC_RESOLUTION-1] and apply the map function
-            controller_event_handler_analog(i, pressure);
+            controller_event_handler_analog(i, 0, pressure);
           }
           if (scannerActivated) {
             int v = analogRead(PIN_A(i));
@@ -2114,6 +2210,8 @@ void controller_run(bool send = true)
   if (backlog.size() > 0) process_backlog();
 
   refresh_ultrasonic(send);
+
+  controllerRunning = false;
 }
 
 
@@ -2134,12 +2232,13 @@ void controller_setup()
   lastUsed       = 0xFF;
   lastSlot       = SLOTS;
   memset(lastPedalName, 0, MAXACTIONNAME+1);
+
   controller_delete();
 
   analogReadResolution(ADC_RESOLUTION_BITS);
   analogSetAttenuation(ADC_11db);
 
-  DPRINT("Bank %2d\n", currentBank + 1);
+  DPRINT("Bank %2d\n", currentBank);
 
   // Build new MIDI controllers setup
   for (byte i = 0; i < PEDALS; i++) {
@@ -2151,6 +2250,7 @@ void controller_setup()
       case PED_LATCH1:            DPRINT("LATCH1          "); break;
       case PED_LATCH2:            DPRINT("LATCH2          "); break;
       case PED_ANALOG:            DPRINT("ANALOG          "); break;
+      case PED_ANALOG4:           DPRINT("ANALOG4         "); break;
       case PED_ANALOG_PAD:        DPRINT("ANALOG PAD      "); break;
       case PED_JOG_WHEEL:         DPRINT("JOG_WHEEL       "); break;
       case PED_LADDER:            DPRINT("LADDER          "); break;
@@ -2308,11 +2408,11 @@ void controller_setup()
       case PED_ANALOG:
         pinMode(PIN_D(i), OUTPUT);
         digitalWrite(PIN_D(i), HIGH);
-        pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
-        pedals[i].analogPedal->setAnalogResolution(ADC_RESOLUTION);
-        pedals[i].analogPedal->enableEdgeSnap();
-        pedals[i].analogPedal->setSnapMultiplier(pedals[i].snapMultiplier);
-        pedals[i].analogPedal->setActivityThreshold(pedals[i].activityThreshold);
+        pedals[i].analogPedal[0] = new ResponsiveAnalogRead(PIN_A(i), true);
+        pedals[i].analogPedal[0]->setAnalogResolution(ADC_RESOLUTION);
+        pedals[i].analogPedal[0]->enableEdgeSnap();
+        pedals[i].analogPedal[0]->setSnapMultiplier(pedals[i].snapMultiplier);
+        pedals[i].analogPedal[0]->setActivityThreshold(pedals[i].activityThreshold);
         if (lastUsedPedal == 0xFF) {
           lastUsedPedal = i;
           lastUsed = i;
@@ -2320,6 +2420,45 @@ void controller_setup()
           strlcpy(lastPedalName, banks[currentBank][i].pedalName, MAXACTIONNAME+1);
         }
         DPRINT("   Pin A%d D%d", PIN_A(i), PIN_D(i));
+        break;
+
+      case PED_ANALOG4:
+        for (byte j = 0; j < ADC_INPUTS; j++) {
+          pedals[i].analogPedal[j] = new ResponsiveAnalogRead(PIN_A(i), true);
+          pedals[i].analogPedal[j]->setAnalogResolution(ADC_RESOLUTION);
+          pedals[i].analogPedal[j]->enableEdgeSnap();
+          pedals[i].analogPedal[j]->setSnapMultiplier(pedals[i].snapMultiplier);
+          pedals[i].analogPedal[j]->setActivityThreshold(pedals[i].activityThreshold);
+        }
+        // The I2C bus operates at one of three speeds. Standard mode allows a clock frequency of up to 100 kHz; fast mode permits a clock frequency of up to 400 kHz;
+        // and high-speed mode (also called Hs mode) allows a clock frequency of up to 3.4 MHz. The ADS1115 are fully compatible with all three modes.
+        // ESP32 and ESP32-S3 supports only I2C standard and fast modes which can go up to 100kHz and 400kHz respectively.
+        // ESP32 and ESP32-S3 has 2 I2C controllers, responsible for handling communication on the I2C bus. A single I2C controller can be a master or a slave.
+        // Using 2nd I2C bus at 100kHz (default) as master
+        for (byte a = 0; a < ADC_BOARDS; a++) {
+
+          pedals[i].ads[a] = new Adafruit_ADS1115();
+          // Sets the gain to 1 for an input range of +/-4.096V
+          pedals[i].ads[a]->setGain(GAIN_ONE);
+          // Set data rate to 128 samples per second (default)
+          pedals[i].ads[a]->setDataRate(RATE_ADS1115_128SPS);
+          // Initialize the ADC for operation
+#ifdef WIRE_HAS_END
+          Wire1.end();
+#endif
+          Wire1.setPins(PIN_D(i), PIN_A(i));
+          ads1115Found[a] = pedals[i].ads[a]->begin(ADS1X15_ADDRESS + a, &Wire1);
+          // Non-blocking start conversion function
+          if (ads1115Found[a]) pedals[i].ads[a]->startADCReading(ADS1X15_REG_CONFIG_MUX_SINGLE_0, false);
+        }
+        if (lastUsedPedal == 0xFF) {
+          lastUsedPedal = i;
+          lastUsed = i;
+          lastSlot = SLOTS;
+          strlcpy(lastPedalName, banks[currentBank][i].pedalName, MAXACTIONNAME+1);
+        }
+        DPRINT("   I2C");
+        for (byte a = 0; a < ADC_BOARDS; a++) ads1115Found[a] ? DPRINT(" %#04x", ADS1X15_ADDRESS + a) : DPRINT(" ----");
         break;
 
       case PED_ANALOG_PAD:
@@ -2376,22 +2515,22 @@ void controller_setup()
       case PED_ULTRASONIC:
         ultrasonicEcho.push_back(PIN_A(i));
         if (ultrasonicTrigger == 0) ultrasonicTrigger = PIN_D(i);
-        pedals[i].analogPedal = new ResponsiveAnalogRead();
-        pedals[i].analogPedal->setAnalogResolution(ADC_RESOLUTION);
-        pedals[i].analogPedal->enableSleep();
-        pedals[i].analogPedal->enableEdgeSnap();
-        pedals[i].analogPedal->setSnapMultiplier(pedals[i].snapMultiplier);
-        pedals[i].analogPedal->setActivityThreshold(pedals[i].activityThreshold);
+        pedals[i].analogPedal[0] = new ResponsiveAnalogRead();
+        pedals[i].analogPedal[0]->setAnalogResolution(ADC_RESOLUTION);
+        pedals[i].analogPedal[0]->enableSleep();
+        pedals[i].analogPedal[0]->enableEdgeSnap();
+        pedals[i].analogPedal[0]->setSnapMultiplier(pedals[i].snapMultiplier);
+        pedals[i].analogPedal[0]->setActivityThreshold(pedals[i].activityThreshold);
         DPRINT("   Pin A%d (ECHO) D%d (TRIG)", PIN_A(i), PIN_D(i));
         break;
 
       case PED_ANALOG_MOMENTARY:
       case PED_ANALOG_LATCH:
-        pedals[i].analogPedal = new ResponsiveAnalogRead(PIN_A(i), true);
-        pedals[i].analogPedal->setAnalogResolution(ADC_RESOLUTION);
-        pedals[i].analogPedal->enableEdgeSnap();
-        pedals[i].analogPedal->setSnapMultiplier(pedals[i].snapMultiplier);
-        pedals[i].analogPedal->setActivityThreshold(pedals[i].activityThreshold);
+        pedals[i].analogPedal[0] = new ResponsiveAnalogRead(PIN_A(i), true);
+        pedals[i].analogPedal[0]->setAnalogResolution(ADC_RESOLUTION);
+        pedals[i].analogPedal[0]->enableEdgeSnap();
+        pedals[i].analogPedal[0]->setSnapMultiplier(pedals[i].snapMultiplier);
+        pedals[i].analogPedal[0]->setActivityThreshold(pedals[i].activityThreshold);
         if (lastUsedPedal == 0xFF) {
           lastUsedPedal = i;
           lastUsed = i;
@@ -2427,10 +2566,10 @@ void controller_setup()
   }
 
   if (ultrasonicTrigger) HCSR04.begin(ultrasonicTrigger, ultrasonicEcho.data(), ultrasonicEcho.size());
-
+/*
   for (int i = 0; i < 100; i++) {
     controller_run(false);            // to avoid spurious readings
   }
-
+*/
   set_initial_led_color();
 }

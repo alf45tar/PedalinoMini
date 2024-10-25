@@ -10,8 +10,8 @@ __________           .___      .__  .__                 _____  .__       .__    
  */
 
 String theme         = "bootstrap";
-String httpUsername  = "admin";
-String httpPassword  = getChipId();
+String httpUsername  = "";
+String httpPassword  = "";
 bool   authenticated = false;
 
 #ifdef NOWIFI
@@ -116,7 +116,7 @@ bool get_top_page(int p, unsigned int start, unsigned int len) {
   page += F(" <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>");
   if ( theme == "bootstrap" ) {
   #ifdef BOOTSTRAP_LOCAL
-    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN' crossorigin='anonymous'>");
+    page += F("<link rel='stylesheet' href='/css/bootstrap.min.css' integrity='sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH' crossorigin='anonymous'>");
   #else
     page += F("<link href='https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/css/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   #endif
@@ -125,7 +125,7 @@ bool get_top_page(int p, unsigned int start, unsigned int len) {
     page += theme;
     page += F("/bootstrap.min.css' rel='stylesheet' crossorigin='anonymous'>");
   }
-  if (p == 2) page += F("<script defer src='/js/Sortable.min.js' integrity='' crossorigin='anonymous'></script>");
+  if (p == 2) page += F("<script src='/js/Sortable.min.js' integrity='' crossorigin='anonymous'></script>");
   page += F("</head>");
 
   page += F("<body>");
@@ -363,7 +363,7 @@ void get_footer_page() {
 
   page += F("</div>");
 #ifdef BOOTSTRAP_LOCAL
-  page += F("<script defer src='/js/bootstrap.bundle.min.js' integrity='sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL' crossorigin='anonymous'></script>");
+  page += F("<script defer src='/js/bootstrap.bundle.min.js' integrity='sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz' crossorigin='anonymous'></script>");
 #else
   page += F("<script src='https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/js/bootstrap.bundle.min.js' crossorigin='anonymous'></script>");
 #endif
@@ -462,6 +462,9 @@ void get_root_page(unsigned int start, unsigned int len) {
       break;
   }
   page += F("</dd>");
+  page += F("<dt>PlatformIO ESP32 Platform</dt><dd>");
+  page += xstr(ESP32_PLATFORM_VERSION);
+  page += F("</dd>");
   page += F("<dt>IDF Version</dt><dd>");
   page += ESP_IDF_VERSION_MAJOR;
   page += F(".");
@@ -484,6 +487,18 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F("<dt>PlatformIO Build Env</dt><dd>");
   page += xstr(PLATFORMIO_ENV);
   page += F("</dd>");
+
+  page += F("<dt>Bootstrap Version</dt><dd><span id='bootstrap-version'></span></dd>");
+  page += F("<script>"
+            "   document.addEventListener('DOMContentLoaded', function() {"
+            "     if (typeof bootstrap !== 'undefined') {"
+            "       document.getElementById('bootstrap-version').textContent = bootstrap.Tooltip.VERSION;"
+            "     } else {"
+            "       document.getElementById('bootstrap-version').textContent = 'Not available';"
+            "     }"
+            "   });"
+            "</script>");
+
   page += F("<dt>Firmware</dt><dd>");
   page += PEDALINO_VERSION_MAJOR;
   page += F(".");
@@ -491,7 +506,6 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += F(".");
   page += PEDALINO_VERSION_PATCH;
   page += F("</dd>");
-
   page += F("<dt>Firmware Size</dt><dd>");
   page += sketchSize;
   page += F(" bytes</dd>");
@@ -499,7 +513,7 @@ void get_root_page(unsigned int start, unsigned int len) {
   page += sketchMD5;
   page += F("</dd>");
   page += F("</div>");
-
+  
   if (trim_page(start, len)) return;
 
   page += F("<div class='col'>");
@@ -1355,6 +1369,7 @@ void get_actions_page(unsigned int start, unsigned int len) {
         break;
 
       case PED_ANALOG:
+      case PED_ANALOG4:
       case PED_ULTRASONIC:
         page += F("<option value='");
         page += PED_EVENT_MOVE;
@@ -1676,7 +1691,9 @@ void get_actions_page(unsigned int start, unsigned int len) {
     if (trim_page(start, len)) return;
 
     page += F("<div class='w-25'>");
-    page += F("<div class='form-floating'>");
+    page += F("<div class='form-floating' hidden id='channelDiv");
+    page += i;
+    page += F("'>");
     page += F("<select class='form-select' id='channelSelect");
     page += i;
     page += F("' name='channel");
@@ -1709,6 +1726,31 @@ void get_actions_page(unsigned int start, unsigned int len) {
     page += F("' id='channelLabel");
     page += i;
     page += F("'>Channel</label>");
+    page += F("</div>");
+    page += F("<div class='form-floating' hidden id='sequenceDiv");
+    page += i;
+    page += F("'>");
+    page += F("<select class='form-select' id='sequencelSelect");
+    page += i;
+    page += F("' name='sequence");
+    page += i;
+    page += F("'>");
+    for (unsigned int c = 1; c <= SEQUENCES; c++) {
+      page += F("<option value='");
+      page += c;
+      page += F("'");
+      if (act->midiChannel == c) page += F(" selected");
+      page += F(">");
+      page += c;
+      page += F("</option>");
+      if (trim_page(start, len)) return;
+    }
+    page += F("</select>");
+    page += F("<label for='sequenceSelect");
+    page += i;
+    page += F("' id='sequenceLabel");
+    page += i;
+    page += F("'>Sequence</label>");
     page += F("</div>");
     page += F("</div>");
 
@@ -2007,7 +2049,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
 
   if (trim_page(start, len)) return;
 
-  page += F("   document.getElementById('channelLabel'  + i).textContent = 'Channel';"
+  page += F("   document.getElementById('channelDiv'    + i).removeAttribute('hidden');"
+            "   document.getElementById('sequenceDiv'   + i).setAttribute('hidden', 'hidden');"
             "   document.getElementById('codeLabel'     + i).textContent = 'Code';"
             "   document.getElementById('fromLabel'     + i).textContent = 'From Value';"
             "   document.getElementById('toLabel'       + i).textContent = 'To Value';"
@@ -2221,7 +2264,8 @@ void get_actions_page(unsigned int start, unsigned int len) {
   if (trim_page(start, len)) return;
 
   page += F("     case 'Sequence':"
-            "       document.getElementById('channelLabel'  + i).textContent = 'Sequence';"
+            "       document.getElementById('channelDiv'    + i).setAttribute('hidden', 'hidden');"
+            "       document.getElementById('sequenceDiv'   + i).removeAttribute('hidden');"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('fromInput'     + i).disabled = true;"
             "       document.getElementById('toInput'       + i).disabled = true;"
@@ -2230,10 +2274,11 @@ void get_actions_page(unsigned int start, unsigned int len) {
             "       break;"
             "     case 'Step by Step+':"
             "     case 'Step by Step-':"
-            "       document.getElementById('channelLabel'  + i).textContent = 'Sequence';"
+            "       document.getElementById('channelDiv'    + i).setAttribute('hidden', 'hidden');"
+            "       document.getElementById('sequenceDiv'   + i).removeAttribute('hidden');"
             "       document.getElementById('codeLabel'     + i).textContent = 'Step';"
-            "       document.getElementById('fromInput'     + i).disabled = true;"
-            "       document.getElementById('toInput'       + i).disabled = true;"
+            "       document.getElementById('fromLabel'     + i).textContent = 'Tag 1 Value';"
+            "       document.getElementById('toLabel'       + i).textContent = 'Tag 2 Value';"
             "       document.getElementById('color0Input'   + i).disabled = true;"
             "       document.getElementById('color1Input'   + i).disabled = true;"
             "       break;"
@@ -2415,6 +2460,11 @@ void get_pedals_page(unsigned int start, unsigned int len) {
       page += F("'");
       if (pedals[i-1].mode == PED_ANALOG_PAD_MOMENTARY) page += F(" selected");
       page += F(">Analog Pad+Momentary</option>");
+      page += F("<option value='");
+      page += PED_ANALOG4;
+      page += F("'");
+      if (pedals[i-1].mode == PED_ANALOG4) page += F(" selected");
+      page += F(">Analog 4</option>");
     }
 
     page += F("</select>");
@@ -2846,6 +2896,7 @@ void get_pedals_page(unsigned int start, unsigned int len) {
             "       document.getElementById('threshold_'       + i).style.display = 'block';"
             "       break;"
             "     case 'Analog':"
+            "     case 'Analog 4':"
             "       document.getElementById('polarityCheck_'   + i).style.display = 'block';"
             "       document.getElementById('mapSelect_'       + i).style.display = 'block';"
             "       document.getElementById('minInput_'        + i).style.display = 'block';"
@@ -3448,7 +3499,9 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     if (trim_page(start, len)) return;
 
     page += F("<div class='col'>");
-    page += F("<div class='form-floating'>");
+    page += F("<div class='form-floating' hidden id='channelDiv");
+    page += i;
+    page += F("'>");
     page += F("<select class='form-select' id='channelSelect");
     page += i;
     page += F("' name='channel");
@@ -3484,6 +3537,31 @@ void get_sequences_page(unsigned int start, unsigned int len) {
     page += F("' id='channelLabel");
     page += i;
     page += F("'>Channel</label>");
+    page += F("</div>");
+    page += F("<div class='form-floating' hidden id='sequenceDiv");
+    page += i;
+    page += F("'>");
+    page += F("<select class='form-select' id='sequencelSelect");
+    page += i;
+    page += F("' name='sequence");
+    page += i;
+    page += F("'>");
+    for (unsigned int c = 1; c <= SEQUENCES; c++) {
+      page += F("<option value='");
+      page += c;
+      page += F("'");
+      if (sequences[s-1][i-1].midiChannel == c - 1) page += F(" selected");
+      page += F(">");
+      page += c;
+      page += F("</option>");
+      if (trim_page(start, len)) return;
+    }
+    page += F("</select>");
+    page += F("<label for='sequenceSelect");
+    page += i;
+    page += F("' id='sequenceLabel");
+    page += i;
+    page += F("'>Sequence</label>");
     page += F("</div>");
     page += F("</div>");
 
@@ -3648,6 +3726,8 @@ void get_sequences_page(unsigned int start, unsigned int len) {
 
   page += F("function init_line(i) {"
             "   document.getElementById('channelLabel'  + i).textContent = 'Channel';"
+            "   document.getElementById('channelDiv'    + i).removeAttribute('hidden');"
+            "   document.getElementById('sequenceDiv'   + i).setAttribute('hidden', 'hidden');"
             "   document.getElementById('codeLabel'     + i).textContent = 'Code';"
             "   document.getElementById('valueLabel'    + i).textContent = 'Value';"
             "   document.getElementById('channelSelect' + i).disabled = false;"
@@ -3675,7 +3755,6 @@ void get_sequences_page(unsigned int start, unsigned int len) {
 
   page += F("     case 'Bank Select+':"
             "     case 'Bank Select-':"
-            "       document.getElementById('channelLabel'  + i).textContent = 'Channel';"
             "       document.getElementById('codeLabel'     + i).textContent = 'MSB';"
             "       document.getElementById('valueLabel'    + i).textContent = 'LSB';"
             "       break;"
@@ -3684,7 +3763,8 @@ void get_sequences_page(unsigned int start, unsigned int len) {
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       break;"
             "     case 'Sequence':"
-            "       document.getElementById('channelLabel'  + i).textContent = 'Sequence';"
+            "       document.getElementById('channelDiv'    + i).setAttribute('hidden', 'hidden');"
+            "       document.getElementById('sequenceDiv'   + i).removeAttribute('hidden');"
             "       document.getElementById('codeInput'     + i).disabled = true;"
             "       document.getElementById('valueInput'    + i).disabled = true;"
             "       document.getElementById('ledSelect'     + i).disabled = true;"
@@ -5319,7 +5399,7 @@ void http_handle_login(AsyncWebServerRequest *request) {
   } else {
     authenticated = false;
     get_login_page();
-    request->send(200, "text/html", page);
+    request->send(200, "text/html", page.c_str());
   }
 }
 
@@ -5333,7 +5413,7 @@ void http_handle_post_login(AsyncWebServerRequest *request) {
         }
   }
   get_login_page();
-  request->send(200, "text/html", page);
+  request->send(200, "text/html", page.c_str());
 }
 
 void http_handle_globals(AsyncWebServerRequest *request) {
@@ -5375,9 +5455,9 @@ void http_handle_actions(AsyncWebServerRequest *request) {
 
   if (!httpUsername.isEmpty() && !request->authenticate(httpUsername.c_str(), httpPassword.c_str())) return request->requestAuthentication();
   http_handle_globals(request);
-  if (request->hasArg("bank"))        uibank   = request->arg("bank");
-  if (request->hasArg("control"))     uicontrol  = request->arg("control");
-  if (request->hasArg("banksorder"))  list     = request->arg("banksorder");
+  if (request->hasArg("bank"))        uibank    = request->arg("bank");
+  if (request->hasArg("control"))     uicontrol = request->arg("control");
+  if (request->hasArg("banksorder"))  list      = request->arg("banksorder");
 
   for (byte b = 0; b < BANKS; b++) {
     a[b] = actions[b];
@@ -5637,6 +5717,7 @@ void http_handle_post_actions(AsyncWebServerRequest *request) {
           case PED_SEQUENCE:
           case PED_SEQUENCE_STEP_BY_STEP_FWD:
           case PED_SEQUENCE_STEP_BY_STEP_REV:
+            act->midiChannel  = constrain(request->arg(String("sequence") + String(i)).toInt(), 1, SEQUENCES);
             act->color0   = CRGB::Black;
             act->color1   = CRGB::Black;
             break;
@@ -5853,7 +5934,7 @@ void http_handle_post_interfaces(AsyncWebServerRequest *request) {
 void http_handle_post_sequences(AsyncWebServerRequest *request) {
 
   String     a;
-  const byte s = constrain(uisequence.toInt() - 1, 0, SEQUENCES);
+  const byte s = constrain(uisequence.toInt() - 1, 0, SEQUENCES - 1);
   unsigned int red, green, blue;
 
   for (unsigned int i = 0; i < STEPS; i++) {
@@ -5863,6 +5944,13 @@ void http_handle_post_sequences(AsyncWebServerRequest *request) {
 
     a = request->arg(String("channel") + String(i+1));
     sequences[s][i].midiChannel = constrain(a.toInt(), 0, 17);
+
+    switch (sequences[s][i].midiMessage) {
+      case PED_SEQUENCE:
+        a = request->arg(String("sequence") + String(i+1));
+        sequences[s][i].midiChannel  = constrain(a.toInt() - 1, 0, SEQUENCES - 1);
+        break;
+    }
 
     a = request->arg(String("code") + String(i+1));
     sequences[s][i].midiCode = constrain(a.toInt(), 0, MIDI_RESOLUTION - 1);
@@ -6098,7 +6186,8 @@ void http_handle_post_options(AsyncWebServerRequest *request) {
     esp_bt_controller_disable();
 #endif
     esp_wifi_stop();
-    adc_power_off();
+    //adc_power_off();
+    adc_power_release();
     delay(200);
     for (byte b = 0; b < BANKS; b++) {
       action *act = actions[b];
@@ -6156,7 +6245,6 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   }
   else if (request->arg("action").equals("apply") || request->arg("action").equals("append")) {
     String config = request->arg("filename");
-    controller_delete();
     spiffs_load_config(config,
                        request->arg("actions2")    == checked,
                        request->arg("pedals2")     == checked,
@@ -6174,7 +6262,6 @@ void http_handle_post_configurations(AsyncWebServerRequest *request) {
   }
   else if (request->arg("action").equals("save") || request->arg("action").equals("appendsave")) {
     String config = request->arg("filename");
-    controller_delete();
     spiffs_load_config(config,
                        request->arg("actions2")    == checked,
                        request->arg("pedals2")     == checked,
@@ -6556,12 +6643,12 @@ void http_setup() {
   httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json").setDefaultFile("/schema.json").setCacheControl("max-age=600");
   httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 */
-  httpServer.serveStatic("/favicon.ico",                SPIFFS, "/favicon.ico");
-  httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png");
-  httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css");
-  httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js");
-  httpServer.serveStatic("/js/Sortable.min.js",         SPIFFS, "/js/Sortable.min.js");
-  httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json");
+  httpServer.serveStatic("/favicon.ico",                SPIFFS, "/favicon.ico").setCacheControl("max-age=600");
+  httpServer.serveStatic("/logo.png",                   SPIFFS, "/logo.png").setCacheControl("max-age=600");
+  httpServer.serveStatic("/css/bootstrap.min.css",      SPIFFS, "/css/bootstrap.min.css").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/bootstrap.bundle.min.js", SPIFFS, "/js/bootstrap.bundle.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/js/Sortable.min.js",         SPIFFS, "/js/Sortable.min.js").setCacheControl("max-age=600");
+  httpServer.serveStatic("/schema.json",                SPIFFS, "/schema.json").setCacheControl("max-age=600");
   httpServer.serveStatic("/files",                      SPIFFS, "/").setDefaultFile("").setAuthentication(httpUsername.c_str(), httpPassword.c_str());
 
   httpServer.on("/",                            http_handle_root);

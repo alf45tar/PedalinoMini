@@ -84,9 +84,10 @@ __________           .___      .__  .__                 _____  .__       .__    
 #include <rom/rtc.h>
 #endif
 
-TaskHandle_t loopCore0;   // loop() on core 0
+TaskHandle_t loopCore0;   // loop0() on core 0
+TaskHandle_t loopCore1;   // loop1() on core 1
 void loop0(void * pvParameters);
-
+void loop1(void * pvParameters);
 
 void verbose_print_reset_reason(int reason)
 {
@@ -135,15 +136,13 @@ void wifi_and_battery_level() {
     digitalWrite(BATTERY_ADC_EN, HIGH);
     delay(10);
 #endif // BATTERY_ADC_EN
-    uint16_t v = analogRead(BATTERY_PIN);
+    //analogReadResolution(12);
+    uint16_t voltage = analogReadMilliVolts(BATTERY_PIN) * 2; // Read the ADC voltage using the built in factory calibration, no conversion needed.
+                                                              // Battery voltage is measured using a voltage divider
+    //analogReadResolution(ADC_RESOLUTION_BITS);
 #ifdef BATTERY_ADC_EN
     digitalWrite(BATTERY_ADC_EN, LOW);
 #endif // BATTERY_ADC_EN
-#ifdef ARDUINO_BPI_LEAF_S3
-    uint16_t voltage = ((uint32_t)v * 2 * 37 * vref) / 10240;   //  float voltage = ((float)v / 1024.0) * 2.0 * 3.3 * (vref / 1000.0);
-#else
-    uint16_t voltage = ((uint32_t)v * 2 * 33 * vref) / 10240;   //  float voltage = ((float)v / 1024.0) * 2.0 * 3.3 * (vref / 1000.0);
-#endif // ARDUINO_BPI_LEAF_S3
     uint16_t difference = abs(voltage - batteryVoltage);
     //DPRINT("%d %d %d %d\n", voltage, batteryVoltage, difference, map2(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100));
     if (difference > 100)
@@ -156,10 +155,12 @@ void wifi_and_battery_level() {
     static byte sec = 0;
 
     if (sec == 0) {
-      memoryHistory[historyStart]         = map2(freeMemory, 0, 200*1024, 0, 100);
-      fragmentationHistory[historyStart]  = map2(maxAllocation, 0, 200*1024, 0, 100);
-      wifiHistory[historyStart]           = map2(constrain(wifiLevel, -90, -10), -90, -10, 0, 100);
-      batteryHistory[historyStart]        = map2(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100);
+      memoryHistory[historyStart]        = map2(freeMemory, 0, 120*1024, 0, 100);
+      fragmentationHistory[historyStart] = map2(maxAllocation, 0, 120*1024, 0, 100);
+      wifiHistory[historyStart]          = map2(constrain(wifiLevel, -90, -10), -90, -10, 0, 100);
+      batteryHistory[historyStart]       = map2(constrain(batteryVoltage, 3000, 5000), 3000, 5000, 0, 100);
+      scanLoopHistory[historyStart]      = map2(constrain(scanLoop, 0, 10000), 0, 10000, 0, 100);
+      serviceLoopHistory[historyStart]   = map2(constrain(serviceLoop, 0, 10000), 0, 10000, 0, 100);
       historyStart = (historyStart + 1) % POINTS;
     }
     sec = (sec + 1) % SECONDS_BETWEEN_SAMPLES;
@@ -203,6 +204,8 @@ void setup()
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
 
+  adc_power_acquire();
+
   // Reset the pin used for power off
   // If the specified GPIO is a valid RTC GPIO, init as digital GPIO
   for (byte p = 0; p < PEDALS; p++) {
@@ -211,7 +214,7 @@ void setup()
 
 #ifdef BATTERY_PIN
   //Check type of calibration value used to characterize ADC for BATTERY_PIN
-  esp_adc_cal_characteristics_t adc_chars;
+  esp_adc_cal_characteristics_t adc_chars = {};
 #if defined ARDUINO_LILYGO_T_DISPLAY
   // GPIO34
   esp_adc_cal_value_t           val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
@@ -265,11 +268,6 @@ void setup()
   DPRINT("Internal Total Heap %d, Internal Free Heap %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
   DPRINT("PSRAM Total Heap %d, PSRAM Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
 
-  sketchSize = ESP.getSketchSize();
-  sketchMD5  = ESP.getSketchMD5();
-
-  DPRINT("Sketch Size %d bytes, Firmware Hash %s\n", sketchSize, sketchMD5.c_str());
-
   if (!SPIFFS.begin()) {
       DPRINT("SPIFFS mount FAILED\n");
   }
@@ -280,6 +278,13 @@ void setup()
   eeprom_init_or_erase();
   eeprom_read_global();
 
+  display_boot();
+
+  sketchSize = ESP.getSketchSize();
+  sketchMD5  = ESP.getSketchMD5();
+
+  DPRINT("Sketch Size %d bytes, Firmware Hash %s\n", sketchSize, sketchMD5.c_str());
+
   FastLED.addLeds<WS2812B, FASTLEDS_DATA_PIN, LED_RGB_ORDER>(fastleds, LEDS);
   fill_solid(fastleds, LEDS, CRGB::Black);
   FastLED.show();
@@ -288,8 +293,6 @@ void setup()
   for (byte b = 0; b < BANKS; b++)
     for (byte l = 0; l < LEDS; l++)
       lastLedColor[b][l] = CRGB::Black;
-
-  display_init();
 
   // Reset to factory default if BOOT key is pressed and hold for alt least 15 seconds at power on
 
@@ -505,8 +508,17 @@ void setup()
   set_initial_led_color();
 
   xTaskCreatePinnedToCore(
+                    loop1,       /* Task function. */
+                    "loopTask1", /* name of task. */
+                    8192,        /* Stack size of task */
+                    NULL,        /* parameter of the task */
+                    1,           /* priority of the task */
+                    &loopCore1,  /* Task handle to keep track of created task */
+                    1);          /* pin task to core 1 */
+
+  xTaskCreatePinnedToCore(
                     loop0,       /* Task function. */
-                    "loopTask",  /* name of task. */
+                    "loopTask0", /* name of task. */
                     8192,        /* Stack size of task */
                     NULL,        /* parameter of the task */
                     1,           /* priority of the task */
@@ -521,17 +533,44 @@ void loop()
 {
   // High priority activities run on Core 1
 
+  unsigned long startClock = micros();
+
   // Check whether the input has changed since last time, if so, send the new value over MIDI
   controller_run();
 
   // Send MTC or MIDI CLock
   MTC.loop();
+
+  // It is not a priority task but it only works on the same core where FastLED init run
+  // https://github.com/davidlmorris/FastLED_Hang_Fix_Demo
+  // It has no effect when not in diagnostic screen
+
+    if (scrollingMode && !displayOff) {
+      switch (currentProfile) {
+        case 0:
+          //blendwave();
+          ease2();
+          break;
+        case 1:
+          pacifica_loop();
+          break;
+        case 2:
+          pride();
+          break;
+      }
+      FastLED.show();
+    }
+
+  scanLoop = micros() - startClock;
 }
 
 
-void loop0(void * pvParameters)
+void loop1(void * pvParameters)
 {
-  // Low priority activities run on Core 0 within WiFi and Bluetooth
+  // High priority activities run on Core 1
+
+  unsigned long startClock = micros();
+  unsigned long endClock;
 
   for(;;) {
 
@@ -562,6 +601,26 @@ void loop0(void * pvParameters)
         if (interfaces[PED_IPMIDI].midiIn && IP_MIDI.read())
           DPRINTMIDI("IP  MIDI", IP_MIDI.getType(), IP_MIDI.getChannel(), IP_MIDI.getData1(), IP_MIDI.getData2());
       }
+    }
+#endif // WIFI
+
+    endClock = micros();
+    serviceLoop = endClock - startClock;
+    startClock = endClock;
+  }
+}
+
+void loop0(void * pvParameters)
+{
+  // Low priority activities run on Core 0 within WiFi and Bluetooth
+
+  for(;;) {
+
+    // Feed the watchdog of FreeRTOS
+    vTaskDelay(10);
+
+#ifdef WIFI
+    if (wifiEnabled) {
 
       http_run();
 
@@ -585,22 +644,6 @@ void loop0(void * pvParameters)
 
     // Update display
     display_update();
-
-    if (scrollingMode && !displayOff) {
-      switch (currentProfile) {
-        case 0:
-          //blendwave();
-          ease2();
-          break;
-        case 1:
-          pacifica_loop();
-          break;
-        case 2:
-          pride();
-          break;
-      }
-      FastLED.show();
-    }
 
     switch (firmwareUpdate) {
       case PED_UPDATE_ARDUINO_OTA:

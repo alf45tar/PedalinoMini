@@ -1093,16 +1093,19 @@ int frameCount = sizeof(frames) / sizeof(FrameCallback);
 OverlayCallback overlays[] = { topOverlay, bottomOverlay };
 int overlaysCount = sizeof(overlays) / sizeof(OverlayCallback);
 
-void display_init()
+void display_boot()
 {
   display.init();
   display.setContrast(255);
+
+  if (flipScreen) display.flipScreenVertically();
 
 #ifdef WIFI
   if (wifiEnabled) {
     display.clear();
     display.drawXbm((display.getWidth() - WIFI_LOGO_WIDTH) / 2, (display.getHeight() - WIFI_LOGO_HEIGHT) / 2, WIFI_LOGO_WIDTH, WIFI_LOGO_HEIGHT, WiFiLogo);
     display.display();
+    delay(1000);
   }
 #endif
 
@@ -1111,14 +1114,19 @@ void display_init()
     display.clear();
     display.drawXbm((display.getWidth() - BLUETOOTH_LOGO_WIDTH) / 2, (display.getHeight() - BLUETOOTH_LOGO_HEIGHT) / 2, BLUETOOTH_LOGO_WIDTH, BLUETOOTH_LOGO_HEIGHT, BluetoothLogo);
     display.display();
-
+    delay(1000);
   }
 #endif
+  display.clear();
+  display.display();
+}
 
+void display_init()
+{
   // The ESP is capable of rendering 60fps in 80Mhz mode
 	// but that won't give you much time for anything else
 	// run it in 160Mhz mode or just set it to 30 fps
-  ui.setTargetFPS(60);
+  ui.setTargetFPS(30);
 
 	// Customize the active and inactive symbol
   ui.setActiveSymbol(activeSymbol);

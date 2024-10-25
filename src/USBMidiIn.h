@@ -252,12 +252,20 @@ void usb_midi_connect()
 #if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
   //usb_midi.setStringDescriptor("PedalinoMini USB MIDI");
   TinyUSBDevice.setManufacturerDescriptor("Pedalino");
-  TinyUSBDevice.setProductDescriptor("PedalinoMini USB MIDI");
-  usb_midi.setCableName(1, "PedalinoMini");
+  TinyUSBDevice.setProductDescriptor("PedalinoMini™");
+  usb_midi.setCableName(1, "USB MIDI");
 #endif
 
   // Initiate USB MIDI communications, listen to all channels
   USB_MIDI.begin(MIDI_CHANNEL_OMNI);
+#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
+  // If already enumerated, additional class driverr begin() e.g msc, hid, midi won't take effect until re-enumeration
+  if (TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
+#endif
   // Enable/disable MIDI Thru
   interfaces[PED_USBMIDI].midiThru ? USB_MIDI.turnThruOn() : USB_MIDI.turnThruOff();
 

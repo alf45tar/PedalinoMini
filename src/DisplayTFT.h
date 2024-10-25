@@ -1046,6 +1046,8 @@ void drawFrame1(int16_t x, int16_t y)
       for (uint16_t i = 0; i < POINTS; i++) {
         uint16_t h  = (historyStart + i) % POINTS;
         uint16_t h1 = (h + 1)            % POINTS;
+        if (scanLoopHistory[h]      != 0 && scanLoopHistory[h1]      != 0) sprite.drawLine(i, map2(scanLoopHistory[h],      100, 0, 3, sprite.height() - 3), i + 1, map2(scanLoopHistory[h1],      100, 0, 3, sprite.height() - 3), TFT_INDEX_MAGENTA);
+        if (serviceLoopHistory[h]   != 0 && serviceLoopHistory[h1]   != 0) sprite.drawLine(i, map2(serviceLoopHistory[h],   100, 0, 3, sprite.height() - 3), i + 1, map2(serviceLoopHistory[h1],   100, 0, 3, sprite.height() - 3), TFT_INDEX_CYAN);
         if (memoryHistory[h]        != 0 && memoryHistory[h1]        != 0) sprite.drawLine(i, map2(memoryHistory[h],        100, 0, 3, sprite.height() - 3), i + 1, map2(memoryHistory[h1],        100, 0, 3, sprite.height() - 3), TFT_INDEX_RED);
         if (fragmentationHistory[h] != 0 && fragmentationHistory[h1] != 0) sprite.drawLine(i, map2(fragmentationHistory[h], 100, 0, 3, sprite.height() - 3), i + 1, map2(fragmentationHistory[h1], 100, 0, 3, sprite.height() - 3), TFT_INDEX_YELLOW);
         if (wifiHistory[h]          != 0 && wifiHistory[h1]          != 0) sprite.drawLine(i, map2(wifiHistory[h],          100, 0, 3, sprite.height() - 3), i + 1, map2(wifiHistory[h1],          100, 0, 3, sprite.height() - 3), TFT_INDEX_BLUE);
@@ -1060,13 +1062,31 @@ void drawFrame1(int16_t x, int16_t y)
       sprite.drawString("-50dB", 0, sprite.height() / 2);
       sprite.setTextDatum(ML_DATUM);
       sprite.drawString("-90dB", 0, sprite.height() / 2 + (sprite.height() - 8) / 2);
+
+      sprite.setTextColor(TFT_INDEX_MAGENTA, TFT_INDEX_BLACK);
+      sprite.setTextDatum(MC_DATUM);
+      sprite.drawString("10ms", sprite.width() / 4, sprite.height() / 2 - (sprite.height() - 8) / 2);
+      sprite.setTextDatum(MC_DATUM);
+      sprite.drawString("5ms",  sprite.width() / 4, sprite.height() / 2);
+      sprite.setTextDatum(MC_DATUM);
+      sprite.drawString("0ms",   sprite.width() / 4, sprite.height() / 2 + (sprite.height() - 8) / 2);
+
       sprite.setTextColor(TFT_INDEX_RED, TFT_INDEX_BLACK);
       sprite.setTextDatum(MC_DATUM);
-      sprite.drawString("200Kb", sprite.width() / 2, sprite.height() / 2 - (sprite.height() - 8) / 2);
+      sprite.drawString("120Kb", sprite.width() / 2, sprite.height() / 2 - (sprite.height() - 8) / 2);
       sprite.setTextDatum(MC_DATUM);
-      sprite.drawString("100Kb", sprite.width() / 2, sprite.height() / 2);
+      sprite.drawString("60Kb", sprite.width() / 2, sprite.height() / 2);
       sprite.setTextDatum(MC_DATUM);
       sprite.drawString("0Kb",  sprite.width() / 2, sprite.height() / 2 + (sprite.height() - 8) / 2);
+
+      sprite.setTextColor(TFT_INDEX_CYAN, TFT_INDEX_BLACK);
+      sprite.setTextDatum(MC_DATUM);
+      sprite.drawString("10ms", 3 * sprite.width() / 4, sprite.height() / 2 - (sprite.height() - 8) / 2);
+      sprite.setTextDatum(MC_DATUM);
+      sprite.drawString("5ms",  3 * sprite.width() / 4, sprite.height() / 2);
+      sprite.setTextDatum(MC_DATUM);
+      sprite.drawString("0ms",   3 * sprite.width() / 4, sprite.height() / 2 + (sprite.height() - 8) / 2);
+
       sprite.setTextColor(TFT_INDEX_GREEN, TFT_INDEX_BLACK);
       sprite.setTextDatum(MR_DATUM);
       sprite.drawString("5.0V", sprite.width() - 1, sprite.height() / 2 - (sprite.height() - 8) / 2);
@@ -1074,6 +1094,7 @@ void drawFrame1(int16_t x, int16_t y)
       sprite.drawString("4.0V", sprite.width() - 1, sprite.height() / 2);
       sprite.setTextDatum(MR_DATUM);
       sprite.drawString("3.0V", sprite.width() - 1, sprite.height() / 2 + (sprite.height() - 8) / 2);
+
       sprite.pushSprite(0, 27);
       sprite.deleteSprite();
 #endif
@@ -1383,18 +1404,20 @@ void drawFrame3(int16_t x, int16_t y)
 }
 
 
-void display_init()
+void display_boot()
 {
+#ifdef ARDUINO_LILYGO_T_DISPLAY_S3
+    // When T-Display-S3 is powered by battery, GPIO15 must be set to HIGH to turn on the backlight.
+    pinMode(15, OUTPUT);
+    digitalWrite(15, HIGH);
+    if (TFT_BL > 0) {                         // TFT_BL has been set in the TFT_eSPI library in the User Setup file ARDUINO_LILYGO_T_DISPLAY.h
+      pinMode(TFT_BL, OUTPUT);                // Set backlight pin GPIO38 to output mode
+      digitalWrite(TFT_BL, TFT_BACKLIGHT_ON); // Turn backlight on. TFT_BACKLIGHT_ON has been set in the TFT_eSPI library in the User Setup file ARDUINO_LILYGO_T_DISPLAY.h
+    }
+#endif
     display.init();
     flipScreen ? display.setRotation(3) : display.setRotation(1);
     display.fillScreen(TFT_BLACK);
-    /*
-    if (TFT_BL > 0) {                           // TFT_BL has been set in the TFT_eSPI library in the User Setup file ARDUINO_LILYGO_T_DISPLAY.h
-        pinMode(TFT_BL, OUTPUT);                // Set backlight pin to output mode
-        digitalWrite(TFT_BL, TFT_BACKLIGHT_ON); // Turn backlight on. TFT_BACKLIGHT_ON has been set in the TFT_eSPI library in the User Setup file ARDUINO_LILYGO_T_DISPLAY.h
-    }
-    */
-
     display.fillScreen(TFT_WHITE);
     display.setSwapBytes(true);
     display.pushImage((display.width() - PEDALINO_LOGO_WIDTH) / 2, (display.height() - PEDALINO_LOGO_HEIGHT) / 2, PEDALINO_LOGO_WIDTH, PEDALINO_LOGO_HEIGHT, PedalinoLogo);
@@ -1419,7 +1442,12 @@ void display_init()
 #endif
 
     display.fillScreen(TFT_BLACK);
-    displayInit = false;
+}
+
+void display_init()
+{
+  flipScreen ? display.setRotation(3) : display.setRotation(1);
+  displayInit = false;
 }
 
 void display_ui_update_disable()

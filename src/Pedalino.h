@@ -24,9 +24,12 @@ __________           .___      .__  .__                 _____  .__       .__    
 #define BANKS            21   // 20 banks + 1 bank for global actions
 #define PEDALS            6   // real number of pedals is board specific (see below)
 #define CONTROLS        100
-#define SEQUENCES        16
+#define SEQUENCES        20
 #define STEPS            10   // number of steps for each sequence
 #define LADDER_STEPS      6   // max number of controls in a resistor ladder
+#define ADC_BOARDS        4   //
+#define ADC_INPUTS        4   // ADS1115 number of analog inputs
+#define ADC_CHANNELS      (ADC_BOARDS * ADC_INPUTS)
 #define LEDS             10   // number of WS2812B leds (254 max)
 #define LED_RGB_ORDER   RGB   // do not change it, RGB order is managed by program because FastLED library does not support changing RGB order at runtime
 #define SLOTS_ROWS        2
@@ -85,7 +88,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #undef  PEDALS
 #define PEDALS                9
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
-// Strapping pins: 1, 3, 45, 46
+// Strapping pins: 0, 3, 45, 46
 // ADC1:    1-10
 // ADC2:   11-20 (19=D- 20=D+) (ADC2 module is also used by the Wi-Fi)
 // SPI0/1: 26-32 (usually used for SPI flash and PSRAM)
@@ -105,18 +108,24 @@ const byte pinA[] = {GPIO_NUM_4,  GPIO_NUM_5,  GPIO_NUM_6,  GPIO_NUM_7,  GPIO_NU
 #undef  PEDALS
 #define PEDALS                8
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
-// Strapping pins: 1, 3, 45, 46
+// Strapping pins: 0, 3, 45, 46
 // ADC1:    1-10
 // ADC2:   11-20 (19=D- 20=D+) (ADC2 module is also used by the Wi-Fi)
 // SPI0/1: 26-32 (usually used for SPI flash and PSRAM)
 // SPI0/1: 33-37 (board with ESP32-S3R8 chip not recommended for other uses)
-const byte pinD[] = {GPIO_NUM_10, GPIO_NUM_2,  GPIO_NUM_43, GPIO_NUM_44, GPIO_NUM_21, GPIO_NUM_1,  GPIO_NUM_14, GPIO_NUM_0};
-const byte pinA[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_14, GPIO_NUM_0};
+//const byte pinD[] = {GPIO_NUM_10, GPIO_NUM_2,  GPIO_NUM_43, GPIO_NUM_44, GPIO_NUM_21, GPIO_NUM_1,  GPIO_NUM_14, GPIO_NUM_0};
+//const byte pinA[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_14, GPIO_NUM_0};
+// Analog pedals are supported only on pedal 4, 5 and 6 because there are not enough available GPIO on ADC1
+//const byte pinD[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_14, GPIO_NUM_0};
+//const byte pinA[] = {GPIO_NUM_44, GPIO_NUM_43, GPIO_NUM_21, GPIO_NUM_10, GPIO_NUM_2,  GPIO_NUM_1,  GPIO_NUM_14, GPIO_NUM_0};
+// Analog pedals are not supported on pedal 1 and 2 because there are only 4 available GPIOs on ADC1
+const byte pinD[] = {GPIO_NUM_11, GPIO_NUM_12, GPIO_NUM_13, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_18, GPIO_NUM_14, GPIO_NUM_0};
+const byte pinA[] = {GPIO_NUM_44, GPIO_NUM_43, GPIO_NUM_10, GPIO_NUM_3,  GPIO_NUM_2,  GPIO_NUM_1,  GPIO_NUM_14, GPIO_NUM_0};
 #define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button BOOT
 #define DIN_MIDI_IN_PIN       GPIO_NUM_1
-#define DIN_MIDI_OUT_PIN      GPIO_NUM_3
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_1
 #define BATTERY_PIN           GPIO_NUM_4    // Pin connected to BAT (BAT is not VBAT)
-#define FASTLEDS_DATA_PIN     GPIO_NUM_3
+#define FASTLEDS_DATA_PIN     GPIO_NUM_21
 #else
 #undef  PEDALS
 #define PEDALS                7
@@ -134,6 +143,7 @@ const byte pinA[] = {GPIO_NUM_36, GPIO_NUM_39, GPIO_NUM_34, GPIO_NUM_35, GPIO_NU
 #define PIN_D(x)          pinD[x]
 #define PIN_A(x)          pinA[x]
 
+#define FASTLED_RMT_MAX_TICKS_FOR_GTX_SEM (2000/portTICK_PERIOD_MS)   // https://github.com/davidlmorris/FastLED_Hang_Fix_Demo
 #include <FastLED.h>                    // https://github.com/FastLED/FastLED
 CRGB    fastleds[LEDS+1];               // fastleds[LEDS] not used
 EOrder  rgbOrder = RGB;
@@ -145,6 +155,7 @@ typedef uint8_t   byte;
 #include <MD_REncoder.h>                // https://github.com/MajicDesigns/MD_REncoder
 #include <AceButton.h>                  // https://github.com/bxparks/AceButton
 #include <hellodrum.h>                  // https://github.com/RyoKosaka/HelloDrum-arduino-Library
+#include <Adafruit_ADS1X15.h>           // https://github.com/adafruit/Adafruit_ADS1X15
 //#include "AnalogPad.h"
 using namespace ace_button;
 
@@ -230,8 +241,9 @@ using namespace ace_button;
 #define PED_ANALOG_LATCH          12
 #define PED_ANALOG_PAD            13    // Piezo
 #define PED_ANALOG_PAD_MOMENTARY  14    // Piezo + switch
+#define PED_ANALOG4               15    // ADS1115
 
-const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2", "Momentary 3", "Latch 2", "Ladder", "Ultrasonic", "Analog+Momentary", "Analog+Latch", "Analog Pad", "Analog Pad+Momentary"};
+const char *pedalModeName[] = {"", "None", "Momentary 1", "Latch", "Analog", "Jog Wheel", "Momentary 2", "Momentary 3", "Latch 2", "Ladder", "Ultrasonic", "Analog+Momentary", "Analog+Latch", "Analog Pad", "Analog Pad+Momentary", "Analog 4"};
 
 #define PED_PRESS_1             1
 #define PED_PRESS_2             2
@@ -314,9 +326,9 @@ const char *pedalAnalogResponse[] = {"Linear", "Log", "Antilog"};
 #define PED_TIMESIGNATURE_LAST  7
 
 #define MIDI_RESOLUTION         128       // MIDI 7-bit CC resolution
-#define ADC_RESOLUTION         1024
-#define ADC_RESOLUTION_BITS      10       // hardware 9 to 12-bit ADC converter resolution
+#define ADC_RESOLUTION_BITS       9       // hardware 9 to 12-bit ADC converter resolution
                                           // software 1 to 16-bit resolution
+#define ADC_RESOLUTION (1 << ADC_RESOLUTION_BITS)
 
 struct action {
   char                   tag0[MAXACTIONNAME+1];
@@ -330,7 +342,7 @@ struct action {
   uint32_t               color1;
   byte                   event;
   byte                   midiMessage;
-  byte                   midiChannel;     /* MIDI channel 1-16 */
+  byte                   midiChannel;     /* MIDI channel 1-16, 0 = None, 17 = All or sequence 1-20 */
   byte                   midiCode;        /* Program Change, Control Code, Note or Pitch Bend value to send */
   byte                   midiValue1;
   byte                   midiValue2;
@@ -394,7 +406,8 @@ struct pedal {
   AceButton             *button[LADDER_STEPS];
   ButtonConfig          *buttonConfig;
   MD_REncoder           *jogwheel;
-  ResponsiveAnalogRead  *analogPedal;
+  ResponsiveAnalogRead  *analogPedal[ADC_CHANNELS];
+  Adafruit_ADS1115      *ads[ADC_BOARDS];
   //AnalogPad             *analogPad;
   HelloDrum             *analogPad;
 };
@@ -452,6 +465,8 @@ AceButton       bootButton;
 ButtonConfig    bootButtonConfig;
 uint16_t        ladderLevels[LADDER_STEPS+1] = {497, 660, 752, 816, 876, 945, ADC_RESOLUTION - 1};  // TC-Helicon Switch 6
 
+bool ads1115Found[ADC_BOARDS];
+
 char  slots[SLOTS_ROWS][SLOTS_COLS][MAXBANKNAME+1];
 
 bool  tapDanceMode            = false;
@@ -465,12 +480,15 @@ unsigned long displayOffCountdownStart = 0;
 unsigned long screenSaverTimeout = 1000*60*60;   // 1 hour
 
 volatile byte currentProfile  = 0;
+volatile bool controllerRunning = false;
 volatile bool reloadProfile   = true;
 volatile bool saveProfile     = false;
 volatile bool loadConfig      = false;
 volatile bool scrollingMode   = false;  // Display scrolling mode
-volatile bool displayInit     = false;
+volatile bool displayInit     = true;
 volatile bool startWebServer  = false;
+volatile unsigned long scanLoop    = 0;
+volatile unsigned long serviceLoop = 0;
 
 byte  currentBank             = 1;
 byte  currentPedal            = 0;
@@ -537,10 +555,13 @@ uint16_t  batteryVoltage = 4200;  // mV
 #define GRAPH_DURATION_QUARTER_MIN    GRAPH_DURATION_QUARTER_SEC / 60
 #define GRAPH_DURATION_QUARTER_HOUR   GRAPH_DURATION_QUARTER_MIN / 60
 RTC_DATA_ATTR uint16_t historyStart = 0;
-RTC_DATA_ATTR byte memoryHistory[POINTS];         // 0% =   0Kb    100% = 200Kb
-RTC_DATA_ATTR byte fragmentationHistory[POINTS];  // 0% =   0Kb    100% = 200Kb
-RTC_DATA_ATTR byte wifiHistory[POINTS];           // 0% = -90dB    100% = -10dB
-RTC_DATA_ATTR byte batteryHistory[POINTS];        // 0% =  3.0V    100% =  5.0V
+RTC_DATA_ATTR byte memoryHistory[POINTS];           // 0% =   0Kb    100% = 120Kb
+RTC_DATA_ATTR byte fragmentationHistory[POINTS];    // 0% =   0Kb    100% = 120Kb
+RTC_DATA_ATTR byte wifiHistory[POINTS];             // 0% = -90dB    100% = -10dB
+RTC_DATA_ATTR byte batteryHistory[POINTS];          // 0% =  3.0V    100% =  5.0V
+RTC_DATA_ATTR byte scanLoopHistory[POINTS];         // 0% =   0us    100% =  10ms
+RTC_DATA_ATTR byte serviceLoopHistory[POINTS];      // 0% =   0ms    100% =  10ms
+
 #endif // DIAGNOSTIC
 
 uint16_t  scan[POINTS];
