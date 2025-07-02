@@ -1,58 +1,67 @@
 [![](./images/PedalinoMini486.png)](https://github.com/alf45tar/PedalinoMini-6)
 
-
 # PedalinoMini™
 
-Wireless MIDI foot controller for guitarists and more.
+## Wireless controller for musicians, streamers, and presenters
 
-You can change the presets of your guitar rig, turn old MIDI equipment into something that’s USB-compatible, give you hands-free or foot-occupied ways to control your rig during a live performance, and it can be done with WiFi or Bluetooth. This is a full-featured MIDI controller, with three user profiles, and it can control a maximum of 36 foot switches. That’s an impressive amount of kit for such a small device; usually you’d have to spend hundreds or even thousands of dollars for a simple MIDI controller, and the PedalinoMini does everything with very cheap hardware.
+**PedalinoMini™** is a versatile, wireless, multi-purpose MIDI and HID controller that empowers performers, creators, and speakers to stay fully focused on their craft — hands-free.
 
-- Plug-and-play with any MIDI-compatible app on iOS 8 and above as well as OS X Yosemite and above.
-- High customizable using web interface
-- Bluetooth, WiFI, USB and legacy MIDI interfaces
-- No extra drivers to connect Windows, macOS, iOS (iPad/iPhone) and Android
-- Bluetooth LE MIDI (iOS and macOS compatible)
-- Network MIDI (aka AppleMIDI or RTP-MIDI)
-- ipMIDI
-- Open Sound Control (OSC)
-- IEEE 802.11 b/g/n Wi-Fi 2.4 GHZ with WPA/WPA2 authentication
-- Bluetooth Low Energy 4.0 server or client
-- DIN MIDI IN and MIDI OUT connectors
-- MIDI routing
-- MIDI clock master and slave
-- MIDI Time Code (MTC) master and slave
-- OSC to MIDI and vicecersa
-- Any number of pedals of any type in any order
-- Auto-sensing footswitches and expression pedals
-- Trigger-to-MIDI (soon)
+Keyboard emulation makes PedalinoMini™ **universally compatible** and immediately useful, even beyond music — perfect for streamers, presenters, and anyone needing hands-free or foot-operated control.
 
-## Features
+**PedalinoMini™** gives you the freedom to perform, create, and present without limits.
 
-- Support for digital foot switches (momentary or latch), analog expression pedals, jog wheels (rotary encoders) and triggers.
-- 6 controllers ports for ESP32 and 8 controllers ports for ESP32S3. One controller port can support up to 6 indipendent switches for a total of 36 (ESP32) or 48 (ESP32S3) switches.
-- 20 banks + 1 global bank
-- 3 user profiles
-- 20 sequences of 10 steps each
-- Each port can connect 1 expression pedal or 1 jog wheel or up to 6 foot switches via a resitors ladder (TC HELICON Switch-6).
-- MIDI output via AppleMIDI (also known as RTP-MIDI) or ipMIDI via Wi-Fi
-- Send almost every MIDI messages: Program Change, Control Code, Note On/Off, Channel Pressure, Pitch Bend, Bank Select, Start, Stop, Continue or a sequence of the previous messages
-- MIDI channel, MIDI note, MIDI control code, MIDI program change can be configured by each pedal and by each bank
-- Switch debouncing and analog noise suppression without decreasing responsivenes
-- Invert polarity via software
-- Individual automatic calibration of expression pedals. Manual fine tuning is not usually requested.
-- Transform a linear expression pedal into log expression pedal and vice versa
-- Calibrating resistors ladder is easy as pressing footswitches in sequence
-- RGB NeoPixel/WS2812B status leds
-- Responsive and mobile-first configuration web interface (<http://pedalino.local>)
-- Installing firmware and WiFi provisioning directly from your browser
-- Smart Config technology to help users connect to a Wi-Fi network through simple app on a smartphone.
-- OTA (Over the Air) firmware update or via HTTP (<http://pedalino.local/update>)
+## **Use Cases**
+
+### 🎸 **Musicians**
+- Change digital sheet music or guitar rig presets seamlessly.
+- Switch effects or amp channels without interrupting performance.
+- Trigger loops, backing tracks, or DAW controls (Ableton Live, Logic Pro, etc.).
+- Manage metronome tempo and tap tempo hands-free.
+
+### 🎥 **Streamers**
+- Remotely trigger OBS scenes, sound effects, overlays, or transitions.
+- Mute/unmute mic or camera without leaving your chair.
+- Control recording or live streaming start/stop.
+- Reduce reliance on keyboard shortcuts and streamline live workflows.
+
+### 🎤 **Presenters**
+- Advance slides or control teleprompters wirelessly.
+- Trigger embedded videos, animations, or navigate PDFs/websites.
+- Walk freely during keynotes or webinars while maintaining control.
+- Manage multiple presentation cues with multiple footswitches.
+
+## **Why PedalinoMini™?**
+
+Transform your setup with powerful, flexible control over MIDI and non-MIDI devices:
+
+- Control up to **36 foot switches** (ESP32) or **48 switches** (ESP32-S3).
+- Seamless integration via **Wi-Fi, Bluetooth LE, USB, or DIN MIDI**.
+- Highly customizable with an intuitive, mobile-friendly web interface.
+- Works plug-and-play with macOS, Windows, iOS, Android, and MIDI-compatible apps (iOS 8+, OS X Yosemite+).
+- Affordable, robust, and feature-rich — outperforming traditional MIDI controllers costing hundreds or thousands.
+
+## **Key Features**
+
+- Supports **momentary/latch switches**, analog expression pedals, jog wheels, and triggers.
+- Up to **8 controller ports** (ESP32-S3), each supporting up to 6 independent switches.
+- **20 banks + 1 global bank**, 3 user profiles, and **20 programmable sequences**.
+- Send almost any MIDI message: Program Change, Control Change, Note On/Off, Pitch Bend, and more.
+- Fully configurable MIDI channels, notes, control codes, and program changes per pedal/bank.
+- Send complex key combinations, including system modifiers and media keys (Windows/macOS).
+- **Switch debouncing** and noise suppression ensure fast and reliable performance.
+- Software polarity inversion and automatic expression pedal calibration.
+- Transform linear to logarithmic pedal response curves and vice versa.
+- Calibrate resistor ladders easily — just press switches in sequence.
+- **RGB NeoPixel status LEDs** for visual feedback.
+- **OTA firmware updates**, web-based Wi-Fi setup, and smart config technology.
+- Supports **Bluetooth LE MIDI**, **AppleMIDI (RTP-MIDI)**, **ipMIDI**, **OSC**, and legacy DIN MIDI.
+- Integrated web interface at **http://pedalino.local** for configuration and firmware updates.
 
 ## PedalinoMini™ 4
 
 An easy way to create one is by building the [PedalinoMini™ 4](https://github.com/alf45tar/PedalinoMini-4). I aimed to keep it as simple as possible.
 
-[PedalinoMini™ 4](https://github.com/alf45tar/PedalinoMini-4) operates seamlessly with its 4 footswitches, featuring a big 1.9" color display equipped with WiFi, Bluetooth, and USB MIDI capabilities. It is powered through a USB-C port, using either a power adapter or, for enhanced convenience, a compact power bank, ensuring up to 6 hours of uninterrupted functionality.
+[PedalinoMini™ 4](https://github.com/alf45tar/PedalinoMini-4) operates seamlessly with its 4 footswitches, featuring a big 1.9" color display equipped with WiFi, Bluetooth, and USB capabilities. It is powered through a USB-C port from the computer or using either a power adapter or, for enhanced convenience, a compact power bank, ensuring up to 6 hours of uninterrupted functionality.
 
 [![](https://github.com/alf45tar/PedalinoMini-4/blob/main/images/PedalinoMini%204.jpg)](https://github.com/alf45tar/PedalinoMini-4)
 
@@ -78,12 +87,17 @@ New features and bug corrections will be released to this public repository when
 
   _Be patience if you are not ready to add a star._
 
-  >Goal is reached on Ocotber 25th, 2025.
+  >Goal is reached on October 25th, 2025.
 
 When one of the previous goals will be reached sponsors will continue to receive in advance new versions and new goals will set.
 
 Sponsors version additions/fixes since October 25th, 2024:
-- None
+
+- Added delayed actions (3.5.1)
+- Fixed "Step by Step -" [#457](https://github.com/alf45tar/PedalinoMini/issues/547) (3.5.2)
+- Added BLE keyboard emulation (3.6.0)
+- Added USB keyboard emulation (3.6.0)
+- Updated onboard Bootstrap to 5.3.7 (3.6.0)
 
 [PedalinoMini™ Case 1](https://github.com/alf45tar/PedalinoMini-Case-1) is available to sponsors only.
 
@@ -268,28 +282,55 @@ The following features:
 has been released to public on May 12th, 2021 thanks to the following sponsors: @MaxZak2020, @Alt Shift Creative, @serhatsoyyigit, @Kubbik1, @rigr, @jwyse, @teopost, @davidin73, @juani13973, @ba********, @MiqViq, @jisv48.
 </details>
 
-## Bill of materials
+## Bill of Materials
 
-The shortest bill of materials ever: an ESP32 board and a OLED display. That's it.
+The **ESP32-S3** is the preferred standard board for all new deployments of PedalinoMini™.  
+Please note that some of the newest features are only supported on the ESP32-S3 and **not** on the original ESP32.
 
-- Any ESP32 board supported by [Arduino core for ESP32](https://github.com/espressif/arduino-esp32)
-  - Tested on [DOIT ESP32 DevKit V1](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32) 4M dual-mode Wi-Fi and Bluetooth module
-- OLED I2C 0.96"/1.3" display 128x64 pixels SSD1306/SH1106 based
+### 💡 Core Components
 
-Not enough short?
+- **Preferred board:**  
+  - **ESP32-S3** module (e.g., [**LILYGO® T-Display-S3**](https://www.lilygo.cc/products/t-display-s3?variant=42351558590645), [**BPI-Leaf-S3**](https://wiki.banana-pi.org/BPI-Leaf-S3) )
+    - Supports USB HID keyboard, Bluetooth LE keyboard, and other advanced features exclusive to ESP32-S3.
 
-- An all-in-one [LILYGO® TTGO T-Display](http://www.lilygo.cn/prod_view.aspx?TypeId=50033&Id=1126&FId=t3:50033:3) with an 1.14" IPS display and onboard lithium battery interface
+- **Legacy board (supported but limited features):**  
+  - ESP32 (e.g., [[**LILYGO® TTGO T-Display**](http://www.lilygo.cn/prod_view.aspx?TypeId=50033&Id=1126&FId=t3:50033:3), **DOIT ESP32 DevKit V1**](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32), )
+    - Does **not** support USB HID keyboard or Bluetooth LE keyboard modes.
 
-- An all-in-one [Heltec WiFi Kit 32](https://heltec.org/project/wifi-kit-32/) with an integrated OLED display (0.96") and onboard lithium battery interface
+- **Display Options:**
+  - Separate OLED I2C displays (0.96" or 1.3", SSD1306/SH1106 based)  
+  - All-in-one boards with integrated displays
 
-- An all-in-one [TTGO T-Eight ESP32](https://github.com/LilyGO/TTGO-T-Eight-ESP32) with a bigger OLED display (1.3"), 4MB PSRAM and onboard lithium battery interface
+### ⚡ All-in-one Boards
 
-Not enough powerful?
+- [**LILYGO® T-Display-S3**](https://www.lilygo.cc/products/t-display-s3?variant=42351558590645)
+  - 1.9" IPS display, onboard lithium battery interface, ESP32-S3 core
+- [**LILYGO® TTGO T-Display**](https://lilygo.cc/products/lilygo%C2%AE-ttgo-t-display-1-14-inch-lcd-esp32-control-board?variant=42159376433333)
+  - 1.14" IPS display, lithium battery interface
+- [**Heltec WiFi Kit 33 (V2)**](https://heltec.org/project/wifi-kit32-v3/)
+  - 0.96" OLED display, lithium battery interface
+- [**TTGO T-Eight ESP32**](https://github.com/LilyGO/TTGO-T-Eight-ESP32)
+  - 1.3" OLED display, 4MB PSRAM
 
-- [BPI-Leaf-S3](https://wiki.banana-pi.org/BPI-Leaf-S3)
-- [LILYGO® T-Display-S3](https://www.lilygo.cc/products/t-display-s3?variant=42351558590645)
 
-USB MIDI (ESP32 only) and DIN MIDI connection requires additional hardware.
+### ⚡ Legacy Boards (ESP32)
+
+- [**DOIT ESP32 DevKit V1**](https://github.com/SmartArduino/SZDOITWiKi/wiki/ESP8266---ESP32)  
+  - 4MB dual-mode Wi-Fi and Bluetooth  
+
+## Summary
+
+| Board                      | Display                        | Size           | Battery Support | Extra Features                  |
+|----------------------------|--------------------------------|----------------|-----------------|---------------------------------|
+| **DOIT ESP32 DevKit V1**   | Separate OLED (SSD1306/SH1106) | 0.96" or 1.3"  | No              | Basic, flexible choice          |
+| **Heltec WiFi Kit 32**     | OLED                           | 0.96"          | Yes             | Integrated OLED, compact        |
+| **TTGO T-Eight ESP32**     | OLED                           | 1.3"           | Yes             | 4MB PSRAM, larger display       |
+| **LILYGO® TTGO T-Display** | IPS LCD                        | 1.14"          | Yes             | Compact, all-in-one             |
+| **BPI-Leaf-S3**            | External or optional OLED      | —              | Yes             | ESP32-S3, more power            |
+| **LILYGO® T-Display-S3**   | IPS LCD                        | 1.9"           | Yes             | ESP32-S3, larger bright display |
+
+
+- USB MIDI (ESP32 only) and DIN MIDI connections require extra hardware components.
 
 ## Schematic
 
@@ -403,17 +444,15 @@ To select a different mode:
 - Press and release EN button (POWER button on TTGO T-Eight) and immediately after press and hold BOOT button (CENTER button on TTGO T-Eight)
 - Follow the istructions on display. Keep it pressed until the progress bar reach the end to reset to factory default. If you release the button before the progress bar reach the end PedalinoMini™ will start in one of the supported boot mode.
 
-Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware Update|HTTP Firmware Update
-:--:|----|:------:|:---------:|:------:|:----:|:------:|:-:|:----:|:-----------------:|:------------------:
-1|Normal|x|x|x|x|x|x|x|x|x
-2|Bluetooth Only|x|x|-|-|x|-|-|x|-
-3|WiFi Only|x|x|x|x|-|x|x|x|x
-4|Access Point with Bluetooth|x|x|x|x|x|x|x|x|x
-5|Access Point without Bluetooth|x|x|x|x|-|x|x|x|x
+Mode|Name                           |USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|USB Keyboard|BLE Keyboard|Web UI|OTA Firmware Update|HTTP Firmware Update
+:--:|-------------------------------|:------:|:---------:|:------:|:----:|:------:|:-:|:----------:|:----------:|:----:|:-----------------:|:------------------:
+1   |Normal                         |✅      |✅         |✅      |✅    |✅     |✅  |✅        |✅          |✅    |✅                 |✅
+2   |Bluetooth Only                 |✅      |✅         |❌      |❌    |✅     |❌  |✅        |✅          |❌    |✅                 |❌
+3   |WiFi Only                      |✅      |✅         |✅      |✅    |❌     |✅  |✅        |❌          |✅    |✅                 |✅
+4   |Access Point with Bluetooth    |✅      |✅         |✅      |✅    |✅     |✅  |✅        |✅          |✅    |✅                 |✅
+5   |Access Point without Bluetooth |✅      |✅         |✅      |✅    |❌     |✅  |✅        |❌          |✅    |✅                 |✅
 
-- (x) Supported
-  (-) Not supported
-- USB-MIDI and DIN-MIDI are always available if hardware implemented.
+- USB-MIDI and Legacy MIDI are always available if hardware implemented.
 
 ## How to build and upload
 
@@ -427,7 +466,7 @@ Mode|Name|USB-MIDI|Legacy MIDI|RTP-MIDI|ipMIDI|BLE MIDI|OSC|Web UI|OTA Firmware 
     - from View->Command Palette (Ctrl+Shift+P)
         - Git: Clone
         - You will be asked for the URL of the remote repository (<https://github.com/alf45tar/PedalinoMini>) and the parent directory under which to put the local repository.
-    - under PlatformIO Project Tasks select your environment (i.e. env:esp32doit-devkit-v1)
+    - under PlatformIO Project Tasks select your environment (e.g., env:esp32doit-devkit-v1)
         - Click "Build" under General
         - Click "Upload" under General
         - Click “Upload File System Image” under Platform. Do not skip this step otherwise the WebUI will not works properly.
@@ -513,7 +552,7 @@ Activity Threshold|The amount of movement that must take place for it to registe
 
 ## Controls
 
-A control is a single switch of a pedal (i.e. button 2 of pedal 4) or a combination of 2 switched of any pedal to be pressed simultaneous. Controls are used to logical sort and hide the physical connection of switches or to define a new control as simultaneous press of 2 switches.
+A control is a single switch of a pedal (e.g., button 2 of pedal 4) or a combination of 2 switched of any pedal to be pressed simultaneous. Controls are used to logical sort and hide the physical connection of switches or to define a new control as simultaneous press of 2 switches.
 
 Actions are triggered by controls. As a consequence a control is needed also for analog and ultrasonic pedals.
 
@@ -540,7 +579,8 @@ ________|Description
 :-------|:----------
 On|The event that trigger the action.<br>Momentary switches, latches and ladders have 7 different events: PRESS, RELEASE, PRESS&RELEASE, CLICK, DOUBLE CLICK, LONG PRESS, REPEAT PRESSED and LONG RELEASE. All of them need to be enabled on Pedals level otherwise the action is not triggered.<br>Analog expression pedals have only MOVE event.<br>Jog wheels have only JOG event.
 Control|The control that trigger the event as defined in Controls page.
-Send|The action to be triggered on event.<br>It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK SELECT+, BANK SELECT-, PROGRAM CHANGE+, PROGRAM CHANGE-, BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.<br>For an analog pedal leave it blank to activate the universal mode. In universal mode an analog pedal can be used to repeat the last MIDI message. A typical usage is to modify the value of the last CONTROL CHANGE.
+Send|The action to be triggered on event.<br>It can be a MIDI message (PROGRAM CHANGE, CONTROL CHANGE, NOTE ON, NOTE OFF, PITCH BEND, CHANNEL PRESSURE, START, STOP, CONTINUE), a special action (BANK SELECT+, BANK SELECT-, PROGRAM CHANGE+, PROGRAM CHANGE-, BANK+, BANK-, MTC START, MTC STOP, MTC CONTINUE, TAP, BPM+, BPM-) or a SEQUENCE of them.<br>For an analog pedal leave it blank to activate the universal mode. In universal mode an analog pedal can be used to repeat the last MIDI message. A typical usage is to modify the value of the last CONTROL CHANGE.<br>
+It can be a keyboard key. In Key Combination 
 From Value/To Value|Define the range from a off value to a on value (see below).
 Tags When Off|Action name to display when off action is triggered.
 Tags When On|Action name to display when on action is triggered.
@@ -580,6 +620,7 @@ Tap|-|-|-|-
 BPM+|-|-|-|-
 BPM-|-|-|-|-
 OSC Message|-|-|-|-
+Key|-|-|-|-
 Profile+|-|-|From Profile#|To Profile#
 Profile-|-|-|From Profile#|To Profile#
 Set Led Color|-|-|-|-
@@ -593,6 +634,190 @@ Power On/Off|-|-|-|-
 - MSB is the Most Significat Byte. It is a fixed value from 0 to 127.
 - LSB is the Less Significat Byte. It is the variable value from 0 to 127.
 
+## 💡 Keyboard emulation
+
+Keyboard emulation (available only on ESP32-S3) — either as a **USB HID keyboard** or **Bluetooth LE keyboard** — allows PedalinoMini™ to act exactly like a standard keyboard.  
+Instead of only sending MIDI messages, it can send **key presses** directly to your computer, tablet, or phone.
+
+### ✅ Works with *any* software, not just MIDI-enabled apps
+
+- Many apps (presentation tools, video editors, streaming software) support keyboard shortcuts but do **not** accept MIDI directly.
+- With keyboard emulation, pedals can be mapped to:
+  - Next/previous slide
+  - Start/stop recording
+  - Trigger sound effects
+  - Toggle camera or mic
+  - Any custom hotkey combination
+
+### ✅ Simpler integration
+
+- No need for virtual MIDI drivers or extra software bridges.
+- Just plug in and control as if you're pressing keys on a real keyboard.
+
+### ✅ Fully wireless option (BLE)
+
+- Bluetooth LE keyboard mode enables wireless connection to tablets, laptops, or smartphones.
+- Ideal for live presentations or on-stage movement.
+
+### ✅ Supports modifier keys
+
+- You can send advanced combinations such as:
+  - **Ctrl + Shift + P** (e.g., play/pause in streaming or video apps)
+  - **Cmd + Option + Esc** (macOS commands)
+  - Media keys (volume, play/pause, next track, etc.)
+
+### ✅ Cross-platform
+
+- Works on Windows, macOS, iOS, Android, Linux — anything that supports standard keyboards.
+
+### Supported Key Names
+
+> **Note:** The key names correspond to the **physical positions** on a standard US keyboard layout, **not necessarily the printed labels** on your keyboard.  
+> For example, a key labeled differently on non-US layouts will still be identified by its US position.
+
+![us-layout](https://upload.wikimedia.org/wikipedia/commons/3/3a/Qwerty.svg)
+
+Key strings are case insensitive except for `A` to `Z` and `a` to `z`.
+
+#### 🧩 Modifier Keys
+
+| Key String   | Aliases                                   |
+|--------------|--------------------------------------------|
+| `Ctrl`       | `LeftCtrl`                                 |
+| `RightCtrl`  | —                                          |
+| `Shift`      | `LeftShift`                                |
+| `RightShift` | —                                          |
+| `Alt`        | `LeftAlt`, `Option`                        |
+| `RightAlt`   | `RightOption`                              |
+| `GUI`        | `Win`, `Cmd`, `LeftGUI`, `LeftWin`, `LeftCmd` |
+| `RightGUI`   | `RightWin`, `RightCmd`                     |
+
+"Win" = Windows key (also known as "GUI" or "Cmd")
+
+#### 🔤 Alphanumeric Keys
+
+| Key String  |
+|-------------|
+| `A` to `Z`  |
+| `a` to `z`  |
+| `0` to `9`  |
+
+#### 🎯 Function Keys
+
+| Key String    |
+|---------------|
+| `F1` to `F24` |
+
+#### 🔢 Number Row Symbols (via Shift or ASCII)
+
+> You can use either the **symbol itself** (e.g., `!`) or the equivalent **Shift+Number** form (e.g., `Shift+1`).  
+> Both are valid in key combinations.
+
+| Symbol | Valid Inputs      | Description          |
+|--------|-------------------|----------------------|
+| `!`    | `!` or `Shift+1`  | Exclamation mark     |
+| `"`    | `"` or `Shift+2`  | Double quotes        |
+| `£`    | `£` or `Shift+3`  | Pound sign           |
+| `$`    | `$` or `Shift+4`  | Dollar sign          |
+| `%`    | `%` or `Shift+5`  | Percent sign         |
+| `^`    | `^` or `Shift+6`  | Caret                |
+| `&`    | `&` or `Shift+7`  | Ampersand            |
+| `*`    | `*` or `Shift+8`  | Asterisk             |
+| `(`    | `(` or `Shift+9`  | Open parenthesis     |
+| `)`    | `)` or `Shift+0`  | Close parenthesis    |
+
+#### 🔣 Punctuation & Symbol Keys  
+
+| Symbol   | Valid Inputs         | Description    |
+|----------|----------------------|----------------|
+| `` ` ``  | `` ` ``              | Backtick       |
+| `~`      | `~` or ``Shift+` ``  | Tilde          |
+| `-`      | -                    | Dash           |
+| `_`      | `_` or `Shift+-`     | Underscore     |
+| `=`      | =                    | Equals         |
+| `+`      | `+` or `Shift+=`     | Plus           |
+| `[`      | [                    | Open bracket   |
+| `{`      | `{` or `Shift+[`     | Left brace     |
+| `]`      | ]                    | Close bracket  |
+| `}`      | `}` or `Shift+]`     | Right brace    |
+| `\`      | \                    | Backslash      |
+| `\|`     | `\|` or `Shift+\`    | Pipe           |
+| `;`      | ;                    | Semicolon      |
+| `:`      | `:` + `Shift+;`      | Colon          |
+| `'`      | '                    | Apostrophe     |
+| `"`      | `"` or `Shift+'`     | Double quote   |
+| `,`      | ,                    | Comma          |
+| `<`      | `<` or `Shift+,`     | Less-than      |
+| `.`      | .                    | Period         |
+| `>`      | `>` or `Shift+.`     | Greater-than   |
+| `/`      | /                    | Slash          |
+| `?`      | `?` or `Shift+/`     | Question mark  |
+
+#### ⌨️ Special Keys
+
+| Key String     | Description                  |
+|----------------|------------------------------|
+| `Enter`        | Return key                   |
+| `Esc`          | Escape key                   |
+| `Tab`          | Tab key                      |
+| `Space`        | Spacebar                     |
+| `Backspace`    | Delete previous character    |
+| `CapsLock`     | Caps lock toggle             |
+| `Delete`       | Forward delete               |
+| `Insert`       | Insert key                   |
+| `Home`         | Move cursor to line start    |
+| `End`          | Move cursor to line end      |
+| `PageUp`       | Scroll up                    |
+| `PageDown`     | Scroll down                  |
+| `PrintScreen`  | Screenshot key               |
+| `ScrollLock`   | Toggle scroll lock           |
+| `Pause`        | Pause/Break key              |
+
+#### 🧭 Arrow Keys
+
+| Key String |
+|------------|
+| `Up`       |
+| `Down`     |
+| `Left`     |
+| `Right`    |
+
+#### 🔢 Numpad Keys
+
+| Key String       |
+|------------------|
+| `NumLock`        |
+| `Numpad0` to `Numpad9` |
+| `NumpadPeriod`   |
+| `NumpadEnter`    |
+| `NumpadDivide`   |
+| `NumpadMultiply` |
+| `NumpadSubtract` |
+| `NumpadAdd`      |
+
+#### 🎵 Media Keys
+
+| Key String    | Description              |
+|---------------|--------------------------|
+| `PlayPause`   | Toggle play/pause        |
+| `Next`        | Next track               |
+| `Previous`    | Previous track           |
+| `Stop`        | Stop playback            |
+| `Mute`        | Mute audio               |
+| `VolumeUp`    | Increase volume          |
+| `VolumeDown`  | Decrease volume          |
+| `WWW`         | Internet browser         |
+| `WwwSearch`   | Internet search          |
+| `WwwStop`     | Internet stop            |
+| `WwwBack`     | Internet browser back    |
+| `WwwForward`  | Internet browser forward |
+| `WwwBookmarks`| Internet bookmarks       |
+| `Email`       | Email app                |
+| `Calculator`  | Calculator app           |
+| `MyComputer`  | Local browser app        |
+
+Media keys can't be combined with other keys.
+
 ## Interfaces
 
 ![WEBUI INTERFACES](./images/webui-interfaces.png "Interfaces")
@@ -601,14 +826,16 @@ The supported interfaces are:
 
 Interface|Description
 :--------|:----------
-USB MIDI|Plug&play USB MIDI interface. Requires additional hardware (see schematic).
+USB MIDI|Built-in plug&play USB MIDI interface for ESP32-S3 board. Requires additional hardware (see schematic) on ESP32.
 Legacy MIDI|Legacy serial MIDI interface with 5 pins DIN connectors. Requires additional hardware (see schematic).
 RTP-MIDI|RTP-MIDI also know as AppleMIDI or Network MIDI. It is based on UDP protocol and it requires WiFi.
 ipMIDI|ipMIDI is a multicast UDP protocol and it requires WiFi. ipMIDI works only if both end points are connected to the same 2.4 GHz WiFi network. Same router is not enough when one end point is connected to a 5 GHz WiFi network or to a different 2.4 GHz WiFI network hosted by the same router.
 BLE MIDI|Requires Bluetooth Low Energy (BLE).
 OSC|OSC messages are based on UDP protocol and it requires WiFi.
+USB Keyboard| ESP32-S3 board can emulate a USB HID keyboard
+BLE Keyboard| ESP32-S3 board can emulate a Bluetooth LE keyboard
 
-For each interface there are 4 filtering options:
+For each MIDI interface there are 4 filtering options:
 
 ______|Description
 :-----|:----------
@@ -760,9 +987,9 @@ https://github.com/mattzzw
 [More details](https://github.com/alf45tar/PedalinoMini/discussions/438)
 
 https://github.com/Jelle7and9
-![Jelle7and9](https://private-user-images.githubusercontent.com/137293236/296360172-27cde9c3-16ed-4ce2-b53d-1cc7fd52cd59.jpg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTYzMjY3NjIsIm5iZiI6MTcxNjMyNjQ2MiwicGF0aCI6Ii8xMzcyOTMyMzYvMjk2MzYwMTcyLTI3Y2RlOWMzLTE2ZWQtNGNlMi1iNTNkLTFjYzdmZDUyY2Q1OS5qcGc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNTIxJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDUyMVQyMTIxMDJaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0xZmQ5YzRkNmIxYmI2NjQzNDZiZWU2NzQwMDFiOTI0NzE1NzUxZjEyN2Y0ZTQ5NjhlOGViYjU0ZGFlNjA4MTgyJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.AoothpAOgxuCo_4Nj_q1etgwkRxJb3MfdXlBnBpLO2U)
+![Jelle7and9](https://user-images.githubusercontent.com/137293236/296360172-27cde9c3-16ed-4ce2-b53d-1cc7fd52cd59.jpg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTYzMjY3NjIsIm5iZiI6MTcxNjMyNjQ2MiwicGF0aCI6Ii8xMzcyOTMyMzYvMjk2MzYwMTcyLTI3Y2RlOWMzLTE2ZWQtNGNlMi1iNTNkLTFjYzdmZDUyY2Q1OS5qcGc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNTIxJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDUyMVQyMTIxMDJaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0xZmQ5YzRkNmIxYmI2NjQzNDZiZWU2NzQwMDFiOTI0NzE1NzUxZjEyN2Y0ZTQ5NjhlOGViYjU0ZGFlNjA4MTgyJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.AoothpAOgxuCo_4Nj_q1etgwkRxJb3MfdXlBnBpLO2U)
 [More details](https://github.com/alf45tar/PedalinoMini/discussions/454)
 
 https://github.com/regisampa
-![regisampa](https://private-user-images.githubusercontent.com/168490796/331563312-2737da52-6488-47e2-81e9-4d5d59a08fad.jpg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTYzMjY3MTAsIm5iZiI6MTcxNjMyNjQxMCwicGF0aCI6Ii8xNjg0OTA3OTYvMzMxNTYzMzEyLTI3MzdkYTUyLTY0ODgtNDdlMi04MWU5LTRkNWQ1OWEwOGZhZC5qcGc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwNTIxJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDUyMVQyMTIwMTBaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1kYzM5YjBmMDljM2Q3MThhNTA5OWUwMDA1ZWU4ZTQ4MmNiYzQwNTBhMDZiMThiZjVhNTY1ZGQzODg2YTdjNTUwJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.jRnF43m8lOmR32t2utMe53YDYSDCDrov1OBk-HCfhq4)
+![regisampa](https://private-user-images.githubusercontent.com/168490796/331563312-2737da52-6488-47e2-81e9-4d5d59a08fad.jpg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTEyOTQxNTksIm5iZiI6MTc1MTI5Mzg1OSwicGF0aCI6Ii8xNjg0OTA3OTYvMzMxNTYzMzEyLTI3MzdkYTUyLTY0ODgtNDdlMi04MWU5LTRkNWQ1OWEwOGZhZC5qcGc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUwNjMwJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MDYzMFQxNDMwNTlaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1iMGU4YjM5YTQ0ZTA2YTMxZmU2NGUzYjU5NmMyZGY0ZTY5MWFmMjE1ZTQ4ZmJmMGI3YmY4MTI0ZmEzZTkxZTM4JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.dmnxPjMcYzfJv5chdSEYlBaD_JLbqkcKf-2lD_G434Y)
 [More details](https://github.com/alf45tar/PedalinoMini/discussions/515)
