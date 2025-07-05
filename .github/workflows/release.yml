@@ -32,8 +32,8 @@ jobs:
 
     - name: Run PlatformIO build on selected platforms
       run: |
-        pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e lilygo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit -e bpi-leaf-s3 -e lilygo-t-display-s3
-        pio run -t buildfs -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e lilygo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit -e bpi-leaf-s3 -e lilygo-t-display-s3
+        pio run -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e lilygo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit -e bpi-leaf-s3 -e lilygo-t-display-s3 -e esp32-s3-devkitc-1-n16r8v-fcb1010
+        pio run -t buildfs -e esp32doit-devkit-v1 -e ttgo-t-eight -e ttgo-t-display -e lilygo-t-display -e heltec_wifi_kit_32 -e esp-wrover-kit -e bpi-leaf-s3 -e lilygo-t-display-s3 -e esp32-s3-devkitc-1-n16r8v-fcb1010
 
     - name: Copy binary files
       run: |
@@ -165,6 +165,22 @@ jobs:
         sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/lilygo-t-display-s3/lilygo-t-display-s3-${{ github.event.inputs.tag }}.json
         sed -i 's/xxx/lilygo-t-display-s3/g'              ./firmware/lilygo-t-display-s3/lilygo-t-display-s3-${{ github.event.inputs.tag }}.json
         md5sum /tmp/PedalinoMini/build/lilygo-t-display-s3/firmware.bin | head -c 32 > ./firmware/lilygo-t-display-s3/firmware.bin.md5
+        rm -rf ./firmware/esp32-s3-devkitc-1-n16r8v-fcb1010/*
+        echo ${{ github.event.inputs.tag }} > ./firmware/esp32-s3-devkitc-1-n16r8v-fcb1010/version.txt
+        python ~/.platformio/packages/tool-esptoolpy/esptool.py --chip esp32s3 merge_bin \
+                                                                -o ./firmware/esp32-s3-devkitc-1-n16r8v-fcb1010/esp32-s3-devkitc-1-n16r8v-fcb1010-${{ github.event.inputs.tag }}-firmware.bin \
+                                                                --flash_mode dio \
+                                                                --flash_freq 80m \
+                                                                --flash_size 16MB \
+                                                                0x0000 /tmp/PedalinoMini/build/esp32-s3-devkitc-1-n16r8v-fcb1010/bootloader.bin \
+                                                                0x8000 /tmp/PedalinoMini/build/esp32-s3-devkitc-1-n16r8v-fcb1010/partitions.bin \
+                                                                0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+                                                                0x10000 /tmp/PedalinoMini/build/esp32-s3-devkitc-1-n16r8v-fcb1010/firmware.bin \
+                                                                0x6e0000 /tmp/PedalinoMini/build/esp32-s3-devkitc-1-n16r8v-fcb1010/spiffs.bin
+        cp ./manifest/template_esp32s3.json ./firmware/esp32-s3-devkitc-1-n16r8v-fcb1010/esp32-s3-devkitc-1-n16r8v-fcb1010-${{ github.event.inputs.tag }}.json
+        sed -i 's/x.y.z/${{ github.event.inputs.tag }}/g' ./firmware/esp32-s3-devkitc-1-n16r8v-fcb1010/esp32-s3-devkitc-1-n16r8v-fcb1010-${{ github.event.inputs.tag }}.json
+        sed -i 's/xxx/esp32-s3-devkitc-1-n16r8v-fcb1010/g'         ./firmware/esp32-s3-devkitc-1-n16r8v-fcb1010/esp32-s3-devkitc-1-n16r8v-fcb1010-fcb1010-${{ github.event.inputs.tag }}.json
+        md5sum /tmp/PedalinoMini/build/esp32-s3-devkitc-1-n16r8v-fcb1010/firmware.bin | head -c 32 > ./firmware/esp32-s3-devkitc-1-n16r8v-fcb1010/firmware.bin.md5
 
     - name: Commit and push firmware ${{ github.event.inputs.tag }} files
       run: |

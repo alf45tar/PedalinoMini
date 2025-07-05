@@ -11,7 +11,7 @@ __________           .___      .__  .__                 _____  .__       .__    
 
 #include <MIDI.h>
 
-#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
+#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3) || defined(ARDUINO_ESP32S3_DEV)
 
 #include <Adafruit_TinyUSB.h>
 
