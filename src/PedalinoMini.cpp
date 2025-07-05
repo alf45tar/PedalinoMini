@@ -473,7 +473,7 @@ void setup()
 #ifdef WIFI
   if (wifiEnabled) {
     WiFi.persistent(false);
-#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
+#if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3) || defined(ARDUINO_ESP32S3_DEV)
     WiFi.useStaticBuffers(true);
 #endif
     WiFi.onEvent(WiFiEvent);

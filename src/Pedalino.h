@@ -126,6 +126,80 @@ const byte pinA[] = {GPIO_NUM_44, GPIO_NUM_43, GPIO_NUM_10, GPIO_NUM_3,  GPIO_NU
 #define DIN_MIDI_OUT_PIN      GPIO_NUM_1
 #define BATTERY_PIN           GPIO_NUM_4    // Pin connected to BAT (BAT is not VBAT)
 #define FASTLEDS_DATA_PIN     GPIO_NUM_21
+#elif defined ARDUINO_ESP32S3_DEV
+/**
+Support for the esp32-s3-devkitc-1-n16r8v board
+
+GND - GND
+3V3 - Logic Level Converter (LV)
+EN - reserved (CHIP_EN)
+4 - ___UNUSED___
+5 - Button 12
+6 - Button 11
+7 - Button 10
+15 - Button 9
+16 - Button 8
+17 - Button 7
+18 - Button 6
+8 - Button 5
+19 - reserved (USB D-)
+20 - reserved (USB D+)
+3 - JTAG Ctrl
+46 - reserved (ROM msg)
+9 - Button 4
+10 - Button 3
+11 - Button 2
+12 - Button 1
+3V3 - ___UNUSED___
+
+GND - GND
+1 - Logic Level Converter Channel 1 - MIDI Out (TX)
+2 - Logic Level Converter Channel 2 - MIDI In (RX)
+TX0 - reserved (used for flashing)
+RX0 - reserved (used for flashing)
+42 - WS2812B Data In
+41 - SDA for OLED I2C 0.96"/1.3" display 128x64 pixels SSD1306/SH1106 based display
+40 - SCL for OLED I2C 0.96"/1.3" display 128x64 pixels SSD1306/SH1106 based display
+39 - ___UNUSED___
+38 - ___UNUSED___
+37 - reserved (PSRAM)
+36 - reserved (PSRAM)
+35 - reserved (PSRAM)
+0 - reserved (FW DL)
+45 - reserved (VDD_SPI)
+48 - ___UNUSED___
+47 - ___UNUSED___
+21 -___UNUSED___
+14 - Voltage Divider - Expression pedal 1 (left)
+13 - Voltage Divider - Expression pedal 2 (right)
+VIN - 5V
+ */
+#undef  PEDALS
+#define PEDALS        14 // Pedal 1-10, up/down pedals, expression pedal
+#undef  LEDS
+#define LEDS          23 // Pedal 1-10, expression pedal 1+2, 11 config LEDs
+#undef  SLOTS_ROWS
+#define SLOTS_ROWS    2
+#undef  SLOTS_COLS
+#define SLOTS_COLS    7
+#define SLOTS         SLOTS_ROWS * SLOTS_COLS
+/*
+Digital inputs: GPIO_NUM_12, GPIO_NUM_11, GPIO_NUM_10, GPIO_NUM_9,  GPIO_NUM_8,  GPIO_NUM_18, GPIO_NUM_17, GPIO_NUM_16, GPIO_NUM_15, GPIO_NUM_7,  GPIO_NUM_6,  GPIO_NUM_5
+Analog inputs: GPIO_NUM_14, GPIO_NUM_13
+Note by T-vK: 
+              - pinD and pinA both need to have the same length
+              - if pinD[x] is equal to pinA[x] it is treated as a digital pin and the value of pinD[x] will be used, otherwise it will be treated as an analog pin and the value of pinA[x] will be used
+*/
+const byte pinD[] = {GPIO_NUM_12, GPIO_NUM_11, GPIO_NUM_10, GPIO_NUM_9, GPIO_NUM_8, GPIO_NUM_18, GPIO_NUM_17, GPIO_NUM_16, GPIO_NUM_15, GPIO_NUM_7, GPIO_NUM_6, GPIO_NUM_5, GPIO_NUM_38, GPIO_NUM_39};
+const byte pinA[] = {GPIO_NUM_12, GPIO_NUM_11, GPIO_NUM_10, GPIO_NUM_9, GPIO_NUM_8, GPIO_NUM_18, GPIO_NUM_17, GPIO_NUM_16, GPIO_NUM_15, GPIO_NUM_7, GPIO_NUM_6, GPIO_NUM_5, GPIO_NUM_14, GPIO_NUM_13};
+#define FACTORY_DEFAULT_PIN   GPIO_NUM_0    // Button BOOT
+#define DIN_MIDI_IN_PIN       GPIO_NUM_2
+#define DIN_MIDI_OUT_PIN      GPIO_NUM_1
+#define FASTLEDS_DATA_PIN     GPIO_NUM_42
+#undef  SDA
+#undef  SCL
+#define SDA                   GPIO_NUM_41
+#define SCL                   GPIO_NUM_40
 #else
 #undef  PEDALS
 #define PEDALS                7

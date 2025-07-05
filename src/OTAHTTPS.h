@@ -19,6 +19,9 @@ __________           .___      .__  .__                 _____  .__       .__    
 #if defined(ARDUINO_BPI_LEAF_S3) || defined(ARDUINO_LILYGO_T_DISPLAY_S3)
 #define OTA_PARTITION_SIZE    0x360000            // 3538944 bytes
 #define FIRMWARE_MAX_SIZE     (8 * 1024 * 1024)   // 8M
+#elif defined(ARDUINO_ESP32S3_DEV)
+#define OTA_PARTITION_SIZE    0x360000            // 3538944 bytes
+#define FIRMWARE_MAX_SIZE     (16 * 1024 * 1024)  // 16M
 #else
 #define OTA_PARTITION_SIZE    0x1D0000            // 1900544 bytes
 #define FIRMWARE_MAX_SIZE     (4 * 1024 * 1024)   // 4M
