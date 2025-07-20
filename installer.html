@@ -27,7 +27,7 @@
     .dropdown-container { margin: 0 auto; display: inline-block; text-align: left; width: 70%; }
     #board-select, #version-select { width: 90%; }
   </style>
-  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <script type="module" src="https://www.improv-wifi.com/sdk-serial-js/serial-launch-button.js"></script>
   <script type="module" src="https://www.improv-wifi.com/sdk-ble-js/launch-button.js"></script>
 </head>
 <body>
@@ -68,6 +68,7 @@
       </p>
       <p>or</p>
       <p>
+        
         <improv-wifi-launch-button>
           <button slot='activate'>Connect via Bluetooth LE</button>
           <i slot="unsupported">
@@ -75,6 +76,24 @@
             <span class="not-supported-i hidden">(but not on iOS)</span>.
           </i>
         </improv-wifi-launch-button>
+
+  <improv-wifi-serial-launch-button>
+    <span slot="unsupported">
+      Your browser is not supported. To try it out, visit this page with Google
+      Chrome or Microsoft Edge<span class="not-supported-i hidden">
+        (but not on your iOS device)</span>.
+    </span>
+  </improv-wifi-serial-launch-button>
+
+  <improv-wifi-launch-button>
+    <span slot="unsupported">
+      Your browser is not supported. To try it out, visit this page with Google
+      Chrome or Microsoft Edge<span class="not-supported-i hidden">
+        (but not on your iOS device)</span>.
+    </span>
+  </improv-wifi-launch-button>
+
+</div>
       </p>
       <p>Events:</p>
       <pre id="events"></pre>
