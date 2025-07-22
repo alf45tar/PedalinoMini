@@ -1,11 +1,370 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; URL=installer.html">
-  <title>Redirecting...</title>
-</head>
-<body>
-  <p>If you are not redirected, <a href="installe.html">click here</a>.</p>
-</body>
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+    <title>Install PedalinoMini™</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+      div, fieldset, input, select { padding: 5px; font-size: 1em; }
+      fieldset { background: #4f4f4f; }
+      p { margin: 0.5em 0; }
+      input, select { background: #dddddd; color: #000000; }
+      input[type=checkbox], input[type=radio] { width: 1em; margin-right: 6px; vertical-align: -1px; }
+      input[type=range] { width: 99%; }
+      textarea { resize: vertical; width: 98%; height: 318px; padding: 5px; overflow: auto; background: #1f1f1f; color: #65c115; }
+      body { text-align: center; font-family: verdana, sans-serif; background: #252525; }
+      td { padding: 0px; }
+      button { border: 0; border-radius: 0.3rem; background: #1fa3ec; color: #faffff; line-height: 2.4rem; font-size: 1.2rem; width: 100%; -webkit-transition-duration: 0.4s; transition-duration: 0.4s; cursor: pointer; }
+      button:hover { background: #0e70a4; }
+      .bred { background: #d43535; }
+      .bred:hover { background: #931f1f; }
+      .bgrn { background: #47c266; }
+      .bgrn:hover { background: #5aaf6f; }
+      a { color: #1fa3ec; text-decoration: none; }
+      label { display: block; margin-top: 10px; color: #eaeaea; }
+      select { width: 80%; background: #dddddd; color: #000000; margin: 0 auto; text-align: center; }
+      .pick-variant { margin-bottom: 16px; text-align: center; }
+      .dropdown-container { margin: 0 auto; display: inline-block; text-align: left; width: 70%; }
+      #board-select, #version-select { width: 90%; }
+
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #1fa3ec;
+        animation: spin 0.8s linear infinite;
+        vertical-align: middle;
+        margin-left: 8px;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    <script type="module" src="esp-web-tools/install-button.js?module"></script>
+    <script type="module" src="improv-wifi-ble-sdk/launch-button.js"></script>
+  </head>
+  <body>
+    <div style='display:inline-block;color:#eaeaea;min-width:340px;'>
+
+    <h1>PedalinoMini™ Installer</h1>
+
+    <div class="pick-variant">
+      <div>
+        <ol style="text-align:left">
+          <li>Select the appropriate board and firmware version</li>
+        </ol>
+      </div>
+
+      <!-- Dropdown container for boards and versions -->
+      <div class="dropdown-container">
+        <label for="board-select">Select Board:</label>
+        <select id="board-select">
+          <option value="">Select Board</option>
+        </select>
+
+        <label for="version-select">Select Version:</label>
+        <select id="version-select" disabled>
+          <option value="">Select Version</option>
+        </select>
+      </div>
+
+      <!-- Status message element for displaying scanning progress -->
+      <div id="status-message">
+        <span id="spinner" class="spinner" style="display: none;"></span>
+        <span id="status-text"></span>
+      </div>
+      
+      <div id="board-instructions-wrapper">
+        <ol start="2" style="text-align:left" id="board-instructions">
+        </ol>
+      </div>      
+      </br></br>
+      <p>
+        <esp-web-install-button manifest=''>
+          <button slot='activate'>Connect via USB</button>
+          <i slot="unsupported">
+            Your browser does not support Web Serial.</br>Open this page in Google Chrome or</br>Microsoft Edge instead
+            <span class="not-supported-i hidden">(but not on your iOS device)</span>.
+          </i>
+        </esp-web-install-button>
+      </p>
+       <p>or</p>
+       <p>
+        <improv-wifi-launch-button>
+          <button slot='activate'>Connect via Bluetooth LE</button>
+          <i slot="unsupported">
+            Your browser does not support Web Bluetooth.</br>Visit this page with Google Chrome or<br>Microsoft Edge
+            <span class="not-supported-i hidden">(but not on your iOS device)</span>.
+          </i>
+        </improv-wifi-launch-button>
+      </p>
+      <p>Events:</p>
+      <pre id="events"></pre>
+      <script>
+        // Event listener for the version select dropdown
+        document.querySelector('#version-select').addEventListener("change", (event) => {
+            const button = document.querySelector('esp-web-install-button');
+            button.manifest = event.target.value;
+        });
+      </script>
+      <script>
+        if (!navigator.bluetooth) {
+          console.error("Web Bluetooth not supported by the browser");
+        }
+
+        document.querySelectorAll("improv-wifi-launch-button").forEach((button) =>
+          button.addEventListener("state-changed", (ev) => {
+            document.querySelector("pre").innerText +=
+              JSON.stringify(ev.detail) + "\n";
+          })
+        );
+      </script>
+    </div>
+    <div style='text-align:right;font-size:11px;'>
+      <hr/>
+      <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
+    </div>
+    <script>
+
+    // Mapping of board keys to their display names
+    const boards = {
+        "esp32doit-devkit-v1": { name: "ESP32 DOIT DevKit v1", chipFamily: "ESP32" },
+        "ttgo-t-eight": { name: "TTGO T-Eight", chipFamily: "ESP32" },
+        "ttgo-t-display": { name: "TTGO T-Display", chipFamily: "ESP32" },
+        "lilygo-t-display": { name: "LilyGO T-Display", chipFamily: "ESP32" },
+        "heltec-wifi-kit-32": { name: "Heltec WiFi Kit 32", chipFamily: "ESP32" },
+        "esp-wrover-kit": { name: "ESP-WROVER-KIT", chipFamily: "ESP32" },
+        "bpi-leaf-s3": { name: "BPI-Leaf-S3", chipFamily: "ESP32-S3" },
+        "lilygo-t-display-s3": { name: "LilyGO T-Display-S3", chipFamily: "ESP32-S3" },
+        "pedalinomini-4": { name: "PedalinoMini™ 4", chipFamily: "ESP32-S3" },
+        "pedalinomini-6": { name: "PedalinoMini™ 6", chipFamily: "ESP32-S3" },
+        "pedalinomini-8": { name: "PedalinoMini™ 8", chipFamily: "ESP32-S3" }
+      };
+
+
+      const boardInstructions = {
+        "esp32doit-devkit-v1": `
+          <li>Connect the ESP32 DOIT DevKit v1 via USB</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "ttgo-t-eight": `
+          <li>Connect the TTGO T-Eight via USB</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "ttgo-t-display": `
+          <li>Connect the TTGO T-Display via USB-C</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "lilygo-t-display": `
+          <li>Connect the LilyGO T-Display via USB-C</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "heltec_wifi_kit_32": `
+          <li>Connect the Heltec WiFi Kit 32 via USBC</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "esp-wrover-kit": `
+          <li>Connect the ESP-WROVER-KIT via USB-C</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "bpi-leaf-s3": `
+          <li>Press and hold the “BOOT” button while plugging in</li><br>
+          <li>Connect the BPI-Leaf-S3 via USB-C</li><br>
+          <li>Release "BOOT" button</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "lilygo-t-display-s3": `
+          <li>Press and hold the “BOOT” button while plugging in</li><br>
+          <li>Connect the PedalinoMini™ via USB-C</li><br>
+          <li>Release "BOOT" button</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "pedalinomini-4": `
+          <li>Press and hold the “BOOT” button while plugging in</li><br>
+          <li>Connect the PedalinoMini™ 4 via USB-C</li><br>
+          <li>Release "BOOT" button</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "pedalinomini-6": `
+          <li>Press and hold the “BOOT” button while plugging in</li><br>
+          <li>Connect the PedalinoMini™ 6 via USB-C</li><br>
+          <li>Release "BOOT" button</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,
+        "pedalinomini-8": `
+          <li>Press and hold the “BOOT” button while plugging in</li><br>
+          <li>Connect the PedalinoMini™ 8 via USB-C</li><br>
+          <li>Release "BOOT" button</li><br>
+          <li>Click "Connect via USB" and select the correct port</br>
+        `,              
+      };
+
+    // Fetch available versions
+    async function fetchVersions() {
+      const res = await fetch('./firmware/');
+      const html = await res.text();
+
+      const versionRegex = /href="([\d.]+)\/"/g;
+      const versions = [];
+      let match;
+      while ((match = versionRegex.exec(html))) {
+        versions.push(match[1]);
+      }
+      return versions;
+    }
+
+    // Check if a specific file exists at the given URL
+    async function checkFileExists(url) {
+        try {
+            const response = await fetch(url, { method: 'HEAD' });
+            return response.ok;
+        } catch (error) {
+            console.error("Error checking file existence:", error);
+            return false;
+        }
+    }
+
+    // Populate the board dropdown
+    function populateBoardDropdown() {
+        const boardSelect = document.getElementById('board-select');
+        for (const [boardKey, boardName] of Object.entries(boards)) {
+            const option = document.createElement('option');
+            option.value = boardKey;
+            option.textContent = boardName.name;
+            boardSelect.appendChild(option);
+        }
+    }
+
+    // Sort versions by most recent first
+    function sortVersions(versions) {
+        return versions.sort((a, b) => {
+            const versionA = a.split('.').map(Number);
+            const versionB = b.split('.').map(Number);
+
+            for (let i = 0; i < Math.max(versionA.length, versionB.length); i++) {
+                const diff = (versionB[i] || 0) - (versionA[i] || 0);
+                if (diff !== 0) return diff;
+            }
+            return 0;
+        });
+    }
+
+    // Generate manifest dinamically
+    function generateManifest(boardKey, version) {
+        const firmwareFile = `./firmware/${version}/${boardKey}/${boardKey}-${version}-firmware.bin`;
+        const chipFamily = boards[boardKey]?.chipFamily || "ESP32";
+
+        const manifest = {
+            name: `PedalinoMini™`,
+            version: version,
+            funding_url: "https://github.com/sponsors/alf45tar",
+            new_install_prompt_erase: true,
+            builds: [
+                {
+                    chipFamily: chipFamily,
+                    parts: [
+                        { path: firmwareFile, offset: 0 }
+                    ]
+                }
+            ]
+        };
+
+        const json = JSON.stringify(manifest);
+        const blob = new Blob([json], { type: "application/json" });
+        return URL.createObjectURL(blob);
+    }
+
+
+    // Generate the version dropdown based on the selected board
+    async function generateVersionDropdown(boardKey) {
+        const versionSelect = document.getElementById('version-select');
+        versionSelect.innerHTML = '';
+        versionSelect.disabled = true;
+    
+        const statusText = document.getElementById('status-text');
+        const spinner = document.getElementById('spinner');
+        statusText.textContent = "Scanning in progress...";
+        spinner.style.display = 'inline-block'; // Show spinner
+
+        const tags = await fetchVersions();
+        if (tags.length === 0) {
+            statusText.textContent = "No version found or there was an error.";
+            spinner.style.display = 'none';
+            return;
+        }
+
+        let versions = [];
+
+        for (const tag of tags) {
+            const version = tag;
+            const firmwareURL = `./firmware/${version}/${boardKey}/${boardKey}-${version}-firmware.bin`;
+            const exists = await checkFileExists(firmwareURL);
+            if (exists) {
+                versions.push(version);
+            }
+        }
+
+        if (versions.length > 0) {
+            versions = sortVersions(versions);
+
+            versions.forEach(version => {
+                const option = document.createElement('option');
+                option.value = version;
+                option.textContent = version;
+                versionSelect.appendChild(option);
+            });
+
+            versionSelect.disabled = false;
+
+            // Set manifest for first version by default
+            const firstVersion = versions[0];
+            const button = document.querySelector('esp-web-install-button');
+            button.manifest = generateManifest(boardKey, firstVersion);
+            statusText.textContent = "";
+        } else {
+            statusText.textContent = "No firmware files found for the selected board.";
+        }
+      spinner.style.display = 'none'; // Hide spinner
+    }
+
+    // Update manifest when version changes
+    document.querySelector('#version-select').addEventListener("change", (event) => {
+        const version = event.target.value;
+        const boardKey = document.querySelector('#board-select').value;
+        if (version && boardKey) {
+            const button = document.querySelector('esp-web-install-button');
+            button.manifest = generateManifest(boardKey, version);
+        }
+    });
+
+
+    // Initialize the dropdowns
+    document.addEventListener('DOMContentLoaded', () => {
+        populateBoardDropdown();
+
+        const boardSelect = document.getElementById('board-select');
+        const versionSelect = document.getElementById('version-select');
+        const instructionBox = document.getElementById('board-instructions');
+        
+        boardSelect.addEventListener('change', () => {
+            const boardKey = boardSelect.value;
+            if (boardKey) {
+            generateVersionDropdown(boardKey);
+            instructionBox.innerHTML = boardInstructions[boardKey] || `
+              <li>Connect your board via USB</li>
+              <li>Make sure correct drivers are installed</li>
+            `;
+          } else {
+            versionSelect.disabled = true;
+            instructionBox.innerHTML = ``;
+          }
+        });
+    });
+    </script>
+  </body>
 </html>
