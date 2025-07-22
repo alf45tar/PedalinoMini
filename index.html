@@ -48,7 +48,7 @@
     <script type="module" src="esp-web-tools/install-button.js?module"></script>
     <script type="module" src="improv-wifi-ble-sdk/launch-button.js"></script>
   </head>
-  <body>
+  <body background="background.jpg">
     <div style='display:inline-block;color:#eaeaea;min-width:340px;'>
 
     <h1>PedalinoMini™ Installer</h1>
@@ -78,11 +78,11 @@
         <span id="spinner" class="spinner" style="display: none;"></span>
         <span id="status-text"></span>
       </div>
-      
+
       <div id="board-instructions-wrapper">
         <ol start="2" style="text-align:left" id="board-instructions">
         </ol>
-      </div>      
+      </div>
       </br></br>
       <p>
         <esp-web-install-button manifest=''>
@@ -201,7 +201,7 @@
           <li>Connect the PedalinoMini™ 8 via USB-C</li><br>
           <li>Release "BOOT" button</li><br>
           <li>Click "Connect via USB" and select the correct port</br>
-        `,              
+        `,
       };
 
     // Fetch available versions
@@ -285,7 +285,7 @@
         const versionSelect = document.getElementById('version-select');
         versionSelect.innerHTML = '';
         versionSelect.disabled = true;
-    
+
         const statusText = document.getElementById('status-text');
         const spinner = document.getElementById('spinner');
         statusText.textContent = "Scanning in progress...";
@@ -350,7 +350,7 @@
         const boardSelect = document.getElementById('board-select');
         const versionSelect = document.getElementById('version-select');
         const instructionBox = document.getElementById('board-instructions');
-        
+
         boardSelect.addEventListener('change', () => {
             const boardKey = boardSelect.value;
             if (boardKey) {
