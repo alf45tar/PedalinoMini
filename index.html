@@ -7,6 +7,7 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
       div, fieldset, input, select { padding: 5px; font-size: 1em; }
+      fieldset { background: #4f4f4f; }
       p { margin: 0.5em 0; }
       input, select { background: #dddddd; color: #000000; }
       input[type=checkbox], input[type=radio] { width: 1em; margin-right: 6px; vertical-align: -1px; }
@@ -26,6 +27,18 @@
       .pick-variant { margin-bottom: 16px; text-align: center; }
       .dropdown-container { margin: 0 auto; display: inline-block; text-align: left; width: 70%; }
       #board-select, #version-select { width: 90%; }
+
+      body {
+        text-align: center;
+        font-family: verdana, sans-serif;
+        background-image: url('background.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-attachment: scroll;
+        min-height: 100vh;
+        margin: 0;
+      }
 
       .spinner {
         display: inline-block;
@@ -47,7 +60,7 @@
     <script type="module" src="esp-web-tools/install-button.js?module"></script>
     <script type="module" src="improv-wifi-ble-sdk/launch-button.js"></script>
   </head>
-  <body background="background.jpg">
+  <body>
     <div style='display:inline-block;color:#eaeaea;min-width:340px;'>
 
     <h1>PedalinoMini™ Installer</h1>
