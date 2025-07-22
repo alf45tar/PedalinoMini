@@ -77,11 +77,11 @@
         <span id="spinner" class="spinner" style="display: none;"></span>
         <span id="status-text"></span>
       </div>
-      
+
       <div id="board-instructions-wrapper">
         <ol start="2" style="text-align:left" id="board-instructions">
         </ol>
-      </div>      
+      </div>
       </br></br>
       <p>
         <esp-web-install-button manifest=''>
@@ -129,6 +129,7 @@
       <a href="https://esphome.github.io/esp-web-tools/" target='_blank' style='color:#aaa;'>PedalinoMini™ Installer powered by ESP Web Tools</a>
     </div>
     <script>
+
     const GITHUB_REPO = "alf45tar/PedalinoMini";
     const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/git/refs/tags`;
 
@@ -202,7 +203,7 @@
           <li>Connect the PedalinoMini™ 8 via USB-C</li><br>
           <li>Release "BOOT" button</li><br>
           <li>Click "Connect via USB" and select the correct port</br>
-        `,              
+        `,
       };
 
     // Fetch tags from the GitHub API
@@ -287,7 +288,7 @@
         const versionSelect = document.getElementById('version-select');
         versionSelect.innerHTML = '';
         versionSelect.disabled = true;
-    
+
         const statusText = document.getElementById('status-text');
         const spinner = document.getElementById('spinner');
         statusText.textContent = "Scanning in progress...";
@@ -352,7 +353,7 @@
         const boardSelect = document.getElementById('board-select');
         const versionSelect = document.getElementById('version-select');
         const instructionBox = document.getElementById('board-instructions');
-        
+
         boardSelect.addEventListener('change', () => {
             const boardKey = boardSelect.value;
             if (boardKey) {
