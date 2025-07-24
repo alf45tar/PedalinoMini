@@ -1,6 +1,6 @@
 # Versions history
 
-## 4.0.0 - July 28th, 2025
+## 4.0.0 - July 24th, 2025
 
 - Added delayed actions (3.5.1)
 - Fixed "Step by Step -" [#457](https://github.com/alf45tar/PedalinoMini/issues/547) (3.5.2)
