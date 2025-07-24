@@ -1,6 +1,6 @@
 # PedalinoMini™
 
-[![](./images/PedalinoMini486.png)](https://github.com/alf45tar/PedalinoMini-6)
+[![](./doc/images/PedalinoMini486.png)](https://github.com/alf45tar/PedalinoMini-6)
 
 ## Wireless controller for musicians, streamers, and presenters
 
