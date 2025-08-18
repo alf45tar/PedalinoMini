@@ -119,6 +119,6 @@ A: Unlicensed devices enter **demo mode**:
 A: No. All open-source versions prior to `4.0.0` remain available under their original license.
 
 **Q: I’m a GitHub Sponsor — do I get licenses included?**
-A: Yes! Active sponsors will receive at least **one free license per month** of active sponsorship. These can be used for any device and firmware version.
+A: Yes! Active sponsors will receive **2 license credits** for **each euro of subscription**. These can be used for any device and firmware version.
 
 👉 Want to support beyond the €1 license? [Become a sponsor](https://github.com/sponsors/alf45tar) and help shape PedalinoMini™’s future.

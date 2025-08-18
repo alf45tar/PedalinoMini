@@ -39,30 +39,15 @@ If the WiFi network is not available PedalinoMini™ will create an hotspot for 
 - On power on PedalinoMini™ will try to connect to the last know access point
 - If it cannot connect to the last used access point within 15 seconds it enters into WiFi provisioning mode via USB or Bluetooth
 - Visit http://alf45tar.github.io/PedalinoMini and follow the instructions
-- If provisioning is not finished within 60 seconds it enters into Smart Config mode (if compiled with -D SMARTCONFIG in platformio.ini)
+- If provisioning is not finished within 60 seconds it enters into Smart Config mode
 - Start one of the suggested apps to configure SSID and password
-- If it doesn't receive any SSID and password during the next 60 seconds it enters into WPS mode (if compiled with -D WPS in platformio.ini)
+- If it doesn't receive any SSID and password during the next 60 seconds it enters into WPS mode
 - Press or press and hold (it depends by your router) the WPS button on your WiFi router __after__ PedalinoMini™ entered in WPS mode
 - If it doesn't receive any SSID and password during the next 60 seconds it switch to AP mode
 - In AP mode PedalinoMini™ create a WiFi network called 'Pedalino-XXXXXXXX' waiting connection from clients. The required password is XXXXXXXX (uppercase). XXXXXXXX is a variable string.
 - Reboot PedalinoMini™ to restart the procedure.
 
 Any of the previous steps can be skipped pressing BOOT button.
-
-```C++
-void wifi_connect()
-{
-  auto_reconnect();           // WIFI_CONNECT_TIMEOUT seconds to reconnect to last used access point
-  if (!WiFi.isConnected())
-    improv_config();          // IMPROV_CONFIG_TIMEOUT seconds to receive provisioning SSID and password via USB or Bluetooth and connect to WiFi
-  if (!WiFi.isConnected())
-    smart_config();           // SMART_CONFIG_TIMEOUT seconds to receive SmartConfig parameters and connect
-  if (!WiFi.isConnected())
-    wps_config();             // WPS_TIMEOUT seconds to receive WPS parameters and connect
-  if (!WiFi.isConnected())
-    ap_mode_start();          // switch to AP mode until next reboot
-}
-```
 
 ## How to connect to the web user intertace
 
