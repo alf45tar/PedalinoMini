@@ -86,7 +86,7 @@ Do you need more footswitches? [PedalinoMini™ 6](https://github.com/alf45tar/P
 
 - Hardware
   - [Bill of Materials](<doc/BOM and Schematics.md#bill-of-materials>)
-  - [Schematics](<doc/BOM and Schematics#schematic>)
+  - [Schematics](<doc/BOM and Schematics.md#schematic>)
   - [USB MIDI for ESP32 boards](<doc/USB MIDI for ESP32.md>)
 
 - Software
