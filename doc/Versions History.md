@@ -1,5 +1,11 @@
 # Versions history
 
+## 4.0.1 - Developer Release
+
+- Added "give me more time" button during provisioning
+- Fixed BLE provisioning
+- Fixed firmware MD5 hash calculation
+
 ## 4.0.0 - July 24th, 2025
 
 - Added delayed actions (3.5.1)
@@ -7,6 +13,8 @@
 - Added BLE keyboard emulation (3.6.0)
 - Added USB keyboard emulation (3.6.0)
 - Updated onboard Bootstrap to 5.3.7 (3.6.0)
+- Added BLE mouse emulation (3.6.1)
+- Added USB mouse emulation (3.6.1)
 - Moved to close-source with licensing and activation (4.0.0)
 
 ## 3.5.0 - October 25th, 2024 - Bonus release for 500 stars
