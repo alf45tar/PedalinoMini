@@ -1,6 +1,12 @@
 # Pedals
 
-Once PedalinoMini™ is connected to a WiFI network and you are connected to the web user interface it is time to configure which pedal is connected to each of the 6 available ports. Pedal 7, 8 and 9 (if present) are the on board buttons and they are fully configurable.
+Once PedalinoMini™ is connected to a WiFi network and you are connected to the web user interface it is time to configure which pedal is connected to each of the 6 available ports. Pedal 7, 8 and 9 (if present) are the on board buttons and they are fully configurable.
+
+A pedal is a physical or virtual TRS port. Each TRS port can host different kinds of hardware: one switch (momentary or latch), two switches (momentary or latch), three momentary switches, an expression pedal, a mix of switches and expression, or more exotic devices such as jog wheels, ladder networks, ultrasonic sensors, or analog multiplexers.
+
+Examples of external TRS pedals are Boss FS-5U, Boss FS-6, Digitech FS3X and TC Helicon Switch-6. They all use a TRS connector but they contain a different number of foot switches. PedalinoMini sees each switch as a separate button, so the same TRS port can represent one, two, three or six buttons depending on what you plug in.
+
+Internal foot switches have no physical TRS connector, but they are wired exactly like external TRS pedals. For example, PedalinoMini 8 has four internal pedals (1-4), equivalent to four Boss FS-6 units, and each pedal exposes two buttons. Pedal 5 and Pedal 6 are the external TRS ports, and each port can be connected to any supported device type.
 
 ![WEBUI PEDALS](./images/webui-pedals.png "Pedals")
 
@@ -20,9 +26,13 @@ Once PedalinoMini™ is connected to a WiFI network and you are connected to the
 
 ## Controls
 
-A control is a single switch of a pedal (e.g., button 2 of pedal 4) or a combination of 2 switched of any pedal to be pressed simultaneous. Controls are used to logical sort and hide the physical connection of switches or to define a new control as simultaneous press of 2 switches.
+A control is a single switch of a pedal (e.g., button 2 of pedal 4) or a combination of 2 switches from any pedals pressed at the same time. Controls are used to logically group and hide the physical connection of switches, or to define a new control as a simultaneous press of two switches.
 
-Actions are triggered by controls. As a consequence a control is needed also for analog and ultrasonic pedals.
+In short: a pedal is the port (physical or virtual) and the hardware connected to it; a control is a logical button built from one or more pedal switches, and is what you assign actions to.
+
+For example, with the default configuration on PedalinoMini 8, the eight internal foot switches are called Control 1 through Control 8.
+
+Actions are triggered by controls. As a consequence a control is needed also for analog, ultrasonic pedals, and so on.
 
 Due to hardware limitation simultaneous press do not works with 2 switches of the same MOMENTARY 3, LATCH 3 and LADDER. Instead simultaneous press works well between one switch of a MOMENTARY 3/LATCH 3/LADDER pedal and any other switch of a different pedal of any type. Simultaneous press works well between the 2 switches of the same MOMENTARY 2 or LADDER 2 pedal.
 
