@@ -95,6 +95,7 @@ Do you need more footswitches? [PedalinoMini™ 6](https://github.com/alf45tar/P
     - [WiFi Provisioning](<doc/First Steps.md#how-to-connect-pedalinomini-to-a-wifi-network>)
     - [Web user interface access](<doc/First Steps.md#how-to-connect-to-the-web-user-intertace>)
   - [Pedals & Controls](<doc/Pedals and Controls.md>)
+  - [Switch Events Logic](<doc/Switch Events.md>)
   - [Actions](<doc/Actions.md>)
   - [Sequences](<doc/Sequences.md>)
   - [Interfaces](<doc/Interfaces.md>)
