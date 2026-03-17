@@ -31,9 +31,9 @@ Event generation also depends on **Pedals** settings: enable **Singles Press** f
 * **Trigger Time:** Immediately after debounce validation.
 
 ### 2.3 PRESS & RELEASE
-* **Description:** A full physical cycle (down then up), independent of duration.
+* **Description:** Independent immediate events generated on every valid press transition and on every valid release transition.
 * **Trigger Condition:** Fires on every valid **PRESS** and on every valid **RELEASE**.
-* **Note:** It is never suppressed, regardless of whether a higher-level event (CLICK, DOUBLE CLICK, LONG PRESS, etc.) is also generated. Typical use case: latch switches, where an action must trigger on every state change (every movement).
+* **Note:** Typical use case: latch switches, where an action must trigger on every state change (every movement).
 
 ### 2.4 CLICK
 * **Description:** A standard momentary interaction.
